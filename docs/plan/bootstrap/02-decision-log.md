@@ -1,0 +1,92 @@
+# Decision log
+
+Decisions from the bootstrap grilling session (2026-09-18/19). `D<n>` matches question `Q<n>` in the session;
+primed numbers (D33', D35'') are the refined versions that superseded the first answer. All are accepted design
+intent, unverified until the named gate passes.
+
+## Purpose, home and platform
+
+| # | Decision | Why |
+|---|---|---|
+| D1 | Build a reference stack (Expo app + backend) that is AI-robust: typed, composable, exemplar-driven, with durable execution, Effect and component-based React UI. | One place where the patterns are proven once and reused by BirVana, ERP and GRC frontends. |
+| D2 | Durable execution follows the Temporal model: workflows, workers, retryable activities; on restart the workflow re-runs and replays stored activity results. | Well-understood model; maps directly onto Effect `Workflow`/`Activity`. |
+| D3 | On device, durable means **resume on next launch**, with OS timers and notification intents as triggers. | The only guarantee iOS reliably gives. |
+| D6 | Decisions of the earlier session carry over: local notification is the guaranteed timer, old workflow versions ship side by side, a central sync server exists. | Same design, new lens. |
+| D7 | New repo `~/ws/viviefs` (GitHub `pietgk/viviefs`, Apache-2.0), not inside complyj or BirVana. Parts of complyj are copied as needed. | A reference stack needs its own ADRs and one exemplar proving every pattern. |
+| D8 | Effect is the backbone everywhere: services and Layers are the ports, Schema at every boundary, typed errors, HttpApi and RPC contracts shared with the client. | A half-Effect codebase has two idioms. Types stop agents from slopping past boundaries. |
+| D9 | Effect v4 release candidate, exact version pinned, all `@effect/*` on the same version. | Greenfield should not start on the line being replaced; `unstable/*` modules are equally unstable in v3. |
+| D17 | Server: Node + `@effect/platform-node`, Effect HttpApi, Postgres (or SQLite) behind the log-store service. Bun stays an option via the platform layer. | Most tested path for Effect SQL and platform. |
+| D18 | Authenticated users, per-organization isolation enforced server-side on every sync pull and push, lease and command. Never trust a client-supplied org id. | GRC and ERP need organization-scoped roles. |
+| D22 | Expo SDK 58 (RN 0.88) from day one; pin the beta, move to stable when it lands. Rerun the RN compatibility research on it first. | Avoids a migration for nothing. |
+| D47 | Identity via OIDC: Keycloak on Apple Container locally, PKCE on device (`expo-auth-session`), any OIDC provider in production, behind an `Identity` service. A fake identity during early gates. | Same "one pattern, several implementations" shape as storage and telemetry. |
+| D49 | DX in three planes, one source of truth each: vendored pinned skills (`skills-lock.json`), **mise** for the host toolchain (Node, pnpm, Bun), Apple Container image digests for runtimes. A tool is admitted only for a measured gap. | Adopted from complyj ADR 0012; mise matches the app repos and is lighter than Nix. |
+
+| D16 | SQLite drivers: Effect's official drivers, `@effect/sql-sqlite-react-native` (op-sqlite 17.x pinned) on native and `@effect/sql-sqlite-wasm` (OPFS) on web, after a gate. Fallback: our own `SqlClient` over expo-sqlite (one driver for iOS, Android, web). | Less custom code at the most failure-sensitive layer. |
+| D19 | pnpm workspaces + Nx (as complyj). | Task graph, caching, module boundary rules. |
+| D23 | The exemplar is an evidence-collection workflow (see [01-vision-and-scope.md](01-vision-and-scope.md)). | Hits every concept, includes a second person. |
+| D27 | Output of the session: this bootstrap directory, then `CONTEXT.md`, ADRs and a gate list in `~/ws/viviefs`. No production code before gates report. | Design before code. |
+| D4, D5 | Superseded: the Effect vs XState question became D11 + D12; "restart the current component" generalised into D11. | - |
+
+## Durable execution
+
+| # | Decision | Why |
+|---|---|---|
+| D10 | Use Effect's `Workflow` / `Activity` / `DurableDeferred` / `DurableClock` API everywhere, over our own `WorkflowEngine` implementation. Workflows are versioned by name (`Inspection.v3`). Activities must not suspend (a suspending activity re-runs on replay). | One workflow API on device and server; public interfaces only. Effect has no versioning API. |
+| D11 | A human step is a `DurableDeferred` inside the workflow. **Workflows own durable business progress; machines and atoms own ephemeral interaction.** A killed app resumes at "waiting for step X" and the UI rebuilds. | Clean split between durable and ephemeral state. |
+| D13 | The sync server holds full workflow state (execution, journal, pending deferreds and clocks) so another device can resume. The server stores it and never runs device workflow code. | Needed for device switching; still just storage. |
+| D14 | One lease per execution, renewed while active, with a fencing counter. Stale holders' writes are rejected; other devices show the execution read-only until the lease expires. | Activities have real side effects that cannot be merged afterwards. |
+| D15 | Server authoritative. A device that lost its lease drops its divergent journal entries and replays from the server. User content (photos, recordings, drafts) is never dropped; it is quarantined for human resolution. | Idempotency keys make side effects harmless; user work is never silently lost. |
+| D20 | The engine's merge bar is a crash matrix: engine tests with `TestClock` killing at every boundary, plus a simulator force-quit E2E. | In-memory-only durability proves nothing. |
+| D24 | Long `DurableClock` sleeps write a `wake_at` datom and schedule a local notification (expo-notifications; Android `alarmClock` delivery for time-critical). The engine sweeps due clocks on launch and foreground; expo-background-task sweeps opportunistically. Notification actions complete the matching `DurableDeferred`. | Turns "resume on next launch" into mechanism. |
+| D25 | Browser: one leader tab per profile runs the engine (Web Locks); other tabs render and forward events via BroadcastChannel. Each browser profile counts as one device for leases. | Several tabs are several engines on one OPFS database. |
+| D39 | One engine: our datom-backed `WorkflowEngine` on device and server alike. Effect Cluster (`ClusterWorkflowEngine`) is the later scale-out path behind the same interface. | One journal format is the point of D31. |
+| D40 | Server-side human steps (a reviewer approves on the web) write a deferred-completion datom under `O{org}/W{exec}/D{name}` in the same changeset as the review. It syncs down; the device engine resumes. Push is only a wake-up hint. | Signals become ordinary datoms: deduplicated, fenced, traced, auditable. |
+
+## One datom log, three views
+
+| # | Decision | Why |
+|---|---|---|
+| D31 | One datom log is the single substrate: the engine journal, domain data and sync all use it; tracing is derived from it. | One storage format, one sync protocol, one audit trail. Realises vivief's "observability is projection over effect datoms". |
+| D32 | Trace context is written with each transaction. Spans are derived from the log with deterministic span ids (`executionId + activity + attempt`), so replays never duplicate spans. Export is durable: a projector reads the log from a cursor and posts OTLP via Effect's native exporter. Live `withSpan` detail inside activities is parented to durable spans. The tracing backend is never the store the engine reads from. | Tracing and durability become one concept without trusting a lossy, sampled, non-transactional store for durability. |
+| D33' | `tx` is a hybrid logical clock `(pt, c)`. `pt` is server-corrected time: monotonic clock anchored to the server offset within a boot session, wall clock + persisted offset after a reboot; never below the last persisted HLC. `c` is a tie-break counter used only when `pt` would not advance. Receive rule: `last = max(last, received)`. Server rejects future skew and flags measured gaps. Encoded ULID-shaped: 48-bit ms, 16-bit counter, remaining bits random + device id. | Offline for days must still work; corrected clocks alone cannot handle backwards jumps or cross-device causality. |
+| D34 | Conflict policy is declared per attribute in its Schema: **LWW** (domain scalars), **write-once fenced** (journal facts, lease grants), **human conflict** (references, evidence attachments, approvals: both values kept, a conflict datom raised). | One global LWW rule is wrong for GRC, ERP and the journal. |
+| D35'' | **Single-datom transactions with a changeset id.** Datom = `[e, a, v, tx, op, cs]`. A changeset becomes visible when its commit datom arrives, carrying a manifest (count + hash of members). Conflicts are ordered by the commit `tx`; the commit records its basis and the server checks, per attribute policy, whether touched attributes changed since. `cs == tx` means self-committed (a checkbox toggle stays one datom). Commit and abort are write-once; open changesets may expire. Authors see a "committed + my open changesets" view. Keep the defining attribute for entity lifecycle. | Keeps web-interview's one-datom wire and storage simplicity, gives atomic multi-attribute and cross-entity changes enforced once by the projector, and makes drafts native (Studio drafts, evidence review, ERP draft orders). |
+| D36 | Commands are shared pure Effect functions `(readModel, intent) -> changeset or DomainError`, run on client and server. The client applies optimistically and queues in an outbox; the server revalidates (Schema, membership, authorization, invariants such as independent review, lease fencing) and accepts or rejects the whole changeset with a typed error. On rejection the client rebuilds from confirmed data and reapplies its remaining outbox. | Server authoritative, offline-capable, one write path for app and engine. |
+| D37 | SQLite locally: one append-only datom table with EAVT and AEVT indexes; typed read-model tables (one per entity type, Schema-defined) updated incrementally in the same SQLite transaction. Snapshots and a compaction horizon only past what every device acknowledged. The log store is a pattern with swappable implementations (SQLite device, SQLite Node, Postgres) under one conformance suite. Analytics is a projection to Parquet or DuckLake queried by DuckDB, never the durable log. | Read models are disposable projections; lock-in is avoided because the contract is tested. |
+| D38 | Entity ids encode their parent **only for strict composition** (part of the parent, shared lifetime, can never move), declared per entity type: `O{org}/...` root, list -> todo, order -> line, execution -> journal entries. Everything else uses reference attributes. One projection rule: visible iff the defining attribute is asserted and the owner is visible. Orphaned writes to user-content types raise a conflict. Separator `/`, ids are branded Schema types. Guideline: "can it ever move? then it is a reference". | Keeps one-datom tree deletes and prefix scans, makes `O{org}/` the backbone for isolation and sync, avoids immutable ids that cannot move. |
+| D21 | Superseded by D31 + D35'' + D36: sync is datom replication (outbox up, cursor stream down), server-authoritative validation per changeset. Effect EventLog was studied as a design reference, not adopted (no server rejection, device-clock ordering, no RN path). | See research/03. |
+| D43 | Files are stored by content hash (`blob:sha256...`): local file storage on device, object storage on server. A datom references the hash; the upload is an idempotent retryable activity; a changeset referencing a file commits only once the file exists on the server (manifest extends to file references). | Bytes in object storage, provenance in the log. |
+| D44 | Attributes are never renamed or retyped (new attribute + projector mapping instead). Read models are rebuilt, never migrated. Workflows versioned by name, old versions ship until drained. The server refuses unknown attributes with a typed "upgrade" error. | An append-only vocabulary keeps a log-based system migratable for years. |
+| D50 | Data at rest on device: OS file protection as baseline; SQLCipher via op-sqlite with keys in Keychain/Keystore (expo-secure-store) as a qualified option per consumer app, passing the same conformance suite. | GRC probably needs it, BirVana does not. |
+| D51 | Erasure via crypto-shredding: attributes marked `:personal` store values encrypted with a per-subject key; erasure destroys the key; projections show "erased". Bulky personal files are content-hashed blobs that can be deleted. Qualified by a gate proving unreadability on every replica and projection. | Keeps the log immutable and syncable while meeting the right to erasure. |
+
+## UI
+
+| # | Decision | Why |
+|---|---|---|
+| D12 | Settle XState vs Effect by one prototype built three ways: XState v5 + Effect (via `fromPromise`), `@typeonce/effect-machine`, and plain Effect + Atom. Built after D11 shrinks machines to interaction state. | The ecosystem has not settled; real code decides faster than argument. |
+| D41 | Three state owners (from web-interview ADR 007): domain facts in the datom log read through read models; screen and interaction state in a machine or atom (D12); in-flight text in component state until it settles (idle, blur, Enter), which mints a datom. Components are pure views over a screen-view selector, with Storybook stories using fakes. | The UI / logic / data split, already proven in web-interview. |
+| D42 | Live reads: query atoms (`@effect/atom-react`) run SQL against read models and declare invalidation keys (entity prefixes plus attribute keys for cross-cutting queries). After committing a changeset the projector calls `Reactivity.invalidate` with the touched prefixes and attributes; only matching atoms re-query. Two variants: committed, and committed + my open changesets. A dev-mode check warns when an atom returns different data without having been invalidated. | Replaces web-interview's quadratic full re-projection; reuses D38 ids. |
+
+## Repo structure and enforcement
+
+| # | Decision | Why |
+|---|---|---|
+| D26 | AI-robust guardrails: Effect language service; lint forbids raw `Promise`/`async`/`try` in domain and workflow code and forbids `Date.now()`, `Math.random()` and id generation outside activities; Nx boundary tags; Schema at every boundary including SQLite rows; exemplar-first AGENTS.md; every workflow ships with a crash-matrix test. | The determinism rule is the one mistake Effect cannot catch in types. |
+| D52 | Four kinds: `apps/` (thin composition roots) -> `features/` -> `libs/`, plus `tools/`; nothing imports an app or a tool. Apps provide all implementations as Layers; a feature's `R` type declares what it needs, so a missing context is a compile error. | "Apps define the context features need" is literally Effect's requirement type. |
+| D53 | A feature is a vertical slice split into `model` (universal), `client`, `server` projects. | The platform boundary is visible and enforceable; the model runs on both sides (D36). |
+| D54 | Three tag dimensions enforced by `@nx/enforce-module-boundaries`: `kind:`, `layer:`, `platform:`. Features share only their `model`. Native vs web inside client adapters by `.native.ts` / `.web.ts`. | Keeps Node out of Hermes and RN out of the server. |
+| D55 | Only the exemplar lives in viviefs for now; product apps later as `<product>-mobile` + `<product>-server` pairs without restructuring. | Avoids coupling the reference to one product's choices. |
+| D56 | Nx current TS setup: pnpm workspaces, TS project references, `package.json` `exports` as each project's public API (no deep imports), Nx sync generators, inferred tasks, free module-boundary rule (no paid Powerpack). `verify` runs as Nx targets (affected locally, all in CI). | Public APIs explicit, same principle as Schema at every boundary. |
+| D57 | Concept pages and guides in `apps/docs`; exercises in top-level `exercises/` (one Nx project per track, tagged `kind:tool`); lessons citing gate evidence beside concept pages. | Exercises must run and be gated like code. |
+
+## Verify, qualify, teach
+
+| # | Decision | Why |
+|---|---|---|
+| D28 | Docs site in the style of effect.website: concepts, guides, ADRs as the why, generated API reference, generated llms.txt. Every sample type-checked in CI. | Samples that compile are the difference between docs and slop. |
+| D29 | Teaching is a delivery gate (effect.institute style): a pattern counts as delivered only with a concept page, an exercise (stub + failing test + reference solution passing in CI) and a link from the exemplar. | Forces every pattern to be explainable in isolation. |
+| D30 | One source for humans and LLMs: docs pages are canonical; AGENTS.md is a map; skills are thin procedures linking to guides. | Duplicated guidance drifts. |
+| D45' | Telemetry sink is a pattern with three implementations behind one OTLP/HTTP endpoint config: **motel** (default: local, no container, SQLite, agent skill), Jaeger (Apple Container, parity with complyj), otel-lgtm (Apple Container, metrics and dashboards). One smoke test per implementation. | Local-first privacy; the durable log is the lossless source, sinks are viewers. |
+| D46 | The spikes are qualification gates, in order: platform, log store, engine + crash matrix, UI prototype, sync, trace projection. No production code until they report. | Gates carry the most unknowns. |
+| D48' | One "Verify - Qualify - Teach" pattern (see [05-verify-qualify-teach.md](05-verify-qualify-teach.md)): staged `verify`, one ownership registry, ratchet lockfile, mobile production budgets, no retries (flakiness is a defect); numbered gates with probes, positive controls, fingerprinted ledger, sequential full run; lessons cite evidence. Vitest + `@effect/vitest` only; GitHub Actions runs `verify`; simulator crash E2E gated before release. The ledger stays a plain file, not datoms. | Smallest union of web-interview and complyj with nothing duplicated. |
