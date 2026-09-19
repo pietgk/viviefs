@@ -12,7 +12,7 @@ and has expected vs observed outcome sections (complyj template). Grouped so tha
 | 0005 | SQLite drivers: official Effect drivers with expo-sqlite fallback | D16 | P02 |
 | 0006 | One datom log as the substrate for journal, domain data, sync and tracing | D31 | P04 |
 | 0007 | Hybrid logical clock for `tx` | D33' | P04 |
-| 0008 | Single-datom transactions with changesets (manifest, basis, `cs == tx`) | D35'' | P05 |
+| 0008 | Single-datom transactions with changesets (manifest, basis, `cs == tx`, envelope per changeset) | D35'', D58 | P05 |
 | 0009 | Per-attribute conflict policies | D34 | P05 |
 | 0010 | Entity ids, defining attributes and strict-composition prefixes (`O{org}/`) | D38 | P05 |
 | 0011 | Log store pattern, read models, compaction and analytics projection | D37, D44 | P04, P05 |

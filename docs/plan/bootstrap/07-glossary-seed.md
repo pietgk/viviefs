@@ -58,7 +58,7 @@ A set of datoms that becomes visible atomically when its commit datom arrives. O
 _Avoid_: transaction (a datom's own unit), batch, patch
 
 **Commit datom**:
-The write-once datom that makes a changeset visible, carrying its manifest, basis and envelope.
+The write-once datom that makes a changeset visible, carrying its manifest and basis. The changeset's envelope travels alongside it.
 
 **Manifest**:
 Count and hash of a changeset's members (and file references) that must be satisfied before it is applied.
@@ -67,7 +67,7 @@ Count and hash of a changeset's members (and file references) that must be satis
 The log position a changeset was built on; checked at commit against later changes per attribute policy.
 
 **Envelope**:
-Fixed-shape metadata on each change: actor, device, lease epoch, trace context, command name.
+One fixed-shape record per changeset, keyed by `cs`: actor, device, lease epoch, trace context, command name. Stored in the `changesets` table, not as datoms; a self-committed datom has its own.
 _Avoid_: headers, metadata datoms
 
 **HLC**:

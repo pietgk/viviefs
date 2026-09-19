@@ -50,9 +50,14 @@ flowchart TD
 Each datom is its own transaction (one datom on the wire and in storage). Atomicity across several datoms comes
 from changesets (section 4).
 
-Every changeset (including a self-committed datom) carries an **envelope**: actor, device, lease epoch (if any),
-`traceId` / `spanId` / `sampled`, command name. For explicit changesets the envelope sits on the commit datom; for
-self-committed datoms it is stored as columns beside the datom.
+Every changeset has exactly one **envelope** (D58): actor, device, lease epoch (if any), `traceId` / `spanId` /
+`sampled`, command name. The changeset is the unit of intent (one command, one actor, one trace), so the envelope is
+**keyed by `cs`, always, with one mechanism whatever the changeset size**:
+
+- Stored as one fixed-shape record in the `changesets` table keyed by `cs`, not as datoms.
+- On the wire it travels with the commit datom, or with the datom itself when `cs == tx`.
+- A self-committed datom is a changeset of one: it has its own envelope record, and stays one datom.
+- Queryable by joining datoms on `cs`.
 
 ## 3. Time: the hybrid logical clock (D33')
 
@@ -81,7 +86,7 @@ correctedClock():
 [ev1  :evidence/title   "Q3 backup log"  tx1  +  cs7]
 [ev1  :evidence/file    "blob:9f2..."    tx2  +  cs7]
 [fd2  :finding/status   :closed          tx3  +  cs7]
-[cs7  :changeset/commit {n:3, hash, basis, envelope}  tx4  +  cs7]
+[cs7  :changeset/commit {n:3, hash, basis}  tx4  +  cs7]      envelope(cs7) travels alongside
 ```
 
 - **Lifecycle**: a changeset is open until a write-once `:changeset/commit` or `:changeset/abort` datom, or TTL
@@ -132,7 +137,8 @@ client on reject: rebuild read models from confirmed datoms, reapply remaining o
 
 - SQLite (device, Node) and Postgres (server) share one schema through Effect `SqlClient`:
   - `datoms(e, a, v, tx, op, cs)` append-only, indexes EAVT and AEVT (and on `cs`).
-  - `changesets(cs, state, commit_tx, basis, manifest, envelope...)`.
+  - `changesets(cs, state, commit_tx, basis, manifest, actor, device, lease_epoch, trace_id, span_id, sampled,
+    command)`: one row per changeset, including self-committed datoms (`cs == tx`).
   - typed read-model tables per entity type, Schema-defined, updated incrementally inside the same SQL
     transaction that applies a committed changeset.
   - `sync_cursor`, `hlc_state`, `outbox`.
@@ -183,7 +189,7 @@ sleeps up to 60s run in memory.
 
 ## 11. Tracing (D32, D45')
 
-- Trace context (`traceId`, `spanId`, `sampled`) is stored in every envelope.
+- Trace context (`traceId`, `spanId`, `sampled`) is stored in every changeset's envelope (D58).
 - A trace projector reads the log from its own cursor and emits spans with deterministic ids derived from
   `executionId + activity + attempt` (and changeset ids for commands). Replays emit nothing new for stored results;
   new attempts link to previous ones.
