@@ -1,6 +1,6 @@
 # ADR-0009: Per-attribute conflict policies
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -24,7 +24,8 @@ Conflict policy is declared per attribute in its Schema:
 | write-once, fenced | journal facts, deferred completions, lease grants, changeset commit/abort | first valid write under a valid lease wins; others rejected |
 | human conflict | references, evidence attachments, approvals, user content | both values kept; a conflict datom raised; a person resolves |
 
-The conflict-datom attribute name is illustrative until P05.
+The conflict-datom attribute name is `viviefs/conflict`. P05 materialises
+conflicts in `projection_conflicts`; P09 may persist them as log datoms.
 
 ## Trade-offs
 
@@ -46,4 +47,7 @@ No silent loss of user content. Journal facts are fenced. Scalars LWW.
 
 ### Observed
 
-Not yet run.
+2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. Basis LWW kept the
+highest commit `tx`; write-once accepted the first seal and rejected the
+second; human-conflict kept both file values and raised `viviefs/conflict`.
+Evidence: [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).

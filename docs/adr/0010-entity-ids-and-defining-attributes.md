@@ -1,6 +1,6 @@
 # ADR-0010: Entity ids, defining attributes and strict-composition prefixes
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -60,4 +60,9 @@ references.
 
 ### Observed
 
-Not yet run.
+2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. Retracting a
+defining attribute hid the entity; re-asserting restored its other attributes.
+Retracting a list hid composed items; restoring the list restored them. A
+user-content write under a deleted owner raised an orphan conflict rather than
+dropping the write. Evidence:
+[2026-09-20-p05.md](../evidence/2026-09-20-p05.md).

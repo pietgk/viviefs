@@ -17,7 +17,7 @@ export const sqliteWasmLogStore = (options: {
   deviceId: string
 }) =>
   logStoreLayer.pipe(
-    Layer.provide(sqliteWasmOpfsLayer(options.worker)),
+    Layer.provideMerge(sqliteWasmOpfsLayer(options.worker)),
     Layer.provide(cryptoEntropy),
     Layer.provide(deviceLayer(options.deviceId)),
   )

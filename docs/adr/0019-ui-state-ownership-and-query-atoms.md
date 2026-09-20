@@ -56,4 +56,11 @@ rebuild.
 
 ### Observed
 
-Not yet run.
+P05, 2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. After a
+committed changeset the projector invalidates `prefix:{id}` and
+`attribute:{name}` keys; a `Reactivity.query` on matching keys reran, and a
+query on another organization did not. Draft view showed the author's open
+members; committed and other actors did not. `@effect/atom-react` screens wait
+for P08. Evidence: [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
+
+P08 not yet run.

@@ -1,6 +1,6 @@
 # ADR-0011: Log store pattern, read models, compaction and analytics
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -63,5 +63,11 @@ rebuilt.
 `2026-09-20T19-30-57.292Z-6aa3906d`. One `LogStore` over `SqlClient` on
 `sqliteNative`, `sqliteWasm`, `sqliteNode` and `postgres` (PGlite in the probe).
 Pinned tables: `datoms`, `changesets`, `hlc_state`, `device_cursors`. Compaction
-horizon held. P05 (read models, rebuild equals incremental) is not yet run.
-Evidence: [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).
+horizon held. Evidence: [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).
+
+2026-09-20. P05 ledger pass
+`2026-09-20T19-57-57.045Z-1dba2339`. Disposable read models
+(`projected_facts`, `projection_conflicts`, `changeset_status`,
+`projection_cursor`) rebuilt from the log equalled the incremental snapshot on
+the same five stores. Evidence:
+[2026-09-20-p05.md](../evidence/2026-09-20-p05.md).

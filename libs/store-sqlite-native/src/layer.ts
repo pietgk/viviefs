@@ -14,7 +14,7 @@ export const sqliteNativeLogStore = (options: {
   deviceId: string
 }) =>
   logStoreLayer.pipe(
-    Layer.provide(sqliteNativeLayer(options.filename)),
+    Layer.provideMerge(sqliteNativeLayer(options.filename)),
     Layer.provide(cryptoEntropy),
     Layer.provide(deviceLayer(options.deviceId)),
   )

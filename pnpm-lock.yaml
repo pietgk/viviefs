@@ -292,7 +292,14 @@ importers:
 
   features/evidence/client: {}
 
-  features/evidence/model: {}
+  features/evidence/model:
+    dependencies:
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../../../libs/datom
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
 
   features/evidence/server: {}
 

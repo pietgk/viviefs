@@ -106,7 +106,7 @@ export const encodeHlc = (
 }
 
 export const decodeHlc = (
-  tx: Tx,
+  tx: string,
 ): { pt: number; c: number; deviceFp: number; random: number } | null => {
   const bytes = decodeBytes(tx)
   if (!bytes) return null

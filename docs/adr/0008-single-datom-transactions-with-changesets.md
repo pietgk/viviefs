@@ -1,6 +1,6 @@
 # ADR-0008: Single-datom transactions with changesets
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -36,8 +36,8 @@ datom when `cs == tx`. A self-committed datom is a changeset of one and has its
 own envelope record. Queryable by joining datoms on `cs`. The `changesets`
 table name is decided; other column names are indicative until P04.
 
-Attribute names for commit/abort are illustrative until the P05 vocabulary pass
-(D44).
+Attribute names for commit/abort are pinned by P05: `viviefs/changeset/commit`
+and `viviefs/changeset/abort` (D44).
 
 ## Trade-offs
 
@@ -60,4 +60,8 @@ always keyed by `cs`.
 
 ### Observed
 
-Not yet run.
+2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. Fourteen checks on
+sqlite-node, PGlite, iOS, Android and web. An incomplete changeset stayed
+invisible; completing the manifest made all members visible at once. `cs == tx`
+self-commits, abort, and 24h expiry held. Evidence:
+[2026-09-20-p05.md](../evidence/2026-09-20-p05.md).

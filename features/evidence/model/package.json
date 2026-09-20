@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "Apache-2.0",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -11,5 +12,9 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     }
+  },
+  "dependencies": {
+    "@viviefs/datom": "workspace:*",
+    "effect": "4.0.0-rc.116"
   }
 }

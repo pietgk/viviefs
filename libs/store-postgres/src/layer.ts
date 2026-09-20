@@ -14,7 +14,7 @@ export const pgliteLogStore = (options: {
   dataDir?: string
 }) =>
   logStoreLayer.pipe(
-    Layer.provide(PgliteClient.layer({ dataDir: options.dataDir })),
+    Layer.provideMerge(PgliteClient.layer({ dataDir: options.dataDir })),
     Layer.provide(cryptoEntropy),
     Layer.provide(deviceLayer(options.deviceId)),
   )

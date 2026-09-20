@@ -13,7 +13,7 @@ export const sqliteNodeLogStore = (options: {
   deviceId: string
 }) =>
   logStoreLayer.pipe(
-    Layer.provide(sqliteNodeLayer(options.filename)),
+    Layer.provideMerge(sqliteNodeLayer(options.filename)),
     Layer.provide(cryptoEntropy),
     Layer.provide(deviceLayer(options.deviceId)),
   )

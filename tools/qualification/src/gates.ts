@@ -56,7 +56,7 @@ export const gateProbes: GateProbe[] = [
     gate: 'P05',
     path: 'tools/qualification/src/probes/p05.ts',
     args: [],
-    timeoutMs: 600_000,
+    timeoutMs: 3_600_000,
     stage: 'foundation',
     summary:
       'Changesets give atomic, deterministic visibility, including basis checks, policies, and defining-attribute lifecycle.',

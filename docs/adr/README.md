@@ -16,10 +16,10 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0005](0005-sqlite-drivers.md) | SQLite drivers: official Effect drivers with expo-sqlite fallback | Qualified | P02 |
 | [0006](0006-one-datom-log.md) | One datom log as the substrate | Qualified | P04 |
 | [0007](0007-hybrid-logical-clock.md) | Hybrid logical clock for `tx` | Qualified | P04 |
-| [0008](0008-single-datom-transactions-with-changesets.md) | Single-datom transactions with changesets | Proposed, unverified | P05 |
-| [0009](0009-per-attribute-conflict-policies.md) | Per-attribute conflict policies | Proposed, unverified | P05 |
-| [0010](0010-entity-ids-and-defining-attributes.md) | Entity ids, defining attributes and strict-composition prefixes | Proposed, unverified | P05 |
-| [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Proposed, unverified | P04, P05 |
+| [0008](0008-single-datom-transactions-with-changesets.md) | Single-datom transactions with changesets | Qualified | P05 |
+| [0009](0009-per-attribute-conflict-policies.md) | Per-attribute conflict policies | Qualified | P05 |
+| [0010](0010-entity-ids-and-defining-attributes.md) | Entity ids, defining attributes and strict-composition prefixes | Qualified | P05 |
+| [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Qualified | P04, P05 |
 | [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Proposed, unverified | P06 |
 | [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Proposed, unverified | P07, P14 |
 | [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Proposed, unverified | P09 |
@@ -55,5 +55,5 @@ requires a concept page, exercise and lesson (ADR 0026).
   ADR. Correcting a typo or adding a clearly dated evidence link does not require
   a new decision.
 - Do not duplicate complete specifications. Link the relevant plan section and
-  evidence instead. Attribute names other than the D58 `changesets` table are
-  illustrative until P05/P06 (D44).
+  evidence instead. Attribute names pinned at P05 are frozen (D44). Engine
+  journal attributes wait for P06.

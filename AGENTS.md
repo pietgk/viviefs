@@ -13,7 +13,8 @@ that link to guides, not a second copy of those guides (D30).
    context (D1-D58). Treat grilling decisions as accepted intent, unverified until
    the named gate. Ask before deviating; record a deviation as an ADR amendment.
 4. [`docs/plan/bootstrap/10-open-items-and-risks.md`](docs/plan/bootstrap/10-open-items-and-risks.md) -
-   freeze / named-slot / hypothesis. Do not pin attribute names (D44).
+   freeze / named-slot / hypothesis. P05 pinned `viviefs/changeset/*` and
+   `evidence/*` names; do not rename them (D44). Engine attributes wait for P06.
 5. [`docs/plan/bootstrap/06-qualification-gates.md`](docs/plan/bootstrap/06-qualification-gates.md) -
    ordered gates. No feature code before its gate passes. Probes and exemplars stay.
 

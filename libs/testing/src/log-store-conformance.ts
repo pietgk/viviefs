@@ -11,6 +11,7 @@ import {
   fingerprintDevice,
   type EnvelopeType,
 } from '@viviefs/datom'
+import type * as SqlClient from 'effect/unstable/sql/SqlClient'
 
 export type CheckStatus = 'PASS' | 'FAIL'
 
@@ -110,7 +111,7 @@ const runCheck = (
   )
 
 export const runLogStoreChecks = (
-  storeLayer: Layer.Layer<LogStore, unknown, HlcClock>,
+  storeLayer: Layer.Layer<LogStore | SqlClient.SqlClient, unknown, HlcClock>,
   clock: MutableClock,
 ): Effect.Effect<CheckResult[]> => {
   const layer = storeLayer.pipe(Layer.provide(Layer.succeed(HlcClock, clock.service)))
