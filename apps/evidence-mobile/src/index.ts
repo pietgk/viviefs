@@ -5,4 +5,4 @@
 export { default } from './app.tsx'
 export { installCryptoPolyfill } from '@viviefs/platform-native'
 export { runP01Checks } from './p01-effect-checks.ts'
-export { checkTestId, publishP01 } from './p01-runtime.ts'
+export { publishP01 } from './p01-runtime.ts'

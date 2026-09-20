@@ -13,8 +13,11 @@ polyfill, iOS simulator and Android emulator, Migrator babel workaround,
 bundle-size baseline, no-polyfill positive control). The probe drives the
 simulators with `@expo/agent-cli` (`status`, `dev --dev-client`, `runtime:eval`)
 and records an `agent-device` accessibility snapshot. Expo Go is not the host.
-P02-P14 that have not been implemented refuse to pass; there is no passing
-placeholder.
+P02 is implemented (official `@effect/sql-sqlite-react-native` on op-sqlite
+18.2.5 on iOS and Android — 17.x does not compile on RN 0.88 New Architecture —
+`@effect/sql-sqlite-wasm` with OPFS on web, expo-sqlite fallback probe on all
+three). P03-P14 that have not been implemented refuse to pass; there is no
+passing placeholder.
 
 ## Run
 

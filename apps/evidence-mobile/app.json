@@ -25,6 +25,10 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-status-bar"]
+    "plugins": [
+      "expo-status-bar",
+      "expo-sqlite",
+      "./plugins/with-third-party-sqlite.js"
+    ]
   }
 }

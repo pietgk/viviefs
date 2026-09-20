@@ -17,6 +17,12 @@
   "references": [
     {
       "path": "../../libs/platform-native/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/store-sqlite-native/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/store-sqlite-wasm/tsconfig.lib.json"
     }
   ]
 }

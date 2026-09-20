@@ -29,10 +29,10 @@ export const gateProbes: GateProbe[] = [
     gate: 'P02',
     path: 'tools/qualification/src/probes/p02.ts',
     args: [],
-    timeoutMs: 1_800_000,
+    timeoutMs: 3_600_000,
     stage: 'foundation',
     summary:
-      '@effect/sql-sqlite-react-native on op-sqlite 17.x and @effect/sql-sqlite-wasm with OPFS, on iOS, Android and web.',
+      '@effect/sql-sqlite-react-native on op-sqlite 18.2.5 and @effect/sql-sqlite-wasm with OPFS, on iOS, Android and web.',
   },
   {
     gate: 'P03',

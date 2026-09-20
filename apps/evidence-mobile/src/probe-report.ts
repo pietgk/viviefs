@@ -15,6 +15,12 @@ const hostPlatform = (): ProbeReport['platform'] => {
   return 'web'
 }
 
+export const checkTestId = (gate: string, name: string): string =>
+  `${gate.toLowerCase()}-check-${name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')}`
+
 export const reportUrl = (): string | undefined => {
   const configured = process.env.EXPO_PUBLIC_PROBE_URL
   if (configured) return configured

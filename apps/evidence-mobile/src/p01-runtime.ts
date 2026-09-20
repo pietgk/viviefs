@@ -15,12 +15,6 @@ export type P01RuntimeState = {
 
 const SLOT = '__viviefsP01'
 
-export const checkTestId = (name: string): string =>
-  `p01-check-${name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')}`
-
 export const publishP01 = (state: P01RuntimeState): void => {
   Object.assign(globalThis, { [SLOT]: state })
 }

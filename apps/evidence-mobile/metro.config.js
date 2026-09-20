@@ -17,11 +17,34 @@ config.resolver.nodeModulesPaths = [
 config.resolver.unstable_enableSymlinks = true
 config.resolver.unstable_enablePackageExports = true
 config.resolver.unstable_conditionNames = [
-  'react-native',
   '@viviefs/source',
-  'import',
-  'require',
-  'default',
+  ...(config.resolver.unstable_conditionNames ?? [
+    'react-native',
+    'browser',
+    'import',
+    'require',
+  ]),
 ]
+if (!config.resolver.assetExts.includes('wasm')) {
+  config.resolver.assetExts.push('wasm')
+}
+
+const previousEnhance = config.server?.enhanceMiddleware
+config.server = {
+  ...config.server,
+  enhanceMiddleware: (middleware, server) => {
+    const next = previousEnhance
+      ? previousEnhance(middleware, server)
+      : middleware
+    return (req, res, resume) => {
+      res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+      if (String(req.url ?? '').includes('.wasm')) {
+        res.setHeader('Content-Type', 'application/wasm')
+      }
+      return next(req, res, resume)
+    }
+  },
+}
 
 export default config

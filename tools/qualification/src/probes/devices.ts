@@ -41,6 +41,16 @@ export const androidEnv = (androidHome = resolveAndroidHome()): NodeJS.ProcessEn
   }
 }
 
+/** Put SDK tools on this process so later agent-cli calls find adb without an env bag. */
+export const applyAndroidEnv = (): NodeJS.ProcessEnv => {
+  const env = androidEnv()
+  process.env.ANDROID_HOME = env.ANDROID_HOME
+  process.env.ANDROID_SDK_ROOT = env.ANDROID_SDK_ROOT
+  process.env.JAVA_HOME = env.JAVA_HOME
+  process.env.PATH = env.PATH
+  return env
+}
+
 const sdkBin = (name: string, androidHome: string): string => {
   const nested = join(androidHome, 'cmdline-tools/latest/bin', name)
   if (existsSync(nested)) return nested
@@ -48,7 +58,7 @@ const sdkBin = (name: string, androidHome: string): string => {
 }
 
 export const ensureAndroidEmulator = async (): Promise<void> => {
-  const env = androidEnv()
+  const env = applyAndroidEnv()
   const androidHome = env.ANDROID_HOME as string
   const adb = join(androidHome, 'platform-tools/adb')
   if (!existsSync(adb)) {

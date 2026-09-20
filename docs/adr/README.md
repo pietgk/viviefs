@@ -13,7 +13,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0002](0002-purpose-scope-and-exemplar.md) | Purpose, scope and the evidence-collection exemplar | Proposed, unverified | none (intent) |
 | [0003](0003-effect-v4-as-backbone.md) | Effect v4 RC as the backbone | Proposed, unverified | P01 |
 | [0004](0004-expo-sdk-58-platform-baseline.md) | Expo SDK 58 and Hermes platform baseline | Proposed, unverified | P01 |
-| [0005](0005-sqlite-drivers.md) | SQLite drivers: official Effect drivers with expo-sqlite fallback | Proposed, unverified | P02 |
+| [0005](0005-sqlite-drivers.md) | SQLite drivers: official Effect drivers with expo-sqlite fallback | Qualified | P02 |
 | [0006](0006-one-datom-log.md) | One datom log as the substrate | Proposed, unverified | P04 |
 | [0007](0007-hybrid-logical-clock.md) | Hybrid logical clock for `tx` | Proposed, unverified | P04 |
 | [0008](0008-single-datom-transactions-with-changesets.md) | Single-datom transactions with changesets | Proposed, unverified | P05 |
