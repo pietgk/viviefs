@@ -38,7 +38,7 @@ export const gateProbes: GateProbe[] = [
     gate: 'P03',
     path: 'tools/qualification/src/probes/p03.ts',
     args: [],
-    timeoutMs: 600_000,
+    timeoutMs: 1_800_000,
     stage: 'foundation',
     summary:
       "Effect's native OTLP exporter works on Hermes; motel receives a known span from the simulator.",

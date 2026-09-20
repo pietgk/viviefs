@@ -61,4 +61,16 @@ dependency.
 
 ### Observed
 
-Not yet run. Native OTLP on Hermes (BigInt, fetch, JSON) is unverified.
+P03, 2026-09-20. Ledger pass
+`2026-09-20T18-30-20.436Z-58dbe271`. Effect's native OTLP tracer
+(`OtlpTracer` + JSON + `fetch`) exported `p03.known-span` from Hermes on
+the iOS simulator and the Android emulator into motel 0.2.8. A
+wrong-endpoint export (`http://127.0.0.1:27687`) completed without a
+crash and left no motel row for that token. The physical-device path is
+documented as LAN binding (`MOTEL_OTEL_HOST=0.0.0.0`) or cursor catch-up
+(P10). motel 0.2.8 does not start against Effect RC 116; the probe runs
+it from `vendor/motel` with Effect `4.0.0-beta.90` overrides. Evidence:
+[2026-09-20-p03.md](../evidence/2026-09-20-p03.md),
+[p03-physical-device.md](../evidence/p03-physical-device.md).
+
+P10 not yet run.

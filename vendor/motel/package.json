@@ -1,0 +1,15 @@
+{
+  "name": "viviefs-motel",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Isolated bun runner for @kitlangton/motel. Not a pnpm workspace package: motel needs Effect 4.0.0-beta.90, which must not resolve to the repo RC.",
+  "dependencies": {
+    "@kitlangton/motel": "0.2.8"
+  },
+  "overrides": {
+    "effect": "4.0.0-beta.90",
+    "@effect/platform-node-shared": "4.0.0-beta.90",
+    "@effect/platform-bun": "4.0.0-beta.90"
+  }
+}

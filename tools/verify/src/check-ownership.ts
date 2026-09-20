@@ -46,7 +46,8 @@ const workspacePackages = execFileSync(
     (path) =>
       path.endsWith('/package.json') &&
       path !== 'package.json' &&
-      !path.startsWith('.agents/'),
+      !path.startsWith('.agents/') &&
+      !path.startsWith('vendor/'),
   )
 
 const problems: string[] = []

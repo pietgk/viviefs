@@ -241,6 +241,9 @@ importers:
       '@viviefs/store-sqlite-wasm':
         specifier: workspace:*
         version: link:../../libs/store-sqlite-wasm
+      '@viviefs/telemetry':
+        specifier: workspace:*
+        version: link:../../libs/telemetry
       effect:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
@@ -343,7 +346,11 @@ importers:
 
   libs/sync/server: {}
 
-  libs/telemetry: {}
+  libs/telemetry:
+    dependencies:
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
 
   libs/testing: {}
 

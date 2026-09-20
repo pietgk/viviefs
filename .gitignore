@@ -10,6 +10,7 @@ coverage/
 .env*
 !.env.example
 .artifacts/
+.motel-data/
 .tmp/
 tmp/
 apps/evidence-mobile/ios/

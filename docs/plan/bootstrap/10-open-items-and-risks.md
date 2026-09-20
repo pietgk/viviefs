@@ -40,8 +40,8 @@ the named gate.
 | expo-crypto or react-native-quick-crypto can supply `crypto.subtle.digest` for Workflow | research/02 | P01 |
 | What "iOS 27 required" in SDK 58 means (deployment target or build SDK) | research/05 | P01 |
 | op-sqlite 17 works on RN 0.88 New Architecture on iOS and Android; peer conflict with op-sqlite 18 | research/02 | P02 (measured 2026-09-20: 17.x does not compile; pin is 18.2.5, ADR-0005) |
-| Effect's native OTLP exporter works on Hermes (BigInt, fetch, JSON) | research/04 | P03 |
-| motel can be reached from a physical device (LAN binding) | research/05 | P03 |
+| Effect's native OTLP exporter works on Hermes (BigInt, fetch, JSON) | research/04 | P03 (measured 2026-09-20: iOS and Android, ADR-0018) |
+| motel can be reached from a physical device (LAN binding) | research/05 | P03 (path documented: LAN binding or cursor catch-up; physical run deferred) |
 | A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 |
 | `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 |
 | Keycloak PKCE flow from Expo on Apple Container | complyj qualified Keycloak, not with Expo | P11 |

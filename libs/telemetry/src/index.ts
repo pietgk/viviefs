@@ -1,5 +1,8 @@
 /**
  * Named slot for `@viviefs/telemetry`.
- * Named slot until P03/P10.
+ * OTLP/HTTP JSON layer (P03). Trace projector from the log arrives at P10.
  */
-export {}
+export {
+  DEFAULT_OTLP_SERVICE_NAME,
+  otlpJsonLayer,
+} from './layer.ts'

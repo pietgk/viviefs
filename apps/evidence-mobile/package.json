@@ -28,6 +28,7 @@
     "@viviefs/platform-native": "workspace:*",
     "@viviefs/store-sqlite-native": "workspace:*",
     "@viviefs/store-sqlite-wasm": "workspace:*",
+    "@viviefs/telemetry": "workspace:*",
     "effect": "4.0.0-rc.116",
     "expo": "58.0.0-preview.3",
     "expo-crypto": "58.0.1",

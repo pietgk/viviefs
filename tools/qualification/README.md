@@ -16,7 +16,9 @@ and records an `agent-device` accessibility snapshot. Expo Go is not the host.
 P02 is implemented (official `@effect/sql-sqlite-react-native` on op-sqlite
 18.2.5 on iOS and Android — 17.x does not compile on RN 0.88 New Architecture —
 `@effect/sql-sqlite-wasm` with OPFS on web, expo-sqlite fallback probe on all
-three). P03-P14 that have not been implemented refuse to pass; there is no
+three). P03 is implemented (Effect-native OTLP/JSON to motel 0.2.8 from iOS
+and Android; wrong-endpoint positive control; physical-device path documented).
+P04-P14 that have not been implemented refuse to pass; there is no
 passing placeholder.
 
 ## Run
