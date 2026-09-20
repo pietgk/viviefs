@@ -9,5 +9,16 @@
   "metadata": {
     "evidenceOwner": "qualification",
     "rationale": "gates, probes, ledger"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "tools/qualification"
+      }
+    }
   }
 }

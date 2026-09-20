@@ -1,5 +1,6 @@
-/**
- * Named slot for `@viviefs/qualification`.
- * Harness. Gate table lands in the qualification step.
- */
-export {}
+export {
+  foundationGates,
+  gateProbe,
+  gateProbes,
+  implementedGates,
+} from './gates.ts'

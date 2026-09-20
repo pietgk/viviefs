@@ -11,5 +11,10 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     }
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-rc.116",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
   }
 }

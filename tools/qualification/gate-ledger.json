@@ -1,0 +1,4 @@
+{
+  "note": "Written by tools/qualification/src/ledger.ts. Do not edit by hand. An entry records one gate run; a gate counts as cumulatively passed only while its complete qualification input fingerprint matches and inputs remained unchanged during the run. Foundation closure additionally requires one sequential full run of P01-P10.",
+  "entries": []
+}

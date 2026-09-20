@@ -16,7 +16,9 @@
     "test": "nx run-many -t test --all",
     "sync": "nx sync",
     "verify": "node --experimental-strip-types tools/verify/src/verify.ts",
-    "verify:help": "node --experimental-strip-types tools/verify/src/verify.ts help"
+    "verify:help": "node --experimental-strip-types tools/verify/src/verify.ts help",
+    "qualify": "node --experimental-strip-types tools/qualification/src/cli.ts qualify",
+    "ledger": "node --experimental-strip-types tools/qualification/src/cli.ts ledger"
   },
   "devDependencies": {
     "@effect/vitest": "4.0.0-rc.116",
