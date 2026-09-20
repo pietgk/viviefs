@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "ViViEfs Evidence",
+    "slug": "viviefs-evidence",
+    "version": "0.0.0",
+    "scheme": "viviefs-evidence",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.viviefs.evidence"
+    },
+    "android": {
+      "package": "dev.viviefs.evidence",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-status-bar"]
+  }
+}
