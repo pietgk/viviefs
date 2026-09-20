@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "Apache-2.0",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -10,6 +11,23 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./intl": {
+      "@viviefs/source": "./src/intl-polyfill.ts",
+      "types": "./src/intl-polyfill.ts",
+      "import": "./src/intl-polyfill.ts",
+      "default": "./src/intl-polyfill.ts"
     }
+  },
+  "peerDependencies": {
+    "expo-crypto": "58.0.1"
+  },
+  "dependencies": {
+    "@formatjs/intl-datetimeformat": "7.8.0",
+    "@formatjs/intl-getcanonicallocales": "3.2.12",
+    "@formatjs/intl-locale": "5.3.11"
+  },
+  "devDependencies": {
+    "expo-crypto": "58.0.1"
   }
 }

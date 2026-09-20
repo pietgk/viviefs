@@ -12,3 +12,7 @@ coverage/
 .artifacts/
 .tmp/
 tmp/
+apps/evidence-mobile/ios/
+apps/evidence-mobile/android/
+apps/evidence-mobile/dist/
+apps/evidence-mobile/expo-env.d.ts

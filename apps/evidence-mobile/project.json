@@ -3,10 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/evidence-mobile/src",
   "projectType": "application",
-  "tags": [
-    "kind:app",
-    "platform:client"
-  ],
+  "tags": ["kind:app", "platform:client"],
   "metadata": {
     "evidenceOwner": "e2e-native",
     "rationale": "Expo composition root; device resume and notification journeys"

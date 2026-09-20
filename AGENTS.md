@@ -35,7 +35,15 @@ material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-t
 | --- | --- |
 | Agent context | this file, `.agents/skills/`, `skills-lock.json` |
 | Host toolchain | `mise.toml` (Node, pnpm, bun) |
+| Device driving | `@expo/agent-cli` in `apps/evidence-mobile`; `agent-device` in `tools/qualification` (both MIT) |
 | Lab runtime | Apple Container image digests (admitted per measured gap; none yet) |
+
+The evidence app is a development build (`expo-dev-client`), not Expo Go. P02
+needs native modules Expo Go cannot load. Ask `@expo/agent-cli status` first,
+then `dev --ios|--android --dev-client`. Read Hermes with `runtime:eval` /
+`runtime:tree` / `runtime:errors`. Drive the accessibility tree with
+`agent-device` (CLI-first, `testID` + `accessibilityLabel`). Do not scrape Metro
+logs or click simulator coordinates to decide what the app is doing.
 
 Vendored skills (MIT): `grilling`, `tdd`, `domain-modeling`, `codebase-design`,
 `writing-for-agents`, `scaffold-exercises` from `mattpocock/skills` (copied from

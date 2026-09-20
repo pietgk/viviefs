@@ -1,4 +1,135 @@
 {
   "note": "Written by tools/qualification/src/ledger.ts. Do not edit by hand. An entry records one gate run; a gate counts as cumulatively passed only while its complete qualification input fingerprint matches and inputs remained unchanged during the run. Foundation closure additionally requires one sequential full run of P01-P10.",
-  "entries": []
+  "entries": [
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T12:25:17.448Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T12-24-35.630Z-a7ebf10e",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "17f070c47dee13eb04a7866726fc9e394709df27df9352399138604253d73472",
+      "inputsSha256": "ea666c55c5bfa316e79e06b2ba4c4a7a517571ca289b53ca0923c125fb02a0fb",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T12:31:28.521Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T12-27-08.943Z-db3df282",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "d4a8b5629088d5aac626d65fb0017b9d8b02c7229b1bca4e0816cb32fefccf58",
+      "inputsSha256": "83e3711ff8f8bb8c31434a2443a7b3f119633f6ef58bbab8b24af22f8979b63d",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T12:50:22.670Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T12-49-57.127Z-2919f91e",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "c3b34f645823e0e43871cd5bb9d980320bc41935f90d303c6c6743fc21d00391",
+      "inputsSha256": "c3851c521160068dd2eedb6a4656d062596e2eae03f8e2389eb834095c6e60a1",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T12:57:42.657Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T12-52-19.167Z-e2c2ff5c",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "c3b34f645823e0e43871cd5bb9d980320bc41935f90d303c6c6743fc21d00391",
+      "inputsSha256": "211dfb2759eb07c2051a19f4d6eda822cef955d75c7e95611e8e7cb75ee526a8",
+      "inputsChangedDuringRun": true
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T13:03:37.819Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T12-59-11.733Z-9b79feac",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "e89ece4ed14a441c56837a299b94994d35fc18b4425e3f5758454c90c54e43e9",
+      "inputsSha256": "1472d01a352d441c90ba1949bbe3c1c567ed78bb590db1baf962cb0e27139556",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T13:08:18.883Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T13-04-14.221Z-53913a0b",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "56a13b240eecfa864b01f1a8753393098b0c8a653b0df1c2efff1b5f51859153",
+      "inputsSha256": "06ac33b2f56772cfe14ef154a3d459671e74812b316d80341f4d2f221f8bb1f9",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T13:14:22.236Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T13-11-32.685Z-01fb974f",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "c29156d6ae2d893645a59cfad1c35750ba64d4a532c4f9444e5c05bb6603614e",
+      "inputsSha256": "0feed9ed73e5ca381489df464c9f16a5725151cb4d04a33d3c383f5d3c3d866d",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T13:22:44.180Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T13-17-24.462Z-4fb91483",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "c29156d6ae2d893645a59cfad1c35750ba64d4a532c4f9444e5c05bb6603614e",
+      "inputsSha256": "bc740b7a667bea460010ff7e0370789ebe047b9b62ba846d916bb9056923e43b",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-20T13:27:44.288Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T13-24-32.046Z-67c729c3",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "f656cd0f4b01d89a714fcb8734912d7f8d4cdede41d1d4cc22984c7ce6cfaff6",
+      "inputsSha256": "e6ddc147dc746d91e073f361bdd8d4453965ce5608b0911bb599e553e94dc8b6",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "pass",
+      "recordedAt": "2026-09-20T13:37:41.354Z",
+      "commit": "aa5e3dd4788dd634842410ed07e081ca7719878f",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T13-34-27.833Z-a195ecaf",
+      "exitCode": 0,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "f656cd0f4b01d89a714fcb8734912d7f8d4cdede41d1d4cc22984c7ce6cfaff6",
+      "inputsSha256": "770c76caadc34cb0ea4b4db0ab9cb3ad356bf1aace0f3b1be29580a7fb9ba103",
+      "inputsChangedDuringRun": false
+    }
+  ]
 }

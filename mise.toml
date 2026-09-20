@@ -3,7 +3,8 @@
 #
 # Node 22.23.2 is the current 22.x that satisfies Expo SDK 58 (>= 22.13) and
 # @effect/sql-sqlite-node (>= 22.16). pnpm is the workspace installer. bun is
-# required by motel (D45').
+# required by motel (D45'). Java is admitted for the Android emulator and Gradle
+# (P01, P02 and P07 fail if the emulator is missing).
 #
 # Run `mise install` after cloning.
 
@@ -11,3 +12,4 @@
 node = "22.23.2"
 pnpm = "12.5.1"
 bun = "1.4.2"
+java = "temurin-17.0.19+10"

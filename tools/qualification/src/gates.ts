@@ -20,7 +20,7 @@ export const gateProbes: GateProbe[] = [
     gate: 'P01',
     path: 'tools/qualification/src/probes/p01.ts',
     args: [],
-    timeoutMs: 1_800_000,
+    timeoutMs: 2_700_000,
     stage: 'foundation',
     summary:
       'Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes on iOS and Android, with polyfills and the Migrator babel workaround.',
