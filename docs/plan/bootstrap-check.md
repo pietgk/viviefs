@@ -3,6 +3,30 @@
 Audit of every file in `docs/plan/bootstrap/` against what was actually decided in the grilling session of
 2026-09-18/19 (decisions D1-D58). Written 2026-09-19, before any scaffolding.
 
+## 2026-09-20 close
+
+A second session audited this check (counts were wrong; triage lists incomplete; X08 and X31 overstated; X09 and
+X26 miscategorized) and then grilled the remaining calls as G1-G11. Answers locked:
+
+| G | Choice |
+|---|---|
+| G1 | (b) Keep P01-P14; amend D46: six themes, P01-P10 splits, P11-P14 follow-on |
+| G2 | (a) Android first-class; P01, P02, P07 fail if the emulator fails |
+| G3 | (a) Five verify stages, labelled elaboration of D48' |
+| G4 | (a) Full-org cursor, Effect RPC; later: history consolidation and client data access |
+| G5 | (a) Read-sync spike dead |
+| G6 | (a) Quarantine remains open |
+| G7 | (a) P08 comparative with a fail-able bar; no voice/affordance |
+| G8 | (a) Inherited DX kept and labelled |
+| G9 | (a) Gate JS bundle size; stories web+shared; `docs/evidence/` |
+| G10 | (a) Names/numbers illustrative except D58 `changesets` |
+| G11 | (a) Define worker; keep ADR grouping; D6 in ADR 0002 |
+
+Those answers were applied to the bootstrap files. This document remains the original audit; do not treat its A/B/C
+triage lists as the current work order.
+
+---
+
 **Method.** Each file was re-read line by line and compared with the session record. Cited sibling-repo paths in
 `09-sources-to-reuse.md` were checked on disk. Research claims were compared with the notes in
 `bootstrap/research/`.

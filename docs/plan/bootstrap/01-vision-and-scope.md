@@ -46,7 +46,7 @@ Plus: crash and resume (force-quit mid-workflow), lease handoff to another devic
 
 - Code running on a guaranteed schedule while the app is closed. The OS only guarantees local notifications;
   background tasks are opportunistic (D3, D24).
-- Several people editing the same workflow execution at once (D13c).
+- Several people editing the same workflow execution at once (rejected in D13).
 - Multi-writer merge of workflow executions (D14): one lease holder at a time.
 - Production hosting, deployment topology and production telemetry backends.
 - Horizontal scale-out of the workflow engine (Effect Cluster is the later path, D39).

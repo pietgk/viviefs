@@ -39,7 +39,9 @@ viviefs/
    └─ evidence/                   sanitized, dated qualification evidence records
 ```
 
-Lib names are indicative; the scaffolding session may refine them without changing the rules below.
+Lib, generator and evidence-owner names in this file are indicative; the scaffolding session may refine them
+without changing the rules below. complyj stores sanitized evidence under `docs/implementation/`; this repo uses
+`docs/evidence/` as the clearer name for the same kind of record.
 
 ## Apps define the context
 
@@ -65,7 +67,7 @@ encryption) is one line in one app.
 | Tag | Values | Allowed dependencies |
 |---|---|---|
 | `kind:` | `app`, `feature`, `lib`, `tool` | app -> feature, lib. feature -> lib (and another feature's `model` only). lib -> lib. tool -> anything it analyses. Nothing imports an app or a tool at runtime. |
-| `layer:` | `model`, `client`, `server`, `core`, `adapter`, `ui`, `testing` | model -> core. client -> model, core, ui, adapter (via Layers provided by apps). server -> model, core, adapter. adapter -> core. ui -> ui. testing -> anything, only from tests. |
+| `layer:` | `model`, `client`, `server`, `core`, `adapter`, `ui`, `testing` | model -> core. client -> model, core, ui. server -> model, core. adapter -> core. ui -> ui. testing -> anything, only from tests. Apps compose adapters as Layers; a feature must not import an adapter (D52). |
 | `platform:` | `universal`, `client`, `server` | universal -> universal. client -> client, universal. server -> server, universal. |
 
 - Features interact through datoms, not through each other's client or server code. A feature may import another

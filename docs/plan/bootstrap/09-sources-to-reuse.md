@@ -16,6 +16,7 @@ record the origin in the commit message.
 | Glossary style | `CONTEXT.md` | Format for `CONTEXT.md` |
 | Tenant isolation lessons | `docs/adr/0005-tenant-isolation-and-audit-evidence.md` | D18 |
 | Skills mechanism | `.agents/skills/`, `skills-lock.json` | D49 |
+| Sanitized evidence records | `docs/implementation/` | Same role as viviefs `docs/evidence/` (clearer name; not a path copy) |
 
 ## web-interview (`~/ws/web-interview`)
 

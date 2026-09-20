@@ -1,7 +1,7 @@
 # ViViEfs bootstrap context
 
 This directory is the complete, self-contained context for scaffolding the rest of the ViViEfs repository in a
-fresh session. It was produced on 2026-09-18/19 by a grilling session (57 numbered decisions) plus primary-source
+fresh session. It was produced on 2026-09-18/19 by a grilling session (58 decisions, D1-D58) plus primary-source
 research. Nothing outside this directory is needed to continue, although the sibling repos listed in
 [09-sources-to-reuse.md](09-sources-to-reuse.md) are available locally for copying.
 
@@ -10,8 +10,12 @@ concepts used here.
 
 ## Status
 
-- Every decision here is **accepted as design intent** and **unverified** until its qualification gate passes
-  (see [06-qualification-gates.md](06-qualification-gates.md)). Treat each as "proposed, unverified" in ADR terms.
+- Grilling decisions D1-D58 are **accepted as design intent** and **unverified** until the named qualification gate
+  passes (see [06-qualification-gates.md](06-qualification-gates.md)). Treat each as "proposed, unverified" in ADR
+  terms.
+- Elaborations added while writing these files (gate splits, verify stage names, indicative schema and attribute
+  names, lib names) are not grilling decisions. [10-open-items-and-risks.md](10-open-items-and-risks.md) splits freeze
+  / named-slot / hypothesis so a scaffolding session does not treat them as law.
 - No production code exists yet. The first work is the gates, not features.
 
 ## Reading order
@@ -28,10 +32,12 @@ concepts used here.
 | 7 | [07-glossary-seed.md](07-glossary-seed.md) | Seed for `CONTEXT.md` |
 | 8 | [08-adr-backlog.md](08-adr-backlog.md) | The ADRs to write, with their source decisions |
 | 9 | [09-sources-to-reuse.md](09-sources-to-reuse.md) | What to copy or learn from complyj, web-interview, BirVana, vivief |
-| 10 | [10-open-items-and-risks.md](10-open-items-and-risks.md) | Unverified claims, deferred decisions, known risks |
+| 10 | [10-open-items-and-risks.md](10-open-items-and-risks.md) | Unverified claims, deferred decisions, freeze vs hypothesis, known risks |
 | - | [research/](research/) | Primary-source research notes with citations, and the Hermes probe |
 
 ## Conventions for this repo
+
+These are inherited working agreements, not grilling decisions. A reader should not look for a D-number behind them.
 
 - Plain dash `-`, never the em dash.
 - Never hand-edit auto-generated files (CHANGELOG, ledgers, generated docs).

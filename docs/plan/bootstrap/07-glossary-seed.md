@@ -87,8 +87,42 @@ The process that applies committed changesets to read models and invalidates Rea
 **Query atom**:
 A reactive Effect Atom running SQL against read models, declaring its invalidation keys.
 
+**Screen-view selector**:
+A pure function from read models plus interaction state plus status to the props a screen renders.
+
 **Log store**:
 The pattern storing datoms and read models (SQLite native, SQLite wasm, SQLite Node, Postgres).
+
+**Organization**:
+The `O{org}/` root of the id tree and the isolation unit. The server enforces membership; the first sync protocol
+replicates the whole organization.
+
+**Command**:
+A pure Effect function `(readModel, intent) -> changeset or DomainError`, shared by client and server.
+
+**Intent**:
+The user's requested change, input to a command. Not a datom.
+
+**Outbox**:
+The device queue of changesets waiting to be acknowledged by the server.
+
+**Cursor**:
+The server sequence position a replica has confirmed. First sync: one cursor per organization.
+
+**Conflict datom**:
+The datom raised under the human-conflict policy when both values are kept for a person to resolve.
+
+**Changeset abort**:
+The write-once fact that discards an open changeset so it never becomes visible.
+
+**Blob**:
+A file stored by content hash, referenced by a datom, not held in the log.
+
+**Personal attribute**:
+An attribute marked so its values are encrypted per subject for crypto-shredding.
+
+**Crypto-shredding**:
+Erasure by destroying the per-subject key so personal values become unreadable while the log stays intact.
 
 ## Durable execution
 
@@ -118,6 +152,12 @@ The fenced right of one device to run an execution, renewed while active.
 
 **Engine**:
 Our datom-backed implementation of Effect's `WorkflowEngine`, identical on device and server.
+
+**Worker**:
+The device or server process that runs workflow executions. Temporal vocabulary in D2; not a separate product.
+
+**Lease epoch**:
+The fencing counter on a lease. Stale epochs' journal writes are rejected.
 
 ## Validation
 

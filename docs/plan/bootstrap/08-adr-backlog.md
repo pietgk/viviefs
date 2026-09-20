@@ -2,11 +2,12 @@
 
 ADRs to write in `docs/adr/` during scaffolding. Each starts as "Proposed, unverified", names its qualifying gate,
 and has expected vs observed outcome sections (complyj template). Grouped so that one ADR covers one decision cluster.
+This grouping is a scaffolding plan, not a grilled structure. ADR 0008 also carries D58.
 
 | ADR | Title | Decisions | Qualifying gate |
 |---|---|---|---|
 | 0001 | Record architectural decisions (template, status lifecycle, evidence links) | D48' | - |
-| 0002 | ViViEfs purpose, scope and the evidence-collection exemplar | D1, D7, D23, D55 | - |
+| 0002 | ViViEfs purpose, scope and the evidence-collection exemplar | D1, D6, D7, D23, D55 | - |
 | 0003 | Effect v4 RC as the backbone; services and Layers are ports; Schema at every boundary | D8, D9 | P01 |
 | 0004 | Expo SDK 58 and Hermes platform baseline, polyfills and Metro workaround | D22 | P01 |
 | 0005 | SQLite drivers: official Effect drivers with expo-sqlite fallback | D16 | P02 |

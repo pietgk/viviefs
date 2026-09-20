@@ -33,7 +33,10 @@ flowchart TD
   LOG --> OUT <--> API --> VAL --> SLOG
   SENG <--> SLOG
   LOG --> TRC --> SINK
+  API -.->|"reviewer: deferred completion (D40)"| SLOG
 ```
+
+The diagram is simplified: commands go through the shared command function and outbox (D36), not a raw write to the log. The reviewer's path is a second actor on the server that writes a deferred-completion datom (D40); it is shown as a dashed edge.
 
 ## 2. The datom
 
@@ -77,7 +80,8 @@ correctedClock():
 ```
 
 - Encoding: 48-bit milliseconds, 16-bit counter, remaining bits random plus device id. Lexicographically sortable.
-- Server rejects `tx` too far in the future (web-interview uses 5s) and records measured gaps as trace events.
+- Server rejects `tx` too far in the future and flags the gap so it shows up in the trace. The skew bound is
+  indicative (web-interview used 5s); P04 picks the actual bound.
 - The offset and last HLC are persisted in SQLite.
 
 ## 4. Changesets (D35'')
@@ -89,8 +93,8 @@ correctedClock():
 [cs7  :changeset/commit {n:3, hash, basis}  tx4  +  cs7]      envelope(cs7) travels alongside
 ```
 
-- **Lifecycle**: a changeset is open until a write-once `:changeset/commit` or `:changeset/abort` datom, or TTL
-  expiry. Open changesets are drafts (review-before-apply is native).
+- **Lifecycle**: a changeset is open until a write-once commit or abort datom (attribute names illustrative until
+  the P05 vocabulary pass), or TTL expiry. Open changesets are drafts (review-before-apply is native).
 - **Manifest**: the commit carries the member count and hash (and file references, D43). The server and every
   projector apply the changeset only when the manifest is satisfied.
 - **Ordering**: conflicts use the commit `tx` (when the change took effect). Member `tx` orders within the changeset.
@@ -111,7 +115,8 @@ correctedClock():
 - **Projection rule**: an entity is visible iff its defining attribute is asserted and its owner (id parent or owner
   reference) is visible.
 - **Orphans**: writes to user-content types under a deleted parent raise a human conflict (never silent loss).
-- **Prefix power**: authorization, sync subscriptions, compaction, export and Reactivity keys all work by prefix.
+- **Prefix power**: authorization, compaction, export and Reactivity keys all work by prefix. Sync of the first
+  protocol is full-store per organization (one cursor), not prefix subscriptions.
 
 ## 6. Conflict policies (D34)
 
@@ -121,7 +126,7 @@ Declared per attribute in the feature model Schema:
 |---|---|---|
 | LWW | domain scalars (title, note, amount) | highest commit `tx` wins |
 | write-once, fenced | journal facts, deferred completions, lease grants, changeset commit/abort | first valid write under a valid lease wins, others rejected |
-| human conflict | references, evidence attachments, approvals, user content | both values kept, `:conflict` datom raised, a person resolves |
+| human conflict | references, evidence attachments, approvals, user content | both values kept, a conflict datom raised (attribute name illustrative until the P05 vocabulary pass), a person resolves |
 
 ## 7. Commands and validation (D36)
 
@@ -135,7 +140,8 @@ client on reject: rebuild read models from confirmed datoms, reapply remaining o
 
 ## 8. Storage and projections (D37)
 
-- SQLite (device, Node) and Postgres (server) share one schema through Effect `SqlClient`:
+- SQLite (device, Node) and Postgres (server) share one contract through Effect `SqlClient`. D58 decided a
+  `changesets` table for envelopes. Other table and column names below are **indicative** until P04 confirms them:
   - `datoms(e, a, v, tx, op, cs)` append-only, indexes EAVT and AEVT (and on `cs`).
   - `changesets(cs, state, commit_tx, basis, manifest, actor, device, lease_epoch, trace_id, span_id, sampled,
     command)`: one row per changeset, including self-committed datoms (`cs == tx`).
@@ -153,9 +159,11 @@ client on reject: rebuild read models from confirmed datoms, reapply remaining o
 
 Our implementation of Effect's `WorkflowEngine.Encoded` interface (`register, execute, poll, interrupt, resume,
 activityExecute, deferredResult, deferredDone, scheduleClock`, see research/01 section 2) that stores everything as
-datoms:
+datoms. Attribute names in this table are **illustrative** (D44: a shipped name cannot be renamed). The P05/P06
+vocabulary pass pins them before any exemplar ships attributes. Id shapes (`O{org}/W{exec}`, `/A{name}#{attempt}`,
+`/D{name}`) were decided.
 
-| Engine fact | Datom |
+| Engine fact | Datom (illustrative names) |
 |---|---|
 | execution started | `[O/W{exec} :workflow/started {name.vN, payload} ...]` (defining attribute) |
 | activity result | `[O/W{exec}/A{name}#{attempt} :activity/exit <encoded Exit> ...]` write-once |
@@ -169,7 +177,8 @@ datoms:
 - **Versioning**: by workflow name; activity names unique and stable within a version.
 - **Wake-ups**: sweep due clocks and pending resumes on launch and foreground; opportunistic background task;
   notification actions complete deferreds; push from the server is only a hint.
-- **Browser**: Web Locks leader tab runs the engine (D25).
+- **Browser**: Web Locks leader tab runs the engine (D25). Other tabs render and forward events to the leader over
+  BroadcastChannel. Each browser profile counts as one device for leases.
 - **Server**: same engine over Postgres; Effect Cluster is the scale-out path later.
 - **Leases**: a device must hold the execution lease to run it; the server rejects journal writes from a stale epoch.
 
@@ -180,18 +189,23 @@ sleeps up to 60s run in memory.
 ## 10. Sync (D13, D21, D36)
 
 - **Up**: outbox of datoms (self-committed and changeset members + commits), idempotent by `tx`.
-- **Down**: cursor stream (server sequence) of accepted datoms, filtered by prefix subscriptions the identity is
-  authorised for.
+- **Down**: one cursor stream (server sequence) of accepted datoms for the whole organization the identity is a
+  member of. Prefix subscriptions (partial sync) are later, not part of P09.
 - **Server**: validates per changeset (section 7), enforces leases, rejects unknown attributes with a typed upgrade
-  error (D44).
-- **Transport**: Effect RPC or HttpApi (SSE/WebSocket for the stream), trace context propagated (W3C traceparent).
+  error (D44). Isolation is server-authoritative (D18).
+- **Transport**: Effect RPC, append-and-acknowledge (Q21). P09 confirms this; do not list HttpApi/SSE/WebSocket as
+  alternatives in the protocol.
+- **Later, because the replica is the whole org** (not P09): history consolidation (a device cannot keep an
+  unbounded org log; sits next to D37's compaction horizon) and client-side data access (the user must still only
+  see and do what they are allowed, on a replica that contains the org).
 - Effect EventLog informed the design (server sequence + entry-id dedup) but is not used (research/03).
 
 ## 11. Tracing (D32, D45')
 
 - Trace context (`traceId`, `spanId`, `sampled`) is stored in every changeset's envelope (D58).
 - A trace projector reads the log from its own cursor and emits spans with deterministic ids derived from
-  `executionId + activity + attempt` (and changeset ids for commands). Replays emit nothing new for stored results;
+  `executionId + activity + attempt` (D32). Extending that scheme to changeset ids for commands is new, not
+  grilled; keep it only if P10 needs command spans, otherwise drop it. Replays emit nothing new for stored results;
   new attempts link to previous ones.
 - Export through Effect's native OTLP exporter (`effect/unstable/observability`, JSON serialization, `fetch`), no
   `@opentelemetry/*` dependencies. Killed apps lose nothing: export resumes from the cursor.
@@ -202,8 +216,11 @@ sleeps up to 60s run in memory.
 
 - Three state owners: domain facts (log -> read models -> query atoms), interaction state (machine or atom, decided
   by gate P08), in-flight text (component state until settled).
-- Screens are pure views over a screen-view selector (read model + UI state + status). Storybook with fakes.
+- Screens are pure views over a screen-view selector (read model + UI state + status). Storybook with fakes, scoped
+  to web and shared components.
 - Query atoms declare Reactivity keys (prefixes + attributes); the projector invalidates exactly what changed.
+  Two variants: committed, and committed + my open changesets. A dev-mode check warns when an atom returns different
+  data without having been invalidated.
 - Workflows own durable progress; the UI completes deferreds via commands and rebuilds from scratch after a kill.
 
 ## 13. Files (D43) and privacy (D50, D51)

@@ -16,29 +16,34 @@ A pattern is delivered when:
 
 1. its ADR is **accepted** and links **qualification** evidence,
 2. its exemplar passes **verify**,
-3. it has a concept page, an exercise and a lesson (**taught**).
+3. it has a concept page, an exercise and a lesson (**taught**),
+4. the exemplar links to that teaching material (D29).
 
 ADR status lifecycle: `proposed, unverified` -> `qualified` (gate evidence linked) -> `accepted` -> `taught`.
 "Qualified" does not mean "admitted" (complyj ADR 0013).
 
 ## Verify
 
-- One command, `pnpm verify`, staged: `static -> unit -> integration -> ui -> quality`.
+- One command, `pnpm verify`, staged: `static -> unit -> integration -> ui -> quality`. These stage names are an
+  elaboration of D48' (staged, fail-fast), not a grilling decision.
   - static: typecheck (incl. docs samples), lint (boundaries, determinism rules), lint-scope, ownership registry
     check, audit.
   - unit: Vitest + `@effect/vitest` (domain, commands, engine unit, exercise solutions).
   - integration: conformance suites against SQLite and Postgres, crash matrix (engine level).
-  - ui: Storybook play + a11y (native via web renderer where possible), Playwright web smoke.
-  - quality: production builds, budgets, ratchet lockfile.
+  - ui: Storybook play + a11y for web and shared components, Playwright web smoke. React Native Storybook is an
+    open item, not a P01 requirement.
+  - quality: production builds, gated JS bundle size, ratchet lockfile.
 - Fail fast between stages, collect all failures within a stage. `verify help` is generated from the executed table.
-- "Done" is mechanical: green `verify`, with a path rule for docs-only diffs.
+- "Done" is mechanical: green `verify`, with a path rule for docs-only diffs (inherited from web-interview; the
+  escape hatch must stay a path rule, not judgment).
 - Never loosen a gate to make it pass. Disputes about a gate go to a human.
 - **Ownership registry**: every project declares its evidence owner (see 04-repo-structure). Each behaviour is proven
   on its lowest owning layer; layers do not permanently overlap.
 - **Ratchet lockfile**: coverage and budget baselines are a lockfile, not a target. Regressions fail, unreviewed
   improvements fail until the baseline is updated through one command. Producer name and version are recorded.
-- **Budgets** (mobile): JS bundle size (Effect deep imports vs barrel measured in research/02), cold start, time to
-  resume after a crash, sync round-trip. Web keeps Lighthouse budgets.
+- **Budgets** (mobile): JS bundle size is gated now (Effect deep imports vs barrel measured in research/02). Cold
+  start, time to resume after a crash, and sync round-trip are intended budgets, not gated until a harness exists.
+  Web keeps Lighthouse budgets.
 - **Flakiness is a defect.** No retries in CI. Failures are classified as product, harness or unsupported environment.
 - Reproduce a bug end to end first, with a failing test at the lowest owning layer.
 - CI: GitHub Actions runs `verify`. The simulator crash E2E (Maestro via agent-device) is gated before a release, not
@@ -55,7 +60,8 @@ ADR status lifecycle: `proposed, unverified` -> `qualified` (gate evidence linke
 - A stage closes only with one sequential full run on unchanged committed inputs.
 - **Patterns with several implementations** (log store, telemetry sink, identity, encrypted store) share one
   conformance probe; each implementation is qualified by running it.
-- Bulky artifacts stay out of Git; sanitized, dated evidence records go to `docs/evidence/`.
+- Bulky artifacts stay out of Git; sanitized, dated evidence records go to `docs/evidence/` (complyj uses
+  `docs/implementation/` for the same kind of record).
 - The ledger is a plain file, not datoms: you cannot qualify the log store with evidence stored in the log store.
 
 ## Teach
