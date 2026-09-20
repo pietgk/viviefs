@@ -1,6 +1,6 @@
 # ADR-0012: Durable execution over one datom-backed engine
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -29,15 +29,19 @@ API. Activity names are unique and stable within a version. Old versions ship
 until drained. Activities must not suspend (a suspending activity re-runs on
 replay). Time, randomness and ids only inside activities.
 
-Id shapes (`O{org}/W{exec}`, `/A{name}#{attempt}`, `/D{name}`) are decided.
-Attribute names for engine facts are illustrative until the P05/P06 vocabulary
-pass (D44).
+Id shapes (`O{org}/W{exec}`, `/A{name}#{attempt}`, `/D{name}`, `/C{name}`) are
+decided. P06 pinned journal attributes (D44): `viviefs/workflow/started`,
+`viviefs/workflow/result`, `viviefs/activity/exit`, `viviefs/deferred/exit`,
+`viviefs/clock/wake-at`, `viviefs/lease/holder`. Lease holder is LWW; fencing is
+by epoch. Other journal facts are write-once.
 
 ## Trade-offs
 
-Custom engine (estimated 300-600 lines) instead of Cluster-on-device. Cluster
-on a killed mobile app is untested territory. Public Effect interfaces only:
-no private engine hooks.
+Custom engine instead of Cluster-on-device. Cluster on a killed mobile app is
+untested territory (P07). Public Effect interfaces only: no private engine
+hooks. `Workflow.intoResult` is uninterruptible, so an in-process kill is a
+self-interrupt of the interruptible child after the crash hook opens, not
+`Effect.never` plus an outer `Fiber.interrupt`.
 
 ## Failure-handling
 
@@ -57,4 +61,8 @@ In-memory engine is not durability.
 
 ### Observed
 
-Not yet run. The 300-600 line estimate is unverified.
+2026-09-20. Ledger pass `2026-09-20T20-52-39.334Z-f904c91d`. Seven kill
+boundaries passed on sqlite-node and PGlite. `WorkflowEngine.layerMemory` lost
+the execution (`poll` none) and re-ran activities. `engine.ts` is 646 lines
+(estimate was 300-600). Device force-quit is P07. Evidence:
+[2026-09-20-p06.md](../evidence/2026-09-20-p06.md).

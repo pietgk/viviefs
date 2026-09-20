@@ -49,4 +49,7 @@ datoms.
 
 ### Observed
 
-Not yet run.
+2026-09-20. P06: kill during a deferred wait resumed at "waiting for approval";
+completing the deferred continued the workflow. Device/server deferred
+completion over sync is P09. Evidence:
+[2026-09-20-p06.md](../evidence/2026-09-20-p06.md).

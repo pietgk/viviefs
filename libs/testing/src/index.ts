@@ -11,3 +11,13 @@ export {
   P05_CHECK_NAMES,
   runChangesetChecks,
 } from './changeset-conformance.ts'
+export {
+  P06_CHECK_COUNT,
+  P06_CHECK_NAMES,
+  P06_DATOM_CHECK_COUNT,
+  P06_DATOM_CHECK_NAMES,
+  runCrashMatrix,
+  runHappyPath,
+  runMemoryDurabilityControl,
+  type StoreFactory,
+} from './crash-matrix.ts'

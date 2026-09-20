@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@viviefs/datom": "workspace:*",
+    "@viviefs/workflow-engine": "workspace:*",
     "effect": "4.0.0-rc.116"
   }
 }

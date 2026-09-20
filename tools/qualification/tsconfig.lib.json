@@ -25,6 +25,9 @@
     },
     {
       "path": "../../libs/datom/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/workflow-engine/tsconfig.lib.json"
     }
   ]
 }

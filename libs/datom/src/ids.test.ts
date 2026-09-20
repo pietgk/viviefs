@@ -1,7 +1,13 @@
 import { describe, expect, it } from '@effect/vitest'
 import {
+  activityId,
   ancestorPrefixes,
+  clockId,
+  decodeIdSegment,
+  deferredId,
+  encodeIdSegment,
   evidenceId,
+  executionId,
   itemId,
   listId,
   orgId,
@@ -24,5 +30,19 @@ describe('strict-composition ids', () => {
     expect(ancestorPrefixes('Oacme/L1')).toContain('Oacme/L1/')
     expect(underPrefix('Oacme/L1/I2', 'Oacme/L1')).toBe(true)
     expect(underPrefix('Oacme/L10', 'Oacme/L1')).toBe(false)
+  })
+
+  it('encodes execution journal children with escaped activity names', () => {
+    expect(executionId('p06', 'abc')).toBe('Op06/Wabc')
+    expect(activityId('p06', 'abc', 'DurableClock/wait', 1)).toBe(
+      'Op06/Wabc/ADurableClock~wait#1',
+    )
+    expect(deferredId('p06', 'abc', 'approval')).toBe('Op06/Wabc/Dapproval')
+    expect(clockId('p06', 'abc', 'wait')).toBe('Op06/Wabc/Cwait')
+    expect(encodeIdSegment('a/b~c')).toBe('a~b~~c')
+    expect(decodeIdSegment(encodeIdSegment('a/b~c'))).toBe('a/b~c')
+    expect(underPrefix(activityId('p06', 'abc', 'one', 1), executionId('p06', 'abc'))).toBe(
+      true,
+    )
   })
 })

@@ -17,8 +17,7 @@ the named gate.
 
 **Named slot, empty** (create the project, ADR or gate id; do not invent the mechanism):
 
-- Log stores, workflow engine, sync, identity, blobs, telemetry.
-- Attribute vocabulary and SQL columns other than the D58 `changesets` table (pin at P05/P06 and P04).
+- Log stores, sync, identity, blobs, telemetry.
 - Quarantine of user content after a lost lease (D15; likely home is D34 human-conflict).
 
 **Hypothesis until gate** (must not constrain other work):
@@ -42,7 +41,7 @@ the named gate.
 | op-sqlite 17 works on RN 0.88 New Architecture on iOS and Android; peer conflict with op-sqlite 18 | research/02 | P02 (measured 2026-09-20: 17.x does not compile; pin is 18.2.5, ADR-0005) |
 | Effect's native OTLP exporter works on Hermes (BigInt, fetch, JSON) | research/04 | P03 (measured 2026-09-20: iOS and Android, ADR-0018) |
 | motel can be reached from a physical device (LAN binding) | research/05 | P03 (path documented: LAN binding or cursor catch-up; physical run deferred) |
-| A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 |
+| A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 (measured 2026-09-20: 646 lines in `engine.ts`; seven kill boundaries on sqlite-node and PGlite; memory engine failed durability, ADR-0012) |
 | `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 |
 | Keycloak PKCE flow from Expo on Apple Container | complyj qualified Keycloak, not with Expo | P11 |
 
@@ -66,7 +65,6 @@ the named gate.
 - Prefix subscriptions (partial sync): later than P09.
 - History consolidation on a full-org replica: later than P09; sits next to D37's compaction horizon.
 - Client-side data access on a full-org replica: later than P09. Server isolation (D18) stays authoritative.
-- Attribute vocabulary pass at P05/P06 (D44).
 - React Native Storybook.
 - Physical-device testing beyond P03's documented motel path.
 - HLC future-skew bound and log-append volume: P04 picks them.

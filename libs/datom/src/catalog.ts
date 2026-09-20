@@ -87,3 +87,51 @@ export const evidenceCatalog: Catalog = {
     },
   ],
 }
+
+/**
+ * Engine journal catalog pinned by P06. Journal facts are write-once.
+ * Lease holder is LWW so a later epoch can replace the previous holder;
+ * fencing is by epoch, not by projector write-once.
+ */
+export const engineCatalog: Catalog = {
+  types: [
+    {
+      name: 'execution',
+      defining: Attr.workflowStarted,
+      composition: 'prefix',
+      userContent: false,
+      attributes: [
+        { name: Attr.workflowStarted, policy: 'write-once', defining: true },
+        { name: Attr.workflowResult, policy: 'write-once' },
+        { name: Attr.leaseHolder, policy: 'lww' },
+      ],
+    },
+    {
+      name: 'activity',
+      defining: Attr.activityExit,
+      composition: 'prefix',
+      userContent: false,
+      attributes: [
+        { name: Attr.activityExit, policy: 'write-once', defining: true },
+      ],
+    },
+    {
+      name: 'deferred',
+      defining: Attr.deferredExit,
+      composition: 'prefix',
+      userContent: false,
+      attributes: [
+        { name: Attr.deferredExit, policy: 'write-once', defining: true },
+      ],
+    },
+    {
+      name: 'clock',
+      defining: Attr.clockWakeAt,
+      composition: 'prefix',
+      userContent: false,
+      attributes: [
+        { name: Attr.clockWakeAt, policy: 'write-once', defining: true },
+      ],
+    },
+  ],
+}

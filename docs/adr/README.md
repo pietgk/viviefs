@@ -20,7 +20,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0009](0009-per-attribute-conflict-policies.md) | Per-attribute conflict policies | Qualified | P05 |
 | [0010](0010-entity-ids-and-defining-attributes.md) | Entity ids, defining attributes and strict-composition prefixes | Qualified | P05 |
 | [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Qualified | P04, P05 |
-| [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Proposed, unverified | P06 |
+| [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Qualified | P06 |
 | [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Proposed, unverified | P07, P14 |
 | [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Proposed, unverified | P09 |
 | [0015](0015-deferreds-vs-machines.md) | Human steps as deferreds; workflows own progress | Proposed, unverified | P06, P09 |
@@ -55,5 +55,4 @@ requires a concept page, exercise and lesson (ADR 0026).
   ADR. Correcting a typo or adding a clearly dated evidence link does not require
   a new decision.
 - Do not duplicate complete specifications. Link the relevant plan section and
-  evidence instead. Attribute names pinned at P05 are frozen (D44). Engine
-  journal attributes wait for P06.
+  evidence instead. Attribute names pinned at P05 and P06 are frozen (D44).

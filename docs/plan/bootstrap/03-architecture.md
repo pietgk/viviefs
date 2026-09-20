@@ -159,18 +159,17 @@ client on reject: rebuild read models from confirmed datoms, reapply remaining o
 
 Our implementation of Effect's `WorkflowEngine.Encoded` interface (`register, execute, poll, interrupt, resume,
 activityExecute, deferredResult, deferredDone, scheduleClock`, see research/01 section 2) that stores everything as
-datoms. Attribute names in this table are **illustrative** (D44: a shipped name cannot be renamed). The P05/P06
-vocabulary pass pins them before any exemplar ships attributes. Id shapes (`O{org}/W{exec}`, `/A{name}#{attempt}`,
-`/D{name}`) were decided.
+datoms. Attribute names in this table were pinned by P06 (D44: a shipped name cannot be renamed). Id shapes
+(`O{org}/W{exec}`, `/A{name}#{attempt}`, `/D{name}`, `/C{name}`) were decided.
 
-| Engine fact | Datom (illustrative names) |
+| Engine fact | Datom |
 |---|---|
-| execution started | `[O/W{exec} :workflow/started {name.vN, payload} ...]` (defining attribute) |
-| activity result | `[O/W{exec}/A{name}#{attempt} :activity/exit <encoded Exit> ...]` write-once |
-| deferred completion | `[O/W{exec}/D{name} :deferred/exit <encoded Exit> ...]` write-once |
-| clock scheduled | `[O/W{exec}/C{name} :clock/wake-at <HLC> ...]` + local notification |
-| lease | `[O/W{exec} :lease/holder {device, epoch, expires}]` write-once per epoch, fenced |
-| execution result | `[O/W{exec} :workflow/result <encoded Exit>]` |
+| execution started | `[O{org}/W{exec} viviefs/workflow/started {name, payload} ...]` (defining attribute) |
+| activity result | `[O{org}/W{exec}/A{name}#{attempt} viviefs/activity/exit <encoded Exit> ...]` write-once |
+| deferred completion | `[O{org}/W{exec}/D{name} viviefs/deferred/exit <encoded Exit> ...]` write-once |
+| clock scheduled | `[O{org}/W{exec}/C{name} viviefs/clock/wake-at {wakeAtMs, ...} ...]` + local notification |
+| lease | `[O{org}/W{exec} viviefs/lease/holder {device, epoch, expiresAtMs}]` LWW, fenced by epoch |
+| execution result | `[O{org}/W{exec} viviefs/workflow/result <encoded Exit>]` |
 
 - **Replay**: re-run the workflow body; `activityExecute` returns the stored exit when present.
 - **Determinism**: time, randomness and ids only inside activities (lint rule D26).

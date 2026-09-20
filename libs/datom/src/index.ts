@@ -48,16 +48,22 @@ export {
 } from './vocabulary.ts'
 export type { AttrName } from './vocabulary.ts'
 export {
+  activityId,
   ancestorIds,
   ancestorPrefixes,
+  clockId,
+  decodeIdSegment,
+  deferredId,
+  encodeIdSegment,
   evidenceId,
+  executionId,
   itemId,
   listId,
   orgId,
   parentId,
   underPrefix,
 } from './ids.ts'
-export { evidenceCatalog, indexCatalog } from './catalog.ts'
+export { engineCatalog, evidenceCatalog, indexCatalog } from './catalog.ts'
 export type {
   AttributeLookup,
   AttributeSpec,

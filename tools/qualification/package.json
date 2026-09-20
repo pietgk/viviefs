@@ -18,6 +18,7 @@
     "@viviefs/store-postgres": "workspace:*",
     "@viviefs/store-sqlite-node": "workspace:*",
     "@viviefs/testing": "workspace:*",
+    "@viviefs/workflow-engine": "workspace:*",
     "agent-device": "0.21.6",
     "effect": "4.0.0-rc.116",
     "playwright": "1.55.1",

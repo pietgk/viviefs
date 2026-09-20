@@ -14,6 +14,49 @@ export const itemId = (org: string, list: string, item: string): string =>
 export const evidenceId = (org: string, evidence: string): string =>
   `${orgId(org)}/E${evidence}`
 
+/**
+ * Journal path segments encode `/` so `DurableClock/wait` cannot look like
+ * another composition level. Separator `/` stays the id tree delimiter (D38).
+ */
+export const encodeIdSegment = (value: string): string =>
+  value.replace(/~/g, '~~').replace(/\//g, '~')
+
+export const decodeIdSegment = (value: string): string => {
+  let out = ''
+  for (let index = 0; index < value.length; index++) {
+    const char = value[index]
+    if (char === '~') {
+      const next = value[index + 1]
+      if (next === '~') {
+        out += '~'
+        index += 1
+      } else {
+        out += '/'
+      }
+    } else {
+      out += char
+    }
+  }
+  return out
+}
+
+export const executionId = (org: string, exec: string): string =>
+  `${orgId(org)}/W${encodeIdSegment(exec)}`
+
+export const activityId = (
+  org: string,
+  exec: string,
+  name: string,
+  attempt: number,
+): string =>
+  `${executionId(org, exec)}/A${encodeIdSegment(name)}#${attempt}`
+
+export const deferredId = (org: string, exec: string, name: string): string =>
+  `${executionId(org, exec)}/D${encodeIdSegment(name)}`
+
+export const clockId = (org: string, exec: string, name: string): string =>
+  `${executionId(org, exec)}/C${encodeIdSegment(name)}`
+
 export const parentId = (entity: string): string | null => {
   const index = entity.lastIndexOf('/')
   if (index <= 0) return null

@@ -436,13 +436,33 @@ importers:
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../datom
+      '@viviefs/workflow-engine':
+        specifier: workspace:*
+        version: link:../workflow-engine
       effect:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
 
   libs/ui: {}
 
-  libs/workflow-engine: {}
+  libs/workflow-engine:
+    dependencies:
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../datom
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116(effect@4.0.0-rc.116)(vitest@5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)))
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))
 
   tools/generators: {}
 
@@ -463,6 +483,9 @@ importers:
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../../libs/testing
+      '@viviefs/workflow-engine':
+        specifier: workspace:*
+        version: link:../../libs/workflow-engine
       agent-device:
         specifier: 0.21.6
         version: 0.21.6

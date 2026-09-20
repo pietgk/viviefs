@@ -16,6 +16,9 @@
   "references": [
     {
       "path": "../datom/tsconfig.lib.json"
+    },
+    {
+      "path": "../workflow-engine/tsconfig.lib.json"
     }
   ]
 }

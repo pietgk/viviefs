@@ -24,7 +24,11 @@ bound 5s; append volume 2000; duplicate-append positive control).
 P05 is implemented (changesets and projections on the same five stores; 24h
 open-changeset TTL; incomplete-changeset positive control; pinned
 `viviefs/changeset/*` and `evidence/*` names).
-P06-P14 that have not been implemented refuse to pass; there is no
+P06 is implemented (datom-backed `WorkflowEngine` crash matrix on sqlite-node
+and PGlite; memory-engine durability positive control; pinned
+`viviefs/workflow/*`, `viviefs/activity/exit`, `viviefs/deferred/exit`,
+`viviefs/clock/wake-at` and `viviefs/lease/holder`). Device force-quit is P07.
+P07-P14 that have not been implemented refuse to pass; there is no
 passing placeholder.
 
 ## Run

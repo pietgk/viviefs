@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { makeMutableClock, P04_CHECK_COUNT, P05_CHECK_COUNT, runChangesetChecks, runLogStoreChecks } from '@viviefs/testing'
+import { makeMutableClock, P04_CHECK_COUNT, P05_CHECK_COUNT, P06_DATOM_CHECK_COUNT, runChangesetChecks, runCrashMatrix, runLogStoreChecks } from '@viviefs/testing'
 import { pgliteLogStore } from './layer.ts'
 
 describe('postgres (PGlite) log store', () => {
@@ -42,4 +42,22 @@ describe('postgres (PGlite) log store', () => {
       await rm(directory, { recursive: true, force: true })
     }
   }, 120_000)
+
+  it('passes the P06 crash matrix', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'viviefs-p06-pg-'))
+    try {
+      const clock = makeMutableClock(1_700_000_000_000)
+      const checks = await Effect.runPromise(
+        runCrashMatrix(
+          (deviceId) => pgliteLogStore({ deviceId, dataDir: directory }),
+          clock,
+        ),
+      )
+      expect(checks).toHaveLength(P06_DATOM_CHECK_COUNT)
+      const failed = checks.filter((check) => check.status !== 'PASS')
+      expect(failed, JSON.stringify(failed, null, 2)).toEqual([])
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
+  }, 180_000)
 })
