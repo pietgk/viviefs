@@ -1,0 +1,13 @@
+{
+  "name": "generators",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/generators/src",
+  "projectType": "library",
+  "tags": [
+    "kind:tool"
+  ],
+  "metadata": {
+    "evidenceOwner": "unit",
+    "rationale": "Nx generators: feature, lib, workflow, screen, exercise"
+  }
+}

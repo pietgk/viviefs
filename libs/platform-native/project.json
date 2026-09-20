@@ -1,0 +1,15 @@
+{
+  "name": "platform-native",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/platform-native/src",
+  "projectType": "library",
+  "tags": [
+    "kind:lib",
+    "layer:adapter",
+    "platform:client"
+  ],
+  "metadata": {
+    "evidenceOwner": "e2e-native",
+    "rationale": "Expo polyfills, notifications, background task adapters"
+  }
+}

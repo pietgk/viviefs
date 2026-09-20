@@ -1,0 +1,15 @@
+{
+  "name": "ui",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/src",
+  "projectType": "library",
+  "tags": [
+    "kind:lib",
+    "layer:ui",
+    "platform:client"
+  ],
+  "metadata": {
+    "evidenceOwner": "storybook",
+    "rationale": "design-system components"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "identity",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/identity/src",
+  "projectType": "library",
+  "tags": [
+    "kind:lib",
+    "layer:core",
+    "platform:universal"
+  ],
+  "metadata": {
+    "evidenceOwner": "conformance",
+    "rationale": "Identity service: fake, Keycloak/OIDC"
+  }
+}

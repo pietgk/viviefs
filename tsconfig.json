@@ -1,0 +1,80 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./features/evidence/client"
+    },
+    {
+      "path": "./features/evidence/server"
+    },
+    {
+      "path": "./libs/store-sqlite-native"
+    },
+    {
+      "path": "./features/evidence/model"
+    },
+    {
+      "path": "./libs/store-sqlite-node"
+    },
+    {
+      "path": "./libs/store-sqlite-wasm"
+    },
+    {
+      "path": "./apps/evidence-mobile"
+    },
+    {
+      "path": "./apps/evidence-server"
+    },
+    {
+      "path": "./libs/platform-native"
+    },
+    {
+      "path": "./libs/workflow-engine"
+    },
+    {
+      "path": "./tools/qualification"
+    },
+    {
+      "path": "./libs/store-postgres"
+    },
+    {
+      "path": "./libs/crypto-shred"
+    },
+    {
+      "path": "./tools/generators"
+    },
+    {
+      "path": "./libs/sync/client"
+    },
+    {
+      "path": "./libs/sync/server"
+    },
+    {
+      "path": "./libs/telemetry"
+    },
+    {
+      "path": "./libs/identity"
+    },
+    {
+      "path": "./libs/testing"
+    },
+    {
+      "path": "./tools/verify"
+    },
+    {
+      "path": "./libs/blobs"
+    },
+    {
+      "path": "./libs/datom"
+    },
+    {
+      "path": "./apps/docs"
+    },
+    {
+      "path": "./libs/ui"
+    }
+  ],
+  "compilerOptions": {}
+}

@@ -2,8 +2,13 @@ node_modules/
 .DS_Store
 .nx/
 dist/
+out-tsc/
 coverage/
 .expo/
+*.tsbuildinfo
 *.log
 .env*
 !.env.example
+.artifacts/
+.tmp/
+tmp/

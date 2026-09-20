@@ -1,0 +1,15 @@
+{
+  "name": "evidence-model",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "features/evidence/model/src",
+  "projectType": "library",
+  "tags": [
+    "kind:feature",
+    "layer:model",
+    "platform:universal"
+  ],
+  "metadata": {
+    "evidenceOwner": "unit",
+    "rationale": "Evidence Schema, ids, commands and workflow definitions"
+  }
+}

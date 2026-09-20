@@ -1,0 +1,15 @@
+{
+  "name": "sync-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/sync/server/src",
+  "projectType": "library",
+  "tags": [
+    "kind:lib",
+    "layer:adapter",
+    "platform:server"
+  ],
+  "metadata": {
+    "evidenceOwner": "conformance",
+    "rationale": "cursor stream and server validation"
+  }
+}

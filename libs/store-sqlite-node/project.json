@@ -1,0 +1,15 @@
+{
+  "name": "store-sqlite-node",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/store-sqlite-node/src",
+  "projectType": "library",
+  "tags": [
+    "kind:lib",
+    "layer:adapter",
+    "platform:server"
+  ],
+  "metadata": {
+    "evidenceOwner": "conformance",
+    "rationale": "log store on node:sqlite"
+  }
+}

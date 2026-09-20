@@ -1,0 +1,13 @@
+{
+  "name": "verify",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/verify/src",
+  "projectType": "library",
+  "tags": [
+    "kind:tool"
+  ],
+  "metadata": {
+    "evidenceOwner": "unit",
+    "rationale": "staged verify gate"
+  }
+}

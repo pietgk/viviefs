@@ -1,0 +1,14 @@
+{
+  "name": "evidence-server",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/evidence-server/src",
+  "projectType": "application",
+  "tags": [
+    "kind:app",
+    "platform:server"
+  ],
+  "metadata": {
+    "evidenceOwner": "e2e-web",
+    "rationale": "Node composition root; sync, lease and command HTTP"
+  }
+}

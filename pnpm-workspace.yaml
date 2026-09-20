@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - features/*/*
+  - libs/*
+  - libs/sync/*
+  - tools/*
+
+allowBuilds:
+  nx: true
+  '@swc/core': true
+  esbuild: true

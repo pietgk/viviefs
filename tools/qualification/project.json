@@ -1,0 +1,13 @@
+{
+  "name": "qualification",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/qualification/src",
+  "projectType": "library",
+  "tags": [
+    "kind:tool"
+  ],
+  "metadata": {
+    "evidenceOwner": "qualification",
+    "rationale": "gates, probes, ledger"
+  }
+}

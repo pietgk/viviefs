@@ -1,0 +1,15 @@
+{
+  "name": "evidence-server-feature",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "features/evidence/server/src",
+  "projectType": "library",
+  "tags": [
+    "kind:feature",
+    "layer:server",
+    "platform:server"
+  ],
+  "metadata": {
+    "evidenceOwner": "unit",
+    "rationale": "Evidence validators and server-side activities"
+  }
+}

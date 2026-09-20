@@ -1,0 +1,15 @@
+{
+  "name": "crypto-shred",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/crypto-shred/src",
+  "projectType": "library",
+  "tags": [
+    "kind:lib",
+    "layer:core",
+    "platform:universal"
+  ],
+  "metadata": {
+    "evidenceOwner": "conformance",
+    "rationale": "per-subject keys for personal attributes"
+  }
+}
