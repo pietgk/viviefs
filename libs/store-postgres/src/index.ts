@@ -1,5 +1,4 @@
 /**
- * Named slot for `@viviefs/store-postgres`.
- * Named slot until P04.
+ * Log store on Postgres. Qualified by P04 (PGlite postgres dialect).
  */
-export {}
+export { pgliteLayer, pgliteLogStore } from './layer.ts'

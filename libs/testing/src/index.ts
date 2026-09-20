@@ -1,5 +1,8 @@
-/**
- * Named slot for `@viviefs/testing`.
- * Named slot. Conformance suites arrive with P04.
- */
-export {}
+export {
+  P04_CHECK_COUNT,
+  P04_CHECK_NAMES,
+  makeMutableClock,
+  runLogStoreChecks,
+  type CheckResult,
+  type MutableClock,
+} from './log-store-conformance.ts'

@@ -16,16 +16,22 @@
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"],
   "references": [
     {
-      "path": "../../libs/platform-native/tsconfig.lib.json"
+      "path": "../../libs/testing/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/store-sqlite-native/tsconfig.lib.json"
+      "path": "../../libs/telemetry/tsconfig.lib.json"
     },
     {
       "path": "../../libs/store-sqlite-wasm/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/telemetry/tsconfig.lib.json"
+      "path": "../../libs/store-sqlite-native/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/platform-native/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/datom/tsconfig.lib.json"
     }
   ]
 }

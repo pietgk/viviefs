@@ -1,6 +1,6 @@
 # ADR-0007: Hybrid logical clock for `tx`
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -50,4 +50,8 @@ pick, not this ADR's.
 
 ### Observed
 
-Not yet run.
+2026-09-20. Ledger pass
+`2026-09-20T19-30-57.292Z-6aa3906d`. P04 picked a 5 second future-skew bound.
+Mint stayed ordered across backwards wall jumps, reboot (persisted last HLC),
+and a remote-ahead receive. Future skew of 5001 ms was rejected. Evidence:
+[2026-09-20-p04.md](../evidence/2026-09-20-p04.md).

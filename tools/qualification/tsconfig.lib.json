@@ -13,5 +13,18 @@
     "src/**/*.test.ts",
     "src/**/*.spec.ts"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../../libs/testing/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/store-sqlite-node/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/store-postgres/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/datom/tsconfig.lib.json"
+    }
+  ]
 }

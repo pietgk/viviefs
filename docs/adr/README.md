@@ -14,8 +14,8 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0003](0003-effect-v4-as-backbone.md) | Effect v4 RC as the backbone | Proposed, unverified | P01 |
 | [0004](0004-expo-sdk-58-platform-baseline.md) | Expo SDK 58 and Hermes platform baseline | Proposed, unverified | P01 |
 | [0005](0005-sqlite-drivers.md) | SQLite drivers: official Effect drivers with expo-sqlite fallback | Qualified | P02 |
-| [0006](0006-one-datom-log.md) | One datom log as the substrate | Proposed, unverified | P04 |
-| [0007](0007-hybrid-logical-clock.md) | Hybrid logical clock for `tx` | Proposed, unverified | P04 |
+| [0006](0006-one-datom-log.md) | One datom log as the substrate | Qualified | P04 |
+| [0007](0007-hybrid-logical-clock.md) | Hybrid logical clock for `tx` | Qualified | P04 |
 | [0008](0008-single-datom-transactions-with-changesets.md) | Single-datom transactions with changesets | Proposed, unverified | P05 |
 | [0009](0009-per-attribute-conflict-policies.md) | Per-attribute conflict policies | Proposed, unverified | P05 |
 | [0010](0010-entity-ids-and-defining-attributes.md) | Entity ids, defining attributes and strict-composition prefixes | Proposed, unverified | P05 |

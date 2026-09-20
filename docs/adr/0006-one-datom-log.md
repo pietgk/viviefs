@@ -1,6 +1,6 @@
 # ADR-0006: One datom log as the substrate
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -48,4 +48,9 @@ viewers, never the store the engine reads from.
 
 ### Observed
 
-Not yet run.
+2026-09-20. Ledger pass
+`2026-09-20T19-30-57.292Z-6aa3906d`. Eleven checks (append, duplicate append,
+HLC mint, backwards clock, reboot, remote-ahead, future skew, cursor streaming,
+prefix scans, compaction horizon, volume 2000) passed on sqlite-node, PGlite,
+iOS, Android and web wasm/OPFS. Duplicate append was a no-op while a new `tx`
+inserted. Evidence: [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).

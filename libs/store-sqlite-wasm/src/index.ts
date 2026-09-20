@@ -1,6 +1,4 @@
 /**
- * Named slot for `@viviefs/store-sqlite-wasm`.
- * Official driver layer: `@effect/sql-sqlite-wasm` with OPFS (P02).
- * Log-store contract arrives at P04.
+ * Web SQLite log store: `@effect/sql-sqlite-wasm` with OPFS.
  */
-export { sqliteWasmOpfsLayer } from './layer.ts'
+export { sqliteWasmOpfsLayer, sqliteWasmLogStore } from './layer.ts'

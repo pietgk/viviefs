@@ -116,7 +116,7 @@ export const STAGES: Stage[] = [
     steps: [
       {
         name: 'integration',
-        blurb: 'integration tests (none until P04/P06)',
+    blurb: 'conformance suite against sqlite-node and postgres',
         invocations: [nxTarget('test-integration')],
       },
     ],

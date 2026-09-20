@@ -14,5 +14,9 @@
     "src/**/*.test.ts",
     "src/**/*.spec.ts"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../datom/tsconfig.lib.json"
+    }
+  ]
 }

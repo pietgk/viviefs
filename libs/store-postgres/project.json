@@ -11,5 +11,16 @@
   "metadata": {
     "evidenceOwner": "conformance",
     "rationale": "log store on Postgres"
+  },
+  "targets": {
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "libs/store-postgres"
+      }
+    }
   }
 }

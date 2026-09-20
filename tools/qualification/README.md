@@ -18,7 +18,10 @@ P02 is implemented (official `@effect/sql-sqlite-react-native` on op-sqlite
 `@effect/sql-sqlite-wasm` with OPFS on web, expo-sqlite fallback probe on all
 three). P03 is implemented (Effect-native OTLP/JSON to motel 0.2.8 from iOS
 and Android; wrong-endpoint positive control; physical-device path documented).
-P04-P14 that have not been implemented refuse to pass; there is no
+P04 is implemented (log store contract on sqlite-node, postgres via PGlite,
+op-sqlite native iOS and Android, and sqlite-wasm OPFS web; HLC future-skew
+bound 5s; append volume 2000; duplicate-append positive control).
+P05-P14 that have not been implemented refuse to pass; there is no
 passing placeholder.
 
 ## Run

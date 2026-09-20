@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "Apache-2.0",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -11,5 +12,16 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     }
+  },
+  "dependencies": {
+    "@effect/sql-sqlite-node": "4.0.0-rc.116",
+    "@viviefs/datom": "workspace:*",
+    "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-rc.116",
+    "@viviefs/testing": "workspace:*",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
   }
 }

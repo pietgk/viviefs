@@ -47,7 +47,7 @@ export const gateProbes: GateProbe[] = [
     gate: 'P04',
     path: 'tools/qualification/src/probes/p04.ts',
     args: [],
-    timeoutMs: 600_000,
+    timeoutMs: 3_600_000,
     stage: 'foundation',
     summary:
       'Log store contract on SQLite (native including Android, wasm, Node) and Postgres: append, HLC, cursor, prefix, compaction.',

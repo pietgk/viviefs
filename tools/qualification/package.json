@@ -14,7 +14,12 @@
   },
   "devDependencies": {
     "@effect/vitest": "4.0.0-rc.116",
+    "@viviefs/datom": "workspace:*",
+    "@viviefs/store-postgres": "workspace:*",
+    "@viviefs/store-sqlite-node": "workspace:*",
+    "@viviefs/testing": "workspace:*",
     "agent-device": "0.21.6",
+    "effect": "4.0.0-rc.116",
     "playwright": "1.55.1",
     "vite": "8.3.0",
     "vitest": "5.0.1"

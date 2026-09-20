@@ -129,6 +129,25 @@ export const ensureAndroidEmulator = async (): Promise<void> => {
   )
 }
 
+export const ANDROID_APP_ID = 'dev.viviefs.evidence'
+
+export const forceStopAndroidApp = async (
+  appId = ANDROID_APP_ID,
+): Promise<void> => {
+  const env = androidEnv()
+  const androidHome = env.ANDROID_HOME as string
+  const adb = join(androidHome, 'platform-tools/adb')
+  const stopped = await command(adb, ['shell', 'am', 'force-stop', appId], {
+    env,
+    timeout: 15_000,
+  })
+  if (stopped.code !== 0) {
+    throw new Error(
+      `adb force-stop ${appId} failed: ${stopped.stderr || stopped.stdout}`,
+    )
+  }
+}
+
 export const reverseAndroidPorts = async (ports: number[]): Promise<void> => {
   const env = androidEnv()
   const androidHome = env.ANDROID_HOME as string

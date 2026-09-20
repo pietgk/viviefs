@@ -247,6 +247,45 @@
       "probeSha256": "e350ecb3a3e3b63c86f2d7bdca7cd9730ffa06195a8d6b432ecf23808e477c1e",
       "inputsSha256": "d13dff4518049d727ee21dc09b103d3c7280cb574a8d6b713358ef41febf772e",
       "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P04",
+      "status": "fail",
+      "recordedAt": "2026-09-20T19:06:57.675Z",
+      "commit": "4e0b2a90d09effbb89717add01d6272395c5540d",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T19-02-13.049Z-d15d280a",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p04.ts",
+      "probeSha256": "767ef96e260f477368b0c17338af53bcb4944083fed2d453a0d6d6d119719283",
+      "inputsSha256": "383112a94de9da04884f7ad30fb00d4401f1194f85a1bf929ad0cef74bc955bf",
+      "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P04",
+      "status": "fail",
+      "recordedAt": "2026-09-20T19:29:57.787Z",
+      "commit": "4e0b2a90d09effbb89717add01d6272395c5540d",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T19-23-09.254Z-274e5631",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p04.ts",
+      "probeSha256": "96cf2c8a0a149497beb8f6e459e1eba89af15afa79eb48b8cd4b9000779c3357",
+      "inputsSha256": "2ee3de5137fc876ec198a8fe7366ef884decc644744dd41297be7b6421e6dae1",
+      "inputsChangedDuringRun": true
+    },
+    {
+      "gate": "P04",
+      "status": "pass",
+      "recordedAt": "2026-09-20T19:33:38.323Z",
+      "commit": "4e0b2a90d09effbb89717add01d6272395c5540d",
+      "dirty": true,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-20T19-30-57.292Z-6aa3906d",
+      "exitCode": 0,
+      "probe": "tools/qualification/src/probes/p04.ts",
+      "probeSha256": "96cf2c8a0a149497beb8f6e459e1eba89af15afa79eb48b8cd4b9000779c3357",
+      "inputsSha256": "c02a47d2fbe404f846bec825ddf3b7e71d4812ebaf7de97d6713bbef0c6c421c",
+      "inputsChangedDuringRun": false
     }
   ]
 }

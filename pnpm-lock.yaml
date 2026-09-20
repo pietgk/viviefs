@@ -232,6 +232,9 @@ importers:
       '@op-engineering/op-sqlite':
         specifier: 18.2.5
         version: 18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../../libs/datom
       '@viviefs/platform-native':
         specifier: workspace:*
         version: link:../../libs/platform-native
@@ -244,6 +247,9 @@ importers:
       '@viviefs/telemetry':
         specifier: workspace:*
         version: link:../../libs/telemetry
+      '@viviefs/testing':
+        specifier: workspace:*
+        version: link:../../libs/testing
       effect:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
@@ -294,7 +300,21 @@ importers:
 
   libs/crypto-shred: {}
 
-  libs/datom: {}
+  libs/datom:
+    dependencies:
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116(effect@4.0.0-rc.116)(vitest@5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)))
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))
 
   libs/identity: {}
 
@@ -314,7 +334,30 @@ importers:
         specifier: 58.0.1
         version: 58.0.1(expo@58.0.0-preview.3)
 
-  libs/store-postgres: {}
+  libs/store-postgres:
+    dependencies:
+      '@effect/sql-pglite':
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116(effect@4.0.0-rc.116)
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../datom
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116(effect@4.0.0-rc.116)(vitest@5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)))
+      '@viviefs/testing':
+        specifier: workspace:*
+        version: link:../testing
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))
 
   libs/store-sqlite-native:
     dependencies:
@@ -324,11 +367,37 @@ importers:
       '@op-engineering/op-sqlite':
         specifier: 18.2.5
         version: 18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../datom
       effect:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
 
-  libs/store-sqlite-node: {}
+  libs/store-sqlite-node:
+    dependencies:
+      '@effect/sql-sqlite-node':
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116(effect@4.0.0-rc.116)
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../datom
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116(effect@4.0.0-rc.116)(vitest@5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)))
+      '@viviefs/testing':
+        specifier: workspace:*
+        version: link:../testing
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))
 
   libs/store-sqlite-wasm:
     dependencies:
@@ -338,6 +407,9 @@ importers:
       '@effect/wa-sqlite':
         specifier: 0.1.2
         version: 0.1.2
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../datom
       effect:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
@@ -352,7 +424,14 @@ importers:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
 
-  libs/testing: {}
+  libs/testing:
+    dependencies:
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../datom
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
 
   libs/ui: {}
 
@@ -365,9 +444,24 @@ importers:
       '@effect/vitest':
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116(effect@4.0.0-rc.116)(vitest@5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)))
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../../libs/datom
+      '@viviefs/store-postgres':
+        specifier: workspace:*
+        version: link:../../libs/store-postgres
+      '@viviefs/store-sqlite-node':
+        specifier: workspace:*
+        version: link:../../libs/store-sqlite-node
+      '@viviefs/testing':
+        specifier: workspace:*
+        version: link:../../libs/testing
       agent-device:
         specifier: 0.21.6
         version: 0.21.6
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
       playwright:
         specifier: 1.55.1
         version: 1.55.1
@@ -1028,6 +1122,16 @@ packages:
     resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
+  '@effect/sql-pglite@4.0.0-rc.116':
+    resolution: {integrity: sha512-vHxA4jzJZrXLC9fQ6bb1hcpUIlbHEK0R/nZ6ReEyIJA+RMt1JYDSty2yx8ps14PF8UwUX4eaIgiTwl3jNeDowA==}
+    peerDependencies:
+      effect: ^4.0.0-rc.116
+
+  '@effect/sql-sqlite-node@4.0.0-rc.116':
+    resolution: {integrity: sha512-nh7k7lXUPtEXBJpS5RHP01l6rtBFHsZq8Q3l+eV+lhO5qbvApt8Xb+Jb9j8LmXT4CcEagKe2Ix/bbipWpRXXnA==}
+    peerDependencies:
+      effect: ^4.0.0-rc.116
+
   '@effect/sql-sqlite-react-native@4.0.0-rc.116':
     resolution: {integrity: sha512-FouEA88gzfcBvwmW59Dz+a0kXw3UY2YImxrzfsJALMCVQUmB8NeVUyXewnk9HvO6juRS7jIdcT+U5XYUKYrmkg==}
     peerDependencies:
@@ -1048,6 +1152,9 @@ packages:
 
   '@effect/wa-sqlite@0.1.2':
     resolution: {integrity: sha512-2JvJ9BDkBOwfeY/gXsC0XwEKC0AwisP2W5ABJ6mx14QyXTK12MGDIybDlHieuZt1TEFSMiKfpg7yyqyRWRooJQ==}
+
+  '@electric-sql/pglite@0.5.8':
+    resolution: {integrity: sha512-n9tsbUOhwx2epK1V0ZG9Ar4SHWUju04dhmzZXiSBXwBoleOvIfals33NAaWgagQVAL4Rbvx/Ptsu3P+pA09f6Q==}
 
   '@emnapi/core@1.4.5':
     resolution: {integrity: sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q==}
@@ -5195,6 +5302,15 @@ snapshots:
       fast-wrap-ansi: 0.2.0
       sisteransi: 1.0.5
 
+  '@effect/sql-pglite@4.0.0-rc.116(effect@4.0.0-rc.116)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.8
+      effect: 4.0.0-rc.116
+
+  '@effect/sql-sqlite-node@4.0.0-rc.116(effect@4.0.0-rc.116)':
+    dependencies:
+      effect: 4.0.0-rc.116
+
   '@effect/sql-sqlite-react-native@4.0.0-rc.116(@op-engineering/op-sqlite@18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(effect@4.0.0-rc.116)':
     dependencies:
       '@op-engineering/op-sqlite': 18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
@@ -5211,6 +5327,8 @@ snapshots:
       vitest: 5.0.1(@types/node@22.20.4)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))
 
   '@effect/wa-sqlite@0.1.2': {}
+
+  '@electric-sql/pglite@0.5.8': {}
 
   '@emnapi/core@1.4.5':
     dependencies:

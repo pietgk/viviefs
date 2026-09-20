@@ -59,4 +59,9 @@ rebuilt.
 
 ### Observed
 
-Not yet run. Named-slot projects exist; mechanisms are empty until P04/P05.
+2026-09-20. P04 ledger pass
+`2026-09-20T19-30-57.292Z-6aa3906d`. One `LogStore` over `SqlClient` on
+`sqliteNative`, `sqliteWasm`, `sqliteNode` and `postgres` (PGlite in the probe).
+Pinned tables: `datoms`, `changesets`, `hlc_state`, `device_cursors`. Compaction
+horizon held. P05 (read models, rebuild equals incremental) is not yet run.
+Evidence: [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).

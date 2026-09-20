@@ -16,6 +16,7 @@
   "dependencies": {
     "@effect/sql-sqlite-wasm": "4.0.0-rc.116",
     "@effect/wa-sqlite": "0.1.2",
+    "@viviefs/datom": "workspace:*",
     "effect": "4.0.0-rc.116"
   }
 }
