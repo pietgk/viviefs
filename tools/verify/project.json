@@ -6,8 +6,19 @@
   "tags": [
     "kind:tool"
   ],
-  "metadata": {
-    "evidenceOwner": "unit",
-    "rationale": "staged verify gate"
+    "metadata": {
+      "evidenceOwner": "unit",
+      "rationale": "staged verify gate"
+    },
+    "targets": {
+      "test": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": ["default", "^production"],
+        "options": {
+          "command": "pnpm exec vitest run",
+          "cwd": "tools/verify"
+        }
+      }
+    }
   }
-}

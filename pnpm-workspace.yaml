@@ -9,3 +9,6 @@ allowBuilds:
   nx: true
   '@swc/core': true
   esbuild: true
+
+overrides:
+  smol-toml: 1.8.0
