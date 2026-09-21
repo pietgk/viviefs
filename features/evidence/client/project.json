@@ -11,5 +11,25 @@
   "metadata": {
     "evidenceOwner": "storybook",
     "rationale": "Evidence screens, query atoms and stories"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "features/evidence/client"
+      }
+    },
+    "test-storybook": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run src/capture/CaptureScreen.stories.test.tsx",
+        "cwd": "features/evidence/client"
+      }
+    }
   }
 }

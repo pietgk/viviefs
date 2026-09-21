@@ -127,7 +127,12 @@ export default [
       'libs/datom/**/*.ts',
       'libs/workflow-engine/**/*.ts',
     ],
-    ignores: ['**/*.test.ts', '**/*.spec.ts'],
+    ignores: [
+      '**/*.test.ts',
+      '**/*.spec.ts',
+      // D12/P08: XState fromPromise is the mandated Effect-to-Promise seam.
+      'features/evidence/client/src/capture/xstate.ts',
+    ],
     rules: {
       'no-restricted-syntax': [
         'error',

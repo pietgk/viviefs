@@ -127,7 +127,7 @@ export const STAGES: Stage[] = [
     steps: [
       {
         name: 'storybook',
-        blurb: 'web and shared component stories (none until P08)',
+        blurb: 'web and shared component stories (P08 capture screen)',
         invocations: [nxTarget('test-storybook')],
       },
       {

@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "Apache-2.0",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -11,5 +12,28 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     }
+  },
+  "dependencies": {
+    "@effect/atom-react": "4.0.0-rc.116",
+    "@typeonce/effect-machine": "0.38.0",
+    "@viviefs/datom": "workspace:*",
+    "@viviefs/evidence-model": "workspace:*",
+    "@viviefs/ui": "workspace:*",
+    "effect": "4.0.0-rc.116",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "scheduler": "0.26.0",
+    "xstate": "5.33.2"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-rc.116",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "axe-core": "4.13.0",
+    "jsdom": "30.1.0",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
   }
 }

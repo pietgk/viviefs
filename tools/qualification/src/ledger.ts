@@ -83,6 +83,8 @@ export async function inputsFingerprint(): Promise<string> {
     'libs/datom',
     'libs/testing',
     'libs/workflow-engine',
+    'features/evidence/client',
+    'libs/ui',
     'package.json',
     'pnpm-lock.yaml',
     'pnpm-workspace.yaml',

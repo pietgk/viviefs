@@ -22,7 +22,7 @@ the named gate.
 
 **Hypothesis until gate** (must not constrain other work):
 
-- Interaction-state library (P08).
+- Interaction-state library (P08; measured 2026-09-21: Effect + Atom, ADR-0020).
 - SQLCipher and crypto-shredding (P12, P13).
 - Effect Cluster (D39).
 - Prefix subscriptions / partial sync.
@@ -42,7 +42,7 @@ the named gate.
 | Effect's native OTLP exporter works on Hermes (BigInt, fetch, JSON) | research/04 | P03 (measured 2026-09-20: iOS and Android, ADR-0018) |
 | motel can be reached from a physical device (LAN binding) | research/05 | P03 (path documented: LAN binding or cursor catch-up; physical run deferred) |
 | A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 (measured 2026-09-20: 646 lines in `engine.ts`; seven kill boundaries on sqlite-node and PGlite; memory engine failed durability, ADR-0012) |
-| `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 |
+| `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 (measured 2026-09-20/21: projector keys and capture-screen query atoms, ADR-0019) |
 | Keycloak PKCE flow from Expo on Apple Container | complyj qualified Keycloak, not with Expo | P11 |
 
 ## Closed in this pass
@@ -54,7 +54,8 @@ the named gate.
 
 ## Deferred decisions
 
-- Interaction state library (XState v5 + Effect vs effect-machine vs Atom): decided by P08.
+- Interaction state library: Effect + Atom (P08, ADR-0020). XState v5.33.2 and
+  `@typeonce/effect-machine` 0.38.0 remain retained probes.
 - Production hosting, deployment topology, production telemetry backend.
 - Scale-out of the engine (Effect Cluster) and multi-runner server.
 - Whether product apps (BirVana, ERP, GRC) move into viviefs as app pairs (D55).

@@ -4,14 +4,25 @@
     "rootDir": "src",
     "outDir": "out-tsc",
     "tsBuildInfoFile": "out-tsc/tsconfig.lib.tsbuildinfo",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx",
+    "lib": ["es2022", "DOM"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [
     "src/**/*.test.ts",
+    "src/**/*.test.tsx",
     "src/**/*.spec.ts"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../../../libs/ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../model/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../libs/datom/tsconfig.lib.json"
+    }
+  ]
 }

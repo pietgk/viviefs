@@ -1,5 +1,1 @@
-/**
- * Named slot for `@viviefs/ui`.
- * Named slot until P08.
- */
-export {}
+export { TEXT_SETTLE_MS, useSettledText } from './settled-text.ts'

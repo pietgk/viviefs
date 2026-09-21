@@ -31,7 +31,11 @@ and PGlite; memory-engine durability positive control; pinned
 (device force-quit mid-upload and mid-wait on iOS simulator and Android
 emulator; launch `EngineSweep` resumes; without sweep the workflow stays
 parked; motel `p07.park` / `p07.resume`; `expo-notifications` 58.0.3).
-P08-P14 that have not been implemented refuse to pass; there is no
+P08 is implemented (evidence capture screen three ways: XState v5 +
+`fromPromise`, `@typeonce/effect-machine` 0.38.0, Effect + Atom; shared
+selector, settled text, query atoms, stories and a11y; broken variant
+positive control; winner recorded in ADR 0020).
+P09-P14 that have not been implemented refuse to pass; there is no
 passing placeholder.
 
 ## Run

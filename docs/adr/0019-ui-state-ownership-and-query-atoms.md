@@ -1,6 +1,6 @@
 # ADR-0019: UI state ownership and live reads with query atoms
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -20,7 +20,7 @@ real database to render a button.
 Three state owners:
 
 1. Domain facts in the datom log, read through read models.
-2. Screen and interaction state in a machine or atom (decided by ADR 0020 / P08).
+2. Screen and interaction state in an Atom (ADR 0020 / P08).
 3. In-flight text in component state until it settles (idle, blur, Enter),
    which mints a datom.
 
@@ -39,8 +39,9 @@ having been invalidated.
 ## Trade-offs
 
 Replaces web-interview's quadratic full re-projection. Suitability of
-`@effect/atom-react` and `Reactivity` for prefix/attribute invalidation is a
-P05/P08 claim, not a fact yet.
+`@effect/atom-react` and `Reactivity` for prefix/attribute invalidation is
+qualified by P05 (projector keys) and P08 (query atoms on the capture
+screen).
 
 ## Failure-handling
 
@@ -60,7 +61,10 @@ P05, 2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. After a
 committed changeset the projector invalidates `prefix:{id}` and
 `attribute:{name}` keys; a `Reactivity.query` on matching keys reran, and a
 query on another organization did not. Draft view showed the author's open
-members; committed and other actors did not. `@effect/atom-react` screens wait
-for P08. Evidence: [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
+members; committed and other actors did not. Evidence:
+[2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
 
-P08 not yet run.
+P08, 2026-09-21. Ledger pass `2026-09-21T19-08-57.550Z-921495ef`. The capture
+screen keeps domain facts, Atom interaction state, and in-flight title in
+three owners. `makeEvidenceAtom` re-queries after prefix/attribute
+invalidation. Evidence: [2026-09-21-p08.md](../evidence/2026-09-21-p08.md).

@@ -16,6 +16,7 @@
     "@effect/platform-node": "4.0.0-rc.116",
     "@effect/vitest": "4.0.0-rc.116",
     "@viviefs/datom": "workspace:*",
+    "@viviefs/evidence-client": "workspace:*",
     "@viviefs/store-postgres": "workspace:*",
     "@viviefs/store-sqlite-node": "workspace:*",
     "@viviefs/testing": "workspace:*",

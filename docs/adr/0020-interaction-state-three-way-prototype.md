@@ -1,6 +1,6 @@
 # ADR-0020: Interaction state: outcome of the three-way prototype
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -28,9 +28,9 @@ atoms. Compared on type safety, test and story ergonomics, and lines of code.
 All three variants must pass the same screen tests and stories. This ADR
 records the winner once P08 passes.
 
-Product-specific criteria (voice, affordance) stay out (D55). The
-interaction-state library is a hypothesis until P08 and must not constrain
-other work.
+Product-specific criteria (voice, affordance) stay out (D55). After P08 the
+interaction-state library is Effect + Atom. XState and effect-machine stay
+as retained probes behind `CaptureSession`.
 
 ## Trade-offs
 
@@ -47,9 +47,14 @@ The harness is broken if nothing can fail.
 
 ### Expected
 
-One recorded winner with linked P08 evidence. Until then, no feature code
-depends on XState, effect-machine, or Atom as *the* interaction library.
+One recorded winner with linked P08 evidence. Feature interaction state uses
+that winner; the other two variants remain retained probes.
 
 ### Observed
 
-Not yet run. No winner.
+2026-09-21. Ledger pass `2026-09-21T19-08-57.550Z-921495ef`. Winner: Effect +
+Atom (`effect/unstable/reactivity/Atom`). Driver LOC: Atom 76, XState 113,
+effect-machine 173. All three passed the same capture contract, screen tests
+and stories; the broken variant failed `confirm reaches idle`. Query atoms
+used prefix/attribute Reactivity keys. Evidence:
+[2026-09-21-p08.md](../evidence/2026-09-21-p08.md).
