@@ -1,4 +1,5 @@
-import { Effect } from 'effect'
+import { Effect, Fiber } from 'effect'
+import { TestClock } from 'effect/testing'
 import { expect, it } from '@effect/vitest'
 import { STAGES, findStage, findStep, formatHelp } from './stages.ts'
 
@@ -28,5 +29,16 @@ it.effect('wires @effect/vitest as the unit runner', () =>
   Effect.gen(function* () {
     const value = yield* Effect.succeed(2)
     expect(value).toBe(2)
+  }),
+)
+
+it.effect('advances TestClock instead of waiting on wall time', () =>
+  Effect.gen(function* () {
+    const fiber = yield* Effect.sleep('10 seconds').pipe(
+      Effect.as('done'),
+      Effect.forkChild,
+    )
+    yield* TestClock.adjust('10 seconds')
+    expect(yield* Fiber.join(fiber)).toBe('done')
   }),
 )

@@ -18,25 +18,41 @@ const member = (
 ): Datom => ({ e, a, v, tx, op: 'assert', cs })
 
 describe('changeset manifest', () => {
-  it('round-trips commit payload and hashes members independently of commit order', async () => {
-    const cs = 'AAAAAAAAAAAAAAAAAAAAAAAAAA'
-    const members = [
-      member('Oacme/L1', Attr.list, '1', 'AAAAAAAAAAAAAAAAAAAAAAAAAB', cs),
-      member('Oacme/L1', Attr.listTitle, 'Q3', 'AAAAAAAAAAAAAAAAAAAAAAAAAC', cs),
-    ]
-    const reversed = members.slice().reverse()
-    const left = await Effect.runPromise(hashMembers(members))
-    const right = await Effect.runPromise(hashMembers(reversed))
-    expect(left).toHaveLength(64)
-    expect(left).toBe(right)
-    const encoded = encodeCommit({ n: 2, hash: left, basis: 4, files: [] })
-    expect(decodeCommit(encoded)).toEqual({
-      n: 2,
-      hash: left,
-      basis: 4,
-      files: [],
-    })
+  it('treats incomplete JSON as a missing commit', () => {
     expect(decodeCommit('not-json')).toBeNull()
-    expect(changesetMembers([...members, member(cs, Attr.changesetCommit, encoded, 'AAAAAAAAAAAAAAAAAAAAAAAAAD', cs)])).toHaveLength(2)
   })
+
+  it.effect('hashes members independently of commit order', () =>
+    Effect.gen(function* () {
+      const cs = 'AAAAAAAAAAAAAAAAAAAAAAAAAA'
+      const members = [
+        member('Oacme/L1', Attr.list, '1', 'AAAAAAAAAAAAAAAAAAAAAAAAAB', cs),
+        member('Oacme/L1', Attr.listTitle, 'Q3', 'AAAAAAAAAAAAAAAAAAAAAAAAAC', cs),
+      ]
+      const reversed = members.slice().reverse()
+      const left = yield* hashMembers(members)
+      const right = yield* hashMembers(reversed)
+      expect(left).toHaveLength(64)
+      expect(left).toBe(right)
+      const encoded = encodeCommit({ n: 2, hash: left, basis: 4, files: [] })
+      expect(decodeCommit(encoded)).toEqual({
+        n: 2,
+        hash: left,
+        basis: 4,
+        files: [],
+      })
+      expect(
+        changesetMembers([
+          ...members,
+          member(
+            cs,
+            Attr.changesetCommit,
+            encoded,
+            'AAAAAAAAAAAAAAAAAAAAAAAAAD',
+            cs,
+          ),
+        ]),
+      ).toHaveLength(2)
+    }),
+  )
 })
