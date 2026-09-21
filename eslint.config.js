@@ -104,6 +104,21 @@ export default [
           ],
         },
       ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'CallExpression[callee.object.name="Math"][callee.property.name="random"]',
+          message:
+            'D26: Math.random is forbidden in tests. Use TestRandom.',
+        },
+        {
+          selector:
+            'CallExpression[callee.object.name="Date"][callee.property.name="now"]',
+          message:
+            'D26: Date.now is forbidden in tests. Use TestClock (it.effect) or Clock (it.live). Keep makeMutableClock for HlcClock.',
+        },
+      ],
     },
   },
   {

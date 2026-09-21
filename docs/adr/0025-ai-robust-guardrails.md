@@ -19,8 +19,13 @@ without a crash-matrix test is an unverified claim about durability.
 
 - Effect language service.
 - Lint forbids raw `Promise` / `async` / `try` in domain and workflow code.
+  Tests stay exempt so `it()`, spawn, and characterization can remain
+  `async`.
 - Lint forbids `Date.now()`, `Math.random()` and id generation outside
-  activities.
+  activities, and forbids `Date.now()` / `Math.random()` in every
+  `*.test.ts` / `*.spec.ts` (including integration). Unit tests use
+  `TestClock` / `TestRandom`; `it.live` uses Effect `Clock`, not
+  `Date.now()`. `new Date()` without arguments is not in this slice.
 - Nx boundary tags (ADR 0024).
 - Schema at every boundary including SQLite rows.
 - Exemplar-first `AGENTS.md`.

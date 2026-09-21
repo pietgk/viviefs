@@ -48,6 +48,7 @@ it.effect('runs an Effect', () =>
 - Rewriting pure tests into `Effect.gen` for style.
 - Wrapping git/node spawn or `fetch` tests in `Effect.gen` for style.
 - Running timeout/sleep harnesses under `it.effect`.
-- Real `Date.now()` / `Math.random()` in unit tests. Use `TestClock` /
-  `TestRandom` (D26). Keep `makeMutableClock` for `HlcClock`.
+- Real `Date.now()` / `Math.random()` in tests (unit and integration). Use
+  `TestClock` / `TestRandom` under `it.effect`, or Effect `Clock` under
+  `it.live` (D26). Keep `makeMutableClock` for `HlcClock`.
 - Mixing `@effect/vitest` versions with `effect`.
