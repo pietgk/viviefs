@@ -38,6 +38,7 @@ material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-t
 | --- | --- |
 | Agent context | this file, `.agents/skills/`, `skills-lock.json` |
 | Host toolchain | `mise.toml` (Node, pnpm, bun) |
+| TypeScript | dual pin in root `package.json` ([ADR-0028](docs/adr/0028-typescript-7-cli-with-typescript-6-api.md)): `tsc` is TypeScript 7 (`@typescript/native`); the `typescript` package name is TypeScript 6 (`@typescript/typescript6`) for Nx, ESLint and Vite. Do not install `typescript@7` under the `typescript` name. |
 | Device driving | `@expo/agent-cli` in `apps/evidence-mobile`; `agent-device` in `tools/qualification` (both MIT) |
 | Lab runtime | Apple Container image digests (admitted per measured gap; none yet) |
 
