@@ -1,1 +1,7 @@
-export { formatHelp, STAGES, findStage, findStep } from './stages.ts'
+export {
+  formatHelp,
+  STAGES,
+  findStage,
+  findStep,
+  selectStages,
+} from './stages.ts'

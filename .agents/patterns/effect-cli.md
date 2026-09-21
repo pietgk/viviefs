@@ -5,11 +5,9 @@ Agent extract. Source of truth: [`repos/effect/LLMS.md`](../../repos/effect/LLMS
 [`repos/effect/ai-docs/src/70_cli/10_basics.ts`](../../repos/effect/ai-docs/src/70_cli/10_basics.ts),
 and https://www.effect.solutions/cli.
 
-Viviefs has not migrated yet. Today
-[`tools/verify/src/verify.ts`](../../tools/verify/src/verify.ts) and
-[`tools/qualification/src/cli.ts`](../../tools/qualification/src/cli.ts)
-parse `process.argv`. Phase 3 of the Effect v4 agent plan rewrites them.
-When writing a new CLI, use this file instead of copying those parsers.
+Viviefs entrypoints: [`tools/verify/src/verify.ts`](../../tools/verify/src/verify.ts)
+and [`tools/qualification/src/cli.ts`](../../tools/qualification/src/cli.ts).
+`@effect/platform-node` is pinned at the same RC as `effect`.
 
 ## Do
 
@@ -25,8 +23,8 @@ When writing a new CLI, use this file instead of copying those parsers.
 import { Argument, Command, Flag } from 'effect/unstable/cli'
 import { Console, Effect } from 'effect'
 
-const shout = Flag.boolean('shout').pipe(Flag.withAlias('s'))
-const name = Argument.string('name').pipe(Argument.withDefault('World'))
+const shout = Flag.Boolean('shout').pipe(Flag.withAlias('s'), Flag.withDefault(false))
+const name = Argument.String('name').pipe(Argument.withDefault('World'))
 
 const greet = Command.make('greet', { name, shout }, ({ name, shout }) => {
   const message = `Hello, ${name}!`

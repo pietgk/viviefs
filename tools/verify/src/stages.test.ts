@@ -1,7 +1,7 @@
 import { Effect, Fiber } from 'effect'
 import { TestClock } from 'effect/testing'
 import { expect, it } from '@effect/vitest'
-import { STAGES, findStage, findStep, formatHelp } from './stages.ts'
+import { STAGES, findStage, findStep, formatHelp, selectStages } from './stages.ts'
 
 it('help is generated from the executed stage table', () => {
   const help = formatHelp()
@@ -23,6 +23,18 @@ it('looks up stages and steps from the same table', () => {
   expect(findStep('ownership')?.blurb).toMatch(/evidence owner/)
   expect(findStage('not-a-stage')).toBeUndefined()
   expect(findStep('not-a-step')).toBeUndefined()
+})
+
+it('selects a mix of stages and steps from the executed table', () => {
+  const selected = selectStages(['static', 'unit'])
+  expect(selected._tag).toBe('Some')
+  if (selected._tag !== 'Some') return
+  expect(selected.stages.map((stage) => stage.name)).toEqual(['static', 'unit'])
+  expect(selectStages(['not-a-stage'])).toEqual({
+    _tag: 'Unknown',
+    selector: 'not-a-stage',
+  })
+  expect(selectStages([])._tag).toBe('All')
 })
 
 it.effect('wires @effect/vitest as the unit runner', () =>

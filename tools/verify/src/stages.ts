@@ -161,6 +161,32 @@ export const findStage = (name: string) =>
 export const findStep = (name: string) =>
   STAGES.flatMap((stage) => stage.steps).find((step) => step.name === name)
 
+export type SelectedStages =
+  | { readonly _tag: 'All' | 'Some'; readonly stages: Stage[] }
+  | { readonly _tag: 'Unknown'; readonly selector: string }
+
+export const selectStages = (selectors: ReadonlyArray<string>): SelectedStages => {
+  if (selectors.length === 0) return { _tag: 'All', stages: STAGES }
+  const wanted = new Set<string>()
+  for (const selector of selectors) {
+    const stage = findStage(selector)
+    if (stage) {
+      for (const step of stage.steps) wanted.add(step.name)
+      continue
+    }
+    const step = findStep(selector)
+    if (!step) return { _tag: 'Unknown', selector }
+    wanted.add(step.name)
+  }
+  return {
+    _tag: 'Some',
+    stages: STAGES.map((stage) => ({
+      ...stage,
+      steps: stage.steps.filter((step) => wanted.has(step.name)),
+    })).filter((stage) => stage.steps.length > 0),
+  }
+}
+
 export const formatHelp = (invoke = 'pnpm verify'): string => {
   const nameWidth =
     Math.max(
