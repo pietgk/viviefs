@@ -22,6 +22,7 @@ import {
   engineLayer,
   Leases,
   noopCrashHook,
+  noopWakeScheduler,
   type CrashBoundary,
 } from '@viviefs/workflow-engine'
 import {
@@ -148,6 +149,7 @@ const env = (
     Layer.provide(engineConfigLayer(ORG)),
     Layer.provideMerge(deviceLayer(deviceId)),
     Layer.provide(hook),
+    Layer.provide(noopWakeScheduler),
     Layer.provide(Layer.succeed(HlcClock, clock.service)),
   )
 

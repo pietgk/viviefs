@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { makeMutableClock, P04_CHECK_COUNT, P05_CHECK_COUNT, P06_DATOM_CHECK_COUNT, runChangesetChecks, runCrashMatrix, runHappyPath, runLogStoreChecks } from '@viviefs/testing'
+import { makeMutableClock, P04_CHECK_COUNT, P05_CHECK_COUNT, P06_DATOM_CHECK_COUNT, P07_HOST_CHECK_COUNT, runChangesetChecks, runCrashMatrix, runHappyPath, runLaunchSweepChecks, runLogStoreChecks } from '@viviefs/testing'
 import { sqliteNodeLogStore } from './layer.ts'
 
 describe('sqlite-node log store', () => {
@@ -81,4 +81,23 @@ describe('sqlite-node log store', () => {
       await rm(directory, { recursive: true, force: true })
     }
   }, 180_000)
+
+  it('passes the P07 host launch-sweep checks', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'viviefs-p07-node-'))
+    const filename = join(directory, 'log.sqlite')
+    try {
+      const clock = makeMutableClock(1_700_000_000_000)
+      const checks = await Effect.runPromise(
+        runLaunchSweepChecks(
+          (deviceId) => sqliteNodeLogStore({ filename, deviceId }),
+          clock,
+        ),
+      )
+      expect(checks).toHaveLength(P07_HOST_CHECK_COUNT)
+      const failed = checks.filter((check) => check.status !== 'PASS')
+      expect(failed, JSON.stringify(failed, null, 2)).toEqual([])
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
+  }, 60_000)
 })

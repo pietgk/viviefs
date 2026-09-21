@@ -40,9 +40,12 @@ export const motelHealth = async (): Promise<boolean> => {
   }
 }
 
-export const searchSpansByToken = async (token: string): Promise<SpanSearch> => {
+export const searchSpansByToken = async (
+  token: string,
+  service = MOTEL_SERVICE,
+): Promise<SpanSearch> => {
   const url = new URL(`${MOTEL_ORIGIN}/api/spans/search`)
-  url.searchParams.set('service', MOTEL_SERVICE)
+  url.searchParams.set('service', service)
   url.searchParams.set('attr.probe.token', token)
   const response = await fetch(url, { signal: AbortSignal.timeout(5000) })
   if (!response.ok) {
@@ -54,11 +57,12 @@ export const searchSpansByToken = async (token: string): Promise<SpanSearch> => 
 export const waitForSpan = async (
   token: string,
   ms: number,
+  service = MOTEL_SERVICE,
 ): Promise<SpanSearch> => {
   const deadline = Date.now() + ms
   let last: SpanSearch = { data: [] }
   while (Date.now() < deadline) {
-    last = await searchSpansByToken(token)
+    last = await searchSpansByToken(token, service)
     if ((last.data?.length ?? 0) > 0) return last
     await sleep(1000)
   }

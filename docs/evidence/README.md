@@ -12,3 +12,4 @@ Do not mark a gate passed from prose in this directory.
 - [2026-09-20-p04.md](2026-09-20-p04.md) — Log store (P04)
 - [2026-09-20-p05.md](2026-09-20-p05.md) — Changesets and projections (P05)
 - [2026-09-20-p06.md](2026-09-20-p06.md) — Workflow engine crash matrix (P06)
+- [2026-09-21-p07.md](2026-09-21-p07.md) — Device resume E2E (P07)

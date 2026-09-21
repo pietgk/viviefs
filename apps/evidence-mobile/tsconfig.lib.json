@@ -16,6 +16,9 @@
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"],
   "references": [
     {
+      "path": "../../libs/workflow-engine/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/testing/tsconfig.lib.json"
     },
     {
@@ -29,6 +32,9 @@
     },
     {
       "path": "../../libs/platform-native/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/evidence/model/tsconfig.lib.json"
     },
     {
       "path": "../../libs/datom/tsconfig.lib.json"

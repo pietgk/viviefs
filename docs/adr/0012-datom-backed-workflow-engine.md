@@ -38,7 +38,7 @@ by epoch. Other journal facts are write-once.
 ## Trade-offs
 
 Custom engine instead of Cluster-on-device. Cluster on a killed mobile app is
-untested territory (P07). Public Effect interfaces only: no private engine
+untested territory (P07, now run). Public Effect interfaces only: no private engine
 hooks. `Workflow.intoResult` is uninterruptible, so an in-process kill is a
 self-interrupt of the interruptible child after the crash hook opens, not
 `Effect.never` plus an outer `Fiber.interrupt`.
@@ -65,4 +65,5 @@ In-memory engine is not durability.
 boundaries passed on sqlite-node and PGlite. `WorkflowEngine.layerMemory` lost
 the execution (`poll` none) and re-ran activities. `engine.ts` is 646 lines
 (estimate was 300-600). Device force-quit is P07. Evidence:
-[2026-09-20-p06.md](../evidence/2026-09-20-p06.md).
+[2026-09-20-p06.md](../evidence/2026-09-20-p06.md). P07:
+[2026-09-21-p07.md](../evidence/2026-09-21-p07.md).

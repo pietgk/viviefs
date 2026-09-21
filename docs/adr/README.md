@@ -21,7 +21,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0010](0010-entity-ids-and-defining-attributes.md) | Entity ids, defining attributes and strict-composition prefixes | Qualified | P05 |
 | [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Qualified | P04, P05 |
 | [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Qualified | P06 |
-| [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Proposed, unverified | P07, P14 |
+| [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Qualified (P07); P14 unverified | P07, P14 |
 | [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Proposed, unverified | P09 |
 | [0015](0015-deferreds-vs-machines.md) | Human steps as deferreds; workflows own progress | Proposed, unverified | P06, P09 |
 | [0016](0016-commands-and-server-validation.md) | Commands, server validation and rejection | Proposed, unverified | P09 |

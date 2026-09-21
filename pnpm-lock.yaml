@@ -235,6 +235,9 @@ importers:
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../../libs/datom
+      '@viviefs/evidence-model':
+        specifier: workspace:*
+        version: link:../../features/evidence/model
       '@viviefs/platform-native':
         specifier: workspace:*
         version: link:../../libs/platform-native
@@ -250,6 +253,9 @@ importers:
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../../libs/testing
+      '@viviefs/workflow-engine':
+        specifier: workspace:*
+        version: link:../../libs/workflow-engine
       effect:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
@@ -262,6 +268,9 @@ importers:
       expo-dev-client:
         specifier: 58.0.3
         version: 58.0.3(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))
+      expo-notifications:
+        specifier: 58.0.3
+        version: 58.0.3(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@5.9.3)
       expo-sqlite:
         specifier: 58.0.3
         version: 58.0.3(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
@@ -336,10 +345,19 @@ importers:
       '@formatjs/intl-locale':
         specifier: 5.3.11
         version: 5.3.11
+      '@viviefs/workflow-engine':
+        specifier: workspace:*
+        version: link:../workflow-engine
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
     devDependencies:
       expo-crypto:
         specifier: 58.0.1
         version: 58.0.1(expo@58.0.0-preview.3)
+      expo-notifications:
+        specifier: 58.0.3
+        version: 58.0.3(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@5.9.3)
 
   libs/store-postgres:
     dependencies:
@@ -1979,6 +1997,10 @@ packages:
     resolution: {integrity: sha512-nrUSn7hzt7J6JWgWGz78ZYI8wj+gdIJdk0Ynjpp8l+trkn58Uqsf6RYrYkEK+3X18EX+TNdtJI0WxAtc+L84SQ==}
     hasBin: true
 
+  abort-controller@3.0.0:
+    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
+    engines: {node: '>=6.5'}
+
   accepts@1.3.8:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
@@ -2140,6 +2162,9 @@ packages:
         optional: true
       expo-widgets:
         optional: true
+
+  badgin@1.2.3:
+    resolution: {integrity: sha512-NQGA7LcfCpSzIbGRbkgjgdWkjy7HI+Th5VLxTJfW5EeaAf3fnS+xWQaQOCYiny+q6QSvxqoSO04vCx+4u++EJw==}
 
   balanced-match@4.0.3:
     resolution: {integrity: sha512-1pHv8LX9CpKut1Zp4EXey7Z8OfH11ONNH6Dhi2WDUt31VVZFXZzKwXcysBgqSumFCmR+0dqjMK5v5JiFHzi0+g==}
@@ -2546,9 +2571,18 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
+  event-target-shim@5.0.1:
+    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
+    engines: {node: '>=6'}
+
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
+
+  expo-application@58.0.1:
+    resolution: {integrity: sha512-M3kPfZUkvTjzAy/W/qgTsgN7JD+BHjy19TBSosRfbNlNDeyyGz/MYrtmyLw3eH+3fgfWje+hvaMGR9Rnx+p9aA==}
+    peerDependencies:
+      expo: '*'
 
   expo-asset@58.0.3:
     resolution: {integrity: sha512-pZcvdhqzCs23hUjivmRDGPD4+pE5NNBtxy9NREfv8MRJcYPJ/Sk//KsYay3eyFJ7NNDyP87gNbUPrUPpFtQJxg==}
@@ -2634,6 +2668,13 @@ packages:
   expo-modules-jsi@58.0.2:
     resolution: {integrity: sha512-3/eGXRbX4R7fUNH0oCK+fmO359BKTsTs4hnEbtdoyxnP5pbNWYPZqQsEP2csHzlCHarNwAM3N3ekDylSxUZzDw==}
     peerDependencies:
+      react-native: '*'
+
+  expo-notifications@58.0.3:
+    resolution: {integrity: sha512-+V7Fb/I/CyWd9fwA7kkCFXwU84dCJUryvH071oSJqFPr0JbOTm25xaf9XKy6mKBFHx3xUDJsLdRLHROO/ig2Yg==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
       react-native: '*'
 
   expo-server@58.0.0:
@@ -6354,6 +6395,10 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
+  abort-controller@3.0.0:
+    dependencies:
+      event-target-shim: 5.0.1
+
   accepts@1.3.8:
     dependencies:
       mime-types: 2.1.35
@@ -6578,6 +6623,8 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
+
+  badgin@1.2.3: {}
 
   balanced-match@4.0.3: {}
 
@@ -6981,7 +7028,13 @@ snapshots:
 
   etag@1.8.1: {}
 
+  event-target-shim@5.0.1: {}
+
   expect-type@1.4.0: {}
+
+  expo-application@58.0.1(expo@58.0.0-preview.3):
+    dependencies:
+      expo: 58.0.0-preview.3(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@58.0.0)(@expo/metro-runtime@58.0.3)(react-dom@19.2.3(react@19.2.3))(react-native-web@0.21.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@5.9.3)
 
   expo-asset@58.0.3(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@5.9.3):
     dependencies:
@@ -7079,6 +7132,20 @@ snapshots:
   expo-modules-jsi@58.0.2(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1)):
     dependencies:
       react-native: 0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1)
+
+  expo-notifications@58.0.3(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@5.9.3):
+    dependencies:
+      '@expo/image-utils': 0.12.0(supports-color@8.1.1)(typescript@5.9.3)
+      abort-controller: 3.0.0
+      badgin: 1.2.3
+      expo: 58.0.0-preview.3(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@58.0.0)(@expo/metro-runtime@58.0.3)(react-dom@19.2.3(react@19.2.3))(react-native-web@0.21.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@5.9.3)
+      expo-application: 58.0.1(expo@58.0.0-preview.3)
+      expo-constants: 58.0.3(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(supports-color@8.1.1)
+      react: 19.2.3
+      react-native: 0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
 
   expo-server@58.0.0: {}
 

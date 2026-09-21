@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { command } from '../process.ts'
 import { agentCli, agentCliJson, agentDevice } from './agent-cli.ts'
-import { forceStopAndroidApp, reverseAndroidPorts } from './devices.ts'
+import { forceStopAndroidApp, reverseAndroidPorts, terminateIosApp } from './devices.ts'
 
 export type CheckResult = {
   name: string
@@ -227,6 +227,7 @@ export const waitForHermesReport = async (options: {
   variant: string
   env?: NodeJS.ProcessEnv
   waitMs?: number
+  isReady?: (report: ProbeReport) => boolean
 }): Promise<ProbeReport> => {
   const deadline = Date.now() + (options.waitMs ?? 180_000)
   let recovered = false
@@ -239,7 +240,9 @@ export const waitForHermesReport = async (options: {
       options.gate,
       options.env,
     )
-    if (report?.ready && report.variant === options.variant) return report
+    if (report?.ready && report.variant === options.variant) {
+      if (!options.isReady || options.isReady(report)) return report
+    }
     if (!recovered) {
       if ((await debuggerTargetCount()) === 0) {
         await openOnDevice(
@@ -522,6 +525,148 @@ export const recordAgentStatus = async (
     `${gate} agent-cli status: SDK ${project.sdkVersion}, usesDevClient=${project.usesDevClient}`,
   )
   return status.data
+}
+
+export const startDeviceSession = async (options: {
+  cwd: string
+  artifacts: string
+  platform: 'ios' | 'android'
+  env: NodeJS.ProcessEnv
+  gate: string
+  variant: string
+}): Promise<void> => {
+  const plan = await agentCliJson(
+    [
+      'dev',
+      `--${options.platform}`,
+      '--dev-client',
+      '--localhost',
+      '--plan',
+      '--json',
+    ],
+    { cwd: options.cwd, env: options.env, timeout: 60_000 },
+  )
+  await writeJson(
+    options.artifacts,
+    `plan-${options.platform}-${options.variant}.json`,
+    plan.data,
+  )
+  const planData = plan.data as { target?: string; rule?: string }
+  if (planData.target === 'expo-go' || planData.rule === 'expo-go') {
+    fail(
+      `${options.gate} refused Expo Go for ${options.platform}: agent-cli still planned Expo Go.`,
+    )
+  }
+
+  await stopDev(options.cwd)
+  const nativeBuild = planNeedsNativeBuild(plan.data)
+  const started = await agentCliJson(
+    [
+      'dev',
+      `--${options.platform}`,
+      '--dev-client',
+      '--localhost',
+      '--detach',
+      ...(nativeBuild ? [] : ['--wait-ready']),
+      '--clear',
+      '--json',
+    ],
+    {
+      cwd: options.cwd,
+      env: options.env,
+      timeout: nativeBuild ? 1_200_000 : 180_000,
+    },
+  )
+  await writeJson(
+    options.artifacts,
+    `dev-${options.platform}-${options.variant}.json`,
+    started.data,
+  )
+  if (started.code !== 0 && !(await metroStatusOk())) {
+    fail(
+      `agent-cli dev --${options.platform} --dev-client failed:\n${started.stderr || started.stdout}`,
+    )
+  }
+  if (nativeBuild || !(await metroStatusOk())) {
+    console.log(
+      `${options.gate} waiting for Metro after ${options.platform} ${options.variant}${nativeBuild ? ' native build' : ''}`,
+    )
+    await waitForMetro(1_200_000, `${options.platform} ${options.variant}`)
+  }
+
+  const other = options.platform === 'ios' ? 'android' : 'ios'
+  await agentCli(['runtime:stop', `--${other}`, '--json'], {
+    cwd: options.cwd,
+    timeout: 30_000,
+  })
+
+  if (options.platform === 'android') {
+    await reverseAndroidPorts([8081, 27686])
+    await forceStopAndroidApp()
+  } else {
+    await terminateIosApp().catch(() => undefined)
+  }
+
+  await openOnDevice(
+    options.cwd,
+    options.artifacts,
+    options.platform,
+    options.variant,
+    options.env,
+  )
+  const inspectorWait = options.platform === 'android' ? 20_000 : 20_000
+  const inspectorUp = await waitForHermesInspector(
+    inspectorWait,
+    `${options.gate} ${options.platform} ${options.variant}`,
+  )
+  if (inspectorUp || (await debuggerTargetCount()) > 0) {
+    const reloaded = await agentCliJson(
+      ['runtime:reload', `--${options.platform}`, '--json'],
+      { cwd: options.cwd, env: options.env, timeout: 60_000 },
+    )
+    await writeJson(
+      options.artifacts,
+      `reload-${options.platform}-${options.variant}.json`,
+      reloaded.data,
+    )
+    const appsConnected =
+      typeof reloaded.data === 'object' &&
+      reloaded.data !== null &&
+      'appsConnected' in reloaded.data
+        ? Number((reloaded.data as { appsConnected?: number }).appsConnected)
+        : 0
+    if (!Number.isFinite(appsConnected) || appsConnected < 1) {
+      await waitForHermesInspector(
+        inspectorWait,
+        `${options.gate} ${options.platform} ${options.variant} after reload`,
+      )
+    }
+  }
+}
+
+export const relaunchOnDevice = async (options: {
+  cwd: string
+  artifacts: string
+  platform: 'ios' | 'android'
+  variant: string
+  env?: NodeJS.ProcessEnv
+  gate: string
+}) => {
+  if (options.platform === 'android') {
+    await reverseAndroidPorts([8081, 27686])
+  }
+  await openOnDevice(
+    options.cwd,
+    options.artifacts,
+    options.platform,
+    options.variant,
+    options.env,
+  )
+  const inspectorWait = options.platform === 'android' ? 20_000 : 12_000
+  await waitForHermesInspector(
+    inspectorWait,
+    `${options.gate} ${options.platform} ${options.variant} relaunch`,
+  )
 }
 
 export const assertAllPass = (

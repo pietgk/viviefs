@@ -74,7 +74,7 @@ export const gateProbes: GateProbe[] = [
     gate: 'P07',
     path: 'tools/qualification/src/probes/p07.ts',
     args: [],
-    timeoutMs: 1_800_000,
+    timeoutMs: 3_600_000,
     stage: 'foundation',
     summary:
       'Force-quit resume and notification wake on iOS simulator and Android emulator.',

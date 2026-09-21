@@ -27,8 +27,11 @@ open-changeset TTL; incomplete-changeset positive control; pinned
 P06 is implemented (datom-backed `WorkflowEngine` crash matrix on sqlite-node
 and PGlite; memory-engine durability positive control; pinned
 `viviefs/workflow/*`, `viviefs/activity/exit`, `viviefs/deferred/exit`,
-`viviefs/clock/wake-at` and `viviefs/lease/holder`). Device force-quit is P07.
-P07-P14 that have not been implemented refuse to pass; there is no
+`viviefs/clock/wake-at` and `viviefs/lease/holder`). P07 is implemented
+(device force-quit mid-upload and mid-wait on iOS simulator and Android
+emulator; launch `EngineSweep` resumes; without sweep the workflow stays
+parked; motel `p07.park` / `p07.resume`; `expo-notifications` 58.0.3).
+P08-P14 that have not been implemented refuse to pass; there is no
 passing placeholder.
 
 ## Run

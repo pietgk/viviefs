@@ -131,6 +131,66 @@ export const ensureAndroidEmulator = async (): Promise<void> => {
 
 export const ANDROID_APP_ID = 'dev.viviefs.evidence'
 
+export const terminateIosApp = async (
+  appId = ANDROID_APP_ID,
+): Promise<void> => {
+  const udid = await iosSimulatorUdid()
+  const stopped = await command(
+    'xcrun',
+    ['simctl', 'terminate', udid, appId],
+    { timeout: 15_000 },
+  )
+  if (
+    stopped.code !== 0 &&
+    !/not in a running|found running|Invalid device/i.test(
+      stopped.stderr + stopped.stdout,
+    )
+  ) {
+    throw new Error(
+      `simctl terminate ${appId} failed: ${stopped.stderr || stopped.stdout}`,
+    )
+  }
+}
+
+export const grantNotificationPermission = async (
+  platform: 'ios' | 'android',
+  appId = ANDROID_APP_ID,
+): Promise<void> => {
+  if (platform === 'ios') {
+    const udid = await iosSimulatorUdid()
+    await command(
+      'xcrun',
+      ['simctl', 'privacy', udid, 'grant', 'notifications', appId],
+      { timeout: 15_000 },
+    )
+    return
+  }
+  const env = androidEnv()
+  const androidHome = env.ANDROID_HOME as string
+  const adb = join(androidHome, 'platform-tools/adb')
+  for (const permission of [
+    'android.permission.POST_NOTIFICATIONS',
+    'android.permission.SCHEDULE_EXACT_ALARM',
+    'android.permission.USE_EXACT_ALARM',
+  ]) {
+    await command(adb, ['shell', 'pm', 'grant', appId, permission], {
+      env,
+      timeout: 15_000,
+    })
+  }
+}
+
+export const forceQuitApp = async (
+  platform: 'ios' | 'android',
+  appId = ANDROID_APP_ID,
+): Promise<void> => {
+  if (platform === 'android') {
+    await forceStopAndroidApp(appId)
+    return
+  }
+  await terminateIosApp(appId)
+}
+
 export const forceStopAndroidApp = async (
   appId = ANDROID_APP_ID,
 ): Promise<void> => {
@@ -146,6 +206,16 @@ export const forceStopAndroidApp = async (
       `adb force-stop ${appId} failed: ${stopped.stderr || stopped.stdout}`,
     )
   }
+}
+
+export const expandAndroidNotifications = async (): Promise<void> => {
+  const env = androidEnv()
+  const androidHome = env.ANDROID_HOME as string
+  const adb = join(androidHome, 'platform-tools/adb')
+  await command(adb, ['shell', 'cmd', 'statusbar', 'expand-notifications'], {
+    env,
+    timeout: 15_000,
+  })
 }
 
 export const reverseAndroidPorts = async (ports: number[]): Promise<void> => {

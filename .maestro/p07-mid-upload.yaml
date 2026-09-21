@@ -1,0 +1,22 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+- extendedWaitUntil:
+    visible:
+      id: "p07-at-upload"
+    timeout: 120000
+- stopApp
+- launchApp
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+- extendedWaitUntil:
+    visible:
+      id: "p07-at-wait"
+    timeout: 120000

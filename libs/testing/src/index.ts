@@ -21,3 +21,13 @@ export {
   runMemoryDurabilityControl,
   type StoreFactory,
 } from './crash-matrix.ts'
+export {
+  P07_CHECK_COUNT,
+  P07_CHECK_NAMES,
+  P07_DEVICE_CHECK_COUNT,
+  P07_DEVICE_CHECK_NAMES,
+  P07_HOST_CHECK_COUNT,
+  P07_HOST_CHECK_NAMES,
+  P07_PARKED_ATTR,
+  runLaunchSweepChecks,
+} from './launch-sweep.ts'

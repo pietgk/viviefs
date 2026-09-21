@@ -16,6 +16,7 @@ import {
   activityId,
   Attr,
   clockId,
+  decodeIdSegment,
   deferredId,
   executionId as executionEntity,
   HlcDevice,
@@ -25,6 +26,8 @@ import {
 } from '@viviefs/datom'
 import { CrashHook } from './crash-hook.ts'
 import { EngineConfig } from './config.ts'
+import { EngineSweep } from './sweep.ts'
+import { WakeScheduler } from './wake.ts'
 import {
   completeFromExit,
   decodeClock,
@@ -97,16 +100,16 @@ const sleepUntil = (wakeAtMs: number) =>
   )
 
 export const engineLayer: Layer.Layer<
-  WorkflowEngine.WorkflowEngine | Leases,
+  WorkflowEngine.WorkflowEngine | Leases | EngineSweep,
   never,
-  LogStore | HlcDevice | EngineConfig | CrashHook
-> = Layer.effect(
-  WorkflowEngine.WorkflowEngine,
+  LogStore | HlcDevice | EngineConfig | CrashHook | WakeScheduler
+> = Layer.effectContext(
   Effect.gen(function* () {
     const store = yield* LogStore
     const device = yield* HlcDevice
     const config = yield* EngineConfig
     const hook = yield* CrashHook
+    const scheduler = yield* WakeScheduler
     const scope = yield* Effect.scope
     const clocks = yield* FiberMap.make<string>()
     const deferredState = WorkflowEngine.makeDeferredState()
@@ -310,7 +313,7 @@ export const engineLayer: Layer.Layer<
       for (const row of rows) {
         const match = row.e.match(/^O[^/]+\/W([^/]+)/)
         if (!match?.[1]) continue
-        const exec = match[1]
+        const exec = decodeIdSegment(match[1])
         const list = byExec.get(exec) ?? []
         list.push(row)
         byExec.set(exec, list)
@@ -580,67 +583,77 @@ export const engineLayer: Layer.Layer<
               encodeClock(clock),
             )
           }
+          yield* scheduler.schedule(clock, exec)
           yield* hook.at('during-clock')
           yield* fireClock(workflow, exec, clock)
         }),
         ),
     } as unknown as WorkflowEngine.Encoded)
 
-    return engine
-  }),
-).pipe(
-  Layer.merge(
-    Layer.effect(
-      Leases,
+    const pending = () =>
       Effect.gen(function* () {
-        const store = yield* LogStore
-        const device = yield* HlcDevice
-        const config = yield* EngineConfig
-        const hook = yield* CrashHook
-        const holderOf = (exec: string) =>
-          store.scanPrefix(executionEntity(config.org, exec)).pipe(
-            Effect.map((rows) => {
-              let best: LeaseValue | null = null
-              for (const row of rows) {
-                if (row.a !== Attr.leaseHolder) continue
-                const parsed = decodeLease(row.v)
-                if (!parsed) continue
-                if (!best || parsed.epoch > best.epoch) best = parsed
-              }
-              return best
-            }),
+        const rows = yield* Effect.orDie(
+          store.scanPrefix(`${executionEntity(config.org, '')}`),
+        )
+        const byExec = new Map<string, StoredDatomType[]>()
+        for (const row of rows) {
+          const match = row.e.match(/^O[^/]+\/W([^/]+)/)
+          if (!match?.[1]) continue
+          const exec = decodeIdSegment(match[1])
+          const list = byExec.get(exec) ?? []
+          list.push(row)
+          byExec.set(exec, list)
+        }
+        const ids: string[] = []
+        for (const [exec, list] of byExec) {
+          const started = decodeStarted(
+            latest(list, Attr.workflowStarted)?.v ?? '',
           )
-        return Leases.of({
-          holder: (exec) => Effect.orDie(holderOf(exec)),
-          handoff: (exec, toDevice) =>
-            Effect.orDie(
-              Effect.gen(function* () {
-              yield* hook.at('during-lease-handoff')
-              const holder = yield* holderOf(exec)
-              const next: LeaseValue = {
-                device: toDevice,
-                epoch: (holder?.epoch ?? 0) + 1,
-                expiresAtMs: null,
-              }
-              const tx = yield* store.mint()
-              yield* store.append(
-                [
-                  {
-                    e: executionEntity(config.org, exec),
-                    a: Attr.leaseHolder,
-                    v: encodeLease(next),
-                    tx,
-                    op: 'assert',
-                    cs: tx,
-                  },
-                ],
-                envelope(tx, device.id, holder?.epoch ?? null),
-              )
-              return next
-            }),
-            ),
-        })
-      }),
-    ),
-  ),
+          const result = latest(list, Attr.workflowResult)
+          if (started && !result) ids.push(exec)
+        }
+        return ids
+      })
+
+    const sweep = () =>
+      Effect.gen(function* () {
+        const ids = yield* pending()
+        for (const id of ids) yield* resume(id)
+        yield* sweepClocks
+      }).pipe(Effect.withSpan('viviefs.engine.sweep'))
+
+    const leases = Leases.of({
+      holder: (exec) => Effect.orDie(holderOf(exec)),
+      handoff: (exec, toDevice) =>
+        Effect.orDie(
+          Effect.gen(function* () {
+            yield* hook.at('during-lease-handoff')
+            const holder = yield* holderOf(exec)
+            const next: LeaseValue = {
+              device: toDevice,
+              epoch: (holder?.epoch ?? 0) + 1,
+              expiresAtMs: null,
+            }
+            yield* appendFact(
+              exec,
+              executionEntity(config.org, exec),
+              Attr.leaseHolder,
+              encodeLease(next),
+            )
+            return next
+          }),
+        ),
+    })
+
+    return Context.make(WorkflowEngine.WorkflowEngine, engine).pipe(
+      Context.add(Leases, leases),
+      Context.add(
+        EngineSweep,
+        EngineSweep.of({
+          pending,
+          sweep,
+        }),
+      ),
+    )
+  }),
 )

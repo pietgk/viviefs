@@ -1,6 +1,6 @@
 # ADR-0013: Device durability
 
-Status: Proposed, unverified
+Status: Qualified (P07 native resume). P14 (browser leader) unverified
 
 Date: 2026-09-20
 
@@ -56,4 +56,14 @@ deferreds. One engine per browser profile.
 
 ### Observed
 
-Not yet run.
+2026-09-21. Ledger pass `2026-09-21T07-05-26.784Z-33ca482f`. Force-quit
+mid-upload and mid-wait resumed on iOS simulator and Android emulator when
+`EngineSweep` ran on launch; without the sweep the workflow stayed parked.
+Motel showed `p07.park` and `p07.resume` for the mid-upload token on both
+platforms. Completing the `approval` deferred after relaunch finished
+`DeviceResume.v1`. Maestro YAML did not itself deliver the kill (iOS replay
+daemon had no session; Android saw the Expo developer menu); `simctl` /
+`adb force-stop` did. A SpringBoard/shade tap on "P07 approval" was not
+observed; the deferred completed via last-notification-response or a host
+`runtime:eval` of the in-app complete hook. P14 not run. Evidence:
+[2026-09-21-p07.md](../evidence/2026-09-21-p07.md).
