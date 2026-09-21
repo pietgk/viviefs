@@ -34,7 +34,11 @@ const tracked = execFileSync(
   { encoding: 'utf8' },
 )
   .split('\n')
-  .filter((path) => path.endsWith('/project.json') || path === 'project.json')
+  .filter(
+    (path) =>
+      (path.endsWith('/project.json') || path === 'project.json') &&
+      !path.startsWith('repos/'),
+  )
 
 const workspacePackages = execFileSync(
   'git',
@@ -47,7 +51,8 @@ const workspacePackages = execFileSync(
       path.endsWith('/package.json') &&
       path !== 'package.json' &&
       !path.startsWith('.agents/') &&
-      !path.startsWith('vendor/'),
+      !path.startsWith('vendor/') &&
+      !path.startsWith('repos/'),
   )
 
 const problems: string[] = []

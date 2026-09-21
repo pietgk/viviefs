@@ -24,6 +24,11 @@ const INTENTIONALLY_UNLINTED: readonly { prefix: string; rationale: string }[] =
       rationale:
         'Vendored skills. Upstream copies are not subject to this repo\'s lint rules.',
     },
+    {
+      prefix: 'repos/',
+      rationale:
+        'Git-subtree reference trees. Read-only for agents; not this repo\'s lint rules.',
+    },
   ])
 
 const sourcePattern = new RegExp(`\\.(?:${SOURCE_EXTENSIONS.join('|')})$`)

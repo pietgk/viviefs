@@ -6,9 +6,10 @@
   "license": "Apache-2.0",
   "packageManager": "pnpm@12.5.1",
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=22.18.0"
   },
   "scripts": {
+    "prepare": "effect-tsgo patch --typescript --typescript-package @typescript/native",
     "lint": "nx run-many -t lint --all",
     "lint-scope": "node --experimental-strip-types tools/verify/src/check-lint-scope.ts",
     "ownership": "node --experimental-strip-types tools/verify/src/check-ownership.ts",
@@ -21,6 +22,7 @@
     "ledger": "node --experimental-strip-types tools/qualification/src/cli.ts ledger"
   },
   "devDependencies": {
+    "@effect/tsgo": "0.45.0",
     "@effect/vitest": "4.0.0-rc.116",
     "@eslint/js": "10.0.1",
     "@nx/eslint": "23.2.1",
@@ -29,6 +31,7 @@
     "@types/node": "22.20.4",
     "@typescript/native": "npm:typescript@7.0.2",
     "effect": "4.0.0-rc.116",
+    "effect-solutions": "0.5.3",
     "eslint": "10.11.0",
     "jsonc-eslint-parser": "3.3.0",
     "nx": "23.2.1",

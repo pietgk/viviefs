@@ -282,7 +282,7 @@ const killWhileWaiting = (
         yield* Probe.execute(payload, { discard: true })
         yield* waitUntilSuspended(executionId)
         yield* arrived.open
-        yield* Effect.never
+        return yield* Effect.never
       }).pipe(Effect.provide(live)),
       arrived.await,
     )
@@ -326,7 +326,7 @@ const killDuringClock = (
         yield* waitUntilSuspended(executionId)
         yield* completeApproval(executionId)
         yield* arrived.await
-        yield* Effect.never
+        return yield* Effect.never
       }).pipe(Effect.provide(live)),
       arrived.await,
     )
@@ -364,7 +364,7 @@ const killDuringUpload = (
         yield* waitUntilSuspended(executionId)
         yield* Effect.sleep(Duration.millis(250))
         yield* arrived.await
-        yield* Effect.never
+        return yield* Effect.never
       }).pipe(Effect.provide(live)),
       arrived.await,
     )
@@ -394,7 +394,7 @@ const killDuringLease = (
         yield* Probe.execute(payload, { discard: true })
         yield* waitUntilSuspended(executionId)
         yield* arrived.open
-        yield* Effect.never
+        return yield* Effect.never
       }).pipe(Effect.provide(live)),
       arrived.await,
     )
@@ -518,7 +518,7 @@ export const runMemoryDurabilityControl = (): Effect.Effect<CheckResult> =>
           yield* Probe.execute(payload, { discard: true })
           yield* waitUntilSuspended(executionId)
           yield* arrived.open
-          yield* Effect.never
+          return yield* Effect.never
         }).pipe(Effect.provide(live)),
         arrived.await,
       )

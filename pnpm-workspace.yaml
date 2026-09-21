@@ -9,6 +9,7 @@ allowBuilds:
   nx: true
   '@swc/core': true
   esbuild: true
+  msgpackr-extract: false
 
 minimumReleaseAgeExclude:
   - '@op-engineering/op-sqlite@18.2.5'

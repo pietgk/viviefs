@@ -19,6 +19,8 @@ that link to guides, not a second copy of those guides (D30).
    Do not rename them (D44).
 5. [`docs/plan/bootstrap/06-qualification-gates.md`](docs/plan/bootstrap/06-qualification-gates.md) -
    ordered gates. No feature code before its gate passes. Probes and exemplars stay.
+6. [`repos/effect/LLMS.md`](repos/effect/LLMS.md) - before writing Effect code. Then
+   [`.agents/patterns/`](.agents/patterns/).
 
 ## Delivery
 
@@ -36,9 +38,10 @@ material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-t
 
 | Plane | Source of truth |
 | --- | --- |
-| Agent context | this file, `.agents/skills/`, `skills-lock.json` |
+| Agent context | this file, `.agents/skills/`, `.agents/patterns/`, `skills-lock.json` |
 | Host toolchain | `mise.toml` (Node, pnpm, bun) |
-| TypeScript | dual pin in root `package.json` ([ADR-0028](docs/adr/0028-typescript-7-cli-with-typescript-6-api.md)): `tsc` is TypeScript 7 (`@typescript/native`); the `typescript` package name is TypeScript 6 (`@typescript/typescript6`) for Nx, ESLint and Vite. Do not install `typescript@7` under the `typescript` name. |
+| TypeScript | dual pin in root `package.json` ([ADR-0028](docs/adr/0028-typescript-7-cli-with-typescript-6-api.md)): `tsc` is TypeScript 7 (`@typescript/native`); the `typescript` package name is TypeScript 6 (`@typescript/typescript6`) for Nx, ESLint and Vite. Do not install `typescript@7` under the `typescript` name. `tsc` is patched by `@effect/tsgo` ([ADR-0029](docs/adr/0029-effect-reference-and-language-service.md)). Editor tsserver stays on TypeScript 6 until Cursor Native Preview is usable. |
+| Effect reference | `repos/effect` git subtree. Read-only. Prefer it over web search and over `node_modules`. |
 | Device driving | `@expo/agent-cli` in `apps/evidence-mobile`; `agent-device` in `tools/qualification` (both MIT) |
 | Lab runtime | Apple Container image digests (admitted per measured gap; none yet) |
 
@@ -57,6 +60,26 @@ on a name collision with a user-level skill or plugin.
 
 Claude Code loads the same tree through `.claude/skills/` symlinks. Cursor and
 Codex read `.agents/skills/` natively.
+
+## Vendored repositories
+
+External source lives under `repos/` as git subtrees ([ADR-0029](docs/adr/0029-effect-reference-and-language-service.md)).
+
+- Use `repos/` as read-only reference when working with the related library.
+- Prefer examples and patterns in the vendored source over web search and over
+  `node_modules`.
+- Do not edit files under `repos/` unless explicitly asked.
+- Do not import from `repos/`. Application code imports `effect` and `@effect/*`
+  from pnpm.
+- `vendor/motel` is a separate isolation pin for motel's Effect version. It is
+  not a reference subtree.
+
+When writing Effect code, read [`repos/effect/LLMS.md`](repos/effect/LLMS.md),
+then the matching file under [`.agents/patterns/`](.agents/patterns/). Those
+pattern files are agent extracts. They cite `repos/effect` and must not become
+a second copy of the docs concept pages (D30).
+
+Field-manual topics without a pattern file: `pnpm exec effect-solutions show <topic>`.
 
 ## Working agreements
 

@@ -16,6 +16,7 @@
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
+      "exclude": ["repos/**"],
       "options": {
         "typecheck": {
           "targetName": "typecheck"
@@ -24,6 +25,7 @@
     },
     {
       "plugin": "@nx/eslint/plugin",
+      "exclude": ["repos/**"],
       "options": {
         "targetName": "lint"
       }

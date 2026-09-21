@@ -3,8 +3,14 @@
  * expo-sqlite fallback). Probe tables only; not the log-store schema (P04).
  */
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 import * as Migrator from 'effect/unstable/sql/Migrator'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
+
+class RollbackBoom extends Schema.TaggedError<RollbackBoom>()(
+  'RollbackBoom',
+  {},
+) {}
 
 export type CheckStatus = 'PASS' | 'FAIL'
 
@@ -129,7 +135,7 @@ export const runSqlDriverChecks = (): Effect.Effect<
               Effect.gen(function* () {
                 yield* sql`INSERT INTO probe_datoms (e, a, v, tx, op)
                   VALUES ('e-rollback', 'title', 'hidden', 'tx-rollback', 1)`
-                return yield* Effect.fail(new Error('boom'))
+                return yield* new RollbackBoom()
               }),
             )
             .pipe(Effect.flip)

@@ -12,6 +12,8 @@ export default [
       '**/.nx',
       '**/node_modules',
       '.agents/**',
+      'repos/**',
+      'vendor/**',
     ],
   },
   {

@@ -37,6 +37,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0026](0026-verify-qualify-teach.md) | Verify - Qualify - Teach | Proposed, unverified | none (process) |
 | [0027](0027-developer-experience-planes.md) | Developer experience planes | Proposed, unverified | none (process) |
 | [0028](0028-typescript-7-cli-with-typescript-6-api.md) | TypeScript 7 CLI with TypeScript 6 API | Proposed, unverified | verify |
+| [0029](0029-effect-reference-and-language-service.md) | Effect reference subtree and language service | Proposed, unverified | verify |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. Acceptance is a separate human status. **Taught**

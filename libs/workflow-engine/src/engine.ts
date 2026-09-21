@@ -10,6 +10,8 @@ import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import type * as Scope from 'effect/Scope'
+import type * as Activity from 'effect/unstable/workflow/Activity'
+import type * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
 import * as Workflow from 'effect/unstable/workflow/Workflow'
 import * as WorkflowEngine from 'effect/unstable/workflow/WorkflowEngine'
 import {
@@ -400,14 +402,32 @@ export const engineLayer: Layer.Layer<
     const die = <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.orDie(effect)
 
     const engine = WorkflowEngine.makeUnsafe({
-      register: Effect.fnUntraced(function* (workflow, execute) {
+      register: Effect.fnUntraced(function* (
+        workflow: Workflow.Any,
+        execute: (
+          payload: object,
+          executionId: string,
+        ) => Effect.Effect<
+          unknown,
+          unknown,
+          WorkflowEngine.WorkflowInstance | WorkflowEngine.WorkflowEngine
+        >,
+      ) {
         workflows.set(workflow._tag, {
           workflow,
           execute,
           scope: yield* Effect.scope,
         })
       }),
-      execute: Effect.fnUntraced(function* (workflow, options) {
+      execute: Effect.fnUntraced(function* (
+        workflow: Workflow.Any,
+        options: {
+          readonly executionId: string
+          readonly payload: object
+          readonly discard: boolean
+          readonly parent?: WorkflowEngine.WorkflowInstance['Service'] | undefined
+        },
+      ) {
         const entry = workflows.get(workflow._tag)
         if (!entry) {
           return yield* Effect.die(`Workflow ${workflow._tag} is not registered`)
@@ -479,7 +499,10 @@ export const engineLayer: Layer.Layer<
         if (state.fiber) yield* Fiber.interrupt(state.fiber)
       }),
       resume: (_workflow: Workflow.Any, exec: string) => die(resume(exec)),
-      activityExecute: Effect.fnUntraced(function* (activity, attempt) {
+      activityExecute: Effect.fnUntraced(function* (
+        activity: Activity.Any,
+        attempt: number,
+      ) {
         const instance = yield* WorkflowEngine.WorkflowInstance
         yield* hook.at('before-activity')
         const entity = activityId(
@@ -521,7 +544,9 @@ export const engineLayer: Layer.Layer<
         )
         return result
       }, die),
-      deferredResult: Effect.fnUntraced(function* (deferred) {
+      deferredResult: Effect.fnUntraced(function* (
+        deferred: DurableDeferred.Any,
+      ) {
         const instance = yield* WorkflowEngine.WorkflowInstance
         const entity = deferredId(
           config.org,
