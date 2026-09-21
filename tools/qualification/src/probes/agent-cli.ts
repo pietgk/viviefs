@@ -26,8 +26,8 @@ export const agentCli = async (
   args: string[],
   options: {
     cwd: string
-    env?: NodeJS.ProcessEnv
-    timeout?: number
+    env?: NodeJS.ProcessEnv | undefined
+    timeout?: number | undefined
   },
 ): Promise<CommandResult> =>
   command('pnpm', ['exec', 'expo-agent-cli', ...args], {
@@ -55,8 +55,8 @@ export const agentCliJson = async (
   args: string[],
   options: {
     cwd: string
-    env?: NodeJS.ProcessEnv
-    timeout?: number
+    env?: NodeJS.ProcessEnv | undefined
+    timeout?: number | undefined
   },
 ): Promise<AgentCliJson> => {
   const result = await agentCli(args, options)
@@ -75,8 +75,8 @@ export const agentDevice = async (
   args: string[],
   options: {
     cwd: string
-    env?: NodeJS.ProcessEnv
-    timeout?: number
+    env?: NodeJS.ProcessEnv | undefined
+    timeout?: number | undefined
   },
 ): Promise<CommandResult> =>
   command('pnpm', ['exec', 'agent-device', ...args], {

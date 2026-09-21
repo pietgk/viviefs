@@ -39,6 +39,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0028](0028-typescript-7-cli-with-typescript-6-api.md) | TypeScript 7 CLI with TypeScript 6 API | Proposed, unverified | verify |
 | [0029](0029-effect-reference-and-language-service.md) | Effect reference subtree and language service | Proposed, unverified | verify |
 | [0030](0030-verify-qualify-clis-as-effect-cli.md) | Verify and qualify CLIs as Effect CLI | Proposed, unverified | verify |
+| [0031](0031-typescript-strictness-flags.md) | TypeScript strictness flags from Effect, evaluated | Proposed, unverified | verify |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. Acceptance is a separate human status. **Taught**

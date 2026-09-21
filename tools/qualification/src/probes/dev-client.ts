@@ -225,8 +225,8 @@ export const waitForHermesReport = async (options: {
   slot: string
   gate: string
   variant: string
-  env?: NodeJS.ProcessEnv
-  waitMs?: number
+  env?: NodeJS.ProcessEnv | undefined
+  waitMs?: number | undefined
   isReady?: (report: ProbeReport) => boolean
 }): Promise<ProbeReport> => {
   const deadline = Date.now() + (options.waitMs ?? 180_000)

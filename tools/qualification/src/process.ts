@@ -9,7 +9,11 @@ export interface CommandResult {
 export async function command(
   executable: string,
   args: string[],
-  options: { cwd?: string; env?: NodeJS.ProcessEnv; timeout?: number } = {},
+  options: {
+    cwd?: string | undefined
+    env?: NodeJS.ProcessEnv | undefined
+    timeout?: number | undefined
+  } = {},
 ): Promise<CommandResult> {
   return new Promise((resolve, reject) => {
     const child = spawn(executable, args, {

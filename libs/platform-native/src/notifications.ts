@@ -146,8 +146,7 @@ export const readNotificationData = (
     workflowName: data.workflowName,
     executionId: data.executionId,
     deferredName: data.deferredName,
-    clockName:
-      typeof data.clockName === 'string' ? data.clockName : undefined,
+    ...(typeof data.clockName === 'string' ? { clockName: data.clockName } : {}),
   }
 }
 

@@ -169,7 +169,7 @@ const runStep = Effect.fnUntraced(function* (step: Step) {
     status: failed.length > 0 ? FAIL : skipped ? SKIP : PASS,
     seconds: (endedAt - startedAt) / 1000,
     output: failed.map((result) => result.output).join('\n'),
-    note,
+    ...(note === undefined ? {} : { note }),
   } satisfies Row
 })
 

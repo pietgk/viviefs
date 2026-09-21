@@ -20,7 +20,7 @@ type SpanSearch = {
 
 const bun = async (
   args: string[],
-  options: { cwd?: string; timeout?: number } = {},
+  options: { cwd?: string | undefined; timeout?: number | undefined } = {},
 ) =>
   command('bun', args, {
     cwd: options.cwd ?? MOTEL_VENDOR,
