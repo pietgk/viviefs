@@ -103,6 +103,14 @@ A pure Effect function `(readModel, intent) -> changeset or DomainError`, shared
 **Intent**:
 The user's requested change, input to a command. Not a datom.
 
+**IntentComposer**:
+Ephemeral machine that composes an intent. Parts: composing, reviewing,
+submitting. Not durable and not a transaction; a kill discards the candidate.
+Submitting hands the intent to a command. Encoding: effect-machine, with a
+generated mermaid graph as part of the pattern (XState JSON viz is a later
+option). No OTLP on the composer; durable work is traced from the log.
+_Avoid_: capture (camera or evidence item), form wizard, transaction
+
 **Outbox**:
 The device queue of changesets waiting to be acknowledged by the server.
 

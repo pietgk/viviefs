@@ -27,7 +27,7 @@
       "cache": true,
       "inputs": ["default", "^production"],
       "options": {
-        "command": "pnpm exec vitest run src/capture/CaptureScreen.stories.test.tsx",
+        "command": "pnpm exec vitest run src/intent-composer/IntentComposerScreen.stories.test.tsx",
         "cwd": "features/evidence/client"
       }
     }

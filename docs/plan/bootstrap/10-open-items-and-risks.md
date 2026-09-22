@@ -22,7 +22,9 @@ the named gate.
 
 **Hypothesis until gate** (must not constrain other work):
 
-- Interaction-state library (P08; measured 2026-09-21: Effect + Atom, ADR-0020).
+- Interaction-state library (P08; measured 2026-09-21: all three encodings
+  pass the same tests; review 2026-09-22 copies IntentComposer in
+  effect-machine, ADR-0020).
 - SQLCipher and crypto-shredding (P12, P13).
 - Effect Cluster (D39).
 - Prefix subscriptions / partial sync.
@@ -54,8 +56,10 @@ the named gate.
 
 ## Deferred decisions
 
-- Interaction state library: Effect + Atom (P08, ADR-0020). XState v5.33.2 and
-  `@typeonce/effect-machine` 0.38.0 remain retained probes.
+- Interaction state library: IntentComposer in `@typeonce/effect-machine`
+  (P08 review 2026-09-22, ADR-0020). XState v5.33.2 and Effect + Atom remain
+  retained probes. Generated mermaid is part of the pattern; XState JSON viz
+  is a later option. No OTLP on the composer.
 - Production hosting, deployment topology, production telemetry backend.
 - Scale-out of the engine (Effect Cluster) and multi-runner server.
 - Whether product apps (BirVana, ERP, GRC) move into viviefs as app pairs (D55).

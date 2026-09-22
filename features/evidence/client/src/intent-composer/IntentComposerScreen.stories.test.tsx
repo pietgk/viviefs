@@ -3,12 +3,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import * as axe from 'axe-core'
 import * as Effect from 'effect/Effect'
 import { atomDriver } from './atom.ts'
-import { CaptureScreen, FIXTURE_HASH } from './CaptureScreen.tsx'
-import { CaptureView } from './CaptureView.tsx'
-import type { CaptureDriver } from './driver.ts'
+import { IntentComposerScreen, FIXTURE_HASH } from './IntentComposerScreen.tsx'
+import { IntentComposerView } from './IntentComposerView.tsx'
+import type { ComposerDriver } from './driver.ts'
 import { effectMachineDriver } from './effect-machine.ts'
-import { idleInteraction } from './interaction.ts'
-import { selectCaptureScreen } from './screen-view.ts'
+import { emptyComposer } from './interaction.ts'
+import { selectIntentComposer } from './screen-view.ts'
 import { xstateDriver } from './xstate.ts'
 
 const ready = { _tag: 'ready' as const }
@@ -19,33 +19,33 @@ afterEach(() => {
 
 const viewStories = [
   {
-    name: 'idle empty',
-    view: selectCaptureScreen(null, idleInteraction, ready),
+    name: 'empty',
+    view: selectIntentComposer(null, emptyComposer, ready),
   },
   {
-    name: 'previewing',
-    view: selectCaptureScreen(
+    name: 'reviewing',
+    view: selectIntentComposer(
       null,
-      { phase: 'previewing', previewHash: 'blob:local' },
+      { phase: 'reviewing', candidateHash: 'blob:local' },
       ready,
     ),
   },
   {
     name: 'waiting review',
-    view: selectCaptureScreen(
+    view: selectIntentComposer(
       {
         id: 'Oorg/E1',
         title: 'Q3 backup log',
         fileHash: 'blob:9f2',
         captured: true,
       },
-      idleInteraction,
+      emptyComposer,
       { _tag: 'waitingReview' },
     ),
   },
 ] as const
 
-const passingDrivers: ReadonlyArray<CaptureDriver> = [
+const passingDrivers: ReadonlyArray<ComposerDriver> = [
   xstateDriver,
   effectMachineDriver,
   atomDriver,
@@ -56,16 +56,16 @@ const expectAccessible = async (container: HTMLElement) => {
   expect(results.violations).toEqual([])
 }
 
-describe('CaptureScreen stories', () => {
+describe('IntentComposer stories', () => {
   for (const story of viewStories) {
     it(`${story.name} is accessible`, async () => {
       const rendered = render(
-        <CaptureView
+        <IntentComposerView
           view={story.view}
           titleDraft={story.view.title}
           onTitleChange={() => undefined}
           onTitleSettle={() => undefined}
-          onCapture={() => undefined}
+          onCompose={() => undefined}
           onTakePhoto={() => undefined}
           onCancel={() => undefined}
           onConfirm={() => undefined}
@@ -77,12 +77,12 @@ describe('CaptureScreen stories', () => {
   }
 
   for (const driver of passingDrivers) {
-    it(`${driver.name} wired story completes capture`, async () => {
+    it(`${driver.name} wired story completes compose`, async () => {
       const session = await Effect.runPromise(
         driver.start({ submit: () => Effect.void }),
       )
       const rendered = render(
-        <CaptureScreen
+        <IntentComposerScreen
           session={session}
           readModel={null}
           status={ready}
@@ -90,7 +90,7 @@ describe('CaptureScreen stories', () => {
         />,
       )
       await expectAccessible(rendered.container)
-      fireEvent.click(screen.getByRole('button', { name: 'Capture' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Compose' }))
       await waitFor(() =>
         expect(
           screen.getByRole('button', { name: 'Take photo' }),
@@ -98,11 +98,11 @@ describe('CaptureScreen stories', () => {
       )
       fireEvent.click(screen.getByRole('button', { name: 'Take photo' }))
       await waitFor(() =>
-        expect(screen.getByTestId('capture-hash').textContent).toBe(FIXTURE_HASH),
+        expect(screen.getByTestId('intent-hash').textContent).toBe(FIXTURE_HASH),
       )
       fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
       await waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Capture' })).toBeTruthy(),
+        expect(screen.getByRole('button', { name: 'Compose' })).toBeTruthy(),
       )
     })
   }

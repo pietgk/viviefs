@@ -1,78 +1,77 @@
 import { createActor, fromPromise, setup, assign } from 'xstate'
 import * as Effect from 'effect/Effect'
-import type { CaptureDriver, CaptureSession } from './driver.ts'
-import type { CaptureEvent } from './interaction.ts'
+import type { ComposerDriver, ComposerSession } from './driver.ts'
+import type { ComposerEvent } from './interaction.ts'
 
 /**
- * XState v5 + Effect via `fromPromise` (D12). `Effect.runPromise` is the
- * mandated seam; this file is the P08 XState variant, not domain workflow
- * code.
+ * Retained probe. XState v5 + Effect via `fromPromise` (D12).
+ * `Effect.runPromise` is the mandated seam.
  */
-export const xstateDriver: CaptureDriver = {
+export const xstateDriver: ComposerDriver = {
   name: 'xstate',
   start: (deps) =>
     Effect.sync(() => {
       const machine = setup({
         types: {
-          context: {} as { previewHash: string | null },
+          context: {} as { candidateHash: string | null },
           events: {} as
             | { type: 'START' }
-            | { type: 'PREVIEW'; hash: string }
+            | { type: 'CANDIDATE'; hash: string }
             | { type: 'RETAKE' }
             | { type: 'CANCEL' }
             | { type: 'CONFIRM' },
         },
         actors: {
-          submitCapture: fromPromise(
+          submitIntent: fromPromise(
             ({ input }: { input: { hash: string } }) =>
               Effect.runPromise(deps.submit(input.hash)),
           ),
         },
       }).createMachine({
-        id: 'capture',
-        context: { previewHash: null },
-        initial: 'idle',
+        id: 'intentComposer',
+        context: { candidateHash: null },
+        initial: 'empty',
         states: {
-          idle: {
-            on: { START: 'capturing' },
+          empty: {
+            on: { START: 'composing' },
           },
-          capturing: {
+          composing: {
             on: {
-              PREVIEW: {
-                target: 'previewing',
+              CANDIDATE: {
+                target: 'reviewing',
                 actions: assign({
-                  previewHash: ({ event }) =>
-                    event.type === 'PREVIEW' ? event.hash : null,
+                  candidateHash: ({ event }) =>
+                    event.type === 'CANDIDATE' ? event.hash : null,
                 }),
               },
               CANCEL: {
-                target: 'idle',
-                actions: assign({ previewHash: () => null }),
+                target: 'empty',
+                actions: assign({ candidateHash: () => null }),
               },
             },
           },
-          previewing: {
+          reviewing: {
             on: {
               RETAKE: {
-                target: 'capturing',
-                actions: assign({ previewHash: () => null }),
+                target: 'composing',
+                actions: assign({ candidateHash: () => null }),
               },
               CANCEL: {
-                target: 'idle',
-                actions: assign({ previewHash: () => null }),
+                target: 'empty',
+                actions: assign({ candidateHash: () => null }),
               },
               CONFIRM: 'submitting',
             },
           },
           submitting: {
             invoke: {
-              src: 'submitCapture',
-              input: ({ context }) => ({ hash: context.previewHash ?? '' }),
+              src: 'submitIntent',
+              input: ({ context }) => ({ hash: context.candidateHash ?? '' }),
               onDone: {
-                target: 'idle',
-                actions: assign({ previewHash: () => null }),
+                target: 'empty',
+                actions: assign({ candidateHash: () => null }),
               },
-              onError: 'previewing',
+              onError: 'reviewing',
             },
           },
         },
@@ -81,27 +80,27 @@ export const xstateDriver: CaptureDriver = {
       const actor = createActor(machine)
       actor.start()
 
-      const session: CaptureSession = {
+      const session: ComposerSession = {
         snapshot: () => {
           const snap = actor.getSnapshot()
-          const phase = typeof snap.value === 'string' ? snap.value : 'idle'
+          const phase = typeof snap.value === 'string' ? snap.value : 'empty'
           return {
             phase:
-              phase === 'capturing' ||
-              phase === 'previewing' ||
+              phase === 'composing' ||
+              phase === 'reviewing' ||
               phase === 'submitting'
                 ? phase
-                : 'idle',
-            previewHash: snap.context.previewHash,
+                : 'empty',
+            candidateHash: snap.context.candidateHash,
           }
         },
-        send: (event: CaptureEvent) => {
+        send: (event: ComposerEvent) => {
           switch (event._tag) {
-            case 'StartCapture':
+            case 'Start':
               actor.send({ type: 'START' })
               return
-            case 'Preview':
-              actor.send({ type: 'PREVIEW', hash: event.hash })
+            case 'Candidate':
+              actor.send({ type: 'CANDIDATE', hash: event.hash })
               return
             case 'Retake':
               actor.send({ type: 'RETAKE' })

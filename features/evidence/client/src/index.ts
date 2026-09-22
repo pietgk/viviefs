@@ -1,21 +1,22 @@
-import { atomDriver } from './capture/atom.ts'
-import { brokenDriver } from './capture/broken.ts'
+import { atomDriver } from './intent-composer/atom.ts'
+import { brokenDriver } from './intent-composer/broken.ts'
 import {
   allPassed,
-  CAPTURE_CHECK_NAMES,
-  runCaptureChecks,
-} from './capture/checks.ts'
-import type { CaptureDriver } from './capture/driver.ts'
-import { effectMachineDriver } from './capture/effect-machine.ts'
+  COMPOSER_CHECK_NAMES,
+  runComposerChecks,
+} from './intent-composer/checks.ts'
+import type { ComposerDriver } from './intent-composer/driver.ts'
+import { effectMachineDriver } from './intent-composer/effect-machine.ts'
+import { intentComposerMermaid } from './intent-composer/graph.ts'
 import {
   EvidenceReader,
   evidenceKeys,
   makeEvidenceAtom,
-} from './capture/query-atom.ts'
-import { selectCaptureScreen } from './capture/screen-view.ts'
-import { xstateDriver } from './capture/xstate.ts'
+} from './intent-composer/query-atom.ts'
+import { selectIntentComposer } from './intent-composer/screen-view.ts'
+import { xstateDriver } from './intent-composer/xstate.ts'
 
-export const passingDrivers: ReadonlyArray<CaptureDriver> = [
+export const passingDrivers: ReadonlyArray<ComposerDriver> = [
   xstateDriver,
   effectMachineDriver,
   atomDriver,
@@ -25,15 +26,16 @@ export {
   allPassed,
   atomDriver,
   brokenDriver,
-  CAPTURE_CHECK_NAMES,
+  COMPOSER_CHECK_NAMES,
   effectMachineDriver,
   EvidenceReader,
   evidenceKeys,
+  intentComposerMermaid,
   makeEvidenceAtom,
-  runCaptureChecks,
-  selectCaptureScreen,
+  runComposerChecks,
+  selectIntentComposer,
   xstateDriver,
 }
 
-export type { CaptureCheck } from './capture/checks.ts'
-export type { CaptureDriver } from './capture/driver.ts'
+export type { ComposerCheck } from './intent-composer/checks.ts'
+export type { ComposerDriver } from './intent-composer/driver.ts'

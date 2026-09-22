@@ -14,3 +14,4 @@ Do not mark a gate passed from prose in this directory.
 - [2026-09-20-p06.md](2026-09-20-p06.md) — Workflow engine crash matrix (P06)
 - [2026-09-21-p07.md](2026-09-21-p07.md) — Device resume E2E (P07)
 - [2026-09-21-p08.md](2026-09-21-p08.md) — UI three-way prototype (P08)
+- [p08-comparison.md](p08-comparison.md) — P08 review: IntentComposer in effect-machine

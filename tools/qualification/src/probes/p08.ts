@@ -7,9 +7,9 @@ import {
   atomDriver,
   brokenDriver,
   effectMachineDriver,
-  runCaptureChecks,
+  runComposerChecks,
   xstateDriver,
-  type CaptureCheck,
+  type ComposerCheck,
 } from '@viviefs/evidence-client'
 import { fail, writeJson } from './dev-client.ts'
 import { command } from '../process.ts'
@@ -22,12 +22,12 @@ const UI = join(ROOT, 'libs/ui')
 const VARIANTS = [xstateDriver, effectMachineDriver, atomDriver] as const
 
 const VARIANT_FILES = {
-  xstate: 'features/evidence/client/src/capture/xstate.ts',
-  'effect-machine': 'features/evidence/client/src/capture/effect-machine.ts',
-  atom: 'features/evidence/client/src/capture/atom.ts',
+  xstate: 'features/evidence/client/src/intent-composer/xstate.ts',
+  'effect-machine': 'features/evidence/client/src/intent-composer/effect-machine.ts',
+  atom: 'features/evidence/client/src/intent-composer/atom.ts',
 } as const
 
-const requirePass = (checks: ReadonlyArray<CaptureCheck>, label: string) => {
+const requirePass = (checks: ReadonlyArray<ComposerCheck>, label: string) => {
   const failed = checks.filter((entry) => entry.status !== 'PASS')
   if (failed.length > 0) {
     fail(
@@ -73,19 +73,19 @@ const run = async () => {
   console.log('P08 settled-text tests...')
   await runVitest(UI, 'ui')
 
-  const variantChecks: Record<string, ReadonlyArray<CaptureCheck>> = {}
+  const variantChecks: Record<string, ReadonlyArray<ComposerCheck>> = {}
   for (const driver of VARIANTS) {
     console.log(`P08 ${driver.name} contract...`)
-    const checks = await Effect.runPromise(runCaptureChecks(driver))
+    const checks = await Effect.runPromise(runComposerChecks(driver))
     requirePass(checks, driver.name)
     variantChecks[driver.name] = checks
     await writeJson(ARTIFACTS, `${driver.name}.json`, checks)
   }
 
   console.log('P08 broken positive control...')
-  const broken = await Effect.runPromise(runCaptureChecks(brokenDriver))
+  const broken = await Effect.runPromise(runComposerChecks(brokenDriver))
   await writeJson(ARTIFACTS, 'broken.json', broken)
-  const confirm = broken.find((entry) => entry.name === 'confirm reaches idle')
+  const confirm = broken.find((entry) => entry.name === 'confirm reaches empty')
   if (confirm?.status !== 'FAIL' || allPassed(broken)) {
     fail(
       'Positive control failed: the broken variant passed the shared capture tests',
@@ -104,25 +104,25 @@ const run = async () => {
       'effect-machine':
         'Schema-first states and events. invokeEffect keeps Effect errors typed. API is pre-1.0 and still moving.',
       atom:
-        'Shared CaptureEvent tagged union plus a reducer. Impossible phases are possible until the reducer refuses them. Query atoms already use Atom.',
+        'Shared ComposerEvent tagged union plus a reducer. Impossible phases are possible until the reducer refuses them. Query atoms already use Atom.',
     },
     testAndStoryErgonomics: {
       xstate:
-        'createActor + subscribe. Same CaptureSession seam as the others once wrapped.',
+        'createActor + subscribe. Same ComposerSession seam as the others once wrapped.',
       'effect-machine':
-        'Machine.start needs a live Scope. Same CaptureSession seam after wrapping.',
+        'Machine.start needs a live Scope. Same ComposerSession seam after wrapping. Handle targets come from intentComposerGraph, which also renders the teaching mermaid.',
       atom:
         'AtomRegistry get/set/subscribe is the same seam used by query atoms. Least extra test API.',
     },
     loc,
-    winner: 'atom' as const,
-    winnerReason:
-      'Same Atom/Reactivity model as D42 query atoms, no fromPromise seam, MIT Effect-native stack. XState and effect-machine remain retained probes.',
+    copy: 'effect-machine' as const,
+    copyReason:
+      'Review copy target: illegal phases unrepresentable, submit stays a typed Effect, mermaid is generated from intentComposerGraph. Smallest file (atom) is recorded in loc and is not the copy target. Query atoms stay Atom.',
   }
 
   await writeJson(ARTIFACTS, 'comparison.json', comparison)
   await writeJson(ARTIFACTS, 'picks.json', {
-    winner: comparison.winner,
+    copy: comparison.copy,
     loc,
     settleMs: 500,
     fixtureHash: 'blob:p08-fixture',
@@ -133,7 +133,7 @@ const run = async () => {
     },
   })
   console.log(
-    `P08 passed. Winner: ${comparison.winner}. LOC ${JSON.stringify(loc)}.`,
+    `P08 passed. Copy: ${comparison.copy}. LOC ${JSON.stringify(loc)}.`,
   )
 }
 

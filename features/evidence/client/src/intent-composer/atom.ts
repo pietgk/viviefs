@@ -1,48 +1,49 @@
 import * as Atom from 'effect/unstable/reactivity/Atom'
 import * as AtomRegistry from 'effect/unstable/reactivity/AtomRegistry'
 import * as Effect from 'effect/Effect'
-import type { CaptureDriver, CaptureSession } from './driver.ts'
+import type { ComposerDriver, ComposerSession } from './driver.ts'
 import {
-  idleInteraction,
-  type CaptureEvent,
-  type CaptureInteraction,
+  emptyComposer,
+  type ComposerEvent,
+  type ComposerSnapshot,
 } from './interaction.ts'
 
 const applyEvent = (
-  current: CaptureInteraction,
-  event: CaptureEvent,
-): CaptureInteraction => {
+  current: ComposerSnapshot,
+  event: ComposerEvent,
+): ComposerSnapshot => {
   switch (event._tag) {
-    case 'StartCapture':
-      return current.phase === 'idle'
-        ? { phase: 'capturing', previewHash: null }
+    case 'Start':
+      return current.phase === 'empty'
+        ? { phase: 'composing', candidateHash: null }
         : current
-    case 'Preview':
-      return current.phase === 'capturing'
-        ? { phase: 'previewing', previewHash: event.hash }
+    case 'Candidate':
+      return current.phase === 'composing'
+        ? { phase: 'reviewing', candidateHash: event.hash }
         : current
     case 'Retake':
-      return current.phase === 'previewing'
-        ? { phase: 'capturing', previewHash: null }
+      return current.phase === 'reviewing'
+        ? { phase: 'composing', candidateHash: null }
         : current
     case 'Cancel':
-      return current.phase === 'capturing' || current.phase === 'previewing'
-        ? idleInteraction
+      return current.phase === 'composing' || current.phase === 'reviewing'
+        ? emptyComposer
         : current
     case 'Confirm':
-      return current.phase === 'previewing' && current.previewHash !== null
-        ? { phase: 'submitting', previewHash: current.previewHash }
+      return current.phase === 'reviewing' && current.candidateHash !== null
+        ? { phase: 'submitting', candidateHash: current.candidateHash }
         : current
   }
 }
 
-export const atomDriver: CaptureDriver = {
+/** Retained probe. Query atoms stay on Atom; IntentComposer does not. */
+export const atomDriver: ComposerDriver = {
   name: 'atom',
   start: (deps) =>
     Effect.sync(() => {
       const registry = AtomRegistry.make()
-      const interaction = Atom.make<CaptureInteraction>(idleInteraction)
-      const session: CaptureSession = {
+      const interaction = Atom.make<ComposerSnapshot>(emptyComposer)
+      const session: ComposerSession = {
         snapshot: () => registry.get(interaction),
         send: (event) => {
           const current = registry.get(interaction)
@@ -51,20 +52,20 @@ export const atomDriver: CaptureDriver = {
           if (
             event._tag === 'Confirm' &&
             next.phase === 'submitting' &&
-            next.previewHash !== null
+            next.candidateHash !== null
           ) {
-            const hash = next.previewHash
+            const hash = next.candidateHash
             Effect.runFork(
               deps.submit(hash).pipe(
                 Effect.match({
                   onFailure: () => {
                     registry.set(interaction, {
-                      phase: 'previewing',
-                      previewHash: hash,
+                      phase: 'reviewing',
+                      candidateHash: hash,
                     })
                   },
                   onSuccess: () => {
-                    registry.set(interaction, idleInteraction)
+                    registry.set(interaction, emptyComposer)
                   },
                 }),
               ),

@@ -131,7 +131,7 @@ export default [
       '**/*.test.ts',
       '**/*.spec.ts',
       // D12/P08: XState fromPromise is the mandated Effect-to-Promise seam.
-      'features/evidence/client/src/capture/xstate.ts',
+      'features/evidence/client/src/intent-composer/xstate.ts',
     ],
     rules: {
       'no-restricted-syntax': [

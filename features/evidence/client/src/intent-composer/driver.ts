@@ -1,27 +1,27 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
-import type { CaptureEvent, CaptureInteraction } from './interaction.ts'
+import type { ComposerEvent, ComposerSnapshot } from './interaction.ts'
 
 export class SubmitFailed extends Schema.TaggedError<SubmitFailed>()(
   'SubmitFailed',
   { message: Schema.String },
 ) {}
 
-export type CaptureDeps = {
+export type ComposerDeps = {
   readonly submit: (hash: string) => Effect.Effect<void, SubmitFailed>
 }
 
-export type CaptureSession = {
-  readonly snapshot: () => CaptureInteraction
-  readonly send: (event: CaptureEvent) => void
+export type ComposerSession = {
+  readonly snapshot: () => ComposerSnapshot
+  readonly send: (event: ComposerEvent) => void
   readonly subscribe: (listener: () => void) => () => void
 }
 
-export type CaptureDriverName = 'xstate' | 'effect-machine' | 'atom' | 'broken'
+export type ComposerDriverName = 'xstate' | 'effect-machine' | 'atom' | 'broken'
 
-export type CaptureDriver = {
-  readonly name: CaptureDriverName
-  readonly start: (deps: CaptureDeps) => Effect.Effect<CaptureSession, unknown>
+export type ComposerDriver = {
+  readonly name: ComposerDriverName
+  readonly start: (deps: ComposerDeps) => Effect.Effect<ComposerSession, unknown>
 }
 
 export class WaitTimeout extends Schema.TaggedError<WaitTimeout>()(
@@ -29,11 +29,11 @@ export class WaitTimeout extends Schema.TaggedError<WaitTimeout>()(
   { phase: Schema.String },
 ) {}
 
-export const waitForInteraction = (
-  session: CaptureSession,
-  predicate: (snapshot: CaptureInteraction) => boolean,
-): Effect.Effect<CaptureInteraction, WaitTimeout> =>
-  Effect.callback<CaptureInteraction, WaitTimeout>((resume) => {
+export const waitForComposer = (
+  session: ComposerSession,
+  predicate: (snapshot: ComposerSnapshot) => boolean,
+): Effect.Effect<ComposerSnapshot, WaitTimeout> =>
+  Effect.callback<ComposerSnapshot, WaitTimeout>((resume) => {
     if (predicate(session.snapshot())) {
       resume(Effect.succeed(session.snapshot()))
       return

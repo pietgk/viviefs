@@ -2,12 +2,12 @@ import { afterEach, describe, expect, it } from '@effect/vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import * as Effect from 'effect/Effect'
 import { atomDriver } from './atom.ts'
-import { CaptureScreen, FIXTURE_HASH } from './CaptureScreen.tsx'
-import type { CaptureDriver } from './driver.ts'
+import { IntentComposerScreen, FIXTURE_HASH } from './IntentComposerScreen.tsx'
+import type { ComposerDriver } from './driver.ts'
 import { effectMachineDriver } from './effect-machine.ts'
 import { xstateDriver } from './xstate.ts'
 
-const passingDrivers: ReadonlyArray<CaptureDriver> = [
+const passingDrivers: ReadonlyArray<ComposerDriver> = [
   xstateDriver,
   effectMachineDriver,
   atomDriver,
@@ -19,36 +19,36 @@ afterEach(() => {
   cleanup()
 })
 
-describe('CaptureScreen', () => {
+describe('IntentComposerScreen', () => {
   for (const driver of passingDrivers) {
-    it(`${driver.name} renders the capture flow through the shared view`, async () => {
+    it(`${driver.name} renders the composer through the shared view`, async () => {
       const session = await Effect.runPromise(
         driver.start({ submit: () => Effect.void }),
       )
       render(
-        <CaptureScreen
+        <IntentComposerScreen
           session={session}
           readModel={null}
           status={ready}
           onSettleTitle={() => undefined}
         />,
       )
-      expect(screen.getByTestId('capture-status').textContent).toBe(
-        'Ready to capture',
+      expect(screen.getByTestId('intent-status').textContent).toBe(
+        'Ready to compose',
       )
-      fireEvent.click(screen.getByRole('button', { name: 'Capture' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Compose' }))
       await waitFor(() =>
-        expect(screen.getByTestId('capture-status').textContent).toBe(
-          'Capturing',
+        expect(screen.getByTestId('intent-status').textContent).toBe(
+          'Composing',
         ),
       )
       fireEvent.click(screen.getByRole('button', { name: 'Take photo' }))
       await waitFor(() =>
-        expect(screen.getByTestId('capture-hash').textContent).toBe(FIXTURE_HASH),
+        expect(screen.getByTestId('intent-hash').textContent).toBe(FIXTURE_HASH),
       )
       fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
       await waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Capture' })).toBeTruthy(),
+        expect(screen.getByRole('button', { name: 'Compose' })).toBeTruthy(),
       )
     })
 
@@ -57,7 +57,7 @@ describe('CaptureScreen', () => {
         driver.start({ submit: () => Effect.void }),
       )
       render(
-        <CaptureScreen
+        <IntentComposerScreen
           session={session}
           readModel={{
             id: 'Oorg/E1',
@@ -69,11 +69,11 @@ describe('CaptureScreen', () => {
           onSettleTitle={() => undefined}
         />,
       )
-      expect(screen.getByTestId('capture-status').textContent).toBe(
+      expect(screen.getByTestId('intent-status').textContent).toBe(
         'Waiting for reviewer approval',
       )
-      expect(screen.queryByRole('button', { name: 'Capture' })).toBeNull()
-      expect(screen.queryByTestId('capture-title')).toBeNull()
+      expect(screen.queryByRole('button', { name: 'Compose' })).toBeNull()
+      expect(screen.queryByTestId('intent-title')).toBeNull()
     })
   }
 })

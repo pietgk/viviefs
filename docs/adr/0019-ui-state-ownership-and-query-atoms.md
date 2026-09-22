@@ -20,7 +20,8 @@ real database to render a button.
 Three state owners:
 
 1. Domain facts in the datom log, read through read models.
-2. Screen and interaction state in an Atom (ADR 0020 / P08).
+2. Screen and interaction state in an IntentComposer (effect-machine;
+   ADR 0020 / P08). Query atoms stay Atom.
 3. In-flight text in component state until it settles (idle, blur, Enter),
    which mints a datom.
 
@@ -64,7 +65,10 @@ query on another organization did not. Draft view showed the author's open
 members; committed and other actors did not. Evidence:
 [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
 
-P08, 2026-09-21. Ledger pass `2026-09-21T19-08-57.550Z-921495ef`. The capture
-screen keeps domain facts, Atom interaction state, and in-flight title in
-three owners. `makeEvidenceAtom` re-queries after prefix/attribute
-invalidation. Evidence: [2026-09-21-p08.md](../evidence/2026-09-21-p08.md).
+P08, 2026-09-21. Ledger pass `2026-09-21T19-08-57.550Z-921495ef`. The probe
+screen keeps domain facts, interaction, and in-flight title in three
+owners. `makeEvidenceAtom` re-queries after prefix/attribute invalidation.
+Human review of the encodings (2026-09-22) copies IntentComposer in
+effect-machine; query atoms stay Atom. Evidence:
+[2026-09-21-p08.md](../evidence/2026-09-21-p08.md),
+[p08-comparison.md](../evidence/p08-comparison.md).
