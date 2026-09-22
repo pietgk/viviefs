@@ -1,6 +1,6 @@
 # ADR-0003: Effect v4 RC as the backbone
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -39,7 +39,7 @@ the cost of a migration the grilling already refused.
 P01 must show Effect v4 RC running on Expo SDK 58 / RN 0.88 / Hermes with
 Workflow + Activity on the memory engine, on iOS and Android, with real
 polyfills. A bundle without the crypto polyfill is the positive control (the
-workflow check fails). Unperformed until P01.
+workflow check fails).
 
 ## Outcome
 
@@ -50,4 +50,10 @@ pinned RC.
 
 ### Observed
 
-Not yet run. Research/02 measured this on SDK 56 / RN 0.85 only.
+2026-09-20. Ledger pass `2026-09-20T13-34-27.833Z-a195ecaf` (dirty tree,
+commit `aa5e3dd4`). Effect v4 RC ran on Expo `58.0.0-preview.3` / Hermes on
+the iOS simulator and the Android emulator. With `expo-crypto` on
+`globalThis.crypto`, 15 checks passed on both, including Workflow + Activity
+on the memory engine. Without the polyfill, `workflow memory` failed on both.
+Evidence: [2026-09-20-p01.md](../evidence/2026-09-20-p01.md). Qualified
+2026-09-22 from that record. Not Accepted.

@@ -37,13 +37,13 @@ the named gate.
 
 | Claim | Source | Gate |
 |---|---|---|
-| Effect v4 RC works on SDK 58 / RN 0.88 with the same polyfills as on SDK 56, on iOS and Android | research/02 (measured on SDK 56 only, never on a device) | P01 |
-| expo-crypto or react-native-quick-crypto can supply `crypto.subtle.digest` for Workflow | research/02 | P01 |
-| What "iOS 27 required" in SDK 58 means (deployment target or build SDK) | research/05 | P01 |
+| Effect v4 RC works on SDK 58 / RN 0.88 with the same polyfills as on SDK 56, on iOS and Android | research/02 | P01 (measured 2026-09-20: 15 checks on iOS and Android with `expo-crypto`, ADR-0003) |
+| expo-crypto or react-native-quick-crypto can supply `crypto.subtle.digest` for Workflow | research/02 | P01 (measured 2026-09-20: `expo-crypto` on `globalThis.crypto`; without it `workflow memory` fails, ADR-0004) |
+| What "iOS 27 required" in SDK 58 means (deployment target or build SDK) | research/05 | P01 (measured 2026-09-20: build SDK; run used Xcode 26.6 and iOS 26.5, ADR-0004) |
 | op-sqlite 17 works on RN 0.88 New Architecture on iOS and Android; peer conflict with op-sqlite 18 | research/02 | P02 (measured 2026-09-20: 17.x does not compile; pin is 18.2.5, ADR-0005) |
 | Effect's native OTLP exporter works on Hermes (BigInt, fetch, JSON) | research/04 | P03 (measured 2026-09-20: iOS and Android, ADR-0018) |
 | motel can be reached from a physical device (LAN binding) | research/05 | P03 (path documented: LAN binding or cursor catch-up; physical run deferred) |
-| A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 (measured 2026-09-20: 646 lines in `engine.ts`; seven kill boundaries on sqlite-node and PGlite; memory engine failed durability, ADR-0012) |
+| A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 (measured 2026-09-20: 646 lines in `engine.ts`; seven kill boundaries on sqlite-node and PGlite; memory engine failed durability; upload hash is computed before the activity, ADR-0012) |
 | `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 (measured 2026-09-20/21: projector keys and capture-screen query atoms, ADR-0019) |
 | Keycloak PKCE flow from Expo on Apple Container | complyj qualified Keycloak, not with Expo | P11 |
 
@@ -72,6 +72,7 @@ the named gate.
 - Client-side data access on a full-org replica: later than P09. Server isolation (D18) stays authoritative.
 - React Native Storybook.
 - Physical-device testing beyond P03's documented motel path.
+- A visible local-notification tap that completes a deferred. P07 resumed after `simctl` / `adb force-stop` and completed the deferred from JavaScript. The banner tap was not observed (ADR-0013).
 - HLC future-skew bound and log-append volume: P04 picks them.
 
 ## Risks

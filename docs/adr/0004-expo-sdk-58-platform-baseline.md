@@ -1,6 +1,6 @@
 # ADR-0004: Expo SDK 58 and Hermes platform baseline
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -52,5 +52,10 @@ measured, not assumed from SDK 56.
 
 ### Observed
 
-Not yet run. All RN measurements so far are SDK 56 / RN 0.85, never on a
-device.
+2026-09-20. Ledger pass `2026-09-20T13-34-27.833Z-a195ecaf` (dirty tree,
+commit `aa5e3dd4`). Polyfill is `expo-crypto` on `globalThis.crypto`. iOS
+export with the Migrator SQL import built (3653396 bytes). Baseline bundle,
+no SQL import, was 3389852 bytes. "iOS 27" means the build SDK, not the
+minimum deployment target: this run used Xcode 26.6 and an iOS 26.5
+simulator. Evidence: [2026-09-20-p01.md](../evidence/2026-09-20-p01.md).
+Qualified 2026-09-22 from that record. Not Accepted.

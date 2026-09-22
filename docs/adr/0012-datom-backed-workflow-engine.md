@@ -64,6 +64,9 @@ In-memory engine is not durability.
 2026-09-20. Ledger pass `2026-09-20T20-52-39.334Z-f904c91d`. Seven kill
 boundaries passed on sqlite-node and PGlite. `WorkflowEngine.layerMemory` lost
 the execution (`poll` none) and re-ran activities. `engine.ts` is 646 lines
-(estimate was 300-600). Device force-quit is P07. Evidence:
+(estimate was 300-600). `crypto.subtle.digest` via `Effect.tryPromise` does
+not complete inside an activity fiber, so the upload check hashes `p06-file`
+before the activity and journals `blob:{sha256}`. Device force-quit is P07.
+Evidence:
 [2026-09-20-p06.md](../evidence/2026-09-20-p06.md). P07:
 [2026-09-21-p07.md](../evidence/2026-09-21-p07.md).
