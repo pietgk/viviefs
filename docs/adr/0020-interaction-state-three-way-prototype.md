@@ -71,8 +71,10 @@ JSON viz remains a future option. No OTLP on the composer; only durable
 command / workflow is traced. Ephemeral UI inspection is a devTool next to
 screen-view and status, not live `withSpan` on states. The exemplar is
 renamed to IntentComposer (`composing` | `reviewing` | `submitting`,
-`candidateHash`). Teaching mermaid is generated from `intentComposerGraph`
-and checked against `intent-composer.mmd`. Re-qualified
-`2026-09-22T11-35-35.936Z-b49dc64b`. Driver LOC on that run: effect-machine
-200, XState 113, Atom 77. XState and Atom remain retained probes. Query
-atoms stay Atom.
+`candidateHash`). The teaching page is `intent-composer.md`, generated from
+`intentComposerGraph` (state diagram, then the effect-machine Confirm
+sequence). Re-qualified `2026-09-22T11-51-27.689Z-d7884f03` after that page
+replaced `intent-composer.mmd`. Rename pass
+`2026-09-22T11-35-35.936Z-b49dc64b`. Driver LOC on the rename run:
+effect-machine 200, XState 113, Atom 77. XState and Atom remain retained
+probes. Query atoms stay Atom.

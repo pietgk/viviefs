@@ -108,7 +108,9 @@ Ephemeral machine that composes an intent. Parts: composing, reviewing,
 submitting. Not durable and not a transaction; a kill discards the candidate.
 Submitting hands the intent to a command. Encoding: effect-machine, with a
 generated mermaid graph as part of the pattern (XState JSON viz is a later
-option). No OTLP on the composer; durable work is traced from the log.
+option). The pattern name is IntentComposer; the teaching page and directory
+are `intent-composer`. No OTLP on the composer; durable work is traced from
+the log.
 _Avoid_: capture (camera or evidence item), form wizard, transaction
 
 **Outbox**:
