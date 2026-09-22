@@ -20,3 +20,9 @@ export {
   deviceResumeLayer,
   UploadWork,
 } from './device-resume.ts'
+export {
+  DomainError,
+  renameList,
+  sealItem,
+} from './command.ts'
+export type { CommandChangeset, CommandMint } from './command.ts'

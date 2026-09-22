@@ -1,6 +1,6 @@
 # ADR-0016: Commands, server validation and rejection
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -50,4 +50,11 @@ demand an upgrade, not a silent drop.
 
 ### Observed
 
-Not yet run.
+2026-09-22. Ledger pass `2026-09-22T13-18-45.675Z-a314ca28`. `renameList` and
+`sealItem` live in `features/evidence/model` and return one changeset. The
+client submits that changeset. The server checks schema, organization,
+catalog, manifest, files, lease and write-once, then appends or rejects the
+whole changeset. It does not re-execute the command. `BasisRejected` aborts
+the open changeset locally, rebuilds, and the next outbox entry is acked.
+`UnknownAttribute` is the upgrade error. Not Accepted. Evidence:
+[2026-09-22-p09.md](../evidence/2026-09-22-p09.md).

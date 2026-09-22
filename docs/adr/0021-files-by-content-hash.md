@@ -1,6 +1,6 @@
 # ADR-0021: Files by content hash
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -41,4 +41,9 @@ references.
 
 ### Observed
 
-Not yet run.
+2026-09-22. Ledger pass `2026-09-22T13-18-45.675Z-a314ca28`. The manifest names
+`blob:` plus the sha256 hex. The peer does not see the file datom while the
+blob is absent. After `PutBlob` the same changeset acks and the hash is
+visible. The P09 store is in memory. Device files and object storage are later
+implementations of `BlobStore`. Not Accepted. Evidence:
+[2026-09-22-p09.md](../evidence/2026-09-22-p09.md).

@@ -1,6 +1,6 @@
 # ADR-0014: Leases, fencing and server authority
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -51,4 +51,10 @@ are never silently deleted.
 
 ### Observed
 
-Not yet run. Quarantine remains an open named slot.
+2026-09-22. Ledger pass `2026-09-22T13-18-45.675Z-a314ca28`. Two devices:
+epoch 1 is `StaleLease`; epoch 2 is accepted; the stale device's later pull
+sees only the holder's activity exit. The server appends datoms and does not
+run the workflow. A self-committed journal write stays off the device log
+until the server acks it. Quarantine is still an empty named slot. Not
+Accepted. Evidence:
+[2026-09-22-p09.md](../evidence/2026-09-22-p09.md).

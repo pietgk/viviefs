@@ -1,5 +1,10 @@
 /**
- * Named slot for `@viviefs/sync-client`.
- * Named slot until P09.
+ * Sync client adapter. P09 exemplar: outbox, cursor, Effect RPC.
  */
-export {}
+export {
+  SyncClient,
+  SyncRpc,
+  syncClientLayer,
+  syncRpcLayer,
+} from './client.ts'
+export type { Outgoing, PushResult } from './client.ts'

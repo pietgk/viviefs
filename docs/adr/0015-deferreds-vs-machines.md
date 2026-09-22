@@ -1,6 +1,6 @@
 # ADR-0015: Human steps as deferreds; workflows own progress
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -50,6 +50,11 @@ datoms.
 ### Observed
 
 2026-09-20. P06: kill during a deferred wait resumed at "waiting for approval";
-completing the deferred continued the workflow. Device/server deferred
-completion over sync is P09. Evidence:
+completing the deferred continued the workflow. Evidence:
 [2026-09-20-p06.md](../evidence/2026-09-20-p06.md).
+
+2026-09-22. P09: the server appends a self-committed deferred exit
+(`server.deferred`, no device lease). The waiting device pulls that datom and
+`Wait` finishes `{ok: true}`. The server does not run the workflow. Not
+Accepted. Evidence:
+[2026-09-22-p09.md](../evidence/2026-09-22-p09.md).

@@ -17,7 +17,7 @@ the named gate.
 
 **Named slot, empty** (create the project, ADR or gate id; do not invent the mechanism):
 
-- Log stores, sync, identity, blobs, telemetry.
+- Identity and telemetry. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021).
 - Quarantine of user content after a lost lease (D15; likely home is D34 human-conflict).
 
 **Hypothesis until gate** (must not constrain other work):
@@ -65,8 +65,7 @@ the named gate.
 - Whether product apps (BirVana, ERP, GRC) move into viviefs as app pairs (D55).
 - Encryption at rest per consumer app (D50).
 - Docs site generator details (Starlight assumed; Twoslash or equivalent for sample checks).
-- Quarantine design after a lost lease (D15): user content is never dropped; mechanism unspecified. Likely a
-  human-conflict datom plus a review surface, after P05/P09 exist.
+- Quarantine after a lost lease (D15) is still an empty named slot after P09. A stale journal write is rejected before it enters the device log. User content stays in the log. The review mechanism is unspecified (likely a human-conflict datom).
 - Prefix subscriptions (partial sync): later than P09.
 - History consolidation on a full-org replica: later than P09; sits next to D37's compaction horizon.
 - Client-side data access on a full-org replica: later than P09. Server isolation (D18) stays authoritative.

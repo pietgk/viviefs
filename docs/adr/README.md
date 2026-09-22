@@ -22,14 +22,14 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Qualified | P04, P05 |
 | [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Qualified | P06 |
 | [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Qualified (P07); P14 unverified | P07, P14 |
-| [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Proposed, unverified | P09 |
-| [0015](0015-deferreds-vs-machines.md) | Human steps as deferreds; workflows own progress | Proposed, unverified | P06, P09 |
-| [0016](0016-commands-and-server-validation.md) | Commands, server validation and rejection | Proposed, unverified | P09 |
-| [0017](0017-sync-outbox-and-cursor-stream.md) | Sync: outbox and cursor stream over Effect RPC | Proposed, unverified | P09 |
+| [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Qualified | P09 |
+| [0015](0015-deferreds-vs-machines.md) | Human steps as deferreds; workflows own progress | Qualified | P06, P09 |
+| [0016](0016-commands-and-server-validation.md) | Commands, server validation and rejection | Qualified | P09 |
+| [0017](0017-sync-outbox-and-cursor-stream.md) | Sync: outbox and cursor stream over Effect RPC | Qualified | P09 |
 | [0018](0018-tracing-and-telemetry-sinks.md) | Tracing derived from the log; telemetry sink pattern | Proposed, unverified | P03, P10 |
 | [0019](0019-ui-state-ownership-and-query-atoms.md) | UI state ownership and live reads with query atoms | Qualified | P05, P08 |
 | [0020](0020-interaction-state-three-way-prototype.md) | Interaction state: outcome of the three-way prototype | Qualified | P08 |
-| [0021](0021-files-by-content-hash.md) | Files by content hash | Proposed, unverified | P09 |
+| [0021](0021-files-by-content-hash.md) | Files by content hash | Qualified | P09 |
 | [0022](0022-identity-and-organization-isolation.md) | Identity and organization isolation | Proposed, unverified | P11 |
 | [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P12, P13 |
 | [0024](0024-repository-structure.md) | Repository structure, tags, rules, generators | Proposed, unverified | verify (boundary lint) |

@@ -1,5 +1,5 @@
 /**
- * Named slot for `@viviefs/sync-server`.
- * Named slot until P09.
+ * Sync server adapter. P09 exemplar: validate, then append.
+ * Pull is the organization cursor stream.
  */
-export {}
+export { SyncAuthority, syncServerLayer } from './server.ts'

@@ -380,7 +380,14 @@ importers:
 
   features/evidence/server: {}
 
-  libs/blobs: {}
+  libs/blobs:
+    dependencies:
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../datom
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
 
   libs/crypto-shred: {}
 
@@ -507,9 +514,47 @@ importers:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
 
-  libs/sync/client: {}
+  libs/sync/client:
+    dependencies:
+      '@viviefs/blobs':
+        specifier: workspace:*
+        version: link:../../blobs
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../../datom
+      '@viviefs/sync-protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
 
-  libs/sync/server: {}
+  libs/sync/protocol:
+    dependencies:
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../../datom
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
+
+  libs/sync/server:
+    dependencies:
+      '@viviefs/blobs':
+        specifier: workspace:*
+        version: link:../../blobs
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../../datom
+      '@viviefs/sync-protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@viviefs/workflow-engine':
+        specifier: workspace:*
+        version: link:../../workflow-engine
+      effect:
+        specifier: 4.0.0-rc.116
+        version: 4.0.0-rc.116
 
   libs/telemetry:
     dependencies:
@@ -592,18 +637,33 @@ importers:
       '@effect/vitest':
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116(effect@4.0.0-rc.116)(vitest@5.0.1(@types/node@22.20.4)(jsdom@30.1.0)(vite@8.3.0(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)))
+      '@viviefs/blobs':
+        specifier: workspace:*
+        version: link:../../libs/blobs
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../../libs/datom
       '@viviefs/evidence-client':
         specifier: workspace:*
         version: link:../../features/evidence/client
+      '@viviefs/evidence-model':
+        specifier: workspace:*
+        version: link:../../features/evidence/model
       '@viviefs/store-postgres':
         specifier: workspace:*
         version: link:../../libs/store-postgres
       '@viviefs/store-sqlite-node':
         specifier: workspace:*
         version: link:../../libs/store-sqlite-node
+      '@viviefs/sync-client':
+        specifier: workspace:*
+        version: link:../../libs/sync/client
+      '@viviefs/sync-protocol':
+        specifier: workspace:*
+        version: link:../../libs/sync/protocol
+      '@viviefs/sync-server':
+        specifier: workspace:*
+        version: link:../../libs/sync/server
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../../libs/testing

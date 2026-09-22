@@ -30,6 +30,21 @@
       "path": "../../features/evidence/client/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/sync/client/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/sync/protocol/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/sync/server/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/blobs/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/evidence/model/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/datom/tsconfig.lib.json"
     }
   ]

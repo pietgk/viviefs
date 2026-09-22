@@ -6,25 +6,11 @@
     "tsBuildInfoFile": "out-tsc/tsconfig.lib.tsbuildinfo",
     "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts"
-  ],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"],
   "references": [
     {
-      "path": "../../blobs/tsconfig.lib.json"
-    },
-    {
       "path": "../../datom/tsconfig.lib.json"
-    },
-    {
-      "path": "../protocol/tsconfig.lib.json"
-    },
-    {
-      "path": "../../workflow-engine/tsconfig.lib.json"
     }
   ]
 }

@@ -74,6 +74,9 @@
     },
     {
       "path": "./libs/ui"
+    },
+    {
+      "path": "./libs/sync/protocol"
     }
   ],
   "compilerOptions": {}

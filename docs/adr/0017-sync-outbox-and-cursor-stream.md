@@ -1,6 +1,6 @@
 # ADR-0017: Sync: outbox and cursor stream over Effect RPC
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -52,4 +52,9 @@ not dependencies.
 
 ### Observed
 
-Not yet run.
+2026-09-22. Ledger pass `2026-09-22T13-18-45.675Z-a314ca28` on sqlite-node.
+Outbox up, one cursor per organization down, Effect RPC `Append` / `Pull` /
+`PutBlob`. `Pull` returns one finite page. A second append of the same `tx`
+acks. An acme pull does not include another organization's datoms. EventLog,
+Zero and PowerSync are not dependencies. Not Accepted. Evidence:
+[2026-09-22-p09.md](../evidence/2026-09-22-p09.md).
