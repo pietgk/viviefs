@@ -6,6 +6,8 @@ Sanitized, dated records of gate runs. The machine-written ledger is
 
 Do not mark a gate passed from prose in this directory.
 
+From P09 on, the dated note includes a Review section: a reading order, the probe's `Effect.fn` span tree, and the state diagram taken from span attributes. The probe fails when that committed diagram differs from the run. P01-P08 notes stay as they were written. The diagram reviews the probe. It is not a second source of the claim.
+
 - [p01-p07-review.md](p01-p07-review.md) — review board for P01-P07 (does not pass a gate)
 - [2026-09-20-p01.md](2026-09-20-p01.md) — platform on SDK 58 (P01)
 - [2026-09-20-p02.md](2026-09-20-p02.md) — SQLite drivers (P02)

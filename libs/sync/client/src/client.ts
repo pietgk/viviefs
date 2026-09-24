@@ -19,6 +19,7 @@ import {
   Datom,
   Envelope,
   FutureSkew,
+  HlcDevice,
   InvalidTx,
   LogStore,
   Projector,
@@ -196,7 +197,9 @@ const makeClient = Effect.gen(function* () {
   const store = yield* LogStore
   const projector = yield* Projector
   const rpc = yield* SyncRpc
+  const device = yield* HlcDevice
   yield* migrate
+  const noteDevice = Effect.annotateCurrentSpan('sync.device', device.id)
 
   const readCursor = (org: string) =>
     Effect.gen(function* () {
@@ -236,6 +239,10 @@ const makeClient = Effect.gen(function* () {
   const submit = Effect.fn('SyncClient.submit')(function* (
     changeset: Outgoing,
   ) {
+    yield* Effect.annotateCurrentSpan({
+      'sync.device': changeset.envelope.device,
+      'sync.command': changeset.envelope.command,
+    })
     const self =
       changeset.datoms.length === 1 &&
       changeset.datoms[0]?.cs === changeset.datoms[0]?.tx
@@ -265,9 +272,16 @@ const makeClient = Effect.gen(function* () {
         ${payload}
       )
     `
+    yield* outboxTransition(
+      'none',
+      'pending',
+      changeset.envelope.device,
+      changeset.envelope.command,
+    )
   })
 
   const pull = Effect.fn('SyncClient.pull')(function* (org: string) {
+    yield* noteDevice
     const cursor = yield* readCursor(org)
     const page = yield* rpc.pull({ org, cursor })
     const byCs = new Map<string, Array<(typeof page.datoms)[number]>>()
@@ -299,11 +313,13 @@ const makeClient = Effect.gen(function* () {
   })
 
   const push = Effect.fn('SyncClient.push')(function* (org: string) {
+    yield* noteDevice
     const rows = yield* sql<{
       cs: string
+      state: string
       payload: string
     }>`
-      SELECT cs, payload FROM outbox
+      SELECT cs, state, payload FROM outbox
       WHERE org = ${org} AND state IN ('pending', 'waiting-file')
       ORDER BY id
     `
@@ -334,6 +350,12 @@ const makeClient = Effect.gen(function* () {
           UPDATE outbox SET state = 'acked', rejection = ${null} WHERE cs = ${row.cs}
         `
         acked.push(row.cs)
+        yield* outboxTransition(
+          row.state,
+          'acked',
+          decoded.envelope.device,
+          decoded.envelope.command,
+        )
         continue
       }
       if (outcome._tag === 'waiting') {
@@ -342,6 +364,12 @@ const makeClient = Effect.gen(function* () {
           WHERE cs = ${row.cs}
         `
         waiting.push({ cs: row.cs, hash: outcome.hash })
+        yield* outboxTransition(
+          row.state,
+          'waiting-file',
+          decoded.envelope.device,
+          decoded.envelope.command,
+        )
         continue
       }
       const opened = decoded.datoms.some((datom) => datom.cs !== datom.tx)
@@ -353,6 +381,12 @@ const makeClient = Effect.gen(function* () {
       yield* projector.rebuild()
       rebuilt = true
       rejected.push({ cs: row.cs, tag: outcome.tag })
+      yield* outboxTransition(
+        row.state,
+        'rejected',
+        decoded.envelope.device,
+        decoded.envelope.command,
+      )
     }
     yield* pull(org)
     return { acked, rejected, waiting, rebuilt } satisfies PushResult
@@ -362,6 +396,7 @@ const makeClient = Effect.gen(function* () {
     org: string,
     text: string,
   ) {
+    yield* noteDevice
     const hash = yield* blobHash(text)
     yield* rpc.putBlob({ org, hash, text })
     return hash
@@ -369,6 +404,23 @@ const makeClient = Effect.gen(function* () {
 
   return SyncClient.of({ submit, push, pull, upload })
 })
+
+const outboxTransition = (
+  from: string,
+  state: string,
+  device: string,
+  command: string,
+) =>
+  Effect.void.pipe(
+    Effect.withSpan('SyncClient.outbox', {
+      attributes: {
+        'outbox.from': from,
+        'outbox.state': state,
+        'sync.device': device,
+        'sync.command': command,
+      },
+    }),
+  )
 
 export const syncClientLayer = (catalog: Catalog) =>
   Layer.effect(SyncClient, makeClient).pipe(

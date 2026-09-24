@@ -393,7 +393,9 @@ const handlerLayer = (catalog: Catalog) =>
       const blobs = yield* BlobStore
       return {
         Append: (request: AppendRequest) =>
-          asRpcError(accept(catalog, request, { store, sql, blobs })),
+          asRpcError(accept(catalog, request, { store, sql, blobs })).pipe(
+            Effect.withSpan('SyncRpc.Append'),
+          ),
         Pull: (request: { readonly org: string; readonly cursor: number }) =>
           Stream.fromEffect(
             Effect.orDie(Effect.gen(function* () {
@@ -423,7 +425,7 @@ const handlerLayer = (catalog: Catalog) =>
                 datoms: [...mine],
                 envelopes,
               }
-            })),
+            }).pipe(Effect.withSpan('SyncRpc.Pull'))),
           ),
         PutBlob: (request: {
           readonly org: string
@@ -443,7 +445,7 @@ const handlerLayer = (catalog: Catalog) =>
               ),
             )
             return { hash: request.hash }
-          }),
+          }).pipe(Effect.withSpan('SyncRpc.PutBlob')),
       }
     }),
   )

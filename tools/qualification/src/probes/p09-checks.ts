@@ -10,6 +10,7 @@ import * as Latch from 'effect/Latch'
 import * as Schedule from 'effect/Schedule'
 import * as Schema from 'effect/Schema'
 import type * as Scope from 'effect/Scope'
+import * as Tracer from 'effect/Tracer'
 import * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
 import * as RpcTest from 'effect/unstable/rpc/RpcTest'
 import * as Workflow from 'effect/unstable/workflow/Workflow'
@@ -89,9 +90,13 @@ const valueOf = (
 
 const runCheck = (
   name: string,
+  fn: string,
   effect: Effect.Effect<unknown, unknown, Scope.Scope>,
 ): Effect.Effect<CheckResult, never, Scope.Scope> =>
   effect.pipe(
+    Effect.withSpan(`P09 ${name}`, {
+      attributes: { 'p09.fn': fn },
+    }),
     Effect.timeout(Duration.seconds(30)),
     Effect.matchCause({
       onSuccess: (value) => ({
@@ -180,6 +185,7 @@ const session = <A>(
           ),
           Layer.provideMerge(rpc),
           Layer.provide(clockLayer(clock)),
+          Layer.provide(deviceLayer(deviceId)),
         ),
       )
       built.set(name, {
@@ -256,6 +262,10 @@ const selfCommit = (
 const committed = (device: Device, prefix: string) =>
   device.projector.facts({ view: 'committed', prefix })
 
+/**
+ * p09-check outboxOffline
+ * `renameList` sets a list title and returns one changeset. Here the title is `local`. `submit` stores that changeset on A, so A's draft shows it and B's `pull` does not. After A pushes, the server has acked it, and B's next `pull` shows `local`.
+ */
 const outboxOffline = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'offline', [
     ['a', 'p09-a'],
@@ -300,6 +310,10 @@ const outboxOffline = (directory: string, clock: MutableClock) =>
     }),
   )
 
+/**
+ * p09-check cursorStream
+ * `renameList` creates two lists, `one` and `two`. One `pull` returns both. The next `pull` returns nothing new and keeps the same server cursor.
+ */
 const cursorStream = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'stream', [
     ['a', 'p09-a'],
@@ -341,6 +355,10 @@ const cursorStream = (directory: string, clock: MutableClock) =>
     }),
   )
 
+/**
+ * p09-check fullOrganization
+ * A `renameList`s a list in organization `acme`. B `renameList`s a list in organization `other`. A's `pull` of `acme` shows `acme` and does not show `other`.
+ */
 const fullOrganization = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'orgs', [
     ['a', 'p09-a'],
@@ -391,6 +409,10 @@ const fullOrganization = (directory: string, clock: MutableClock) =>
     }),
   )
 
+/**
+ * p09-check duplicateAppend
+ * `renameList` sets the list title to `once` and returns one changeset. `submit` stores it on A. `push` sends it to the server, which acks it. `append` sends that same changeset again, with the same `tx`. The server acks and does not write a second title. B's `pull` shows the title once.
+ */
 const duplicateAppend = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'dedup', [
     ['a', 'p09-a'],
@@ -408,12 +430,18 @@ const duplicateAppend = (directory: string, clock: MutableClock) =>
       )
       yield* a.client.submit(changeset)
       yield* a.client.push(org)
-      const again = yield* a.rpc.append({
-        org,
-        basis: changeset.basis,
-        envelope: changeset.envelope,
-        datoms: [...changeset.datoms],
-      })
+      const again = yield* a.rpc
+        .append({
+          org,
+          basis: changeset.basis,
+          envelope: changeset.envelope,
+          datoms: [...changeset.datoms],
+        })
+        .pipe(
+          Effect.withSpan('SyncRpc.append', {
+            attributes: { 'sync.device': a.id },
+          }),
+        )
       yield* b.client.pull(org)
       const facts = yield* committed(b, orgId(org))
       const titles = facts.filter(
@@ -425,6 +453,10 @@ const duplicateAppend = (directory: string, clock: MutableClock) =>
     }),
   )
 
+/**
+ * p09-check typedRejection
+ * B `renameList`s the list to `box` and `sealItem` sets the item seal to `gold`. Both pushes ack. A then submits a `sealItem` of `silver` and a `renameList` to `kept`. One `push` rejects `silver` because the seal is write-once, rebuilds, and acks `kept`. The committed seal stays `gold`.
+ */
 const typedRejection = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'reject', [
     ['a', 'p09-a'],
@@ -494,6 +526,10 @@ const typedRejection = (directory: string, clock: MutableClock) =>
     }),
   )
 
+/**
+ * p09-check unknownAttribute
+ * The changeset asserts `evidence/not-shipped`, which is not in the catalog. The server rejects the whole changeset with `UnknownAttribute`. The attribute is not stored.
+ */
 const unknownAttribute = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'upgrade', [['a', 'p09-a']], (world) =>
     Effect.gen(function* () {
@@ -544,6 +580,10 @@ const unknownAttribute = (directory: string, clock: MutableClock) =>
     }),
   )
 
+/**
+ * p09-check staleLease
+ * A takes the lease at epoch 1. B takes it at epoch 2. A's activity exit at epoch 1 is rejected. B's exit at epoch 2 is acked. A's later `pull` shows only B's exit.
+ */
 const staleLease = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'fence', [
     ['a', 'p09-a'],
@@ -628,6 +668,10 @@ const waitLayer = Wait.toLayer(() =>
   }),
 )
 
+/**
+ * p09-check serverDeferred
+ * The device runs a workflow that is waiting on a deferred. `completeDeferred` is the server writing that deferred's exit. The server does not run the workflow. The device `pull`s the exit and the workflow finishes.
+ */
 const serverDeferred = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'deferred', [['a', 'p09-wait']], (world) =>
     Effect.gen(function* () {
@@ -670,6 +714,10 @@ const serverDeferred = (directory: string, clock: MutableClock) =>
     }),
   )
 
+/**
+ * p09-check fileManifest
+ * The changeset names a file hash in its manifest. The server answers that the file is missing, so the push stays `waiting-file` and B does not see the file. After `upload`, the same changeset pushes and is acked. B's `pull` shows the hash.
+ */
 const fileManifest = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'files', [
     ['a', 'p09-a'],
@@ -755,25 +803,70 @@ export const runP09Checks = (
 ): Effect.Effect<CheckResult[], never, Scope.Scope> => {
   return Effect.all(
     [
-      runCheck('outbox offline', outboxOffline(directory, clock)),
-      runCheck('cursor stream', cursorStream(directory, clock)),
-      runCheck('full organization', fullOrganization(directory, clock)),
-      runCheck('duplicate append', duplicateAppend(directory, clock)),
-      runCheck('typed rejection rebuilds', typedRejection(directory, clock)),
-      runCheck('unknown attribute', unknownAttribute(directory, clock)),
-      runCheck('stale lease rejected', staleLease(directory, clock)),
-      runCheck('server deferred completion', serverDeferred(directory, clock)),
-      runCheck('file manifest waits', fileManifest(directory, clock)),
+      runCheck('outbox offline', 'outboxOffline', outboxOffline(directory, clock)),
+      runCheck('cursor stream', 'cursorStream', cursorStream(directory, clock)),
+      runCheck(
+        'full organization',
+        'fullOrganization',
+        fullOrganization(directory, clock),
+      ),
+      runCheck(
+        'duplicate append',
+        'duplicateAppend',
+        duplicateAppend(directory, clock),
+      ),
+      runCheck(
+        'typed rejection rebuilds',
+        'typedRejection',
+        typedRejection(directory, clock),
+      ),
+      runCheck(
+        'unknown attribute',
+        'unknownAttribute',
+        unknownAttribute(directory, clock),
+      ),
+      runCheck(
+        'stale lease rejected',
+        'staleLease',
+        staleLease(directory, clock),
+      ),
+      runCheck(
+        'server deferred completion',
+        'serverDeferred',
+        serverDeferred(directory, clock),
+      ),
+      runCheck(
+        'file manifest waits',
+        'fileManifest',
+        fileManifest(directory, clock),
+      ),
     ],
     { concurrency: 1 },
   )
 }
 
-export const runP09 = (): Effect.Effect<CheckResult[], unknown> =>
-  Effect.scoped(
+export type P09Run = {
+  readonly checks: ReadonlyArray<CheckResult>
+  readonly spans: ReadonlyArray<Tracer.NativeSpan>
+}
+
+export const runP09 = (): Effect.Effect<P09Run, unknown> => {
+  const spans: Array<Tracer.NativeSpan> = []
+  const tracer = Tracer.make({
+    span(options) {
+      const span = new Tracer.NativeSpan(options)
+      spans.push(span)
+      return span
+    },
+  })
+  return Effect.scoped(
     Effect.gen(function* () {
       const directory = yield* withTempDirectory('viviefs-p09-')
       const clock = makeMutableClock(1_700_000_000_000)
       return yield* runP09Checks(directory, clock)
     }),
+  ).pipe(
+    Effect.provideService(Tracer.Tracer, tracer),
+    Effect.map((checks) => ({ checks, spans })),
   )
+}

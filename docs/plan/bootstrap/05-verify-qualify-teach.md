@@ -63,6 +63,7 @@ ADR status lifecycle: `proposed, unverified` -> `qualified` (gate evidence linke
 - Bulky artifacts stay out of Git; sanitized, dated evidence records go to `docs/evidence/` (complyj uses
   `docs/implementation/` for the same kind of record).
 - The ledger is a plain file, not datoms: you cannot qualify the log store with evidence stored in the log store.
+- From P09 on, the dated evidence note includes a Review section: reading order, the probe's `Effect.fn` span tree recorded with `Tracer.make`, and a state diagram taken from span attributes. The probe fails when the committed diagram differs from the run. P01-P08 notes stay as they were written. The diagram reviews the probe and is not a second source of the claim.
 
 ## Teach
 

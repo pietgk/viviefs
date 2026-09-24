@@ -73,6 +73,7 @@ the named gate.
 - Physical-device testing beyond P03's documented motel path.
 - A visible local-notification tap that completes a deferred. P07 resumed after `simctl` / `adb force-stop` and completed the deferred from JavaScript. The banner tap was not observed (ADR-0013).
 - HLC future-skew bound and log-append volume: P04 picks them.
+- Datom `op` stays the words `assert` and `retract` (`TEXT`). Whether that column costs enough, next to `e`, `a`, and `v`, to justify a boolean and a re-run of P04-P09 is unmeasured (deferred 2026-09-22).
 
 ## Risks
 
