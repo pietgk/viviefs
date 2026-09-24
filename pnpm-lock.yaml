@@ -439,6 +439,9 @@ importers:
       '@effect/sql-pglite':
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116(effect@4.0.0-rc.116)
+      '@electric-sql/pglite':
+        specifier: 0.5.8
+        version: 0.5.8
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../datom

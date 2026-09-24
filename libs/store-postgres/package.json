@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@effect/sql-pglite": "4.0.0-rc.116",
+    "@electric-sql/pglite": "0.5.8",
     "@viviefs/datom": "workspace:*",
     "effect": "4.0.0-rc.116"
   },
