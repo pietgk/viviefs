@@ -15,8 +15,8 @@ that link to guides, not a second copy of those guides (D30).
 4. [`docs/plan/bootstrap/10-open-items-and-risks.md`](docs/plan/bootstrap/10-open-items-and-risks.md) -
    freeze / named-slot / hypothesis. P05 pinned `viviefs/changeset/*` and
    `evidence/*` names; P06 pinned `viviefs/workflow/*`, `viviefs/activity/exit`,
-   `viviefs/deferred/exit`, `viviefs/clock/wake-at` and `viviefs/lease/holder`.
-   Do not rename them (D44).
+   `viviefs/deferred/exit`, `viviefs/clock/wake-at` and `viviefs/lease/holder`;
+   P10 pinned `viviefs/activity/started`. Do not rename them (D44).
 5. [`docs/plan/bootstrap/06-qualification-gates.md`](docs/plan/bootstrap/06-qualification-gates.md) -
    ordered gates. No feature code before its gate passes. Probes and exemplars stay.
 6. [`repos/effect/LLMS.md`](repos/effect/LLMS.md) - before writing Effect code. Then

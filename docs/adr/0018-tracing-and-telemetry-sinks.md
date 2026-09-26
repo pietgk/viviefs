@@ -1,6 +1,6 @@
 # ADR-0018: Tracing derived from the log; telemetry sink pattern
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20
 
@@ -73,4 +73,25 @@ it from `vendor/motel` with Effect `4.0.0-beta.90` overrides. Evidence:
 [2026-09-20-p03.md](../evidence/2026-09-20-p03.md),
 [p03-physical-device.md](../evidence/p03-physical-device.md).
 
-P10 not yet run.
+P10, 2026-09-26. Ledger pass `2026-09-26T19-10-56.537Z-f5fe7b81` on a
+clean tree (`4e880f3a`). One crash-and-resume execution on sqlite-node and
+on PGlite: `step-one` killed after its body ran, a launch sweep resumed it,
+`fetch` retried, a caller completed a deferred, a durable clock fired. The
+trace projector derived 7 durable spans in one trace, with entity-keyed ids
+that a fresh trace cursor derived again identically. `step-one` ran twice
+and has one span; `fetch #2` links `fetch #1`. A refused send kept the trace
+cursor; a disabled trace cursor sent nothing and, re-enabled, exported the
+whole backlog (positive control). motel 0.2.8, Jaeger 2.20.0 and otel-lgtm
+0.33.1 each held exactly those 7 span ids, parented to the workflow span,
+and nothing for that trace before the export.
+
+Picks agreed in the [P10 design review](../evidence/p10-design-review.md):
+one trace per execution, linked to the caller's span rather than nested in
+it; a pinned `viviefs/activity/started` start fact per attempt; the causing
+span rule for envelopes; live spans only in activity bodies; the projector
+posts OTLP/JSON itself instead of using the batching `OtlpTracer`;
+zero-length deferred spans; `sampled` recorded and not yet honoured. P10
+did not need command spans, so ids are not extended to changesets. Not
+measured: the projector on a device, `sampled`, the trace cursor holding
+back compaction. Evidence:
+[2026-09-26-p10.md](../evidence/2026-09-26-p10.md).

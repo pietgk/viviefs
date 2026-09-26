@@ -17,7 +17,9 @@ the named gate.
 
 **Named slot, empty** (create the project, ADR or gate id; do not invent the mechanism):
 
-- Identity and telemetry. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021).
+- Identity. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
+- Sampling of durable spans: the envelope records `sampled`; the trace projector does not honour it yet (P10).
+- The trace cursor and compaction: `LogStore.compact` follows `device_cursors` only, so compaction could remove facts a trace cursor has not exported yet (P10).
 - Quarantine of user content after a lost lease (D15; likely home is D34 human-conflict).
 
 **Hypothesis until gate** (must not constrain other work):
@@ -45,6 +47,7 @@ the named gate.
 | motel can be reached from a physical device (LAN binding) | research/05 | P03 (path documented: LAN binding or cursor catch-up; physical run deferred) |
 | A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 (measured 2026-09-20: 646 lines in `engine.ts`; seven kill boundaries on sqlite-node and PGlite; memory engine failed durability; upload hash is computed before the activity, ADR-0012) |
 | `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 (measured 2026-09-20/21: projector keys and capture-screen query atoms, ADR-0019) |
+| Traces derived from the log are lossless and stable across replays, in motel, Jaeger and otel-lgtm | D32, D45' | P10 (measured 2026-09-26 on sqlite-node and PGlite: one trace, entity-keyed ids, one span per attempt after a kill, retry linked, backlog exported after a disabled trace cursor; host only, ADR-0018) |
 | Keycloak PKCE flow from Expo on Apple Container | complyj qualified Keycloak, not with Expo | P11 |
 
 ## Closed in this pass
@@ -73,6 +76,10 @@ the named gate.
 - Physical-device testing beyond P03's documented motel path.
 - A visible local-notification tap that completes a deferred. P07 resumed after `simctl` / `adb force-stop` and completed the deferred from JavaScript. The banner tap was not observed (ADR-0013).
 - HLC future-skew bound and log-append volume: P04 picks them.
+- The engine journals a failed activity as its printed cause (`Cause([Fail(...)])`), not the typed error, so a durable span's error message is that text (P10). A typed encoding of failures is a journal value change and needs its own decision (D44).
+- A batch limit on the trace projector's `streamFrom` for a large backlog (P10 reads the whole backlog in one tick).
+- The trace projector on iOS, Android and web. P10 ran it on the host; P03 measured OTLP from Hermes.
+- Re-runs before foundation closure: P10 changed the engine and the log store, so the recorded passes of P01-P09 are stale. P04 and P05 (device and web legs), P07 (device resume with live tracing now off in workflow bodies) and P01-P03 run in the sequential closure run.
 - Datom `op` stays the words `assert` and `retract` (`TEXT`). Whether that column costs enough, next to `e`, `a`, and `v`, to justify a boolean and a re-run of P04-P09 is unmeasured (deferred 2026-09-22).
 
 ## Risks
