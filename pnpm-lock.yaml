@@ -689,6 +689,9 @@ importers:
       '@viviefs/sync-server':
         specifier: workspace:*
         version: link:../../libs/sync/server
+      '@viviefs/telemetry':
+        specifier: workspace:*
+        version: link:../../libs/telemetry
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../../libs/testing

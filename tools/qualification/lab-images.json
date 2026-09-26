@@ -1,0 +1,17 @@
+{
+  "purpose": "Apple Container images admitted per measured gap (AGENTS.md, Lab runtime). Pinned by digest; a probe refuses a tag.",
+  "images": {
+    "jaeger": {
+      "image": "cr.jaegertracing.io/jaegertracing/jaeger@sha256:46a886260e04002d8f45e213fc39063fa11a50446048fdaa64786fc0840cb9f8",
+      "resolvedFrom": "cr.jaegertracing.io/jaegertracing/jaeger:2.20.0 (same digest as complyj tools/qualification/artifacts.json)",
+      "license": "Apache-2.0",
+      "gap": "P10 check 5: the Jaeger telemetry sink (D45')"
+    },
+    "otelLgtm": {
+      "image": "docker.io/grafana/otel-lgtm@sha256:d6c52678ab5b7144f27ae569fd778608121c0f4a10eb411983750a0d67c1fbe3",
+      "resolvedFrom": "docker.io/grafana/otel-lgtm:0.33.1 on 2026-09-24",
+      "license": "Apache-2.0 for the image repository; bundles Grafana, Loki, Tempo and Pyroscope under AGPL-3.0. Run as a local lab viewer only: not a dependency, never shipped (P10 choice G).",
+      "gap": "P10 check 5: the otel-lgtm telemetry sink (D45')"
+    }
+  }
+}

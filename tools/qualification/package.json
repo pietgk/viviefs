@@ -24,6 +24,7 @@
     "@viviefs/sync-client": "workspace:*",
     "@viviefs/sync-protocol": "workspace:*",
     "@viviefs/sync-server": "workspace:*",
+    "@viviefs/telemetry": "workspace:*",
     "@viviefs/testing": "workspace:*",
     "@viviefs/workflow-engine": "workspace:*",
     "agent-device": "0.21.6",

@@ -12,7 +12,8 @@ Review before the gate runs. This page does not pass P10 and does not edit the l
 | PGlite close drains queries (found while re-running P06) | committed `a7857e4fb` |
 | Trace projector, OTLP export, trace cursor | done: `libs/telemetry`, 10 unit tests on the section 3 mapping |
 | P10 checks 1-4 and 6 without containers | done: six projection checks pass on sqlite-node and PGlite, each shown to fail on a broken export |
-| Three sink smoke tests (check 5), probe, evidence note | not written |
+| Three sink smoke tests (check 5) | done: motel, Jaeger and otel-lgtm each hold the same 7 span ids with the workflow span as parent |
+| Probe (`p10.ts`), evidence note, qualification | not written |
 | Gate P10 | not run |
 
 ## 1. The claim
