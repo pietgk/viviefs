@@ -728,6 +728,19 @@
       "probeSha256": "775067e2a440187caa05d031de1ff0147222961e05b83872a7cf4a0cd44c1429",
       "inputsSha256": "ae3ee6d203f06d30a86bbcbea5af80d07c0782569951a809405cf2224beb0925",
       "inputsChangedDuringRun": false
+    },
+    {
+      "gate": "P01",
+      "status": "fail",
+      "recordedAt": "2026-09-26T20:33:17.621Z",
+      "commit": "1616cadd042f207513389c4be3802a4bef53a2d1",
+      "dirty": false,
+      "artifacts": "/Users/grop/ws/viviefs/.artifacts/qualification/2026-09-26T20-32-28.829Z-1d157865",
+      "exitCode": 1,
+      "probe": "tools/qualification/src/probes/p01.ts",
+      "probeSha256": "c766e027b0331e18695371a1dca81b72ffd8550a4bf57cc15f9bd638653e35d3",
+      "inputsSha256": "30d19bbe2e98049e0c23f9b03390d224aeac873431fd826f5355ec629990c931",
+      "inputsChangedDuringRun": false
     }
   ]
 }

@@ -142,7 +142,7 @@ export const terminateIosApp = async (
   )
   if (
     stopped.code !== 0 &&
-    !/not in a running|found running|Invalid device/i.test(
+    !/not in a running|found running|found nothing to terminate|Invalid device/i.test(
       stopped.stderr + stopped.stdout,
     )
   ) {
