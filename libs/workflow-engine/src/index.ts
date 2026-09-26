@@ -28,11 +28,13 @@ export {
   decodeExit,
   decodeLease,
   decodeStarted,
+  decodeWorkflowExit,
   encodeActivityStarted,
   encodeClock,
   encodeExit,
   encodeLease,
   encodeStarted,
+  encodeWorkflowExit,
 } from './journal.ts'
 export type {
   ActivityStartedValue,

@@ -132,11 +132,8 @@ describe('durable spans from journal facts', () => {
     })
   })
 
-  it('marks a failed attempt and links the retry to it', () => {
-    // The engine journals a failure as the printed cause; the span reports what the journal holds.
-    const failed = spanOf(FETCH1, Attr.activityExit)
-    expect(failed.status).toBe('error')
-    expect(failed.statusMessage).toContain('flaky')
+  it('marks a failed attempt with its typed error and links the retry to it', () => {
+    expect(spanOf(FETCH1, Attr.activityExit)).toMatchObject({ status: 'error', statusMessage: 'flaky' })
     expect(spanOf(FETCH2, Attr.activityExit).links).toEqual([
       { traceId: traceIdFor(EXEC), spanId: spanIdFor(FETCH1), attributes: { 'viviefs.link': 'previous-attempt' } },
     ])
@@ -200,9 +197,13 @@ describe('OTLP encoding of a durable span', () => {
       parentSpanId: spanIdFor(EXEC),
       startTimeUnixNano: `${T0 + 100}000000`,
       endTimeUnixNano: `${T0 + 120}000000`,
+      status: { code: 2, message: 'flaky' },
     })
-    expect(otlp.status.code).toBe(2)
-    expect(otlp.status.message).toContain('flaky')
     expect(toOtlpSpan(spanOf(FETCH2, Attr.activityExit)).links[0]?.spanId).toBe(spanIdFor(FETCH1))
+  })
+
+  it('describes a structured typed error as JSON', () => {
+    const tagged = { ...byEntity(FETCH1, Attr.activityExit), v: encodeExit(Exit.fail({ _tag: 'CheckFailed', reason: 'x' })) }
+    expect(spanForEndFact(journal, tagged)?.statusMessage).toBe('{"_tag":"CheckFailed","reason":"x"}')
   })
 })

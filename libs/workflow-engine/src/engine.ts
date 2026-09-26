@@ -41,12 +41,14 @@ import {
   decodeClock,
   decodeExit,
   decodeLease,
+  decodeWorkflowExit,
   decodeStarted,
   encodeActivityStarted,
   encodeClock,
   encodeExit,
   encodeLease,
   encodeStarted,
+  encodeWorkflowExit,
   type ClockValue,
   type LeaseValue,
 } from './journal.ts'
@@ -241,6 +243,15 @@ export const engineLayer: Layer.Layer<
         }),
       )
 
+    /** The stored result, decoded with the workflow's own schemas. */
+    const typedResult = (workflow: Workflow.Any, exec: string) =>
+      rowsOf(exec).pipe(
+        Effect.flatMap((rows) => {
+          const row = latest(rows, Attr.workflowResult)
+          return row ? decodeWorkflowExit(workflow, row.v) : Effect.succeed(null)
+        }),
+      )
+
     const storedStarted = (exec: string) =>
       rowsOf(exec).pipe(
         Effect.map((rows) => {
@@ -251,6 +262,7 @@ export const engineLayer: Layer.Layer<
       )
 
     const persistResult = (
+      workflow: Workflow.Any,
       exec: string,
       result: Workflow.Result<unknown, unknown>,
     ) => {
@@ -259,12 +271,16 @@ export const engineLayer: Layer.Layer<
         Effect.flatMap((existing) =>
           existing
             ? Effect.void
-            : appendFact(
-                exec,
-                executionEntity(config.org, exec),
-                Attr.workflowResult,
-                encodeExit(result.exit),
-                durable(exec, executionEntity(config.org, exec)),
+            : encodeWorkflowExit(workflow, result.exit).pipe(
+                Effect.flatMap((value) =>
+                  appendFact(
+                    exec,
+                    executionEntity(config.org, exec),
+                    Attr.workflowResult,
+                    value,
+                    durable(exec, executionEntity(config.org, exec)),
+                  ),
+                ),
               ),
         ),
       )
@@ -432,7 +448,7 @@ export const engineLayer: Layer.Layer<
           Workflow.intoResult,
           Effect.provideService(WorkflowEngine.WorkflowEngine, engine),
           (effect) => deferredState.trackRun(instance, effect),
-          Effect.tap((result) => persistResult(exec, result)),
+          Effect.tap((result) => persistResult(entry.workflow, exec, result)),
           Effect.withTracerEnabled(false),
           Effect.orDie,
           Effect.forkIn(entry.scope),
@@ -474,7 +490,7 @@ export const engineLayer: Layer.Layer<
           return yield* Effect.die(`Workflow ${workflow._tag} is not registered`)
         }
         const exec = options.executionId
-        const result = yield* storedResult(exec)
+        const result = yield* typedResult(workflow, exec)
         if (result) {
           return completeFromExit(result) as never
         }
@@ -497,7 +513,7 @@ export const engineLayer: Layer.Layer<
         if (options.discard) return undefined as never
         const state = runs.get(exec)
         if (!state?.fiber) {
-          const again = yield* storedResult(exec)
+          const again = yield* typedResult(workflow, exec)
           if (again) return completeFromExit(again) as never
           return new Workflow.Suspended({}) as never
         }
@@ -512,10 +528,10 @@ export const engineLayer: Layer.Layer<
         }
         return (yield* exit) as never
       }, die),
-      poll: (_workflow: Workflow.Any, exec: string) =>
+      poll: (workflow: Workflow.Any, exec: string) =>
         die(
           Effect.gen(function* () {
-            const result = yield* storedResult(exec)
+            const result = yield* typedResult(workflow, exec)
             if (result) return Option.some(completeFromExit(result))
             const state = runs.get(exec)
             const fiberExit = state?.fiber?.pollUnsafe()

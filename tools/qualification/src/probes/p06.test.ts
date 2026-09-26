@@ -11,9 +11,10 @@ describe('P06 engine crash matrix picks', () => {
     expect(Attr.leaseHolder).toBe('viviefs/lease/holder')
   })
 
-  it('names seven kill boundaries plus the memory durability positive control', () => {
-    expect(P06_DATOM_CHECK_COUNT).toBe(7)
-    expect(P06_CHECK_COUNT).toBe(8)
+  it('names seven kill boundaries, typed-failure replay and the memory durability positive control', () => {
+    expect(P06_DATOM_CHECK_COUNT).toBe(8)
+    expect(P06_CHECK_COUNT).toBe(9)
+    expect(P06_CHECK_NAMES).toContain('typed failures survive a kill')
     expect(P06_CHECK_NAMES).toContain('kill before activity')
     expect(P06_CHECK_NAMES).toContain('kill after activity before journal')
     expect(P06_CHECK_NAMES).toContain('kill during lease handoff')

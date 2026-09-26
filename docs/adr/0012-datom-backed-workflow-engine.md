@@ -70,3 +70,18 @@ before the activity and journals `blob:{sha256}`. Device force-quit is P07.
 Evidence:
 [2026-09-20-p06.md](../evidence/2026-09-20-p06.md). P07:
 [2026-09-21-p07.md](../evidence/2026-09-21-p07.md).
+
+2026-09-27, found after P10. Replay did not return the exit the first run
+saw. The journal stored a failure as its printed cause, so a typed activity
+failure, a typed deferred failure or a workflow's typed result came back on
+replay as a string that the activity's error schema could not decode: a run
+that caught `CheckFailed` by tag died with a `SchemaError` after a resume.
+Defects and interruptions were flattened into failures. Exit values in
+`viviefs/activity/exit`, `viviefs/deferred/exit` and
+`viviefs/workflow/result` now keep the whole encoded cause through Effect's
+JSON exit codec (the one its cluster engine persists); `workflow/result` is
+encoded with the workflow's own schemas, because Effect's engine contract
+hands workflow results over typed. The attribute names are unchanged and the
+old `{_tag: "Failure", error}` value still decodes (D44). P06 gained the
+check "typed failures survive a kill", which fails on the old encoding.
+Evidence: [2026-09-20-p06.md](../evidence/2026-09-20-p06.md).

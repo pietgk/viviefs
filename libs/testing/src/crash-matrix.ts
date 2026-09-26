@@ -25,6 +25,7 @@ import {
   noopWakeScheduler,
   type CrashBoundary,
 } from '@viviefs/workflow-engine'
+import { typedFailuresSurviveAKill } from './exit-replay.ts'
 import {
   type CheckResult,
   type MutableClock,
@@ -38,6 +39,7 @@ export const P06_DATOM_CHECK_NAMES = [
   'kill during clock',
   'kill during lease handoff',
   'kill during upload',
+  'typed failures survive a kill',
 ] as const
 
 export const P06_CHECK_NAMES = [
@@ -495,6 +497,10 @@ export const runCrashMatrix = (
           killDuringLease(openStore, clock),
         ),
         runCheck('kill during upload', killDuringUpload(openStore, clock)),
+        runCheck(
+          'typed failures survive a kill',
+          typedFailuresSurviveAKill(openStore, clock, 'exits'),
+        ),
       ],
       { concurrency: 1 },
     )

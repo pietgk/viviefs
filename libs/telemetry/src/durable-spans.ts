@@ -86,7 +86,13 @@ const exitStatus = (
   const exit = decodeExit(value)
   if (!exit || exit._tag === 'Success') return { status: 'ok', message: undefined }
   const error = Cause.squash(exit.cause)
-  return { status: 'error', message: typeof error === 'string' ? error : String(error) }
+  const message =
+    typeof error === 'string'
+      ? error
+      : error instanceof Error
+        ? error.message
+        : JSON.stringify(error)
+  return { status: 'error', message }
 }
 
 const causeLink = (
