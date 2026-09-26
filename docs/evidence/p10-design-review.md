@@ -13,7 +13,8 @@ Review before the gate runs. This page does not pass P10 and does not edit the l
 | Trace projector, OTLP export, trace cursor | done: `libs/telemetry`, 10 unit tests on the section 3 mapping |
 | P10 checks 1-4 and 6 without containers | done: six projection checks pass on sqlite-node and PGlite, each shown to fail on a broken export |
 | Three sink smoke tests (check 5) | done: motel, Jaeger and otel-lgtm each hold the same 7 span ids with the workflow span as parent |
-| Probe (`p10.ts`), evidence note, qualification | not written |
+| Probe (`p10.ts`) and evidence note | done: 25 checks, 3 of 3 local runs pass; the note's span review is drift-checked by the probe and by `p10.test.ts` |
+| Qualification (`pnpm qualify --gate P10`) | not run |
 | Gate P10 | not run |
 
 ## 1. The claim

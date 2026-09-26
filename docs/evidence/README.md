@@ -19,5 +19,6 @@ From P09 on, the dated note includes a Review section: a reading order, the prob
 - [2026-09-21-p07.md](2026-09-21-p07.md) - Device resume E2E (P07)
 - [2026-09-21-p08.md](2026-09-21-p08.md) - UI three-way prototype (P08)
 - [2026-09-22-p09.md](2026-09-22-p09.md) - Sync: outbox and cursor (P09)
+- [2026-09-26-p10.md](2026-09-26-p10.md) - Trace projection (P10)
 - [p08-comparison.md](p08-comparison.md) - P08 review: IntentComposer in effect-machine
 - [p10-design-review.md](p10-design-review.md) - P10 design review before the gate runs (does not pass a gate)
