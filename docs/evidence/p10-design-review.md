@@ -10,8 +10,9 @@ Review before the gate runs. This page does not pass P10 and does not edit the l
 | Engine writes causing spans and an activity start fact | done: five engine checks pass on sqlite-node and PGlite, each shown to fail on a broken journal |
 | `LogStore.envelope(cs)` read | done: P04 `append` round-trips it on every store |
 | PGlite close drains queries (found while re-running P06) | committed `a7857e4fb` |
-| Trace projector, OTLP export, trace cursor | not written |
-| P10 probe, three sink smoke tests, evidence note | not written |
+| Trace projector, OTLP export, trace cursor | done: `libs/telemetry`, 10 unit tests on the section 3 mapping |
+| P10 checks 1-4 and 6 without containers | done: six projection checks pass on sqlite-node and PGlite, each shown to fail on a broken export |
+| Three sink smoke tests (check 5), probe, evidence note | not written |
 | Gate P10 | not run |
 
 ## 1. The claim

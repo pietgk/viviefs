@@ -1,8 +1,28 @@
 /**
- * Named slot for `@viviefs/telemetry`.
- * OTLP/HTTP JSON layer (P03). Trace projector from the log arrives at P10.
+ * `@viviefs/telemetry`: the live OTLP layer (P03) and the trace projector
+ * with its sink contract (P10).
  */
 export {
   DEFAULT_OTLP_SERVICE_NAME,
   otlpJsonLayer,
 } from './layer.ts'
+export {
+  END_ATTRIBUTES,
+  executionEntityOf,
+  spanForEndFact,
+  type AttributeValue,
+  type DurableSpan,
+  type ExecutionJournal,
+} from './durable-spans.ts'
+export {
+  SinkRejected,
+  TraceSink,
+  otlpTraceSink,
+  toOtlpSpan,
+  toTraceData,
+} from './trace-sink.ts'
+export {
+  TraceProjector,
+  traceProjectorLayer,
+  type ExportResult,
+} from './trace-projector.ts'

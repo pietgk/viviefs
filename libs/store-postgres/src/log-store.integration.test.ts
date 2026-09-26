@@ -9,10 +9,12 @@ import {
   P05_CHECK_COUNT,
   P06_DATOM_CHECK_COUNT,
   P10_ENGINE_CHECK_COUNT,
+  P10_PROJECTION_CHECK_COUNT,
   runChangesetChecks,
   runCrashMatrix,
   runLogStoreChecks,
   runTraceJournalChecks,
+  runTraceProjectionChecks,
 } from '@viviefs/testing'
 import { pgliteLogStore } from './layer.ts'
 
@@ -89,4 +91,22 @@ describe('postgres (PGlite) log store', () => {
       await rm(directory, { recursive: true, force: true })
     }
   }, 60_000)
+
+  it('passes the P10 trace projection checks', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'viviefs-p10-proj-pg-'))
+    try {
+      const checks = await Effect.runPromise(
+        runTraceProjectionChecks(
+          (deviceId) => pgliteLogStore({ deviceId, dataDir: directory }),
+          makeMutableClock(1_700_000_000_000),
+          'p10-projection-pg',
+        ),
+      )
+      expect(checks).toHaveLength(P10_PROJECTION_CHECK_COUNT)
+      const failed = checks.filter((check) => check.status !== 'PASS')
+      expect(failed, JSON.stringify(failed, null, 2)).toEqual([])
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
+  }, 90_000)
 })

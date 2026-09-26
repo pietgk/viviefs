@@ -44,3 +44,12 @@ export {
   type SpanContext,
   type TraceScenario,
 } from './trace-scenario.ts'
+export {
+  P10_PROJECTION_CHECK_COUNT,
+  P10_PROJECTION_CHECK_NAMES,
+  expectedSpanIds,
+  judgeTraceProjection,
+  runTraceProjection,
+  runTraceProjectionChecks,
+  type ProjectionRun,
+} from './trace-projection.ts'

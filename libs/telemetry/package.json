@@ -14,6 +14,13 @@
     }
   },
   "dependencies": {
+    "@viviefs/datom": "workspace:*",
+    "@viviefs/workflow-engine": "workspace:*",
     "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-rc.116",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
   }
 }

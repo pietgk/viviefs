@@ -15,10 +15,13 @@
   ],
   "references": [
     {
-      "path": "../datom/tsconfig.lib.json"
+      "path": "../workflow-engine/tsconfig.lib.json"
     },
     {
-      "path": "../workflow-engine/tsconfig.lib.json"
+      "path": "../telemetry/tsconfig.lib.json"
+    },
+    {
+      "path": "../datom/tsconfig.lib.json"
     }
   ]
 }

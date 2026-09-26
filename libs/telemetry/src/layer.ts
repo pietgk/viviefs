@@ -1,7 +1,7 @@
 /**
- * Effect-native OTLP/HTTP JSON export. P03 exemplar of the telemetry sink
- * adapter: one base URL chooses motel, Jaeger, or otel-lgtm. Trace projection
- * from the log arrives at P10.
+ * Effect-native OTLP/HTTP JSON export of live spans. P03 exemplar of the
+ * telemetry sink: one base URL chooses motel, Jaeger, or otel-lgtm. Durable
+ * spans go through the trace projector instead (`trace-projector.ts`).
  */
 import * as Layer from 'effect/Layer'
 import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'

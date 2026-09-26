@@ -9,13 +9,17 @@ import {
   P06_DATOM_CHECK_COUNT,
   P07_HOST_CHECK_COUNT,
   P10_ENGINE_CHECK_COUNT,
+  P10_PROJECTION_CHECK_COUNT,
   runChangesetChecks,
   runCrashMatrix,
   runHappyPath,
   runLaunchSweepChecks,
   runLogStoreChecks,
   judgeTraceJournal,
+  judgeTraceProjection,
   runTraceJournalChecks,
+  runTraceProjection,
+  runTraceProjectionChecks,
   runTraceScenario,
   runUnscoped,
   withTempDirectory,
@@ -181,6 +185,66 @@ describe('sqlite-node log store', () => {
         expect(
           failed({ ...run, liveSpans: [...run.liveSpans, wrapper] }),
         ).toEqual(['live spans only in activity bodies'])
+      }),
+    60_000,
+  )
+
+  it.live(
+    'passes the P10 trace projection checks',
+    () =>
+      Effect.gen(function* () {
+        const directory = yield* withTempDirectory('viviefs-p10-proj-')
+        const filename = join(directory, 'log.sqlite')
+        const checks = yield* runUnscoped(
+          runTraceProjectionChecks(
+            (deviceId) => sqliteNodeLogStore({ filename, deviceId }),
+            makeMutableClock(WALL),
+            'p10-projection',
+          ),
+        )
+        expect(checks).toHaveLength(P10_PROJECTION_CHECK_COUNT)
+        const failed = checks.filter((check) => check.status !== 'PASS')
+        expect(failed, JSON.stringify(failed, null, 2)).toEqual([])
+      }),
+    60_000,
+  )
+
+  it.live(
+    'fails each P10 trace projection check on a broken export',
+    () =>
+      Effect.gen(function* () {
+        const directory = yield* withTempDirectory('viviefs-p10-proj-broken-')
+        const filename = join(directory, 'log.sqlite')
+        const p = yield* runUnscoped(
+          runTraceProjection(
+            (deviceId) => sqliteNodeLogStore({ filename, deviceId }),
+            makeMutableClock(WALL),
+            'p10-projection-broken',
+          ),
+        )
+        const failed = (broken: Parameters<typeof judgeTraceProjection>[0]) =>
+          judgeTraceProjection(broken)
+            .filter((check) => check.status === 'FAIL')
+            .map((check) => check.name)
+        expect(failed(p)).toEqual([])
+        const sent = p.accepted.sent
+        const first = sent[0]!
+        const foreign = { ...first, traceId: 'a'.repeat(32) }
+        expect(failed({ ...p, accepted: { ...p.accepted, sent: [foreign, ...sent.slice(1)] } })).toContain('one trace')
+        expect(
+          failed({ ...p, fresh: { ...p.fresh, sent: p.fresh.sent.map((span) => ({ ...span, endMs: span.endMs + 1 })) } }),
+        ).toEqual(['deterministic ids'])
+        expect(failed({ ...p, again: { ...p.again, sent: [first] } })).toEqual(['no duplicates on replay'])
+        const unlinked = sent.map((span) =>
+          span.name === 'activity fetch #2' ? { ...span, links: [] } : span,
+        )
+        expect(failed({ ...p, accepted: { ...p.accepted, sent: unlinked }, fresh: { ...p.fresh, sent: unlinked } })).toEqual([
+          'attempts linked',
+        ])
+        expect(failed({ ...p, refused: { ...p.refused, cursorAfter: 5 } })).toEqual(['failed send keeps the cursor'])
+        expect(failed({ ...p, disabled: { ...p.disabled, sent: [first] } })).toEqual([
+          'disabled trace cursor keeps the backlog',
+        ])
       }),
     60_000,
   )
