@@ -211,7 +211,7 @@ flowchart TD
   OK -- "no, or network error" --> KEEP["cursor unchanged<br/>retry next tick"]
 ```
 
-- One cursor per sink, in a `trace_cursors(sink, seq)` table next to the log. Changed 2026-09-27: the trace cursor is the log store's acknowledged cursor `trace/<sink>`, so compaction waits for it; there is no separate table.
+- One cursor per sink, in a `trace_cursors(sink, seq)` table next to the log. Changed 2026-09-26: the trace cursor is the log store's acknowledged cursor `trace/<sink>`, so compaction waits for it; there is no separate table.
 - Delivery is at least once. A kill between the POST and the cursor write sends the same spans again with the same ids. That is safe to repeat. A sink may store the copy twice, so check 5 compares span-id sets, not row counts.
 - Serialization and HTTP stay Effect-native (`OtlpSerialization.layerJson`, `HttpClient`). No `@opentelemetry/*`.
 

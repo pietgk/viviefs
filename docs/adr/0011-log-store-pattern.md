@@ -72,7 +72,7 @@ horizon held. Evidence: [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).
 the same five stores. Evidence:
 [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
 
-2026-09-27, after P10. The compaction horizon covers every consumer that
+2026-09-26, after P10. The compaction horizon covers every consumer that
 must see facts before they go: a device, or a trace sink registered as
 `trace/<sink>` in `device_cursors` (name unchanged). `compact()` reports
 `heldBy`, the consumer that sets the horizon, so a sink that stays down is

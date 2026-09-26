@@ -71,7 +71,7 @@ Evidence:
 [2026-09-20-p06.md](../evidence/2026-09-20-p06.md). P07:
 [2026-09-21-p07.md](../evidence/2026-09-21-p07.md).
 
-2026-09-27, found after P10. Replay did not return the exit the first run
+2026-09-26, found after P10. Replay did not return the exit the first run
 saw. The journal stored a failure as its printed cause, so a typed activity
 failure, a typed deferred failure or a workflow's typed result came back on
 replay as a string that the activity's error schema could not decode: a run

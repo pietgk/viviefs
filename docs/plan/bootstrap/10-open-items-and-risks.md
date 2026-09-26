@@ -75,9 +75,9 @@ the named gate.
 - Physical-device testing beyond P03's documented motel path.
 - A visible local-notification tap that completes a deferred. P07 resumed after `simctl` / `adb force-stop` and completed the deferred from JavaScript. The banner tap was not observed (ADR-0013).
 - HLC future-skew bound and log-append volume: P04 picks them.
-- Bundle-size budget: `verify`'s bundle-size step has no target, so it measures nothing. The iOS bundle was 3,389,852 bytes at P01 (3,653,396 with the SQL import) and is 4,735,521 bytes on 2026-09-27; the Android bundle is 6,838,333. A budget is a decision, not a measurement. Since 2026-09-27 the `build` step exports both bundles, so a module the bundler cannot resolve fails `verify`.
+- Bundle-size budget: `verify`'s bundle-size step has no target, so it measures nothing. The iOS bundle was 3,389,852 bytes at P01 (3,653,396 with the SQL import) and is 4,735,521 bytes on 2026-09-26; the Android bundle is 6,838,333. A budget is a decision, not a measurement. Since 2026-09-26 the `build` step exports both bundles, so a module the bundler cannot resolve fails `verify`.
 - The trace projector on iOS, Android and web. P10 ran it on the host; P03 measured OTLP from Hermes.
-- Re-runs before foundation closure: P10 changed the engine and the log store, so the recorded passes of P01-P09 are stale. P06, P09 and P10 were re-run on the host on 2026-09-26 and pass on current inputs. P04 and P05 (device and web legs), P07 (device resume with live tracing now off in workflow bodies) and P01-P03 run in the sequential closure run.
+- Foundation closure: done on 2026-09-26, one sequential P01-P10 run on `3bd24492` ([2026-09-26-foundation-closure.md](../../evidence/2026-09-26-foundation-closure.md)). P11-P14 are next.
 - Datom `op` stays the words `assert` and `retract` (`TEXT`). Whether that column costs enough, next to `e`, `a`, and `v`, to justify a boolean and a re-run of P04-P09 is unmeasured (deferred 2026-09-22).
 
 ## Risks
