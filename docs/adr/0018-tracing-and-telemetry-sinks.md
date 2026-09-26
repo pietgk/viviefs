@@ -74,7 +74,8 @@ it from `vendor/motel` with Effect `4.0.0-beta.90` overrides. Evidence:
 [p03-physical-device.md](../evidence/p03-physical-device.md).
 
 P10, 2026-09-26. Ledger pass `2026-09-26T19-10-56.537Z-f5fe7b81` on a
-clean tree (`4e880f3a`). One crash-and-resume execution on sqlite-node and
+clean tree (`4e880f3a`), re-run `2026-09-26T19-13-20.728Z-5a9f3d50` after
+the ledger fingerprint was widened. One crash-and-resume execution on sqlite-node and
 on PGlite: `step-one` killed after its body ran, a launch sweep resumed it,
 `fetch` retried, a caller completed a deferred, a durable clock fired. The
 trace projector derived 7 durable spans in one trace, with entity-keyed ids

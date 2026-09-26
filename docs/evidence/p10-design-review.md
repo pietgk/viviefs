@@ -2,7 +2,7 @@
 
 Review before the gate runs. This page does not pass P10 and does not edit the ledger. It shows what P10 claims, how the design meets each part of the claim, what is already changed in the tree, what is still to build, and the choices that need a yes or no from you.
 
-> **P10 has not run.** The ledger has no P10 entry and `p10.ts` is still the stub that refuses to run. The design below was reviewed on 2026-09-26: choices A-G (section 12) and the pattern names (section 10) are agreed. The engine half was drafted before that review, then finished and tested as step 1 of the plan.
+> **P10 qualified on 2026-09-26** (see [2026-09-26-p10.md](2026-09-26-p10.md)). This page is the design review that came first: choices A-G (section 12) and the pattern names (section 10) were agreed on 2026-09-26, before the probe was written. The engine half was drafted before that review, then finished and tested as step 1 of the plan.
 
 | Part | State on 2026-09-26 |
 | --- | --- |
@@ -14,8 +14,8 @@ Review before the gate runs. This page does not pass P10 and does not edit the l
 | P10 checks 1-4 and 6 without containers | done: six projection checks pass on sqlite-node and PGlite, each shown to fail on a broken export |
 | Three sink smoke tests (check 5) | done: motel, Jaeger and otel-lgtm each hold the same 7 span ids with the workflow span as parent |
 | Probe (`p10.ts`) and evidence note | done: 25 checks, 3 of 3 local runs pass; the note's span review is drift-checked by the probe and by `p10.test.ts` |
-| Qualification (`pnpm qualify --gate P10`) | not run |
-| Gate P10 | not run |
+| Qualification (`pnpm qualify --gate P10`) | pass `2026-09-26T19-10-56.537Z-f5fe7b81`, re-run `2026-09-26T19-13-20.728Z-5a9f3d50`; ADR-0018 Qualified |
+| Gate P10 | pass (ledger) |
 
 ## 1. The claim
 

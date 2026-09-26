@@ -79,7 +79,7 @@ the named gate.
 - The engine journals a failed activity as its printed cause (`Cause([Fail(...)])`), not the typed error, so a durable span's error message is that text (P10). A typed encoding of failures is a journal value change and needs its own decision (D44).
 - A batch limit on the trace projector's `streamFrom` for a large backlog (P10 reads the whole backlog in one tick).
 - The trace projector on iOS, Android and web. P10 ran it on the host; P03 measured OTLP from Hermes.
-- Re-runs before foundation closure: P10 changed the engine and the log store, so the recorded passes of P01-P09 are stale. P04 and P05 (device and web legs), P07 (device resume with live tracing now off in workflow bodies) and P01-P03 run in the sequential closure run.
+- Re-runs before foundation closure: P10 changed the engine and the log store, so the recorded passes of P01-P09 are stale. P06, P09 and P10 were re-run on the host on 2026-09-26 and pass on current inputs. P04 and P05 (device and web legs), P07 (device resume with live tracing now off in workflow bodies) and P01-P03 run in the sequential closure run.
 - Datom `op` stays the words `assert` and `retract` (`TEXT`). Whether that column costs enough, next to `e`, `a`, and `v`, to justify a boolean and a re-run of P04-P09 is unmeasured (deferred 2026-09-22).
 
 ## Risks
