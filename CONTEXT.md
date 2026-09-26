@@ -43,6 +43,10 @@ _Avoid_: module, domain package
 Shared capability with no business meaning, used by features and apps.
 _Avoid_: util, common, shared
 
+**Drain before close**:
+An owned resource waits for its in-flight work before it is released, so a
+close never runs under a live operation.
+
 ## Data
 
 **Datom**:
@@ -100,7 +104,7 @@ _Avoid_: view, cache
 
 **Projector**:
 The process that applies committed changesets to read models and invalidates
-Reactivity keys.
+Reactivity keys. Not the trace projector.
 
 **Query atom**:
 A reactive Effect Atom running SQL against read models, declaring its invalidation
@@ -140,7 +144,12 @@ The device queue of changesets waiting to be acknowledged by the server.
 
 **Cursor**:
 The server sequence position a replica has confirmed. First sync: one cursor per
-organization.
+organization. Not the trace cursor.
+
+**Acknowledged cursor**:
+A consumer advances its cursor only after the receiver acknowledged; redelivery
+is safe because ids are stable. Used by sync pull, trace export and the
+compaction horizon.
 
 **Conflict datom**:
 The datom raised under the human-conflict policy when both values are kept for a
@@ -200,6 +209,39 @@ D2; not a separate product.
 
 **Lease epoch**:
 The fencing counter on a lease. Stale epochs' journal writes are rejected.
+
+## Tracing
+
+**Durable span**:
+A span the trace projector derives from journal facts: from its entity's start
+fact and end fact. A deferred has no start fact, so its span has zero length.
+Never produced by a live tracer.
+_Avoid_: bracket facts, journal span
+
+**Live span**:
+A span from Effect's in-process tracer (`Effect.withSpan`, `Effect.fn`), exported
+when it ends and lost on a kill. Workflow bodies emit none; activity bodies do,
+under their durable span.
+_Avoid_: live island
+
+**Entity-keyed id**:
+An id that is a hash of an entity id, so every replica and every replay derives
+it without coordination. Durable span ids hash the journal entity; the trace id
+hashes the execution entity.
+
+**Causing span**:
+The span an envelope names as the cause of its write: the caller's live span when
+an outside caller asked (start, approval, lease handoff), else the durable span
+of the fact's entity.
+_Avoid_: envelope origin
+
+**Trace projector**:
+Reads the log from its trace cursor, derives durable spans and exports them to a
+telemetry sink.
+
+**Trace cursor**:
+The log position a trace projector has exported and a sink has acknowledged; one
+per sink.
 
 ## Validation
 

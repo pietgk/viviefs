@@ -8,15 +8,16 @@ Do not mark a gate passed from prose in this directory.
 
 From P09 on, the dated note includes a Review section: a reading order, the probe's `Effect.fn` span tree, and the state diagram taken from span attributes. The probe fails when that committed diagram differs from the run. P01-P08 notes stay as they were written. The diagram reviews the probe. It is not a second source of the claim.
 
-- [p01-p07-review.md](p01-p07-review.md) — review board for P01-P07 (does not pass a gate)
-- [2026-09-20-p01.md](2026-09-20-p01.md) — platform on SDK 58 (P01)
-- [2026-09-20-p02.md](2026-09-20-p02.md) — SQLite drivers (P02)
-- [2026-09-20-p03.md](2026-09-20-p03.md) — OTLP and motel (P03)
-- [p03-physical-device.md](p03-physical-device.md) — P03 physical-device path (LAN binding or cursor catch-up)
-- [2026-09-20-p04.md](2026-09-20-p04.md) — Log store (P04)
-- [2026-09-20-p05.md](2026-09-20-p05.md) — Changesets and projections (P05)
-- [2026-09-20-p06.md](2026-09-20-p06.md) — Workflow engine crash matrix (P06)
-- [2026-09-21-p07.md](2026-09-21-p07.md) — Device resume E2E (P07)
-- [2026-09-21-p08.md](2026-09-21-p08.md) — UI three-way prototype (P08)
-- [2026-09-22-p09.md](2026-09-22-p09.md) — Sync: outbox and cursor (P09)
-- [p08-comparison.md](p08-comparison.md) — P08 review: IntentComposer in effect-machine
+- [p01-p07-review.md](p01-p07-review.md) - review board for P01-P07 (does not pass a gate)
+- [2026-09-20-p01.md](2026-09-20-p01.md) - platform on SDK 58 (P01)
+- [2026-09-20-p02.md](2026-09-20-p02.md) - SQLite drivers (P02)
+- [2026-09-20-p03.md](2026-09-20-p03.md) - OTLP and motel (P03)
+- [p03-physical-device.md](p03-physical-device.md) - P03 physical-device path (LAN binding or cursor catch-up)
+- [2026-09-20-p04.md](2026-09-20-p04.md) - Log store (P04)
+- [2026-09-20-p05.md](2026-09-20-p05.md) - Changesets and projections (P05)
+- [2026-09-20-p06.md](2026-09-20-p06.md) - Workflow engine crash matrix (P06)
+- [2026-09-21-p07.md](2026-09-21-p07.md) - Device resume E2E (P07)
+- [2026-09-21-p08.md](2026-09-21-p08.md) - UI three-way prototype (P08)
+- [2026-09-22-p09.md](2026-09-22-p09.md) - Sync: outbox and cursor (P09)
+- [p08-comparison.md](p08-comparison.md) - P08 review: IntentComposer in effect-machine
+- [p10-design-review.md](p10-design-review.md) - P10 design review before the gate runs (does not pass a gate)

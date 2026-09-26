@@ -397,18 +397,18 @@ mitigation, including a future shared implementation with XState.
 
 1. This page, sections 1 to 4 and 7, 11, 12 (conclusions).
 2. [`screen-view.ts`](../../features/evidence/client/src/intent-composer/screen-view.ts)
-   and [`IntentComposerView.tsx`](../../features/evidence/client/src/intent-composer/IntentComposerView.tsx)
-   — what the user sees; no library.
+   and [`IntentComposerView.tsx`](../../features/evidence/client/src/intent-composer/IntentComposerView.tsx):
+   what the user sees; no library.
 3. Open [`intent-composer.md`](../../features/evidence/client/src/intent-composer/intent-composer.md),
    then the `handle` region of
    [`effect-machine.ts`](../../features/evidence/client/src/intent-composer/effect-machine.ts).
-4. [`checks.ts`](../../features/evidence/client/src/intent-composer/checks.ts) — the
-   shared bar. [`broken.ts`](../../features/evidence/client/src/intent-composer/broken.ts)
-   — Confirm omitted on purpose.
-5. [`IntentComposerScreen.tsx`](../../features/evidence/client/src/intent-composer/IntentComposerScreen.tsx)
-   — wiring. It never imports a library; the driver is injected.
-6. [`query-atom.ts`](../../features/evidence/client/src/intent-composer/query-atom.ts)
-   — D42. Independent of IntentComposer.
+4. [`checks.ts`](../../features/evidence/client/src/intent-composer/checks.ts): the
+   shared bar. [`broken.ts`](../../features/evidence/client/src/intent-composer/broken.ts):
+   Confirm omitted on purpose.
+5. [`IntentComposerScreen.tsx`](../../features/evidence/client/src/intent-composer/IntentComposerScreen.tsx):
+   wiring. It never imports a library; the driver is injected.
+6. [`query-atom.ts`](../../features/evidence/client/src/intent-composer/query-atom.ts):
+   D42. Independent of IntentComposer.
 
 Gate record: [2026-09-21-p08.md](2026-09-21-p08.md). Decision record:
 [ADR-0020](../adr/0020-interaction-state-three-way-prototype.md).
