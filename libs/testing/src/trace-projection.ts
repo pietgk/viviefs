@@ -4,15 +4,24 @@
  * acknowledged, or refuses on purpose.
  *
  * Order matters and mirrors the gate text: the projector first runs with
- * its trace cursor disabled (nothing may leave), then against a refusing
- * sink (the cursor may not move), then against an accepting sink (the whole
- * backlog must arrive), then from a fresh cursor (the same spans again).
+ * its trace cursor disabled (nothing may leave, and compaction may not
+ * remove what it has not exported), then against a refusing sink (the
+ * cursor may not move), then against an accepting sink (the whole backlog
+ * must arrive), then from a fresh cursor (the same spans again), then in
+ * batches of four log entries (the same spans over several ticks).
  */
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
-import { activityId, clockId, deferredId, HlcClock } from '@viviefs/datom'
+import {
+  activityId,
+  clockId,
+  deferredId,
+  HlcClock,
+  LogStore,
+  type CompactResult,
+} from '@viviefs/datom'
 import {
   SinkRejected,
   TraceProjector,
@@ -32,6 +41,8 @@ export const P10_PROJECTION_CHECK_NAMES = [
   'attempts linked',
   'failed send keeps the cursor',
   'disabled trace cursor keeps the backlog',
+  'disabled trace cursor holds compaction',
+  'small batches export the same spans',
 ] as const
 
 export const P10_PROJECTION_CHECK_COUNT = P10_PROJECTION_CHECK_NAMES.length
@@ -50,7 +61,12 @@ type Tick = {
 const tick = (
   openStore: StoreFactory,
   clock: MutableClock,
-  options: { readonly sink: string; readonly enabled: boolean; readonly accept: boolean },
+  options: {
+    readonly sink: string
+    readonly enabled: boolean
+    readonly accept: boolean
+    readonly batch?: number
+  },
 ): Effect.Effect<Tick> =>
   Effect.scoped(
     Effect.gen(function* () {
@@ -68,7 +84,11 @@ const tick = (
         }),
       )
       const ctx = yield* Layer.build(
-        traceProjectorLayer({ enabled: options.enabled }).pipe(
+        traceProjectorLayer(
+          options.batch === undefined
+            ? { enabled: options.enabled }
+            : { enabled: options.enabled, batch: options.batch },
+        ).pipe(
           Layer.provide(sink),
           Layer.provide(openStore(PROJECTOR_DEVICE)),
           Layer.provide(Layer.succeed(HlcClock, clock.service)),
@@ -91,11 +111,31 @@ const tick = (
 export type ProjectionRun = {
   readonly run: TraceScenario
   readonly disabled: Tick
+  /** Compaction attempted while only the disabled trace cursor is registered. */
+  readonly compactWhileDisabled: CompactResult
+  readonly factsAfterCompaction: number
   readonly refused: Tick
   readonly accepted: Tick
   readonly again: Tick
   readonly fresh: Tick
+  /** A sink read four log entries per tick until its cursor reached the end. */
+  readonly batched: ReadonlyArray<Tick>
 }
+
+const compactNow = (openStore: StoreFactory, clock: MutableClock, prefix: string) =>
+  Effect.scoped(
+    Effect.gen(function* () {
+      const ctx = yield* Layer.build(
+        openStore(PROJECTOR_DEVICE).pipe(Layer.provide(Layer.succeed(HlcClock, clock.service))),
+      )
+      const store = yield* LogStore.pipe(Effect.provide(ctx))
+      const compacted = yield* store.compact()
+      const facts = (yield* store.scanPrefix(prefix)).length
+      return { compacted, facts }
+    }),
+  ).pipe(Effect.orDie)
+
+const BATCH = 4
 
 export const runTraceProjection = (
   openStore: StoreFactory,
@@ -105,11 +145,29 @@ export const runTraceProjection = (
   Effect.gen(function* () {
     const run = yield* runTraceScenario(openStore, clock, nonce)
     const disabled = yield* tick(openStore, clock, { sink: 'primary', enabled: false, accept: true })
+    const held = yield* compactNow(openStore, clock, run.executionEntity)
     const refused = yield* tick(openStore, clock, { sink: 'primary', enabled: true, accept: false })
     const accepted = yield* tick(openStore, clock, { sink: 'primary', enabled: true, accept: true })
     const again = yield* tick(openStore, clock, { sink: 'primary', enabled: true, accept: true })
     const fresh = yield* tick(openStore, clock, { sink: 'replay', enabled: true, accept: true })
-    return { run, disabled, refused, accepted, again, fresh }
+    const last = Math.max(...run.rows.map((row) => row.seq))
+    const batched: Array<Tick> = []
+    for (let round = 0; round < 20; round++) {
+      const step = yield* tick(openStore, clock, { sink: 'batched', enabled: true, accept: true, batch: BATCH })
+      batched.push(step)
+      if (step.cursorAfter >= last) break
+    }
+    return {
+      run,
+      disabled,
+      compactWhileDisabled: held.compacted,
+      factsAfterCompaction: held.facts,
+      refused,
+      accepted,
+      again,
+      fresh,
+      batched,
+    }
   })
 
 /** Every span the run should produce, by entity-keyed id. */
@@ -206,6 +264,30 @@ const disabledKeepsBacklog = (p: ProjectionRun): Verdict => {
   return pass({ disabledSent: 0, backlogExported: p.accepted.sent.length, cursor: p.accepted.cursorAfter })
 }
 
+const disabledHoldsCompaction = (p: ProjectionRun): Verdict => {
+  const { compactWhileDisabled: result } = p
+  if (result.removed !== 0) return fail(`compaction removed ${result.removed} fact(s) the trace cursor had not exported`)
+  if (result.heldBy !== 'trace/primary') return fail(`compaction was held by ${result.heldBy ?? 'nobody'}, expected trace/primary`)
+  if (p.factsAfterCompaction !== p.run.rows.length) {
+    return fail(`the journal had ${p.run.rows.length} facts and ${p.factsAfterCompaction} after compaction`)
+  }
+  return pass({ heldBy: result.heldBy, removed: result.removed })
+}
+
+const smallBatches = (p: ProjectionRun): Verdict => {
+  const sent = p.batched.flatMap((step) => step.sent)
+  if (p.batched.length < 2) return fail(`${p.batched.length} tick(s); a batch of ${BATCH} should need several`)
+  for (const step of p.batched) {
+    if (step.cursorAfter - step.cursorBefore > BATCH) {
+      return fail(`a tick moved the cursor ${step.cursorAfter - step.cursorBefore} entries, batch is ${BATCH}`)
+    }
+  }
+  if (JSON.stringify(bySpanId(sent)) !== JSON.stringify(bySpanId(p.accepted.sent))) {
+    return fail(`batched export sent ${sent.length} span(s) that differ from the single-tick export`)
+  }
+  return pass({ ticks: p.batched.length, spans: sent.length })
+}
+
 const verdicts: ReadonlyArray<
   readonly [(typeof P10_PROJECTION_CHECK_NAMES)[number], (p: ProjectionRun) => Verdict]
 > = [
@@ -215,6 +297,8 @@ const verdicts: ReadonlyArray<
   ['attempts linked', attemptsLinked],
   ['failed send keeps the cursor', failedSendKeepsCursor],
   ['disabled trace cursor keeps the backlog', disabledKeepsBacklog],
+  ['disabled trace cursor holds compaction', disabledHoldsCompaction],
+  ['small batches export the same spans', smallBatches],
 ]
 
 export const judgeTraceProjection = (p: ProjectionRun): CheckResult[] =>

@@ -93,6 +93,12 @@ span rule for envelopes; live spans only in activity bodies; the projector
 posts OTLP/JSON itself instead of using the batching `OtlpTracer`;
 zero-length deferred spans; `sampled` recorded and not yet honoured. P10
 did not need command spans, so ids are not extended to changesets. Not
-measured: the projector on a device, `sampled`, the trace cursor holding
-back compaction. Evidence:
+measured: the projector on a device, `sampled`. Evidence:
 [2026-09-26-p10.md](../evidence/2026-09-26-p10.md).
+
+2026-09-27. The trace cursor became the log store's acknowledged cursor
+`trace/<sink>`: a registered trace cursor, even a disabled one, holds
+compaction back, and `compact().heldBy` names it (agreed policy: hold, and
+name the holder, rather than drop spans). One tick reads at most 1000 log
+entries. P10 gained "disabled trace cursor holds compaction" and "small
+batches export the same spans".

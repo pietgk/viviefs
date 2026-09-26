@@ -79,6 +79,8 @@ const migratePg = Effect.gen(function* () {
 /**
  * Creates the P04 log-store tables. Column names are pinned here (D58
  * `changesets` plus the datoms / hlc_state / device_cursors tables).
+ * `device_cursors.device` holds any consumer id: a device, or a trace sink
+ * as `trace/<sink>` (P10). The name stays pinned.
  */
 export const migrateLogStore: Effect.Effect<
   void,

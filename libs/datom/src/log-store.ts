@@ -44,16 +44,27 @@ export class LogStore extends Context.Service<
     readonly envelope: (
       cs: string,
     ) => Effect.Effect<Envelope | null, SqlError>
+    /** Facts after `cursor` in log order, at most `limit` when given. */
     readonly streamFrom: (
       cursor: Cursor,
+      limit?: number,
     ) => Effect.Effect<ReadonlyArray<StoredDatom>, SqlError>
     readonly scanPrefix: (
       prefix: string,
     ) => Effect.Effect<ReadonlyArray<StoredDatom>, SqlError>
+    /**
+     * Record that a consumer has seen the log up to `cursor`. A consumer is
+     * a device, or a trace sink (`trace/<sink>`); compaction never removes
+     * a fact some registered consumer has not acknowledged.
+     */
     readonly acknowledge: (
-      device: string,
+      consumer: string,
       cursor: Cursor,
     ) => Effect.Effect<void, SqlError>
+    /** A consumer's acknowledged cursor, or null when it is not registered. */
+    readonly acknowledged: (
+      consumer: string,
+    ) => Effect.Effect<Cursor | null, SqlError>
     readonly horizon: () => Effect.Effect<Cursor, SqlError>
     readonly compact: () => Effect.Effect<CompactResult, SqlError>
   }
@@ -268,6 +279,7 @@ export const layer = Layer.effect(
 
     const streamFrom = Effect.fn('LogStore.streamFrom')(function* (
       cursor: Cursor,
+      limit?: number,
     ) {
       const rows = yield* sql<{
         seq: unknown
@@ -282,6 +294,7 @@ export const layer = Layer.effect(
         FROM datoms
         WHERE seq > ${cursor}
         ORDER BY seq
+        ${limit === undefined ? sql`` : sql`LIMIT ${limit}`}
       `
       return rows.map(readStored)
     })
@@ -308,14 +321,31 @@ export const layer = Layer.effect(
     })
 
     const acknowledge = Effect.fn('LogStore.acknowledge')(function* (
-      ackDevice: string,
+      consumer: string,
       cursor: Cursor,
     ) {
       yield* sql`
         INSERT INTO device_cursors (device, seq)
-        VALUES (${ackDevice}, ${cursor})
+        VALUES (${consumer}, ${cursor})
         ON CONFLICT (device) DO UPDATE SET seq = ${cursor}
       `
+    })
+
+    const acknowledged = Effect.fn('LogStore.acknowledged')(function* (
+      consumer: string,
+    ) {
+      const rows = yield* sql<{ seq: unknown }>`
+        SELECT seq FROM device_cursors WHERE device = ${consumer}
+      `
+      const value = rows[0]?.seq
+      return value == null ? null : asSeq(value)
+    })
+
+    const holder = Effect.gen(function* () {
+      const rows = yield* sql<{ device: string }>`
+        SELECT device FROM device_cursors ORDER BY seq ASC, device ASC LIMIT 1
+      `
+      return rows[0]?.device ?? null
     })
 
     const horizon = Effect.fn('LogStore.horizon')(function* () {
@@ -328,7 +358,8 @@ export const layer = Layer.effect(
 
     const compact = Effect.fn('LogStore.compact')(function* () {
       const at = yield* horizon()
-      if (at === 0) return { removed: 0, horizon: at } satisfies CompactResult
+      const heldBy = yield* holder
+      if (at === 0) return { removed: 0, horizon: at, heldBy } satisfies CompactResult
       const removed = yield* sql.onDialectOrElse({
         sqlite: () =>
           Effect.gen(function* () {
@@ -350,7 +381,7 @@ export const layer = Layer.effect(
             return asSeq(rows[0]?.n ?? 0)
           }),
       })
-      return { removed, horizon: at } satisfies CompactResult
+      return { removed, horizon: at, heldBy } satisfies CompactResult
     })
 
     return LogStore.of({
@@ -361,6 +392,7 @@ export const layer = Layer.effect(
       streamFrom,
       scanPrefix,
       acknowledge,
+      acknowledged,
       horizon,
       compact,
     })

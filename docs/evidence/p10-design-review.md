@@ -211,7 +211,7 @@ flowchart TD
   OK -- "no, or network error" --> KEEP["cursor unchanged<br/>retry next tick"]
 ```
 
-- One cursor per sink, in a `trace_cursors(sink, seq)` table next to the log.
+- One cursor per sink, in a `trace_cursors(sink, seq)` table next to the log. Changed 2026-09-27: the trace cursor is the log store's acknowledged cursor `trace/<sink>`, so compaction waits for it; there is no separate table.
 - Delivery is at least once. A kill between the POST and the cursor write sends the same spans again with the same ids. That is safe to repeat. A sink may store the copy twice, so check 5 compares span-id sets, not row counts.
 - Serialization and HTTP stay Effect-native (`OtlpSerialization.layerJson`, `HttpClient`). No `@opentelemetry/*`.
 
@@ -275,7 +275,7 @@ flowchart LR
   EN["libs/workflow-engine<br/>engine.ts: causing span, start fact,<br/>live spans only in activities"]
   PG["libs/store-postgres<br/>drain before close"]
   PJ["libs/telemetry<br/>projector: facts to spans"]
-  EX["libs/telemetry<br/>export + trace_cursors"]
+  EX["libs/telemetry<br/>export + trace cursor"]
   PR["tools/qualification<br/>P10 probe + sinks"]
   DOC["evidence note, ADR-0018,<br/>CONTEXT terms"]
   V --> EN

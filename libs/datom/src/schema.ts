@@ -50,6 +50,12 @@ export type AppendResult = {
 export type CompactResult = {
   readonly removed: number
   readonly horizon: Cursor
+  /**
+   * The consumer whose acknowledged cursor sets the horizon, or null when no
+   * consumer is registered. A consumer that stays behind (a device offline,
+   * a trace sink down) is named here instead of losing facts it has not seen.
+   */
+  readonly heldBy: string | null
 }
 
 export class FutureSkew extends Schema.TaggedError<FutureSkew>()('FutureSkew', {

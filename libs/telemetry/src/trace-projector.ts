@@ -2,19 +2,22 @@
  * Trace projector (D32, P10). Reads the log from its trace cursor, derives
  * durable spans from the end facts it finds, sends them to the trace sink,
  * and advances the cursor only after the sink acknowledged (acknowledged
- * cursor). One cursor per sink name, in `trace_cursors` next to the log.
+ * cursor).
+ *
+ * The trace cursor is the log store's acknowledged cursor for the consumer
+ * `trace/<sink>`, registered when the projector starts. Compaction never
+ * removes a fact a registered trace cursor has not exported: a sink that
+ * stays down holds compaction back and is named by `compact().heldBy`,
+ * instead of losing spans. A disabled projector is still registered, so
+ * enabling it later exports the whole backlog.
  *
  * Delivery is at least once: a kill between `send` and the cursor write
  * sends the same spans again with the same entity-keyed ids.
- *
- * A disabled projector leaves its cursor where it is. The facts stay in the
- * log, so enabling it later exports the backlog.
  */
 import { LogStore, type Cursor, type EnvelopeType, type StoredDatomType } from '@viviefs/datom'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import * as SqlClient from 'effect/unstable/sql/SqlClient'
 import type { SqlError } from 'effect/unstable/sql/SqlError'
 import {
   END_ATTRIBUTES,
@@ -34,53 +37,37 @@ export type ExportResult = {
 export class TraceProjector extends Context.Service<
   TraceProjector,
   {
-    /** One tick: read from the cursor, derive, send, advance. */
+    /** One tick: read one batch from the cursor, derive, send, advance. */
     readonly exportOnce: Effect.Effect<ExportResult, SinkRejected | SqlError>
     readonly cursor: Effect.Effect<Cursor, SqlError>
   }
 >()('viviefs/telemetry/TraceProjector') {}
 
-const migrate = Effect.gen(function* () {
-  const sql = yield* SqlClient.SqlClient
-  yield* sql.onDialectOrElse({
-    pg: () => sql`CREATE TABLE IF NOT EXISTS trace_cursors (
-      sink TEXT PRIMARY KEY,
-      seq BIGINT NOT NULL
-    )`,
-    orElse: () => sql`CREATE TABLE IF NOT EXISTS trace_cursors (
-      sink TEXT PRIMARY KEY,
-      seq INTEGER NOT NULL
-    )`,
-  })
-})
+/** The log store consumer id of a sink's trace cursor. */
+export const traceConsumer = (sink: string): string => `trace/${sink}`
+
+/** Log entries read per tick, so a long backlog never loads at once. */
+export const DEFAULT_TRACE_BATCH = 1000
 
 export const traceProjectorLayer = (options: {
   readonly enabled: boolean
-}): Layer.Layer<
-  TraceProjector,
-  SqlError,
-  LogStore | SqlClient.SqlClient | TraceSink
-> =>
+  readonly batch?: number
+}): Layer.Layer<TraceProjector, SqlError, LogStore | TraceSink> =>
   Layer.effect(
     TraceProjector,
     Effect.gen(function* () {
-      const sql = yield* SqlClient.SqlClient
       const store = yield* LogStore
       const sink = yield* TraceSink
-      yield* migrate
+      const consumer = traceConsumer(sink.name)
+      if ((yield* store.acknowledged(consumer)) === null) {
+        yield* store.acknowledge(consumer, 0)
+      }
 
-      const cursor = Effect.gen(function* () {
-        const rows = yield* sql<{ seq: unknown }>`
-          SELECT seq FROM trace_cursors WHERE sink = ${sink.name}
-        `
-        return Number(rows[0]?.seq ?? 0)
-      })
+      const cursor = store
+        .acknowledged(consumer)
+        .pipe(Effect.map((seq) => seq ?? 0))
 
-      const advance = (seq: Cursor) =>
-        sql`
-          INSERT INTO trace_cursors (sink, seq) VALUES (${sink.name}, ${seq})
-          ON CONFLICT (sink) DO UPDATE SET seq = ${seq}
-        `
+      const advance = (seq: Cursor) => store.acknowledge(consumer, seq)
 
       const derive = (batch: ReadonlyArray<StoredDatomType>) =>
         Effect.gen(function* () {
@@ -120,7 +107,7 @@ export const traceProjectorLayer = (options: {
         if (!options.enabled) {
           return { enabled: false, spans: [], cursor: from } satisfies ExportResult
         }
-        const batch = yield* store.streamFrom(from)
+        const batch = yield* store.streamFrom(from, options.batch ?? DEFAULT_TRACE_BATCH)
         const last = batch.at(-1)
         if (!last) return { enabled: true, spans: [], cursor: from } satisfies ExportResult
         const spans = yield* derive(batch)

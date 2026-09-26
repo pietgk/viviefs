@@ -22,7 +22,9 @@ export {
   toTraceData,
 } from './trace-sink.ts'
 export {
+  DEFAULT_TRACE_BATCH,
   TraceProjector,
+  traceConsumer,
   traceProjectorLayer,
   type ExportResult,
 } from './trace-projector.ts'

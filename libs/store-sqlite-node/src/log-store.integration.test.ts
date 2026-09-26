@@ -238,12 +238,27 @@ describe('sqlite-node log store', () => {
         const unlinked = sent.map((span) =>
           span.name === 'activity fetch #2' ? { ...span, links: [] } : span,
         )
-        expect(failed({ ...p, accepted: { ...p.accepted, sent: unlinked }, fresh: { ...p.fresh, sent: unlinked } })).toEqual([
-          'attempts linked',
-        ])
+        const unlinkTick = (tick: (typeof p.batched)[number]) => ({
+          ...tick,
+          sent: tick.sent.map((span) => (span.name === 'activity fetch #2' ? { ...span, links: [] } : span)),
+        })
+        expect(
+          failed({
+            ...p,
+            accepted: { ...p.accepted, sent: unlinked },
+            fresh: { ...p.fresh, sent: unlinked },
+            batched: p.batched.map(unlinkTick),
+          }),
+        ).toEqual(['attempts linked'])
         expect(failed({ ...p, refused: { ...p.refused, cursorAfter: 5 } })).toEqual(['failed send keeps the cursor'])
         expect(failed({ ...p, disabled: { ...p.disabled, sent: [first] } })).toEqual([
           'disabled trace cursor keeps the backlog',
+        ])
+        expect(
+          failed({ ...p, compactWhileDisabled: { ...p.compactWhileDisabled, removed: 3, heldBy: null } }),
+        ).toEqual(['disabled trace cursor holds compaction'])
+        expect(failed({ ...p, batched: p.batched.slice(0, 1) })).toEqual([
+          'small batches export the same spans',
         ])
       }),
     60_000,

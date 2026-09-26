@@ -19,7 +19,6 @@ the named gate.
 
 - Identity. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
 - Sampling of durable spans: the envelope records `sampled`; the trace projector does not honour it yet (P10).
-- The trace cursor and compaction: `LogStore.compact` follows `device_cursors` only, so compaction could remove facts a trace cursor has not exported yet (P10).
 - Quarantine of user content after a lost lease (D15; likely home is D34 human-conflict).
 
 **Hypothesis until gate** (must not constrain other work):
@@ -76,7 +75,6 @@ the named gate.
 - Physical-device testing beyond P03's documented motel path.
 - A visible local-notification tap that completes a deferred. P07 resumed after `simctl` / `adb force-stop` and completed the deferred from JavaScript. The banner tap was not observed (ADR-0013).
 - HLC future-skew bound and log-append volume: P04 picks them.
-- A batch limit on the trace projector's `streamFrom` for a large backlog (P10 reads the whole backlog in one tick).
 - The trace projector on iOS, Android and web. P10 ran it on the host; P03 measured OTLP from Hermes.
 - Re-runs before foundation closure: P10 changed the engine and the log store, so the recorded passes of P01-P09 are stale. P06, P09 and P10 were re-run on the host on 2026-09-26 and pass on current inputs. P04 and P05 (device and web legs), P07 (device resume with live tracing now off in workflow bodies) and P01-P03 run in the sequential closure run.
 - Datom `op` stays the words `assert` and `retract` (`TEXT`). Whether that column costs enough, next to `e`, `a`, and `v`, to justify a boolean and a re-run of P04-P09 is unmeasured (deferred 2026-09-22).

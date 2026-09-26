@@ -347,7 +347,12 @@ export const runLogStoreChecks = (
             if (restCur.length !== 2 || restCur[0]?.seq <= (matching[0]?.seq ?? 0)) {
               throw new Error(`cursor rest ${JSON.stringify(restCur)}`)
             }
-            return { all: matching.length, rest: restCur.length }
+            const first = matching[0]
+            const limited = yield* store.streamFrom((first?.seq ?? 1) - 1, 2)
+            if (limited.length !== 2 || limited[0]?.seq !== first?.seq) {
+              throw new Error(`cursor limit ${JSON.stringify(limited)}`)
+            }
+            return { all: matching.length, rest: restCur.length, limited: limited.length }
           }),
         ),
       ),
@@ -408,9 +413,19 @@ export const runLogStoreChecks = (
             )
             const third = all[2]
             if (!third) throw new Error('missing compaction rows')
+            if ((yield* store.acknowledged('device-a')) !== null) {
+              throw new Error('device-a acknowledged before it acknowledged')
+            }
             yield* store.acknowledge('device-a', third.seq)
+            if ((yield* store.acknowledged('device-a')) !== third.seq) {
+              throw new Error('acknowledged cursor did not round-trip')
+            }
             const compacted = yield* store.compact()
-            if (compacted.horizon !== third.seq || compacted.removed < 1) {
+            if (
+              compacted.horizon !== third.seq ||
+              compacted.removed < 1 ||
+              compacted.heldBy !== 'device-a'
+            ) {
               throw new Error(`compact ${JSON.stringify(compacted)}`)
             }
             const remaining = (yield* store.streamFrom(0)).filter((row) =>

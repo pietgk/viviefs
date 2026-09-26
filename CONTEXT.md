@@ -241,7 +241,8 @@ telemetry sink.
 
 **Trace cursor**:
 The log position a trace projector has exported and a sink has acknowledged; one
-per sink.
+per sink. It is the log store's acknowledged cursor for the consumer
+`trace/<sink>`, so compaction never removes facts it has not exported.
 
 ## Validation
 
