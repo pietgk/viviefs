@@ -33,3 +33,14 @@ export {
 } from './launch-sweep.ts'
 export { withTempDirectory } from './temp-directory.ts'
 export { runUnscoped } from './run-unscoped.ts'
+export {
+  P10_ENGINE_CHECK_COUNT,
+  P10_ENGINE_CHECK_NAMES,
+  P10_ORG,
+  TraceProbe,
+  judgeTraceJournal,
+  runTraceJournalChecks,
+  runTraceScenario,
+  type SpanContext,
+  type TraceScenario,
+} from './trace-scenario.ts'

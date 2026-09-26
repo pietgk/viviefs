@@ -2,13 +2,13 @@
 
 Review before the gate runs. This page does not pass P10 and does not edit the ledger. It shows what P10 claims, how the design meets each part of the claim, what is already changed in the tree, what is still to build, and the choices that need a yes or no from you.
 
-> **P10 has not run.** The ledger has no P10 entry and `p10.ts` is still the stub that refuses to run. The design below was reviewed on 2026-09-26: choices A-G (section 12) and the pattern names (section 10) are agreed. The engine half was drafted before that review. It stays a draft in the working tree and follows this page if the design changes.
+> **P10 has not run.** The ledger has no P10 entry and `p10.ts` is still the stub that refuses to run. The design below was reviewed on 2026-09-26: choices A-G (section 12) and the pattern names (section 10) are agreed. The engine half was drafted before that review, then finished and tested as step 1 of the plan.
 
 | Part | State on 2026-09-26 |
 | --- | --- |
 | Design (this page) | reviewed, agreed |
-| Engine writes causing spans and an activity start fact | draft, not committed |
-| `LogStore.envelope(cs)` read | draft, not committed |
+| Engine writes causing spans and an activity start fact | done: five engine checks pass on sqlite-node and PGlite, each shown to fail on a broken journal |
+| `LogStore.envelope(cs)` read | done: P04 `append` round-trips it on every store |
 | PGlite close drains queries (found while re-running P06) | committed `a7857e4fb` |
 | Trace projector, OTLP export, trace cursor | not written |
 | P10 probe, three sink smoke tests, evidence note | not written |
@@ -138,7 +138,7 @@ Two kinds of write, with examples:
 | Who caused it | Example | Envelope gets |
 | --- | --- | --- |
 | **An outside caller asked.** Code outside the engine called in, usually inside its own live span. | A screen submits a command that starts a workflow (span `SubmitEvidence`) and the engine writes `workflow/started`. A person taps Approve and the engine writes the `deferred/exit`. Another device takes over the lease. | the caller's live span, so the trace can later say "started by that `SubmitEvidence` command" |
-| **Nobody asked at that moment.** The engine does it on its own while it runs the workflow. | recording that an activity started or finished, scheduling or firing a clock, recording the final result | the durable span the fact belongs to, for example the span of `step-one` attempt 1 |
+| **Nobody asked at that moment.** The engine does it on its own while it runs the workflow. | recording that an activity started or finished, scheduling or firing a clock, recording the final result | the durable span the fact belongs to, for example the span of `step-one` attempt 1. A deferred exit fired by a clock names the clock's span: the clock caused it, and that exit is the end of the clock span |
 
 If an outside caller has no live span (tracing not installed, or a launch sweep), the envelope falls back to the durable span, so an envelope never holds zeros again.
 

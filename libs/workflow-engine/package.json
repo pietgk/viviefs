@@ -14,6 +14,7 @@
     }
   },
   "dependencies": {
+    "@noble/hashes": "2.4.0",
     "@viviefs/datom": "workspace:*",
     "effect": "4.0.0-rc.116"
   },

@@ -1,5 +1,5 @@
 /**
- * Attribute names pinned by P05 and P06 (D44). A shipped name cannot be
+ * Attribute names pinned by P05, P06 and P10 (D44). A shipped name cannot be
  * renamed or retyped.
  *
  * Domain names are the evidence-collection exemplar. System names are the
@@ -13,6 +13,7 @@ export const Attr = {
   conflict: 'viviefs/conflict',
   workflowStarted: 'viviefs/workflow/started',
   workflowResult: 'viviefs/workflow/result',
+  activityStarted: 'viviefs/activity/started',
   activityExit: 'viviefs/activity/exit',
   deferredExit: 'viviefs/deferred/exit',
   clockWakeAt: 'viviefs/clock/wake-at',
@@ -36,6 +37,7 @@ export const SYSTEM_ATTRS: ReadonlySet<string> = new Set([
   Attr.conflict,
   Attr.workflowStarted,
   Attr.workflowResult,
+  Attr.activityStarted,
   Attr.activityExit,
   Attr.deferredExit,
   Attr.clockWakeAt,

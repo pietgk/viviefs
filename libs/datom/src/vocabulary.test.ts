@@ -49,3 +49,15 @@ describe('P06 engine vocabulary', () => {
     expect(byAttr.get(Attr.clockWakeAt)?.type.composition).toBe('prefix')
   })
 })
+
+describe('P10 engine vocabulary', () => {
+  it('pins the activity start fact as a write-once journal attribute', () => {
+    expect(Attr.activityStarted).toBe('viviefs/activity/started')
+    expect(isSystemAttr(Attr.activityStarted)).toBe(true)
+    const { byAttr } = indexCatalog(engineCatalog)
+    expect(byAttr.get(Attr.activityStarted)?.spec.policy).toBe('write-once')
+    expect(byAttr.get(Attr.activityStarted)?.type.defining).toBe(
+      Attr.activityExit,
+    )
+  })
+})

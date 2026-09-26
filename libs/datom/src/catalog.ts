@@ -89,7 +89,8 @@ export const evidenceCatalog: Catalog = {
 }
 
 /**
- * Engine journal catalog pinned by P06. Journal facts are write-once.
+ * Engine journal catalog pinned by P06; P10 added the activity start fact
+ * so a derived span has a measured start. Journal facts are write-once.
  * Lease holder is LWW so a later epoch can replace the previous holder;
  * fencing is by epoch, not by projector write-once.
  */
@@ -113,6 +114,7 @@ export const engineCatalog: Catalog = {
       userContent: false,
       attributes: [
         { name: Attr.activityExit, policy: 'write-once', defining: true },
+        { name: Attr.activityStarted, policy: 'write-once' },
       ],
     },
     {

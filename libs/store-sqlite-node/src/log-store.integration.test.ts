@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
+import type * as Tracer from 'effect/Tracer'
 import { join } from 'node:path'
 import {
   makeMutableClock,
@@ -7,11 +8,15 @@ import {
   P05_CHECK_COUNT,
   P06_DATOM_CHECK_COUNT,
   P07_HOST_CHECK_COUNT,
+  P10_ENGINE_CHECK_COUNT,
   runChangesetChecks,
   runCrashMatrix,
   runHappyPath,
   runLaunchSweepChecks,
   runLogStoreChecks,
+  judgeTraceJournal,
+  runTraceJournalChecks,
+  runTraceScenario,
   runUnscoped,
   withTempDirectory,
 } from '@viviefs/testing'
@@ -111,6 +116,71 @@ describe('sqlite-node log store', () => {
         expect(checks).toHaveLength(P07_HOST_CHECK_COUNT)
         const failed = checks.filter((check) => check.status !== 'PASS')
         expect(failed, JSON.stringify(failed, null, 2)).toEqual([])
+      }),
+    60_000,
+  )
+
+  it.live(
+    'passes the P10 engine trace checks',
+    () =>
+      Effect.gen(function* () {
+        const directory = yield* withTempDirectory('viviefs-p10-node-')
+        const filename = join(directory, 'log.sqlite')
+        const clock = makeMutableClock(WALL)
+        const checks = yield* runUnscoped(
+          runTraceJournalChecks(
+            (deviceId) => sqliteNodeLogStore({ filename, deviceId }),
+            clock,
+            'p10-node',
+          ),
+        )
+        expect(checks).toHaveLength(P10_ENGINE_CHECK_COUNT)
+        const failed = checks.filter((check) => check.status !== 'PASS')
+        expect(failed, JSON.stringify(failed, null, 2)).toEqual([])
+      }),
+    60_000,
+  )
+
+  it.live(
+    'fails each P10 engine trace check on a broken journal',
+    () =>
+      Effect.gen(function* () {
+        const directory = yield* withTempDirectory('viviefs-p10-broken-')
+        const filename = join(directory, 'log.sqlite')
+        const run = yield* runUnscoped(
+          runTraceScenario(
+            (deviceId) => sqliteNodeLogStore({ filename, deviceId }),
+            makeMutableClock(WALL),
+            'p10-broken',
+          ),
+        )
+        const failed = (broken: Parameters<typeof judgeTraceJournal>[0]) =>
+          judgeTraceJournal(broken)
+            .filter((check) => check.status === 'FAIL')
+            .map((check) => check.name)
+        expect(failed(run)).toEqual([])
+        const started = run.rows.find((row) => row.a === 'viviefs/activity/started')
+        expect(started).toBeDefined()
+        expect(
+          failed({ ...run, rows: [...run.rows, { ...started!, seq: 999 }] }),
+        ).toEqual(['start fact once per attempt'])
+        expect(
+          failed({ ...run, bodyRuns: new Map([...run.bodyRuns, ['step-one', 1]]) }),
+        ).toEqual(['killed body keeps its first start'])
+        const zeroed = new Map(
+          [...run.envelopes].map(([cs, envelope]) => [
+            cs,
+            { ...envelope, traceId: '0'.repeat(32), spanId: '0'.repeat(16) },
+          ]),
+        )
+        expect(failed({ ...run, envelopes: zeroed })).toEqual([
+          'caller causing span',
+          'engine causing span',
+        ])
+        const wrapper = { name: 'step-one' } as unknown as Tracer.NativeSpan
+        expect(
+          failed({ ...run, liveSpans: [...run.liveSpans, wrapper] }),
+        ).toEqual(['live spans only in activity bodies'])
       }),
     60_000,
   )

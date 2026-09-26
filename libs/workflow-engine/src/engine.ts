@@ -10,6 +10,7 @@ import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import type * as Scope from 'effect/Scope'
+import * as Tracer from 'effect/Tracer'
 import type * as Activity from 'effect/unstable/workflow/Activity'
 import type * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
 import * as Workflow from 'effect/unstable/workflow/Workflow'
@@ -29,6 +30,11 @@ import {
 import { CrashHook } from './crash-hook.ts'
 import { EngineConfig } from './config.ts'
 import { EngineSweep } from './sweep.ts'
+import {
+  callerContext,
+  durableContext,
+  type TraceContext,
+} from './trace.ts'
 import { WakeScheduler } from './wake.ts'
 import {
   completeFromExit,
@@ -36,6 +42,7 @@ import {
   decodeExit,
   decodeLease,
   decodeStarted,
+  encodeActivityStarted,
   encodeClock,
   encodeExit,
   encodeLease,
@@ -68,14 +75,15 @@ const envelope = (
   cs: string,
   device: string,
   leaseEpoch: number | null,
+  trace: TraceContext,
 ): EnvelopeType => ({
   cs,
   actor: 'engine',
   device,
   leaseEpoch,
-  traceId: '00000000000000000000000000000000',
-  spanId: '0000000000000000',
-  sampled: false,
+  traceId: trace.traceId,
+  spanId: trace.spanId,
+  sampled: trace.sampled,
   command: 'workflow.engine',
 })
 
@@ -143,6 +151,18 @@ export const engineLayer: Layer.Layer<
     const rowsOf = (exec: string) =>
       Effect.orDie(store.scanPrefix(executionEntity(config.org, exec)))
 
+    /**
+     * Causing span (D58): each envelope names the span that caused the
+     * write. Facts the engine writes on its own carry the durable span of
+     * their entity. Facts an outside caller asked for (start, lease grant
+     * and handoff, deferred completion) carry the caller's live span when
+     * there is one; the trace projector turns it into a link.
+     */
+    const durable = (exec: string, entity: string) =>
+      durableContext(executionEntity(config.org, exec), entity)
+    const caller = (exec: string, entity: string) =>
+      callerContext(durable(exec, entity))
+
     const holderOf = (exec: string) =>
       rowsOf(exec).pipe(
         Effect.map((rows) => {
@@ -162,6 +182,7 @@ export const engineLayer: Layer.Layer<
       entity: string,
       attribute: string,
       value: string,
+      trace: TraceContext,
     ) =>
       Effect.gen(function* () {
         const holder = yield* holderOf(exec)
@@ -187,7 +208,7 @@ export const engineLayer: Layer.Layer<
               cs: tx,
             },
           ],
-          envelope(tx, device.id, holder?.epoch ?? null),
+          envelope(tx, device.id, holder?.epoch ?? null, trace),
         )
       }).pipe(Effect.orDie)
 
@@ -200,11 +221,13 @@ export const engineLayer: Layer.Layer<
           epoch: 1,
           expiresAtMs: null,
         }
+        const entity = executionEntity(config.org, exec)
         yield* appendFact(
           exec,
-          executionEntity(config.org, exec),
+          entity,
           Attr.leaseHolder,
           encodeLease(next),
+          yield* caller(exec, entity),
         )
         return next
       })
@@ -241,17 +264,22 @@ export const engineLayer: Layer.Layer<
                 executionEntity(config.org, exec),
                 Attr.workflowResult,
                 encodeExit(result.exit),
+                durable(exec, executionEntity(config.org, exec)),
               ),
         ),
       )
     }
 
-    const completeDeferred = (options: {
-      readonly workflowName: string
-      readonly executionId: string
-      readonly deferredName: string
-      readonly exit: Exit.Exit<unknown, unknown>
-    }): Effect.Effect<void> =>
+    const completeDeferred = (
+      options: {
+        readonly workflowName: string
+        readonly executionId: string
+        readonly deferredName: string
+        readonly exit: Exit.Exit<unknown, unknown>
+      },
+      /** `caller`, or the durable span of the clock that fired it. */
+      origin: 'caller' | TraceContext,
+    ): Effect.Effect<void> =>
       Effect.gen(function* () {
         const entity = deferredId(
           config.org,
@@ -268,6 +296,9 @@ export const engineLayer: Layer.Layer<
             entity,
             Attr.deferredExit,
             encodeExit(options.exit),
+            origin === 'caller'
+              ? yield* caller(options.executionId, entity)
+              : origin,
           )
         }
         const wake = deferredState
@@ -296,13 +327,17 @@ export const engineLayer: Layer.Layer<
         `${exec}/${clock.name}`,
         sleepUntil(clock.wakeAtMs).pipe(
           Effect.andThen(
-            completeDeferred({
-              workflowName: workflow._tag,
-              executionId: exec,
-              deferredName: clock.deferredName,
-              exit: Exit.void,
-            }),
+            completeDeferred(
+              {
+                workflowName: workflow._tag,
+                executionId: exec,
+                deferredName: clock.deferredName,
+                exit: Exit.void,
+              },
+              durable(exec, clockId(config.org, exec, clock.name)),
+            ),
           ),
+          Effect.withTracerEnabled(false),
         ),
         { onlyIfMissing: true },
       ).pipe(Effect.asVoid)
@@ -386,6 +421,11 @@ export const engineLayer: Layer.Layer<
         fiber: undefined,
       }
       runs.set(exec, state)
+      // Workflow bodies emit no live spans: a replay re-runs the body, so
+      // they would duplicate on every resume (Effect's own activity and
+      // deferred spans have random ids). The trace projector derives
+      // durable spans from the journal instead. Activity bodies turn live
+      // tracing back on under their durable span (see activityExecute).
       state.fiber = yield* entry
         .execute(started.payload as object, exec)
         .pipe(
@@ -393,6 +433,7 @@ export const engineLayer: Layer.Layer<
           Effect.provideService(WorkflowEngine.WorkflowEngine, engine),
           (effect) => deferredState.trackRun(instance, effect),
           Effect.tap((result) => persistResult(exec, result)),
+          Effect.withTracerEnabled(false),
           Effect.orDie,
           Effect.forkIn(entry.scope),
         )
@@ -440,14 +481,16 @@ export const engineLayer: Layer.Layer<
         const started = yield* storedStarted(exec)
         if (!started) {
           yield* grantIfNeeded(exec)
+          const entity = executionEntity(config.org, exec)
           yield* appendFact(
             exec,
-            executionEntity(config.org, exec),
+            entity,
             Attr.workflowStarted,
             encodeStarted({
               name: workflow._tag,
               payload: options.payload,
             }),
+            yield* caller(exec, entity),
           )
         }
         yield* resume(exec)
@@ -519,6 +562,23 @@ export const engineLayer: Layer.Layer<
           const exit = decodeExit(stored.v)
           if (exit) return completeFromExit(exit)
         }
+        const trace = durable(instance.executionId, entity)
+        // The durable span's start fact. Write-once per attempt: a body
+        // that was killed and runs again keeps the first start, so the
+        // span covers the crash.
+        if (
+          !rows.some(
+            (row) => row.e === entity && row.a === Attr.activityStarted,
+          )
+        ) {
+          yield* appendFact(
+            instance.executionId,
+            entity,
+            Attr.activityStarted,
+            encodeActivityStarted({ name: activity.name, attempt }),
+            trace,
+          )
+        }
         yield* hook.at(
           activity.name === 'upload' ? 'during-upload' : 'during-activity',
         )
@@ -528,6 +588,14 @@ export const engineLayer: Layer.Layer<
         )
         activityInstance.interrupted = instance.interrupted
         const result = yield* activity.executeEncoded.pipe(
+          Effect.withParentSpan(
+            Tracer.externalSpan({
+              traceId: trace.traceId,
+              spanId: trace.spanId,
+              sampled: trace.sampled,
+            }),
+          ),
+          Effect.withTracerEnabled(true),
           Workflow.intoResult,
           Effect.provideService(
             WorkflowEngine.WorkflowInstance,
@@ -541,6 +609,7 @@ export const engineLayer: Layer.Layer<
           entity,
           Attr.activityExit,
           encodeExit(result.exit),
+          trace,
         )
         return result
       }, die),
@@ -569,7 +638,7 @@ export const engineLayer: Layer.Layer<
         readonly executionId: string
         readonly deferredName: string
         readonly exit: Exit.Exit<unknown, unknown>
-      }) => die(completeDeferred(options)),
+      }) => die(completeDeferred(options, 'caller')),
       scheduleClock: (
         workflow: Workflow.Any,
         options: {
@@ -606,6 +675,7 @@ export const engineLayer: Layer.Layer<
               entity,
               Attr.clockWakeAt,
               encodeClock(clock),
+              durable(exec, entity),
             )
           }
           yield* scheduler.schedule(clock, exec)
@@ -659,11 +729,13 @@ export const engineLayer: Layer.Layer<
               epoch: (holder?.epoch ?? 0) + 1,
               expiresAtMs: null,
             }
+            const entity = executionEntity(config.org, exec)
             yield* appendFact(
               exec,
-              executionEntity(config.org, exec),
+              entity,
               Attr.leaseHolder,
               encodeLease(next),
+              yield* caller(exec, entity),
             )
             return next
           }),

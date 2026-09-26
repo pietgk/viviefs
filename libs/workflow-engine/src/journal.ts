@@ -24,6 +24,12 @@ export const ClockValue = Schema.Struct({
 })
 export type ClockValue = typeof ClockValue.Type
 
+export const ActivityStartedValue = Schema.Struct({
+  name: Schema.String,
+  attempt: Schema.Number,
+})
+export type ActivityStartedValue = typeof ActivityStartedValue.Type
+
 export const EncodedExit = Schema.Union([
   Schema.Struct({
     _tag: Schema.Literals(['Success']),
@@ -40,6 +46,7 @@ const StartedJson = Schema.fromJsonString(StartedValue)
 const LeaseJson = Schema.fromJsonString(LeaseValue)
 const ClockJson = Schema.fromJsonString(ClockValue)
 const ExitJson = Schema.fromJsonString(EncodedExit)
+const ActivityStartedJson = Schema.fromJsonString(ActivityStartedValue)
 
 export const encodeStarted = (value: StartedValue): string =>
   Schema.encodeSync(StartedJson)(value)
@@ -58,6 +65,14 @@ export const encodeClock = (value: ClockValue): string =>
 
 export const decodeClock = (value: string): ClockValue | null =>
   Option.getOrNull(Schema.decodeUnknownOption(ClockJson)(value))
+
+export const encodeActivityStarted = (value: ActivityStartedValue): string =>
+  Schema.encodeSync(ActivityStartedJson)(value)
+
+export const decodeActivityStarted = (
+  value: string,
+): ActivityStartedValue | null =>
+  Option.getOrNull(Schema.decodeUnknownOption(ActivityStartedJson)(value))
 
 export const encodeExit = (exit: Exit.Exit<unknown, unknown>): string =>
   Schema.encodeSync(ExitJson)(

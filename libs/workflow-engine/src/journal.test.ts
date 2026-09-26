@@ -1,10 +1,12 @@
 import { describe, expect, it } from '@effect/vitest'
 import * as Exit from 'effect/Exit'
 import {
+  decodeActivityStarted,
   decodeClock,
   decodeExit,
   decodeLease,
   decodeStarted,
+  encodeActivityStarted,
   encodeClock,
   encodeExit,
   encodeLease,
@@ -37,5 +39,14 @@ describe('engine journal encoding', () => {
     expect(decodeClock(clock)?.wakeAtMs).toBe(120_000)
     expect(decodeExit(encodeExit(Exit.succeed('ok')))).toEqual(Exit.succeed('ok'))
     expect(decodeExit(encodeExit(Exit.fail('no')))?._tag).toBe('Failure')
+  })
+
+  it('round-trips the activity start fact and rejects other shapes', () => {
+    const started = encodeActivityStarted({ name: 'step-one', attempt: 2 })
+    expect(decodeActivityStarted(started)).toEqual({
+      name: 'step-one',
+      attempt: 2,
+    })
+    expect(decodeActivityStarted('{"name":"step-one"}')).toBeNull()
   })
 })

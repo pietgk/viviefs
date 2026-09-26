@@ -3,7 +3,17 @@ import * as Effect from 'effect/Effect'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { makeMutableClock, P04_CHECK_COUNT, P05_CHECK_COUNT, P06_DATOM_CHECK_COUNT, runChangesetChecks, runCrashMatrix, runLogStoreChecks } from '@viviefs/testing'
+import {
+  makeMutableClock,
+  P04_CHECK_COUNT,
+  P05_CHECK_COUNT,
+  P06_DATOM_CHECK_COUNT,
+  P10_ENGINE_CHECK_COUNT,
+  runChangesetChecks,
+  runCrashMatrix,
+  runLogStoreChecks,
+  runTraceJournalChecks,
+} from '@viviefs/testing'
 import { pgliteLogStore } from './layer.ts'
 
 describe('postgres (PGlite) log store', () => {
@@ -60,4 +70,23 @@ describe('postgres (PGlite) log store', () => {
       await rm(directory, { recursive: true, force: true })
     }
   }, 180_000)
+
+  it('passes the P10 engine trace checks', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'viviefs-p10-pg-'))
+    try {
+      const clock = makeMutableClock(1_700_000_000_000)
+      const checks = await Effect.runPromise(
+        runTraceJournalChecks(
+          (deviceId) => pgliteLogStore({ deviceId, dataDir: directory }),
+          clock,
+          'p10-pg',
+        ),
+      )
+      expect(checks).toHaveLength(P10_ENGINE_CHECK_COUNT)
+      const failed = checks.filter((check) => check.status !== 'PASS')
+      expect(failed, JSON.stringify(failed, null, 2)).toEqual([])
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
+  }, 60_000)
 })

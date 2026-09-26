@@ -140,6 +140,14 @@ export const runLogStoreChecks = (
             if (written.length !== 1 || written[0]?.e !== 'Oprobe/Lappend') {
               throw new Error(`stream ${JSON.stringify(written)}`)
             }
+            const stored = yield* store.envelope(tx)
+            const expected = envelopeFor(tx)
+            if (JSON.stringify(stored) !== JSON.stringify(expected)) {
+              throw new Error(`envelope ${JSON.stringify(stored)}`)
+            }
+            if ((yield* store.envelope('missing')) !== null) {
+              throw new Error('envelope for an unknown cs is not null')
+            }
             return { tx, seq: written[0]?.seq }
           }),
         ),

@@ -25,7 +25,6 @@ import {
   underPrefix,
   type Catalog,
   type Datom,
-  type Envelope,
 } from '@viviefs/datom'
 import { decodeLease } from '@viviefs/workflow-engine'
 import {
@@ -109,37 +108,6 @@ const storedLease = (sql: Sql, entity: string) =>
     const value = rows[0]?.v
     if (!value) return null
     return decodeLease(value)
-  })
-
-const readEnvelope = (sql: Sql, cs: string) =>
-  Effect.gen(function* () {
-    const rows = yield* sql<{
-      cs: string
-      actor: string
-      device: string
-      lease_epoch: unknown
-      trace_id: string
-      span_id: string
-      sampled: unknown
-      command: string
-    }>`
-      SELECT cs, actor, device, lease_epoch, trace_id, span_id, sampled, command
-      FROM changesets
-      WHERE cs = ${cs}
-    `
-    const row = rows[0]
-    if (!row) return null
-    const envelope: Envelope = {
-      cs: row.cs,
-      actor: row.actor,
-      device: row.device,
-      leaseEpoch: row.lease_epoch == null ? null : asSeq(row.lease_epoch),
-      traceId: row.trace_id,
-      spanId: row.span_id,
-      sampled: asSeq(row.sampled) === 1,
-      command: row.command,
-    }
-    return envelope
   })
 
 export class SyncAuthority extends Context.Service<
@@ -417,7 +385,7 @@ const handlerLayer = (catalog: Catalog) =>
               for (const row of mine) {
                 if (seen.has(row.cs)) continue
                 seen.add(row.cs)
-                const envelope = yield* readEnvelope(sql, row.cs)
+                const envelope = yield* store.envelope(row.cs)
                 if (envelope) envelopes.push(envelope)
               }
               return {

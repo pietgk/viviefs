@@ -41,6 +41,9 @@ export class LogStore extends Context.Service<
       AppendResult,
       FutureSkew | InvalidTx | SqlError
     >
+    readonly envelope: (
+      cs: string,
+    ) => Effect.Effect<Envelope | null, SqlError>
     readonly streamFrom: (
       cursor: Cursor,
     ) => Effect.Effect<ReadonlyArray<StoredDatom>, SqlError>
@@ -234,6 +237,35 @@ export const layer = Layer.effect(
       )
     })
 
+    const envelope = Effect.fn('LogStore.envelope')(function* (cs: string) {
+      const rows = yield* sql<{
+        cs: string
+        actor: string
+        device: string
+        lease_epoch: unknown
+        trace_id: string
+        span_id: string
+        sampled: unknown
+        command: string
+      }>`
+        SELECT cs, actor, device, lease_epoch, trace_id, span_id, sampled, command
+        FROM changesets
+        WHERE cs = ${cs}
+      `
+      const row = rows[0]
+      if (!row) return null
+      return {
+        cs: row.cs,
+        actor: row.actor,
+        device: row.device,
+        leaseEpoch: row.lease_epoch == null ? null : asSeq(row.lease_epoch),
+        traceId: row.trace_id,
+        spanId: row.span_id,
+        sampled: asSeq(row.sampled) === 1,
+        command: row.command,
+      } satisfies Envelope
+    })
+
     const streamFrom = Effect.fn('LogStore.streamFrom')(function* (
       cursor: Cursor,
     ) {
@@ -325,6 +357,7 @@ export const layer = Layer.effect(
       mint,
       receive,
       append,
+      envelope,
       streamFrom,
       scanPrefix,
       acknowledge,
