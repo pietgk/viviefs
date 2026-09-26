@@ -2,7 +2,12 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { command } from '../process.ts'
 import { agentCli, agentCliJson, agentDevice } from './agent-cli.ts'
-import { forceStopAndroidApp, reverseAndroidPorts, terminateIosApp } from './devices.ts'
+import {
+  forceStopAndroidApp,
+  iosSimulatorUdid,
+  reverseAndroidPorts,
+  terminateIosApp,
+} from './devices.ts'
 
 export type CheckResult = {
   name: string
@@ -343,6 +348,9 @@ export const runDeviceVariant = async (options: {
   treeTokens: string[]
   hermesWaitMs?: number
 }): Promise<ProbeReport> => {
+  // Every iOS run boots its own simulator and waits for the boot, instead
+  // of relying on one a previous gate happened to leave running.
+  if (options.platform === 'ios') await iosSimulatorUdid()
   const plan = await agentCliJson(
     [
       'dev',

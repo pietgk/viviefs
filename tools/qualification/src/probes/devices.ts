@@ -262,6 +262,14 @@ export const iosSimulatorUdid = async (): Promise<string> => {
       throw new Error(`Could not boot ${preferred.name}: ${boot.stderr}`)
     }
   }
+  // A freshly booted simulator refuses deep links (simctl openurl times out)
+  // until SpringBoard is up; bootstatus -b blocks until the boot finished.
+  const ready = await command('xcrun', ['simctl', 'bootstatus', preferred.udid, '-b'], {
+    timeout: 240_000,
+  })
+  if (ready.code !== 0) {
+    throw new Error(`${preferred.name} did not finish booting: ${ready.stderr || ready.stdout}`)
+  }
   await command('open', ['-a', 'Simulator', '--args', '-CurrentDeviceUDID', preferred.udid], {
     timeout: 30_000,
   })

@@ -22,8 +22,8 @@ import {
   runTraceProjectionChecks,
   runTraceScenario,
   runUnscoped,
-  withTempDirectory,
 } from '@viviefs/testing'
+import { withTempDirectory } from '@viviefs/testing/node'
 import { sqliteNodeLogStore } from './layer.ts'
 
 const WALL = 1_700_000_000_000

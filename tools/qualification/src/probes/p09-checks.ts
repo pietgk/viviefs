@@ -46,10 +46,10 @@ import { SyncRpcs } from '@viviefs/sync-protocol'
 import { SyncAuthority, syncServerLayer } from '@viviefs/sync-server'
 import {
   makeMutableClock,
-  withTempDirectory,
   type CheckResult,
   type MutableClock,
 } from '@viviefs/testing'
+import { withTempDirectory } from '@viviefs/testing/node'
 import {
   CrashHook,
   encodeExit,

@@ -9,8 +9,8 @@ import {
   makeMutableClock,
   runTraceProjection,
   runUnscoped,
-  withTempDirectory,
 } from '@viviefs/testing'
+import { withTempDirectory } from '@viviefs/testing/node'
 import { spanReviewDrift } from './p10-review.ts'
 
 const EVIDENCE = resolve(

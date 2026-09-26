@@ -11,6 +11,12 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./node": {
+      "@viviefs/source": "./src/node.ts",
+      "types": "./src/node.ts",
+      "import": "./src/node.ts",
+      "default": "./src/node.ts"
     }
   },
   "dependencies": {
