@@ -417,9 +417,14 @@ export const runDeviceVariant = async (options: {
       timeout: 30_000,
     })
 
+    // Stop a running app on both platforms so the deep link starts a fresh
+    // runtime that loads the current bundle. Metro runs in CI mode without
+    // reloads: a deep link into a still-running app keeps its old bundle.
     if (options.platform === 'android') {
       await reverseAndroidPorts([8081])
       await forceStopAndroidApp()
+    } else {
+      await terminateIosApp()
     }
 
     await openOnDevice(
