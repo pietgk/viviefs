@@ -1,5 +1,10 @@
 /**
- * Named slot for `@viviefs/evidence-server`.
- * P09 composition root. No feature code until its gate.
+ * `@viviefs/evidence-server`: the evidence exemplar's server composition.
+ * `main.ts` runs it; the P11 probe starts it in process.
  */
-export {}
+export {
+  RPC_PATH,
+  SeedGrant,
+  evidenceServerLayer,
+  type EvidenceServerOptions,
+} from './server.ts'

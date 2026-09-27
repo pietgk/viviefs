@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "Apache-2.0",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -11,5 +12,23 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     }
+  },
+  "dependencies": {
+    "@effect/platform-node": "4.0.0-rc.116",
+    "@viviefs/blobs": "workspace:*",
+    "@viviefs/datom": "workspace:*",
+    "@viviefs/identity": "workspace:*",
+    "@viviefs/store-postgres": "workspace:*",
+    "@viviefs/sync-protocol": "workspace:*",
+    "@viviefs/sync-server": "workspace:*",
+    "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-rc.116",
+    "@viviefs/evidence-model": "workspace:*",
+    "@viviefs/sync-client": "workspace:*",
+    "@viviefs/testing": "workspace:*",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
   }
 }

@@ -10,7 +10,8 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | Log (step 3a): `acceptedAt` on the envelope, set once, in every store; identity catalog (account, membership) with server-only attributes; `membershipId`, `accountId` | done: P04 gains check 12 `acceptance time` (sqlite-node and PGlite pass); an existing `changesets` table gains the column |
 | Protocol and server (step 3b): `BearerAuthentication` on every sync RPC, `Memberships` (account entity lookup, serialized `grant` / `revoke`), membership, actor and server-only checks, `acceptedAt` stamped, blobs per organization, `CompleteDeferred` RPC; client half with `SignInSession`, revocation handling; the engine writes as the signed-in person | done: P09's nine checks pass on the authenticated protocol with a fake issuer; its sequence diagrams are unchanged |
 | P11 Node checks (step 3c): 11 checks in `p11-checks.ts` on a shared `sync-world.ts` (checks 3-9 and 12 above, plus `never granted`, `missing token` and a host-side `sign-in needed keeps outbox`) | done: all pass. Removing the membership check fails 5 of them, removing the actor check fails `actor`, keeping a client's `acceptedAt` fails `acceptance time` |
-| HTTP server, Keycloak lab, device sign-in | not started |
+| HTTP server (step 4): `apps/evidence-server` composes the sync RPCs over HTTP (`/rpc`, NDJSON) on PGlite with an OIDC verifier and a membership seed; `main.ts` reads `VIVIEFS_*` | done: an HTTP round trip against a fake issuer served over HTTP passes (member append and streamed pull with `acceptedAt`; other org, never granted and missing token refused). It found an HLC ordering bug, fixed in `21b34d7e1` (ADR-0007) |
+| Keycloak lab, device sign-in | not started |
 | Probe (`p11.ts`) and evidence note | not started |
 | Gate P11 | not run |
 

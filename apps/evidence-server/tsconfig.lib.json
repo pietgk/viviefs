@@ -13,5 +13,33 @@
     "src/**/*.test.ts",
     "src/**/*.spec.ts"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../../libs/sync/server/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/sync/protocol/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/store-postgres/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/identity/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/datom/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/blobs/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/testing/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/sync/client/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/evidence/model/tsconfig.lib.json"
+    }
+  ]
 }

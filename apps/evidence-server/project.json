@@ -8,7 +8,21 @@
     "platform:server"
   ],
   "metadata": {
-    "evidenceOwner": "e2e-web",
-    "rationale": "Node composition root; sync, lease and command HTTP"
+    "evidenceOwner": "conformance",
+    "rationale": "Node composition root: authenticated sync RPCs over HTTP. The HTTP round trip runs in test-integration; P11 qualifies it."
+  },
+  "targets": {
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production"
+      ],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "apps/evidence-server"
+      }
+    }
   }
 }
