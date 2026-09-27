@@ -21,5 +21,6 @@ From P09 on, the dated note includes a Review section: a reading order, the prob
 - [2026-09-22-p09.md](2026-09-22-p09.md) - Sync: outbox and cursor (P09)
 - [2026-09-26-p10.md](2026-09-26-p10.md) - Trace projection (P10)
 - [2026-09-26-foundation-closure.md](2026-09-26-foundation-closure.md) - Foundation closure: P01-P10 in one sequential run
+- [2026-09-27-bundle-size.md](2026-09-27-bundle-size.md) - Bundle size: budget, and why the app grew since P01 (not a gate)
 - [p08-comparison.md](p08-comparison.md) - P08 review: IntentComposer in effect-machine
 - [p10-design-review.md](p10-design-review.md) - P10 design review before the gate runs (does not pass a gate)
