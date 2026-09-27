@@ -57,6 +57,7 @@ the named gate.
 - **HLC future-skew bound and log-append volume**: P04 picked 5000 ms and 2000 datoms.
 - **Foundation closure**: one sequential P01-P10 run on `3bd24492`, 2026-09-26
   ([2026-09-26-foundation-closure.md](../../evidence/2026-09-26-foundation-closure.md)).
+- **`journal.ts` legacy-shape comment**: names commit `a067a0d6f` instead of a date (fixed with the first engine change, P11 step 3a).
 - **Bundle size**: 10 MB per platform on the Hermes bundle (agreed 2026-09-27), gated by `verify` with a report
   of what changed since the recorded reference ([2026-09-27-bundle-size.md](../../evidence/2026-09-27-bundle-size.md)).
   iOS 4.74 MB, Android 6.84 MB; Android's `Intl` polyfill with the full time-zone database is 2.0 MB of it.
@@ -83,7 +84,6 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 | Identity provider migration | Moving people to a new identity provider | When a consumer changes provider | Relinking is one datom on the server's account entity (ADR-0022); tooling then |
 | Datom `op` as `TEXT` (`assert` / `retract`) or a boolean | Storage cost next to `e`, `a`, `v`; a change re-runs P04-P09 | When a storage or performance budget exists | Keep (deferred 2026-09-22) |
 | The trace projector on iOS, Android and web | P10 ran it on the host; P03 measured OTLP from Hermes | When the evidence app or a consumer app runs the projector | Not in P11 (P11 grilling). Wire it with the first consumer app, and extend a device run to check it |
-| `journal.ts` comment "journals written before 2026-09-27" | Should name commit `a067a0d6f` | The first engine change | Fix then; P11 is not expected to change the engine |
 
 ## Risks
 

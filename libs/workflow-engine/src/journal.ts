@@ -39,7 +39,7 @@ export type ActivityStartedValue = typeof ActivityStartedValue.Type
  * Effect's cluster engine persists. Replay hands the workflow back exactly
  * the exit its first run saw.
  *
- * Legacy shape, read only: journals written before 2026-09-27 stored a
+ * Legacy shape, read only: journals written before commit a067a0d6f stored a
  * failure as `{ _tag: "Failure", error: <printed cause> }`. It still
  * decodes, as a typed failure carrying that text.
  */
