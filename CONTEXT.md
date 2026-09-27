@@ -202,8 +202,14 @@ The device's relationship with the identity provider: signed out, signed in, or
 sign-in needed. The only thing called a session.
 _Avoid_: login state
 
+**Provider account**:
+A person's account at one identity provider, identified by the token's issuer
+and subject. The server maps each provider account to one person.
+_Avoid_: user, login, subject (reserved for crypto-shredding)
+
 **Token verifier**:
-The server-side check that turns an access token into a caller.
+The server-side check that turns an access token into the provider account it
+proves, or rejects it.
 _Avoid_: authenticator
 
 **Fake issuer**:
@@ -217,13 +223,13 @@ handler runs. Authentication only; authorization is membership, actor and lease.
 _Avoid_: auth middleware
 
 **Caller**:
-The verified requester of one server request: a person and their identity
-provider subject.
+The verified requester of one server request: a person and the provider
+account they signed in with.
 _Avoid_: principal, current user, session
 
 **Person**:
 One human, across all organizations, identified by an opaque id the server
-mints and maps from identity provider subjects.
+mints and maps from provider accounts.
 _Avoid_: user, member, Actor
 
 **Membership**:

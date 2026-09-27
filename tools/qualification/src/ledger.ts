@@ -85,6 +85,8 @@ export async function inputsFingerprint(): Promise<string> {
     'libs/workflow-engine',
     'libs/sync',
     'libs/blobs',
+    'libs/identity',
+    'apps/evidence-server',
     'features/evidence/model',
     'features/evidence/client',
     'vendor/motel/package.json',

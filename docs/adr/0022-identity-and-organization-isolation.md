@@ -39,7 +39,8 @@ name; the service is split by side:
 - `SignInSession` (device): sign in, current access token, refresh, sign out,
   and the state signed-out / signed-in / sign-in-needed.
 - `TokenVerifier` (server): checks a token's signature, `iss`, `aud` and `exp`
-  against the provider's cached JWKS (`jose`) and returns the `Caller`.
+  against the provider's cached JWKS (`jose`, found through OIDC discovery)
+  and returns the provider account `(iss, sub)` with the roles it carries.
   No introspection.
 - `FakeIssuer`: the fake for early gates and tests. It signs real JWTs with a
   local key and serves its own JWKS, so it goes through the same verification.

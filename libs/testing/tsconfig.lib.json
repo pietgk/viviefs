@@ -21,6 +21,9 @@
       "path": "../telemetry/tsconfig.lib.json"
     },
     {
+      "path": "../identity/tsconfig.lib.json"
+    },
+    {
       "path": "../datom/tsconfig.lib.json"
     }
   ]

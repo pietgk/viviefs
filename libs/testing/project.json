@@ -11,5 +11,19 @@
   "metadata": {
     "evidenceOwner": "conformance",
     "rationale": "fakes, conformance suites, crash-matrix harness"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production"
+      ],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "libs/testing"
+      }
+    }
   }
 }

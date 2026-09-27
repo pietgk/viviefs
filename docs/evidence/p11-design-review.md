@@ -6,7 +6,8 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | --- | --- |
 | Grilling (Q1-Q20) | agreed |
 | Glossary and ADR-0022 amendment | written |
-| `libs/identity`, server boundary, Keycloak lab, device sign-in | not started |
+| `libs/identity`: `TokenVerifier` (OIDC over discovery and JWKS), `Caller`; fake issuer and token contract in `@viviefs/testing/identity` | done (step 2): 9 contract checks pass on the fake and on the OIDC verifier against a served fake; a payload-trusting verifier fails 7 of them; removing the audience check fails exactly `foreign audience` |
+| Server boundary, Keycloak lab, device sign-in | not started |
 | Probe (`p11.ts`) and evidence note | not started |
 | Gate P11 | not run |
 
@@ -25,7 +26,7 @@ Decisions behind it: D18 (server-side isolation, never trust a client org id) an
 
 | # | Check | Where | How it can fail |
 | --- | --- | --- | --- |
-| 1 | **Token contract**: the fake issuer and Keycloak both pass one suite. A valid token gives a caller. A missing token, changed payload, `alg: none`, wrong `iss`, wrong `aud` or expired token gives `TokenRejected` | Node | a check differs between fake and Keycloak, or a bad token passes |
+| 1 | **Token contract**: the fake issuer and Keycloak both pass one suite. A valid token gives a caller. A missing token, changed payload, `alg: none`, a foreign signing key, HS256 algorithm confusion, wrong `iss`, wrong `aud` or an expired token gives `TokenRejected` | Node | a check differs between fake and Keycloak, or a bad token passes |
 | 2 | **PKCE sign-in**: a user signs in at Keycloak and the token authenticates a push | iOS simulator, Android emulator, web | redirect, token exchange or issuer differs per platform |
 | 3 | **Positive control**: a member of `acme` gets `AppendAck`; the same token asking for `other` gets `MembershipMissing`, on `Append`, `Pull`, `PutBlob` and `CompleteDeferred` | Node, and one device run | a non-member is served, or a member is refused |
 | 4 | **Lease**: a non-member's lease datom is refused; the member's lease is accepted | Node | lease fencing ignores membership |
@@ -37,7 +38,7 @@ Decisions behind it: D18 (server-side isolation, never trust a client org id) an
 | 10 | **Sign-in needed**: a failed refresh keeps the outbox; signing in again resumes sync | iOS, Android, web | work is discarded, or sync loops on a dead session |
 | 11 | **Database per person**: A signs out, B signs in and sees none of A's data or outbox; A signs back in and finds both intact | iOS, Android, web | data or outbox leaks between people on one device |
 
-Not a gate check, a verify rule: only tests, `tools/` and dev composition may import the fake issuer.
+Not a gate check, a verify rule: only tests, `tools/` and dev composition may import the fake issuer. It lives in `libs/testing` (`layer:testing`), which no core, adapter or feature project may depend on.
 
 ## 2. The picture
 
@@ -101,9 +102,11 @@ Checked against the repo's conventions: services are role nouns (`LogStore`, `Sy
 | Name | Kind | Meaning |
 | --- | --- | --- |
 | `SignInSession` | device service | The device's session with the identity provider: sign in, current access token, refresh, sign out, state |
-| `TokenVerifier` | server service | Checks an access token and returns the caller; implementations `oidc` and the fake |
+| `TokenVerifier` | server service | Checks an access token and returns a `VerifiedToken`; implementations `oidcTokenVerifier` and the fake's verifier |
+| `ProviderAccount` | value `{ issuer, subject }` | A person's account at one identity provider (the token's `iss` and `sub`); the server maps it to a person |
+| `VerifiedToken` | value | What a verified token proves: provider account, roles, expiry |
 | `FakeIssuer` | test implementation | In-process issuer with a local key pair; signs real JWTs and serves its own JWKS |
-| `Caller` | per-request context value | The verified requester: person, `iss`, `sub`, roles carried |
+| `Caller` | per-request context value | The verified requester: person, provider account, roles carried |
 | `BearerAuthentication` | RPC middleware | Requires and verifies a bearer token on every RPC in the group; provides `Caller` |
 | `Person` | id | One per human, across organizations; what `envelope.actor` holds |
 | `Membership` | entity `O{org}/M{person}` | A person's right to act in one organization; server-only |
@@ -116,6 +119,7 @@ Checked against the repo's conventions: services are role nouns (`LogStore`, `Sy
 Two deliberate choices:
 
 - **No `Identity` class.** D47 says "behind an `Identity` service". The pattern and the lib keep the name identity; the service splits into `SignInSession` and `TokenVerifier`, because one device-side and one server-side role do not fit one name. Recorded in ADR-0022.
+- **`ProviderAccount`, added in step 2.** `TokenVerifier` cannot return a `Caller`, because the person comes from the server's table. It returns the provider account instead. "Subject" was not used as a type name because crypto-shredding already means the person by subject.
 - **No `Actor` type or entity.** `actor` stays as the envelope field (a column of the pinned `changesets` table) and `ActorMismatch` names that field, like `OrgMismatch` names `org`. "Actor" is not used for anything else, so it keeps its XState meaning.
 
 ## 5. Tampering: what P11 claims and what it does not
@@ -137,7 +141,7 @@ Display names and profiles, roles in use, invitations, self-service membership, 
 Each step ends with a commit and a green `pnpm verify`.
 
 1. Glossary, ADR-0022 amendment, this review, open items (this commit).
-2. `libs/identity`: `Caller`, `TokenVerifier` with `oidc` (`jose`) and `FakeIssuer`, the contract suite on the fake. Module-boundary rule for the fake.
+2. `libs/identity`: `Caller`, `TokenVerifier` with `oidcTokenVerifier` (`jose`), the fake issuer and the contract suite in `@viviefs/testing/identity`. `libs/identity` and `apps/evidence-server` join the ledger fingerprint.
 3. Log and protocol: `acceptedAt` on the envelope in every log store, the catalog's server-only flag, `Membership`, the person table, `grantMembership` / `revokeMembership`, `BearerAuthentication`, the new errors, blobs per org, `CompleteDeferred` as an RPC. P09's checks move onto the authenticated protocol.
 4. `apps/evidence-server`: HTTP composition with `TokenVerifier.oidc`.
 5. Keycloak lab: image pinned by digest in `lab-images.json` (26.7.3, the digest complyj pinned), realm file with pinned users and an audience mapper, the contract suite against Keycloak.
@@ -148,5 +152,5 @@ Each step ends with a commit and a green `pnpm verify`.
 ## 8. Consequences for other gates
 
 - The ledger fingerprint covers every lib and app the probes use, so any P11 change marks P01-P10 stale. Step 8 re-runs them in one sequential run.
-- `libs/identity` and `apps/evidence-server` are not yet in `inputsFingerprint()`. Step 2 adds them.
+- `libs/identity` and `apps/evidence-server` joined `inputsFingerprint()` in step 2.
 - The `journal.ts` comment fix waits for the first engine change. P11 is not expected to change the engine.

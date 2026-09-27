@@ -4,3 +4,4 @@
  * on-device conformance runs, and Metro cannot resolve `node:` modules.
  */
 export { TempDirectoryError, withTempDirectory } from './temp-directory.ts'
+export { serveFakeIssuer, type ServedFakeIssuer } from './fake-issuer-server.ts'
