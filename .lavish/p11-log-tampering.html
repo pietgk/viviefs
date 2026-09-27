@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P11 - Who can tamper with the datom log, and what stops them</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+  body { font-size: 16px; line-height: 1.6; }
+  .lt-section { scroll-margin-top: 1rem; }
+  .lt-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .lt-mermaid svg { margin: 0 auto; }
+  code.lt-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  td.lt-nowrap, th.lt-nowrap { white-space: nowrap; overflow-wrap: normal; }
+  .lt-tag { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<!-- HERO -->
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">P11 grilling</span>
+    <span class="badge badge-outline">Log tampering - Q14, Q15</span>
+    <span class="badge badge-soft badge-success">Decided 2026-09-27</span>
+    <span class="badge badge-soft badge-warning">Hash chain: direction only, not designed</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Who can tamper with the datom log, and what stops them</h1>
+  <p class="text-lg opacity-80">The datom log is our one audit trail (ADR-0006). This page maps every place it could be changed by someone who shouldn't, what defends it today, what P11 adds, and what we deliberately leave for later. It also covers the two small things we fix now so that "later" stays possible.</p>
+  <div class="alert alert-info alert-soft">
+    <div>
+      <div class="font-semibold">The whole answer in four sentences</div>
+      <ol class="list-decimal ml-5 mt-1 space-y-1">
+        <li><b>Devices are untrusted by design.</b> The server re-validates everything a device sends, so tampering on a device only fools that device.</li>
+        <li><b>P11 closes "who".</b> After P11 every accepted changeset has a server-checked author and a server-stamped acceptance time (Q14).</li>
+        <li><b>The server's stored history is trusted but not provable.</b> A database admin could edit it, and nobody would notice. That is fine for the lab, but not for an app that makes audit claims.</li>
+        <li><b>Tamper-evidence is deferred (Q15)</b> until the first consumer app makes audit claims. Two rules keep it possible: never compact the server log, and keep P13's crypto-shredding compatible with a hash chain.</li>
+      </ol>
+    </div>
+  </div>
+  <nav class="flex flex-wrap gap-2 text-sm">
+    <a class="btn btn-sm btn-ghost" href="#map">1. The map</a>
+    <a class="btn btn-sm btn-ghost" href="#table">2. Threat table</a>
+    <a class="btn btn-sm btn-ghost" href="#device">3. A tampered device</a>
+    <a class="btn btn-sm btn-ghost" href="#properties">4. Three properties</a>
+    <a class="btn btn-sm btn-ghost" href="#p11">5. What P11 adds</a>
+    <a class="btn btn-sm btn-ghost" href="#chain">6. How a hash chain works</a>
+    <a class="btn btn-sm btn-ghost" href="#constraints">7. Rules we fix now</a>
+    <a class="btn btn-sm btn-ghost" href="#decision">8. The decision</a>
+    <a class="btn btn-sm btn-ghost" href="#quiz">9. Check yourself</a>
+  </nav>
+</header>
+
+<!-- 1 MAP -->
+<section id="map" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">1. The map: where the log lives and where it can be touched</h2>
+  <p>There is one log, with copies in several places. Devices hold a replica of their organization. The server holds the authoritative copy. Data moves up through <code class="lt-inline">Append</code> and down through <code class="lt-inline">Pull</code>. Each red marker <span class="lt-tag">T1-T5</span> is a place someone could tamper, and the next section's table explains each one.</p>
+  <div class="lt-mermaid"><pre class="mermaid">
+flowchart TB
+  subgraph DEV["Device (untrusted)"]
+    LDB[("Local SQLite replica&lt;br/&gt;datoms + outbox")]
+    APP["App + SyncClient"]
+    APP --> LDB
+  end
+  NET["Network&lt;br/&gt;HTTP in lab, TLS in production"]
+  subgraph SRV["Server (trusted to decide)"]
+    VAL["Validation&lt;br/&gt;token, membership, actor,&lt;br/&gt;prefix, manifest, lease, write-once"]
+    PG[("Postgres&lt;br/&gt;authoritative log")]
+    VAL -- "accept" --> PG
+  end
+  APP -- "Append" --> NET --> VAL
+  PG -- "Pull" --> NET
+  T1(["T1 edit local SQLite"]) -.-> LDB
+  T2(["T2 craft a changeset"]) -.-> APP
+  T3(["T3 change bytes in flight"]) -.-> NET
+  T4(["T4 operator, DB admin or&lt;br/&gt;restored backup edits rows"]) -.-> PG
+  T5(["T5 claim a false time"]) -.-> APP
+  classDef threat fill:#7f1d1d,stroke:#f87171,color:#fee2e2
+  class T1,T2,T3,T4,T5 threat
+  </pre></div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Above the validation box: already safe by design</h3>
+      <p class="text-sm">Anything a device or the network does must pass the server's checks before it becomes part of the authoritative log. That is D18 and server authority (ADR-0016): the server accepts or rejects a whole changeset, and never "fixes it up".</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Below the validation box: trusted, not provable</h3>
+      <p class="text-sm">Once a changeset is in Postgres, nothing checks it again. Devices believe what <code class="lt-inline">Pull</code> returns. Someone with database access (T4) could rewrite history, and every device would faithfully replicate the rewrite.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- 2 TABLE -->
+<section id="table" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">2. The threat table</h2>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table table-zebra">
+      <thead><tr><th class="lt-nowrap">#</th><th>Who, and an example</th><th>Defence today</th><th>After P11</th><th>Still open</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="lt-nowrap lt-tag text-error">T1</td>
+          <td><b>A user on their own device.</b> Roots the phone and edits the local SQLite: inserts datoms, rewrites history, changes a title.</td>
+          <td><span class="badge badge-success badge-soft badge-sm">safe</span> The server never reads the device's log. It only sees changesets the device pushes, and re-validates each one.</td>
+          <td>Same, plus: anything pushed is attributed to the signed-in person (Q7, Q8).</td>
+          <td>The tampered device misleads only its own user. Nothing re-checks a local copy against the server.</td>
+        </tr>
+        <tr>
+          <td class="lt-nowrap lt-tag text-error">T2</td>
+          <td><b>A client sending crafted changesets.</b> Claims to be another user, writes into another org, or adds itself (or an outsider) as a member.</td>
+          <td><span class="badge badge-warning badge-soft badge-sm">partial</span> Only the org prefix is checked, against a client-supplied org.</td>
+          <td><span class="badge badge-success badge-soft badge-sm">closed</span> Token, membership and actor checks. <b>Plus a new rule:</b> membership and person attributes are server-only, and a client changeset that touches them is rejected (see section 5).</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td class="lt-nowrap lt-tag text-error">T3</td>
+          <td><b>The network.</b> Someone between device and server changes a payload or steals a token.</td>
+          <td><span class="badge badge-warning badge-soft badge-sm">partial</span> The manifest hash detects altered or missing changeset members.</td>
+          <td>Bearer tokens are short-lived (about 5 minutes).</td>
+          <td>The lab runs plain HTTP. TLS belongs to production hosting, which is already a deferred decision.</td>
+        </tr>
+        <tr>
+          <td class="lt-nowrap lt-tag text-error">T4</td>
+          <td><b>The server operator, a DB admin, or a restored backup.</b> Edits or deletes rows directly in Postgres.</td>
+          <td><span class="badge badge-error badge-soft badge-sm">none</span> Devices trust whatever the server sends.</td>
+          <td>Unchanged.</td>
+          <td><b>Tamper-evidence of stored history</b> (Q15: deferred, with two constraints).</td>
+        </tr>
+        <tr>
+          <td class="lt-nowrap lt-tag text-error">T5</td>
+          <td><b>The clock.</b> A device claims a <code class="lt-inline">tx</code> time in the past: "I recorded this evidence yesterday".</td>
+          <td><span class="badge badge-warning badge-soft badge-sm">partial</span> The HLC rejects times more than 5 s in the future. The past is unbounded, as it must be for offline work.</td>
+          <td><span class="badge badge-success badge-soft badge-sm">closed for audit</span> The server stamps its own acceptance time on every changeset (Q14).</td>
+          <td>The device's time stays a claim, which is still useful as "when the user did it offline".</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-soft">
+    <span><b>Lesson from complyj (its ADR-0005):</b> "Local application immutability is not tamper-proof storage against a privileged host or database administrator. Record that limitation without claiming commercial compliance guarantees." T4 is that limitation. We record it the same way, and don't pretend otherwise.</span>
+  </div>
+</section>
+
+<!-- 3 DEVICE -->
+<section id="device" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">3. Walkthrough: a tampered device tries four things</h2>
+  <p>Mallory is a real member of org <code class="lt-inline">acme</code> and has rooted her phone. After P11, here is what each attempt achieves.</p>
+  <div class="lt-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant M as Mallory's device (tampered)
+  participant S as Server validation
+  participant L as Server log
+  M->>M: edit local SQLite: rename list to "approved"
+  Note over M: only her own screen shows it, nothing is sent
+  M->>S: Append, envelope.actor = "alice"
+  S-->>M: ActorMismatch (actor must be Mallory's person entity)
+  M->>S: Append adds membership for outsider "eve"
+  S-->>M: rejected: membership attributes are server-only
+  M->>S: Append, actor = Mallory, tx time = last week
+  S->>L: accept, stamped acceptedAt = now
+  S-->>M: AppendAck
+  Note over L: history shows: Mallory, claims last week, server received today
+  </pre></div>
+  <p class="text-sm opacity-80">The last case is not an attack the server can refuse. Offline devices really do write in the past. What matters is that the log keeps both facts, so an auditor can see the gap between "claimed" and "received".</p>
+</section>
+
+<!-- 4 PROPERTIES -->
+<section id="properties" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">4. Three properties people call "tamper-proof"</h2>
+  <p>"Tamper-proof" usually hides three different guarantees. They have very different costs, and we treat them separately.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card card-border border-success/50 bg-base-200"><div class="card-body p-5">
+      <div class="flex flex-wrap items-center gap-2"><h3 class="font-semibold">1. Server authority</h3><span class="badge badge-success badge-sm">P11</span></div>
+      <p class="text-sm"><b>Guarantee:</b> nothing enters the log unless the server checked who sent it and that it is allowed.</p>
+      <p class="text-sm"><b>Stops:</b> T1, T2, most of T5.</p>
+      <p class="text-sm"><b>Cost:</b> already paid (P09 plus P11).</p>
+    </div></div>
+    <div class="card card-border border-warning/50 bg-base-200"><div class="card-body p-5">
+      <div class="flex flex-wrap items-center gap-2"><h3 class="font-semibold">2. Tamper-evidence</h3><span class="badge badge-warning badge-sm">deferred</span></div>
+      <p class="text-sm"><b>Guarantee:</b> if accepted history is changed afterwards, someone <em>can detect it</em>. It doesn't prevent the change; it makes it visible.</p>
+      <p class="text-sm"><b>Stops:</b> silent T4.</p>
+      <p class="text-sm"><b>Cost:</b> moderate. A hash chain on the server, plus checkpoints that devices keep and compare.</p>
+    </div></div>
+    <div class="card card-border bg-base-200"><div class="card-body p-5">
+      <div class="flex flex-wrap items-center gap-2"><h3 class="font-semibold">3. Proof of authorship</h3><span class="badge badge-ghost badge-sm">only if needed</span></div>
+      <p class="text-sm"><b>Guarantee:</b> even the server operator cannot forge a user's action. Each device signs its changesets with its own key.</p>
+      <p class="text-sm"><b>Stops:</b> a hostile operator inventing "Alice approved this".</p>
+      <p class="text-sm"><b>Cost:</b> high. Per-device keys, rotation, lost phones, key attestation.</p>
+    </div></div>
+  </div>
+  <div class="alert alert-info alert-soft">
+    <span><b>Order of need:</b> most business apps need only 1. Audit and compliance apps (GRC) need 1 and 2. Only apps that must hold up against their own operator (for example, legal evidence where the operator is a party) need 3.</span>
+  </div>
+</section>
+
+<!-- 5 P11 -->
+<section id="p11" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">5. What P11 adds against tampering</h2>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table">
+      <thead><tr><th>Addition</th><th>Closes</th><th>Why it belongs in P11</th></tr></thead>
+      <tbody>
+        <tr><td><b>Actor = signed-in person</b> (Q7, Q8). The server rejects an envelope whose actor is not the person entity of the token's <code class="lt-inline">(iss, sub)</code>.</td><td class="lt-tag text-error">T2</td><td>It is the definition of "membership enforced on commands".</td></tr>
+        <tr><td><b>Server-only attributes.</b> Membership and person attributes can only be written by server-authored commands. A client changeset containing one is rejected with a typed error.</td><td class="lt-tag text-error">T2</td><td>Without it, any member could grant membership to anyone. Isolation would then depend on members behaving well.</td></tr>
+        <tr><td><b>Server acceptance time</b> (Q14). The server stamps a wall-clock time on each changeset it accepts. It syncs to devices as a server-authored fact. The name is pending the glossary pass.</td><td class="lt-tag text-error">T5</td><td>P11 already changes the accept path and re-runs P09. And it is the one audit fact that can't be recovered later: nobody can know afterwards when old changesets arrived.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 6 CHAIN -->
+<section id="chain" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">6. How a hash chain would work (future direction)</h2>
+  <p>This section only teaches the idea so the constraints in section 7 make sense. It is not designed yet. The design happens in its own grilling before the first audit app (Q15).</p>
+  <p>Every accepted changeset gets a <b>link</b>: <code class="lt-inline">link n = H(link n-1 + manifest n + envelope n + acceptedAt n)</code>, a hash of the previous link plus this changeset's content. We already compute a manifest hash per changeset (<code class="lt-inline">libs/datom/src/manifest.ts</code>, <code class="lt-inline">hashMembers</code>), so that is the natural input. Because each link includes the previous one, changing any old changeset changes every link after it.</p>
+  <div class="lt-mermaid"><pre class="mermaid">
+flowchart LR
+  G["genesis&lt;br/&gt;link 0"]
+  C1["cs 1&lt;br/&gt;link 1 = H(link 0, cs 1)"]
+  C2["cs 2&lt;br/&gt;link 2 = H(link 1, cs 2)"]
+  C3["cs 3&lt;br/&gt;link 3 = H(link 2, cs 3)"]
+  CP(["Device keeps checkpoint:&lt;br/&gt;at cs 3 the link was abc123"])
+  G --> C1 --> C2 --> C3
+  C3 -.-> CP
+  </pre></div>
+  <p>Now an admin edits changeset 2 directly in Postgres:</p>
+  <div class="lt-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant A as DB admin
+  participant P as Postgres
+  participant D as Device with checkpoint
+  A->>P: UPDATE cs 2 (change a value)
+  Note over P: link 2 no longer matches, so link 3 no longer matches
+  D->>P: Pull, recompute links up to cs 3
+  P-->>D: data + links
+  D->>D: recomputed link 3 != checkpoint abc123
+  Note over D: tampering detected: report it, do not trust this history
+  </pre></div>
+  <p class="text-sm opacity-80">The admin could also recompute every later link, but then the links no longer match the checkpoints devices already hold. That is why checkpoints must live <em>outside</em> the server's control: on devices, or later in an external timestamping service.</p>
+</section>
+
+<!-- 7 CONSTRAINTS -->
+<section id="constraints" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">7. Two rules we fix now, so "later" stays possible</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border border-warning/50 bg-base-200"><div class="card-body p-5">
+      <h3 class="card-title text-lg">Rule 1: never compact the server log</h3>
+      <p class="text-sm"><code class="lt-inline">LogStore.compact()</code> deletes datoms up to the horizon (<code class="lt-inline">DELETE FROM datoms WHERE seq &lt;= horizon</code>). On a device that is fine, because the server keeps everything. On the server it would delete the history a future chain has to cover, and the audit trail ADR-0006 promises.</p>
+      <p class="text-sm">Nothing compacts the server today. This makes it a stated rule instead of an accident. It holds until tamper-evidence is decided; the decision may later allow compaction that keeps the manifests and links.</p>
+    </div></div>
+    <div class="card card-border border-warning/50 bg-base-200"><div class="card-body p-5">
+      <h3 class="card-title text-lg">Rule 2: P13 stays chain-compatible</h3>
+      <p class="text-sm">Crypto-shredding (D51, P13) erases a person by destroying their key. The ciphertext stays, and "the log stays intact". A chain that hashes <em>plaintext</em> would have to be broken or rewritten to erase someone. A chain that hashes the <em>stored ciphertext</em> stays valid after erasure.</p>
+      <p class="text-sm">So P13 hashes exactly what is stored. This becomes a design input for P13's grilling.</p>
+    </div></div>
+  </div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="lt-mermaid"><div class="font-semibold mb-2 text-success">Chain over stored ciphertext: survives erasure</div><pre class="mermaid">
+flowchart TB
+  A1["personal value stored&lt;br/&gt;as ciphertext X"] --> A2["link = H(..., X)"]
+  A2 --> A3["erase: destroy the key"]
+  A3 --> A4["X still stored,&lt;br/&gt;link still verifies"]
+  classDef good stroke:#4ade80,stroke-width:2px
+  class A4 good
+    </pre></div>
+    <div class="lt-mermaid"><div class="font-semibold mb-2 text-error">Chain over plaintext: breaks on erasure</div><pre class="mermaid">
+flowchart TB
+  B1["personal value&lt;br/&gt;in plaintext P"] --> B2["link = H(..., P)"]
+  B2 --> B3["erase: P can no longer&lt;br/&gt;be read"]
+  B3 --> B4["link cannot&lt;br/&gt;be re-verified"]
+  classDef bad stroke:#f87171,stroke-width:2px
+  class B4 bad
+    </pre></div>
+  </div>
+</section>
+
+<!-- 8 DECISION -->
+<section id="decision" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">8. The decision, as it will be recorded</h2>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Decision</th><th>Where it is recorded</th></tr></thead>
+      <tbody>
+        <tr><td><b>Q14</b> Server acceptance time</td><td>In P11. Server-stamped on every accepted changeset, synced as a server-authored fact.</td><td>ADR-0022 (P11), ADR-0016 (accept path)</td></tr>
+        <tr><td><b>Q15</b> Tamper-evidence of stored history, and signed changesets</td><td><b>Deferred.</b> Decide before the first consumer app that makes audit claims, in its own grilling, together with P13. Direction: hash chain with device-held checkpoints first; signatures only if a consumer needs proof against the operator.</td><td>Deferred decisions in <code class="lt-inline">10-open-items-and-risks.md</code>; trade-offs in ADR-0022</td></tr>
+        <tr><td>Constraint 1</td><td>No compaction of the server log until Q15 is decided.</td><td>ADR-0011 (log store), deferred table</td></tr>
+        <tr><td>Constraint 2</td><td>P13's crypto-shredding hashes stored ciphertext.</td><td>ADR-0023, deferred table</td></tr>
+        <tr><td>T2 rule</td><td>Membership and person attributes are server-only.</td><td>Round 3 of the P11 grilling, then ADR-0022</td></tr>
+        <tr><td>Stated limitation</td><td>Until Q15, stored history is trusted, not provable, against an operator or DB admin (T4).</td><td>ADR-0022 failure-handling</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 9 QUIZ -->
+<section id="quiz" class="lt-section space-y-4">
+  <h2 class="text-2xl font-bold">9. Check yourself</h2>
+  <div class="space-y-2">
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Mallory edits her local SQLite so a list shows "approved". Does anyone else see it?</div>
+      <div class="collapse-content text-sm"><p><b>No.</b> Only what she pushes reaches the server, and a direct SQLite edit isn't in her outbox. If she crafts a push instead, it is validated and attributed to her, like any other change she makes.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Would a hash chain have stopped the DB admin from editing a row?</div>
+      <div class="collapse-content text-sm"><p><b>No, it only makes the edit detectable.</b> Tamper-evidence is not tamper-prevention. Prevention against someone with database access is not possible in software alone; detection is what an auditor needs.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Why add the server acceptance time now if the hash chain waits?</div>
+      <div class="collapse-content text-sm"><p>A chain can be computed later over existing history, as long as that history still exists (Rule 1). An acceptance time cannot be recovered later: nobody can know afterwards when old changesets arrived. So the part that can't be added later goes in now.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Why must checkpoints live on devices and not only on the server?</div>
+      <div class="collapse-content text-sm"><p>Someone who can edit the server's rows can also recompute the server's links. A checkpoint is only useful if the tamperer can't change it, so it has to live outside their control.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">A member adds an outsider to their org by pushing a membership datom. What stops it?</div>
+      <div class="collapse-content text-sm"><p>The server-only attribute rule (section 5). Membership changes come only from server-authored commands, and who may call those is decided in round 3.</p></div></div>
+  </div>
+</section>
+
+<footer class="pt-6 border-t border-base-content/10 text-sm opacity-70 space-y-1">
+  <p>Sources checked in this repo: <code class="lt-inline">libs/datom/src/schema.ts</code> (envelope fields), <code class="lt-inline">libs/datom/src/manifest.ts</code> (<code class="lt-inline">hashMembers</code>), <code class="lt-inline">libs/datom/src/log-store.ts</code> (<code class="lt-inline">compact</code>), <code class="lt-inline">libs/datom/src/hlc.ts</code> (<code class="lt-inline">FUTURE_SKEW_MS = 5000</code>), <code class="lt-inline">libs/sync/server/src/server.ts</code> (validation), ADR-0006, ADR-0011, ADR-0016, ADR-0023. complyj ADR-0005 for the stated limitation.</p>
+  <p>Companion page: <a class="link" href="p11-q5-token-transport.html">How a request proves who sent it (Q5)</a>.</p>
+</footer>
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) { paint.clearRect(0,0,1,1); paint.fillStyle="#000"; paint.fillStyle=color; paint.fillRect(0,0,1,1); return paint.getImageData(0,0,1,1).data; }
+  function compositeRgba(f, b) {
+    const fa = f[3]/255, ba = b[3]/255, a = fa + ba*(1-fa);
+    if (a === 0) return [0,0,0,0];
+    return [(f[0]*fa + b[0]*ba*(1-fa))/a, (f[1]*fa + b[1]*ba*(1-fa))/a, (f[2]*fa + b[2]*ba*(1-fa))/a, a*255];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rb = toRgba(getComputedStyle(root).backgroundColor);
+    const bb = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0,0,0,0];
+    const [r,g,b,a] = compositeRgba(bb, rb);
+    if (a > 0) return (0.2126*r + 0.7152*g + 0.0722*b)/255 < 0.5;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied, rendering = false, queued = false;
+  function queueRender() { queued = true; if (rendering) return; void render(); }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "strict" });
+        for (const { el, src } of diagrams) { el.removeAttribute("data-processed"); el.textContent = src; }
+        try { await mermaid.run({ nodes: diagrams.map((d) => d.el) }); } catch (e) { console.error("Mermaid render failed:", e); return; }
+        applied = theme;
+      }
+    } finally { rendering = false; if (queued) queueRender(); }
+  }
+  if (document.readyState === "complete") queueRender(); else window.addEventListener("load", queueRender, { once: true });
+  const obs = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) if (el) obs.observe(el, { attributes: true, attributeFilter: ["data-theme","class","style"] });
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>
