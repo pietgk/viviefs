@@ -687,6 +687,10 @@ importers:
   tools/generators: {}
 
   tools/qualification:
+    dependencies:
+      '@viviefs/identity':
+        specifier: workspace:*
+        version: link:../../libs/identity
     devDependencies:
       '@effect/platform-node':
         specifier: 4.0.0-rc.116

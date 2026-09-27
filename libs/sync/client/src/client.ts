@@ -298,8 +298,14 @@ const makeClient = Effect.gen(function* () {
     })
 
   const submit = Effect.fn('SyncClient.submit')(function* (
-    changeset: Outgoing,
+    submitted: Outgoing,
   ) {
+    // Only the server says when it accepted a changeset. A value set here
+    // would stick, because the acceptance time is set once.
+    const changeset: Outgoing = {
+      ...submitted,
+      envelope: { ...submitted.envelope, acceptedAt: null },
+    }
     yield* Effect.annotateCurrentSpan({
       'sync.device': changeset.envelope.device,
       'sync.command': changeset.envelope.command,

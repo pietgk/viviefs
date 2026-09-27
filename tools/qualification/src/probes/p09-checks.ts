@@ -1,6 +1,3 @@
-import { join } from 'node:path'
-import * as Cause from 'effect/Cause'
-import * as Context from 'effect/Context'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
@@ -12,49 +9,28 @@ import * as Schema from 'effect/Schema'
 import type * as Scope from 'effect/Scope'
 import * as Tracer from 'effect/Tracer'
 import * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
-import * as RpcTest from 'effect/unstable/rpc/RpcTest'
 import * as Workflow from 'effect/unstable/workflow/Workflow'
-import { blobHash, layerMemory } from '@viviefs/blobs'
+import { blobHash } from '@viviefs/blobs'
 import {
   Attr,
-  HlcClock,
-  LogStore,
-  Projector,
   activityId,
   deviceLayer,
   encodeCommit,
-  evidenceCatalog,
   evidenceId,
   executionId,
   hashMembers,
   itemId,
   listId,
   orgId,
-  type Catalog,
   type DatomType,
 } from '@viviefs/datom'
 import { renameList, sealItem } from '@viviefs/evidence-model'
-import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
-import {
-  SyncClient,
-  SyncRpc,
-  bearerAuthenticationClient,
-  syncClientLayer,
-  syncRpcLayer,
-  type Outgoing,
-} from '@viviefs/sync-client'
-import { SyncRpcs } from '@viviefs/sync-protocol'
-import {
-  Memberships,
-  SyncAuthority,
-  syncServerLayer,
-} from '@viviefs/sync-server'
+import type { Outgoing } from '@viviefs/sync-client'
 import {
   makeMutableClock,
   type CheckResult,
   type MutableClock,
 } from '@viviefs/testing'
-import { fakeSignInSession, makeFakeIssuer } from '@viviefs/testing/identity'
 import { withTempDirectory } from '@viviefs/testing/node'
 import {
   CrashHook,
@@ -64,6 +40,18 @@ import {
   engineLayer,
   noopWakeScheduler,
 } from '@viviefs/workflow-engine'
+import {
+  committed,
+  envelopeFor,
+  mint,
+  personOf,
+  require,
+  runCheck,
+  selfCommit,
+  syncWorld,
+  valueOf,
+  type World,
+} from './sync-world.ts'
 
 export const P09_CHECK_NAMES = [
   'outbox offline',
@@ -78,89 +66,6 @@ export const P09_CHECK_NAMES = [
 ] as const
 
 export const P09_CHECK_COUNT = P09_CHECK_NAMES.length
-
-const catalog: Catalog = { types: [...evidenceCatalog.types] }
-
-const TRACE = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-const SPAN = 'bbbbbbbbbbbbbbbb'
-
-const require = (ok: boolean, message: string) =>
-  ok ? Effect.void : Effect.fail(message)
-
-const valueOf = (
-  facts: ReadonlyArray<{ e: string; a: string; v: string }>,
-  entity: string,
-  attribute: string,
-): string | undefined =>
-  facts.find((fact) => fact.e === entity && fact.a === attribute)?.v
-
-const runCheck = (
-  name: string,
-  fn: string,
-  effect: Effect.Effect<unknown, unknown, Scope.Scope>,
-): Effect.Effect<CheckResult, never, Scope.Scope> =>
-  effect.pipe(
-    Effect.withSpan(`P09 ${name}`, {
-      attributes: { 'p09.fn': fn },
-    }),
-    Effect.timeout(Duration.seconds(30)),
-    Effect.matchCause({
-      onSuccess: (value) => ({
-        name,
-        status: 'PASS' as const,
-        detail: JSON.stringify(value),
-      }),
-      onFailure: (cause) => ({
-        name,
-        status: 'FAIL' as const,
-        detail: Cause.pretty(cause).split('\n')[0] ?? 'failed',
-      }),
-    }),
-  )
-
-type Device = {
-  readonly id: string
-  /** The device's signed-in person; every envelope it writes names it. */
-  readonly person: string
-  readonly client: SyncClient['Service']
-  readonly store: LogStore['Service']
-  readonly projector: Projector['Service']
-  readonly rpc: SyncRpc['Service']
-  readonly context: Context.Context<
-    SyncClient | LogStore | Projector | SyncRpc
-  >
-}
-
-const clockLayer = (clock: MutableClock) =>
-  Layer.succeed(HlcClock, clock.service)
-
-const storeLayer = (
-  directory: string,
-  file: string,
-  deviceId: string,
-  clock: MutableClock,
-) =>
-  sqliteNodeLogStore({
-    filename: join(directory, file),
-    deviceId,
-  }).pipe(Layer.provide(clockLayer(clock)))
-
-const envelopeFor = (
-  cs: string,
-  device: Device,
-  command: string,
-  leaseEpoch: number | null,
-) => ({
-  cs,
-  actor: device.person,
-  device: device.id,
-  leaseEpoch,
-  traceId: TRACE,
-  spanId: SPAN,
-  sampled: false,
-  command,
-  acceptedAt: null,
-})
 
 // P09 checks run authenticated since P11: every device is a member of every
 // organization these checks use. P11's own checks cover who may not.
@@ -182,125 +87,21 @@ const session = <A>(
   clock: MutableClock,
   prefix: string,
   devices: ReadonlyArray<readonly [string, string]>,
-  use: (world: {
-    readonly authority: SyncAuthority['Service']
-    readonly device: (name: string) => Device
-  }) => Effect.Effect<A, unknown>,
+  use: (world: World) => Effect.Effect<A, unknown>,
 ) =>
-  Effect.gen(function* () {
-    const issuer = yield* makeFakeIssuer({
-      issuer: 'http://p09.test/realms/viviefs',
-      audience: 'viviefs-sync',
-    })
-    const server = yield* Layer.build(
-      syncServerLayer(catalog).pipe(
-        Layer.provide(
-          storeLayer(directory, `${prefix}-server.sqlite`, 'p09-server', clock),
-        ),
-        Layer.provide(layerMemory),
-        Layer.provide(issuer.verifier),
-      ),
-    )
-    const memberships = Context.get(server, Memberships)
-    const built = new Map<string, Device>()
-    for (const [name, deviceId] of devices) {
-      let person = ''
-      for (const org of P09_ORGS) {
-        person = yield* memberships.grant(org, issuer.account(deviceId))
-      }
-      const rpcClient = yield* RpcTest.makeClient(SyncRpcs).pipe(
-        Effect.provide(server),
-        Effect.provide(
-          bearerAuthenticationClient.pipe(
-            Layer.provide(fakeSignInSession(issuer, deviceId)),
-          ),
-        ),
-      )
-      const rpc = syncRpcLayer(rpcClient)
-      const ctx = yield* Layer.build(
-        syncClientLayer(catalog).pipe(
-          Layer.provideMerge(
-            storeLayer(directory, `${prefix}-${name}.sqlite`, deviceId, clock),
-          ),
-          Layer.provideMerge(rpc),
-          Layer.provide(clockLayer(clock)),
-          Layer.provide(deviceLayer(deviceId)),
-        ),
-      )
-      built.set(name, {
-        id: deviceId,
-        person,
-        client: Context.get(ctx, SyncClient),
-        store: Context.get(ctx, LogStore),
-        projector: Context.get(ctx, Projector),
-        rpc: Context.get(ctx, SyncRpc),
-        context: ctx,
-      })
-    }
-    const authority = Context.get(server, SyncAuthority)
-    return yield* use({
-      authority,
-      device: (name) => {
-        const found = built.get(name)
-        if (!found) {
-          throw new Error(`missing device ${name}`)
-        }
-        return found
-      },
-    })
-  })
-
-const mint = (device: Device, basis: number) =>
-  Effect.gen(function* () {
-    const cs = yield* device.store.mint()
-    const memberTx = yield* device.store.mint()
-    const extraTx = yield* device.store.mint()
-    const commitTx = yield* device.store.mint()
-    return {
-      cs,
-      memberTx,
-      extraTx,
-      commitTx,
-      actor: device.person,
-      device: device.id,
-      basis,
-    }
-  })
-
-const selfCommit = (
-  device: Device,
-  options: {
-    readonly org: string
-    readonly entity: string
-    readonly attribute: string
-    readonly value: string
-    readonly epoch: number | null
-    readonly command: string
-  },
-) =>
-  Effect.gen(function* () {
-    const tx = yield* device.store.mint()
-    const changeset: Outgoing = {
-      org: options.org,
-      basis: 0,
-      envelope: envelopeFor(tx, device, options.command, options.epoch),
-      datoms: [
-        {
-          e: options.entity,
-          a: options.attribute,
-          v: options.value,
-          tx,
-          op: 'assert',
-          cs: tx,
-        },
-      ],
-    }
-    yield* device.client.submit(changeset)
-    return changeset
-  })
-
-const committed = (device: Device, prefix: string) =>
-  device.projector.facts({ view: 'committed', prefix })
+  syncWorld(
+    {
+      directory,
+      clock,
+      prefix,
+      devices: devices.map(([name, deviceId]) => ({
+        name,
+        deviceId,
+        orgs: P09_ORGS,
+      })),
+    },
+    use,
+  )
 
 /**
  * p09-check outboxOffline
@@ -331,7 +132,7 @@ const outboxOffline = (directory: string, clock: MutableClock) =>
       )
       const draft = yield* a.projector.facts({
         view: 'draft',
-        actor: a.person,
+        actor: personOf(a),
         prefix: orgId(org),
       })
       yield* require(
@@ -537,7 +338,7 @@ const typedRejection = (directory: string, clock: MutableClock) =>
       yield* a.client.submit(kept)
       const draft = yield* a.projector.facts({
         view: 'draft',
-        actor: a.person,
+        actor: personOf(a),
         prefix: orgId(org),
       })
       yield* require(valueOf(draft, item, Attr.itemSeal) === 'silver', 'draft seal')
@@ -728,7 +529,7 @@ const serverDeferred = (directory: string, clock: MutableClock) =>
       const engineLive = waitLayer.pipe(
         Layer.provideMerge(engineLayer),
         Layer.provide(Layer.succeedContext(a.context)),
-        Layer.provide(engineConfigLayer({ org, actor: a.person })),
+        Layer.provide(engineConfigLayer({ org, actor: personOf(a) })),
         Layer.provide(deviceLayer(a.id)),
         Layer.provide(hook),
         Layer.provide(noopWakeScheduler),
@@ -843,39 +644,39 @@ export const runP09Checks = (
 ): Effect.Effect<CheckResult[], never, Scope.Scope> => {
   return Effect.all(
     [
-      runCheck('outbox offline', 'outboxOffline', outboxOffline(directory, clock)),
-      runCheck('cursor stream', 'cursorStream', cursorStream(directory, clock)),
-      runCheck(
+      runCheck('P09', 'outbox offline', 'outboxOffline', outboxOffline(directory, clock)),
+      runCheck('P09', 'cursor stream', 'cursorStream', cursorStream(directory, clock)),
+      runCheck('P09', 
         'full organization',
         'fullOrganization',
         fullOrganization(directory, clock),
       ),
-      runCheck(
+      runCheck('P09', 
         'duplicate append',
         'duplicateAppend',
         duplicateAppend(directory, clock),
       ),
-      runCheck(
+      runCheck('P09', 
         'typed rejection rebuilds',
         'typedRejection',
         typedRejection(directory, clock),
       ),
-      runCheck(
+      runCheck('P09', 
         'unknown attribute',
         'unknownAttribute',
         unknownAttribute(directory, clock),
       ),
-      runCheck(
+      runCheck('P09', 
         'stale lease rejected',
         'staleLease',
         staleLease(directory, clock),
       ),
-      runCheck(
+      runCheck('P09', 
         'server deferred completion',
         'serverDeferred',
         serverDeferred(directory, clock),
       ),
-      runCheck(
+      runCheck('P09', 
         'file manifest waits',
         'fileManifest',
         fileManifest(directory, clock),

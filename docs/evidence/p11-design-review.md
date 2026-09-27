@@ -9,7 +9,8 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | `libs/identity`: `TokenVerifier` (OIDC over discovery and JWKS), `Caller`; fake issuer and token contract in `@viviefs/testing/identity` | done (step 2): 9 contract checks pass on the fake and on the OIDC verifier against a served fake; a payload-trusting verifier fails 7 of them; removing the audience check fails exactly `foreign audience` |
 | Log (step 3a): `acceptedAt` on the envelope, set once, in every store; identity catalog (account, membership) with server-only attributes; `membershipId`, `accountId` | done: P04 gains check 12 `acceptance time` (sqlite-node and PGlite pass); an existing `changesets` table gains the column |
 | Protocol and server (step 3b): `BearerAuthentication` on every sync RPC, `Memberships` (account entity lookup, serialized `grant` / `revoke`), membership, actor and server-only checks, `acceptedAt` stamped, blobs per organization, `CompleteDeferred` RPC; client half with `SignInSession`, revocation handling; the engine writes as the signed-in person | done: P09's nine checks pass on the authenticated protocol with a fake issuer; its sequence diagrams are unchanged |
-| P11 Node checks (step 3c), HTTP server, Keycloak lab, device sign-in | not started |
+| P11 Node checks (step 3c): 11 checks in `p11-checks.ts` on a shared `sync-world.ts` (checks 3-9 and 12 above, plus `never granted`, `missing token` and a host-side `sign-in needed keeps outbox`) | done: all pass. Removing the membership check fails 5 of them, removing the actor check fails `actor`, keeping a client's `acceptedAt` fails `acceptance time` |
+| HTTP server, Keycloak lab, device sign-in | not started |
 | Probe (`p11.ts`) and evidence note | not started |
 | Gate P11 | not run |
 
