@@ -40,6 +40,18 @@ Prefix power: authorization, compaction, export and Reactivity keys all work by
 prefix. First sync is full-store per organization (one cursor), not prefix
 subscriptions.
 
+**Server-only roots** (amendment 2026-09-27, P11 grilling; qualified by P11).
+Facts that belong to no organization live in the server's log under a root
+other than `O{org}/` and are never replicated. The first is the account
+entity `A{sha256(iss, sub)}`, which maps an identity-provider account to a
+person ([ADR-0022](0022-identity-and-organization-isolation.md)). Existing
+prefix rules already keep such roots on the server: a client changeset with an
+entity outside the requested organization is refused (`OrgMismatch`), and
+`Pull` only sends changesets that touch the organization. Rule: a
+server-authored changeset never mixes a server-only root with organization
+entities, because `Pull` sends every member of a changeset that touches the
+organization.
+
 ## Trade-offs
 
 Keeps one-datom tree deletes where composition is real, avoids immutable ids

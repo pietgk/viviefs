@@ -37,6 +37,7 @@ Decisions behind it: D18 (server-side isolation, never trust a client org id) an
 | 9 | **Blobs per organization**: the same hash in two orgs is stored independently; `FileMissing` reflects only the caller's org | Node | one org learns whether another holds a file |
 | 10 | **Sign-in needed**: a failed refresh keeps the outbox; signing in again resumes sync | iOS, Android, web | work is discarded, or sync loops on a dead session |
 | 11 | **Database per person**: A signs out, B signs in and sees none of A's data or outbox; A signs back in and finds both intact | iOS, Android, web | data or outbox leaks between people on one device |
+| 12 | **Server-only root**: after `grantMembership`, a member's `Pull` contains the membership and no account datom; a client changeset that writes an account entity is refused | Node | an account datom (a provider subject) reaches a device, or a client links an account |
 
 Not a gate check, a verify rule: only tests, `tools/` and dev composition may import the fake issuer. It lives in `libs/testing` (`layer:testing`), which no core, adapter or feature project may depend on.
 
@@ -55,7 +56,7 @@ flowchart TB
   subgraph SRV["apps/evidence-server"]
     BA["BearerAuthentication<br/>server half"]
     TV["TokenVerifier<br/>jose, cached JWKS"]
-    PM["(iss, sub) to Person<br/>server-side table"]
+    PM["Account entity<br/>A{sha256(iss, sub)} names the person"]
     H["Handlers<br/>membership, actor, lease,<br/>server-only attributes, acceptedAt"]
     LOG[("Log<br/>O{org}/M{person} memberships")]
     BA --> TV
@@ -94,6 +95,7 @@ Grilling 2026-09-27. Each answer is the agreed recommendation unless noted.
 | Q18 | How "server-only" is expressed | A flag on the attribute in the catalog, next to `policy` and `defining`. A client changeset containing one is rejected whole with `ServerOnlyAttribute`. |
 | Q19 | Where the acceptance time lives | A field on the envelope, `acceptedAt`, empty until the server accepts. |
 | Q20 | Names | Section 4. |
+| Q21 | The account-to-person mapping: a `people` table or the log | The log (2026-09-27, raised after step 2). A table would be the first domain fact outside the log: no history, outside the audit trail and a future hash chain. Account entity `A{sha256(iss, sub)}` under a server-only root; persons are minted only by `grantMembership`; account datoms travel in their own changeset. ADR-0006 now states "domain truth lives only in the log". |
 
 ## 4. Names
 
@@ -109,12 +111,13 @@ Checked against the repo's conventions: services are role nouns (`LogStore`, `Sy
 | `Caller` | per-request context value | The verified requester: person, provider account, roles carried |
 | `BearerAuthentication` | RPC middleware | Requires and verifies a bearer token on every RPC in the group; provides `Caller` |
 | `Person` | id | One per human, across organizations; what `envelope.actor` holds |
-| `Membership` | entity `O{org}/M{person}` | A person's right to act in one organization; server-only |
+| `Membership` | entity `O{org}/M{person}` | A person's right to act in one organization; server-only. Defining attribute `viviefs/membership/granted`, value the person id |
+| account entity | entity `A{sha256(iss, sub)}` | Server-only root. Attributes `viviefs/account/person` (defining), `viviefs/account/issuer`, `viviefs/account/subject` |
 | `TokenRejected` `{ reason }` | error | Token missing, invalid or expired; the handler never ran |
 | `MembershipMissing` `{ org }` | error | The caller is not, or no longer, a member of the requested org |
 | `ActorMismatch` `{ actor, caller }` | error | The envelope's actor is not the caller's person |
 | `ServerOnlyAttribute` `{ attribute }` | error | A client changeset writes an attribute only the server may write |
-| `acceptedAt` | envelope field | Server time of acceptance |
+| `acceptedAt` | envelope field | Server wall-clock time of acceptance, integer milliseconds; set once |
 
 Two deliberate choices:
 
@@ -142,7 +145,7 @@ Each step ends with a commit and a green `pnpm verify`.
 
 1. Glossary, ADR-0022 amendment, this review, open items (this commit).
 2. `libs/identity`: `Caller`, `TokenVerifier` with `oidcTokenVerifier` (`jose`), the fake issuer and the contract suite in `@viviefs/testing/identity`. `libs/identity` and `apps/evidence-server` join the ledger fingerprint.
-3. Log and protocol: `acceptedAt` on the envelope in every log store, the catalog's server-only flag, `Membership`, the person table, `grantMembership` / `revokeMembership`, `BearerAuthentication`, the new errors, blobs per org, `CompleteDeferred` as an RPC. P09's checks move onto the authenticated protocol.
+3. Log and protocol: `acceptedAt` on the envelope in every log store, the catalog's server-only flag, `Membership`, the account entity, `grantMembership` / `revokeMembership`, `BearerAuthentication`, the new errors, blobs per org, `CompleteDeferred` as an RPC. P09's checks move onto the authenticated protocol.
 4. `apps/evidence-server`: HTTP composition with `TokenVerifier.oidc`.
 5. Keycloak lab: image pinned by digest in `lab-images.json` (26.7.3, the digest complyj pinned), realm file with pinned users and an audience mapper, the contract suite against Keycloak.
 6. Device: `SignInSession` over `expo-auth-session` and `expo-secure-store`, the client half of `BearerAuthentication`, one database per person, the sign-in-needed state.

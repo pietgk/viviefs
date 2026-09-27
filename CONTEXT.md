@@ -204,8 +204,14 @@ _Avoid_: login state
 
 **Provider account**:
 A person's account at one identity provider, identified by the token's issuer
-and subject. The server maps each provider account to one person.
+and subject. Recorded as an account entity in the server's log, which names its
+person.
 _Avoid_: user, login, subject (reserved for crypto-shredding)
+
+**Server-only root**:
+An id-tree root outside any organization, held only in the server's log and
+never replicated. Account entities live there.
+_Avoid_: global entity, system table
 
 **Token verifier**:
 The server-side check that turns an access token into the provider account it

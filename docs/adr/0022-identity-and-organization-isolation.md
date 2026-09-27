@@ -53,14 +53,28 @@ and provides `Caller`. A new RPC in the group is authenticated by default.
 Authentication only; authorization happens in the handlers.
 
 **Person.** One per human, across organizations: an opaque id minted by the
-server. A server-side table maps `(iss, sub)` to it, so history survives a
-change of identity provider. `envelope.actor` holds the person id, or `server`
-for server-authored changesets. A person is not an entity in any
-organization's log.
+server's HLC. `envelope.actor` holds the person id, or `server` for
+server-authored changesets. A person is not an entity in any organization's
+log.
 
-**Membership.** The entity `O{org}/M{person}`, written only by the server
-through `grantMembership` / `revokeMembership` (operator commands outside the
-device RPC group; they mint the person if missing). The server reads it on
+**Account entity.** The mapping from an identity-provider account to a person
+is datoms in the server's log, not a separate table (ADR-0006: domain truth
+lives only in the log). Entity `A{sha256(iss, sub)}` under a server-only root
+(ADR-0010), defining attribute `viviefs/account/person` (value: the person id),
+plus `viviefs/account/issuer` and `viviefs/account/subject`. Authentication
+reads it by entity id on the existing EAVT index; it never writes. Linking an
+account, or moving a person to a new identity provider, is history with an
+actor and an acceptance time. Account datoms travel in their own changeset,
+never with organization datoms.
+
+**Membership.** The entity `O{org}/M{person}`, defining attribute
+`viviefs/membership/granted` (value: the person id), written only by the
+server through `grantMembership` / `revokeMembership` (operator commands
+outside the device RPC group). `grantMembership` is the only place a person is
+minted, so a request never writes; an account without a person is a member of
+nothing. The operator commands are serialized; with more than one server
+process (Effect Cluster, deferred) uniqueness of the account entity needs a
+database-level guard. The server reads it on
 every request, so revocation is immediate even while a token is valid. Roles
 are carried in the caller and not enforced (roles in use, invitations and
 self-service membership come with the first consumer app that needs them).
@@ -71,7 +85,9 @@ self-service membership come with the first consumer app that needs them).
 - The envelope's actor must be the caller's person; otherwise `ActorMismatch`.
 - Attributes flagged server-only in the catalog cannot appear in a client
   changeset; otherwise `ServerOnlyAttribute`.
-- The server stamps `acceptedAt` on the envelope of every accepted changeset.
+- The server stamps `acceptedAt` (its own wall clock, integer milliseconds) on
+  the envelope of every accepted changeset. It is set once: a device that
+  already holds the envelope fills it from `Pull` and never changes it again.
 - Blobs are keyed per organization.
 - `CompleteDeferred` is an authenticated RPC.
 
@@ -95,6 +111,12 @@ read per request.
 Membership in the log over provider group claims: immediate revocation and no
 coupling to Keycloak. Over a server-only table: devices see membership through
 normal sync (D31).
+
+The account-to-person mapping in the log over a `people` table: one source of
+truth, history for every link, and coverage by a future hash chain, which
+matters most for the mapping that decides who someone is. The cost is a
+server-only root in the id tree, and uniqueness from a deterministic id plus
+serialized operator commands instead of a database constraint.
 
 A person id across organizations over a per-organization person entity: one
 id per human, no second sync scope, and one key to destroy for erasure.

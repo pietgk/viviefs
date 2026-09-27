@@ -25,6 +25,21 @@ datom is its own transaction.
 This realises vivief's "observability is projection over effect datoms" without
 trusting a telemetry backend for durability.
 
+**Domain truth lives only in the log** (made explicit 2026-09-27, P11 grilling).
+Every other SQL table is one of three kinds:
+
+| Kind | Examples | Rebuilt from the log? |
+| --- | --- | --- |
+| The log itself | `datoms`, `changesets` (envelopes) | It is the source |
+| Read models | `projected_facts`, `projection_conflicts`, `changeset_status` | Yes: disposable, never migrated |
+| Operational state of one replica | `hlc_state`, cursors, `outbox`, `sync_cursor` | No, and it holds no domain facts |
+
+A fact that fits none of these goes into the log. P11 applied this to the
+mapping from identity-provider accounts to people: a separate `people` table
+was proposed and rejected, because it would have been history-less and
+outside the audit trail and a future hash chain
+([ADR-0022](0022-identity-and-organization-isolation.md)).
+
 ## Trade-offs
 
 One format and one sync protocol. The cost is that the log store must be right
