@@ -51,6 +51,9 @@ grilling decision).
 6. **Gates in order** (D46): P01-P03 platform, then P04-P05 log store, then P06-P07 engine, then P08 UI prototype, then
    P09 sync, then P10 trace projection (then P11-P14). iOS, Android and web are first-class: P01, P02 and P07 fail
    if the Android emulator fails. Each gate's probe becomes the first exemplar of its pattern.
+   Order after foundation closure (agreed 2026-09-27): P11, then step 7, then the quarantine grilling and its gate
+   (D15; see [10-open-items-and-risks.md](10-open-items-and-risks.md)), then P12-P14. A physical-device run on
+   iOS and Android comes before the first consumer app.
 7. **Docs and teaching skeleton** (D28, D29, D57): `apps/docs` with a static docs generator (Starlight assumed,
    confirm in this step), type-checked samples, generated llms.txt, `exercises/` with the scaffold-exercises layout.
    A pattern is delivered only when it has an accepted ADR with evidence, a green exemplar, a concept page, an

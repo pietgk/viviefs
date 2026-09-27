@@ -18,14 +18,11 @@ the named gate.
 **Named slot, empty** (create the project, ADR or gate id; do not invent the mechanism):
 
 - Identity. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
-- Sampling of durable spans: the envelope records `sampled`; the trace projector does not honour it yet (P10).
-- Quarantine of user content after a lost lease (D15; likely home is D34 human-conflict).
+- Sampling of durable spans: the envelope records `sampled`; the trace projector does not honour it yet (P10). Decided with the production telemetry backend.
+- Quarantine of user content after a lost lease (D15). Direction agreed 2026-09-27: a human-conflict entry (D34) that names the stranded content, resolved by a command (attach to the execution, keep as standalone evidence, or discard). Mechanism and UX in its own grilling and gate after P11; not needed for P11.
 
 **Hypothesis until gate** (must not constrain other work):
 
-- Interaction-state library (P08; measured 2026-09-21: all three encodings
-  pass the same tests; review 2026-09-22 copies IntentComposer in
-  effect-machine, ADR-0020).
 - SQLCipher and crypto-shredding (P12, P13).
 - Effect Cluster (D39).
 - Prefix subscriptions / partial sync.
@@ -55,31 +52,34 @@ the named gate.
   log and withdrew the spike. A consumer that wants Zero later does that in its own ADR.
 - **DuckDB `SqlClient`**: Effect v4 has no DuckDB driver (research/01 section 3). Analytics writes Parquet or
   DuckLake files that DuckDB reads, which is what D37 already says.
+- **Interaction state library**: IntentComposer in `@typeonce/effect-machine` (P08 review 2026-09-22,
+  ADR-0020). XState v5.33.2 and Effect + Atom remain retained probes; XState JSON viz is a later option.
+- **HLC future-skew bound and log-append volume**: P04 picked 5000 ms and 2000 datoms.
+- **Foundation closure**: one sequential P01-P10 run on `3bd24492`, 2026-09-26
+  ([2026-09-26-foundation-closure.md](../../evidence/2026-09-26-foundation-closure.md)).
+- **Bundle size**: 10 MB per platform on the Hermes bundle (agreed 2026-09-27), gated by `verify` with a report
+  of what changed since the recorded reference ([2026-09-27-bundle-size.md](../../evidence/2026-09-27-bundle-size.md)).
+  iOS 4.74 MB, Android 6.84 MB; Android's `Intl` polyfill with the full time-zone database is 2.0 MB of it.
+  Revisit the budget as the app grows.
 
 ## Deferred decisions
 
-- Interaction state library: IntentComposer in `@typeonce/effect-machine`
-  (P08 review 2026-09-22, ADR-0020). XState v5.33.2 and Effect + Atom remain
-  retained probes. Generated mermaid is part of the pattern; XState JSON viz
-  is a later option. No OTLP on the composer.
-- Production hosting, deployment topology, production telemetry backend.
-- Scale-out of the engine (Effect Cluster) and multi-runner server.
-- Whether product apps (BirVana, ERP, GRC) move into viviefs as app pairs (D55).
-- Encryption at rest per consumer app (D50).
-- Docs site generator details (Starlight assumed; Twoslash or equivalent for sample checks).
-- Quarantine after a lost lease (D15) is still an empty named slot after P09. A stale journal write is rejected before it enters the device log. User content stays in the log. The review mechanism is unspecified (likely a human-conflict datom).
-- Prefix subscriptions (partial sync): later than P09.
-- History consolidation on a full-org replica: later than P09; sits next to D37's compaction horizon.
-- Client-side data access on a full-org replica: later than P09. Server isolation (D18) stays authoritative.
-- React Native Storybook.
-- Physical-device testing beyond P03's documented motel path.
-- A visible local-notification tap that completes a deferred. P07 resumed after `simctl` / `adb force-stop` and completed the deferred from JavaScript. The banner tap was not observed (ADR-0013).
-- HLC future-skew bound and log-append volume: P04 picks them.
-- Bundle size: budget 10 MB per platform on the Hermes bundle (agreed 2026-09-27), gated by `verify` with a report of what changed since the recorded reference ([2026-09-27-bundle-size.md](../../evidence/2026-09-27-bundle-size.md)). iOS 4.74 MB, Android 6.84 MB; Android's FormatJS `Intl` polyfill with the full time-zone database is 2.0 MB of it. Revisit the budget as the app grows.
-- The trace projector on iOS, Android and web. P10 ran it on the host; P03 measured OTLP from Hermes.
-- `journal.ts` comment: "journals written before 2026-09-27" should name commit `a067a0d6f`. Fix with the first engine change in P11 (touching it now would mark the closure passes stale).
-- Foundation closure: done on 2026-09-26, one sequential P01-P10 run on `3bd24492` ([2026-09-26-foundation-closure.md](../../evidence/2026-09-26-foundation-closure.md)). P11-P14 are next.
-- Datom `op` stays the words `assert` and `retract` (`TEXT`). Whether that column costs enough, next to `e`, `a`, and `v`, to justify a boolean and a re-run of P04-P09 is unmeasured (deferred 2026-09-22).
+Each item says when it is decided and what is recommended. Agreed 2026-09-27.
+
+| Item | What it is | Decide when | Agreed direction |
+|---|---|---|---|
+| Production hosting, deployment topology, production telemetry backend | Where the server runs; which backend replaces the local lab sinks | The first consumer app leaves the lab | Decide then, together with sampling of durable spans |
+| Engine scale-out (Effect Cluster), multi-runner server | Server-side workflows on more than one runner | A real server-side workflow load or an availability need | Keep; the server never runs device workflows (D14) |
+| Product apps into viviefs as app pairs (D55) | Whether BirVana, ERP and GRC live here | Before the first consumer app | Decide after P11-P14 |
+| Encryption at rest per consumer app (D50) | Which apps turn on SQLCipher | At the start of an app that holds sensitive data | Per app, once P12 has qualified SQLCipher |
+| Docs site generator (Starlight assumed; Twoslash or equivalent for sample checks) | Work order step 7: docs and teaching | Right after P11 | Step 7 runs right after P11, before P12-P14 |
+| Quarantine after a lost lease (D15) | User content stranded when a device loses its lease | After P11, in its own grilling | Human-conflict entry (D34) resolved by a command; its own gate. P09 already rejects the stale journal write before it enters the device log; user content stays in the log |
+| Partial sync (prefix subscriptions), history consolidation, client-side data access on a full-org replica | Devices hold the whole organization's log | When roles restrict data within an organization, or a replica grows too large | Raise in the P11 grilling: roles inside an organization bring these forward. Server isolation (D18) stays authoritative |
+| React Native Storybook | Stories for native-only components | The first native-only component | Keep |
+| Physical devices, and a visible local-notification tap that completes a deferred | Everything so far ran on simulators; P07 completed the deferred from JavaScript, the banner tap was not observed (ADR-0013) | Before the first consumer app | One real-phone run on iOS and Android covering both |
+| Datom `op` as `TEXT` (`assert` / `retract`) or a boolean | Storage cost next to `e`, `a`, `v`; a change re-runs P04-P09 | When a storage or performance budget exists | Keep (deferred 2026-09-22) |
+| The trace projector on iOS, Android and web | P10 ran it on the host; P03 measured OTLP from Hermes | When the evidence app or a consumer app runs the projector | Wire it with P11 or the first consumer app, and extend a device run to check it |
+| `journal.ts` comment "journals written before 2026-09-27" | Should name commit `a067a0d6f` | The first engine change in P11 | Fix then; touching it now marks the closure passes stale |
 
 ## Risks
 
