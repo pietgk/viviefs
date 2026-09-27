@@ -158,3 +158,40 @@ describe('HLC mint and receive', () => {
     })
   })
 })
+
+describe('HLC with a fractional monotonic clock', () => {
+  // `performance.now()` has sub-millisecond fractions. Physical time must stay
+  // whole milliseconds, or a fraction beats the last pt, resets the counter,
+  // and the encoder truncates it back: two txs collide on (pt, c) and order by
+  // their random bits (found by P11 on Postgres, 2026-09-27).
+  it('mints strictly increasing (pt, c) pairs', () => {
+    const deviceFp = fingerprintDevice('p11-fraction')
+    let boot = null as ReturnType<typeof correctedNow>['boot'] | null
+    let last: ReturnType<typeof mintHlc> | null = null
+    const minted: Array<{ pt: number; c: number }> = []
+    for (const monotonicMs of [10.2, 10.4, 10.5, 10.9, 11.1, 11.3]) {
+      const corrected = correctedNow({
+        wallMs: WALL,
+        monotonicMs,
+        offsetMs: 0,
+        lastPt: last?.pt ?? 0,
+        boot,
+      })
+      boot = corrected.boot
+      last = mintHlc({ now: corrected.now, last, deviceFp, random: minted.length })
+      expect(Number.isInteger(last.pt)).toBe(true)
+      const decoded = decodeHlc(last.tx)
+      minted.push({ pt: decoded?.pt ?? -1, c: decoded?.c ?? -1 })
+    }
+    for (let index = 1; index < minted.length; index++) {
+      const previous = minted[index - 1]
+      const current = minted[index]
+      const increasing =
+        current !== undefined &&
+        previous !== undefined &&
+        (current.pt > previous.pt ||
+          (current.pt === previous.pt && current.c > previous.c))
+      expect(increasing, JSON.stringify(minted)).toBe(true)
+    }
+  })
+})

@@ -131,6 +131,11 @@ export const compareHlc = (
 export const maxHlc = (left: Hlc, right: Hlc): Hlc =>
   compareHlc(left, right) >= 0 ? left : right
 
+/**
+ * Physical time in whole milliseconds. Clocks may report fractions
+ * (`performance.now()`); a fractional pt would beat the last pt, reset the
+ * counter, and be truncated by the encoder, so two txs could share (pt, c).
+ */
 export const correctedNow = (input: {
   wallMs: number
   monotonicMs: number
@@ -140,11 +145,14 @@ export const correctedNow = (input: {
 }): { now: number; boot: BootSession } => {
   if (input.boot) {
     return {
-      now: input.boot.correctedOrigin + (input.monotonicMs - input.boot.monotonicOrigin),
+      now: Math.floor(
+        input.boot.correctedOrigin +
+          (input.monotonicMs - input.boot.monotonicOrigin),
+      ),
       boot: input.boot,
     }
   }
-  const wallCorrected = input.wallMs + input.offsetMs
+  const wallCorrected = Math.floor(input.wallMs + input.offsetMs)
   const now = wallCorrected > input.lastPt ? wallCorrected : input.lastPt
   return {
     now,

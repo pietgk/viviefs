@@ -55,3 +55,14 @@ pick, not this ADR's.
 Mint stayed ordered across backwards wall jumps, reboot (persisted last HLC),
 and a remote-ahead receive. Future skew of 5001 ms was rejected. Evidence:
 [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).
+
+2026-09-27, P11 step 4. The first server on Postgres with the live clock
+failed to save `hlc_state`: physical time was fractional. After boot, mint
+time is `correctedOrigin + (monotonicMs - monotonicOrigin)`, and
+`performance.now()` has fractions. A fraction beat the last pt, reset the
+counter, and the encoder truncated it back, so two txs could share `(pt, c)`
+and order by their random bits: a later write could sort before an earlier
+one. SQLite stored the fraction silently; P04 did not see it because its
+clock is integer. `correctedNow` now returns whole milliseconds, and
+`hlc.test.ts` mints from a fractional monotonic clock and requires strictly
+increasing `(pt, c)`. Device gates re-run in the P11 closing run.
