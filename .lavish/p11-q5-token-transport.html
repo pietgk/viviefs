@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P11 Q5 - How a request proves who sent it</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+  body { font-size: 16px; line-height: 1.6; }
+  .q5-section { scroll-margin-top: 1rem; }
+  .q5-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; }
+  .q5-jwt { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; word-break: break-all; line-height: 1.5; }
+  .q5-jwt .h { color: #f87171; } .q5-jwt .p { color: #c084fc; } .q5-jwt .s { color: #38bdf8; }
+  .q5-claim { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
+  pre.q5-claim { font-size: 0.78rem; overflow-wrap: anywhere; word-break: break-all; }
+  td.q5-claim { white-space: nowrap; overflow-wrap: normal; }
+  .q5-mermaid { text-align: center; }
+  .q5-mermaid svg { margin: 0 auto; }
+  .q5-code { border-radius: 0.75rem; overflow: hidden; border: 1px solid color-mix(in oklab, var(--color-base-content) 12%, transparent); }
+  code.q5-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<!-- HERO -->
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">P11 grilling</span>
+    <span class="badge badge-outline">Q5 - transport and token travel</span>
+    <span class="badge badge-soft badge-success">Decided 2026-09-27</span>
+    <span class="badge badge-soft badge-warning">Not built; names pending glossary pass</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">How a request proves who sent it</h1>
+  <p class="text-lg opacity-80">Q5 answers one question: <em>when a device calls the server, how does the server know which person is calling, and how is that fact handed to the code that decides what they may do?</em> This page builds the answer from the ground up: the parts, the token, the three flows, the code, and what each check stops.</p>
+  <div class="alert alert-info alert-soft">
+    <div>
+      <div class="font-semibold">The whole answer in four sentences</div>
+      <ol class="list-decimal ml-5 mt-1 space-y-1">
+        <li>The device signs in at Keycloak once and gets a short-lived <b>access token</b>, a signed JSON document that says "this is user <span class="q5-claim">sub</span>".</li>
+        <li>On every RPC call, a small piece of <b>client middleware</b> puts that token in the HTTP header <span class="q5-claim">authorization: Bearer &lt;token&gt;</span>.</li>
+        <li>On the server, <b>AuthMiddleware</b> checks the token's signature with Keycloak's public keys (fetched once and cached), plus its issuer, audience and expiry. It then hands a verified <b>Principal</b> to the handler.</li>
+        <li>The handler never reads identity from the payload. It asks "is this <span class="q5-claim">Principal</span> a member of the org it asked for?" (Q2, Q3), then does the work or returns a typed rejection.</li>
+      </ol>
+    </div>
+  </div>
+  <nav class="flex flex-wrap gap-2 text-sm">
+    <a class="btn btn-sm btn-ghost" href="#today">1. Today vs P11</a>
+    <a class="btn btn-sm btn-ghost" href="#parts">2. The parts</a>
+    <a class="btn btn-sm btn-ghost" href="#words">3. Words</a>
+    <a class="btn btn-sm btn-ghost" href="#jwt">4. Inside a token</a>
+    <a class="btn btn-sm btn-ghost" href="#signin">5. Getting a token</a>
+    <a class="btn btn-sm btn-ghost" href="#call">6. Every call</a>
+    <a class="btn btn-sm btn-ghost" href="#keys">7. Keys and caching</a>
+    <a class="btn btn-sm btn-ghost" href="#code">8. The code</a>
+    <a class="btn btn-sm btn-ghost" href="#stops">9. What each check stops</a>
+    <a class="btn btn-sm btn-ghost" href="#why">10. Why this design</a>
+    <a class="btn btn-sm btn-ghost" href="#fake">11. The fake</a>
+    <a class="btn btn-sm btn-ghost" href="#quiz">12. Check yourself</a>
+  </nav>
+</header>
+
+<!-- 1 TODAY VS P11 -->
+<section id="today" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">1. Today (P09) vs after P11</h2>
+  <p>In P09 the device and server ran in one Node process and talked through <code class="q5-inline">RpcTest</code>, an in-memory pipe with no network and no HTTP headers. Every RPC payload carries <code class="q5-inline">org</code>, and the server takes it at face value. That was fine for proving replication. It is exactly what D18 forbids in production.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200">
+      <div class="card-body">
+        <h3 class="card-title">Today <span class="badge badge-error badge-soft">trusts the client</span></h3>
+        <ul class="list-disc ml-5 space-y-1 text-sm">
+          <li>Transport: <code class="q5-inline">RpcTest.makeClient(SyncRpcs)</code>, in-process (<a class="link" href="../tools/qualification/src/probes/p09-checks.ts">p09-checks.ts:175</a>).</li>
+          <li>Who is calling? <b>Unknown.</b> Nothing on the wire says.</li>
+          <li><code class="q5-inline">{ org: "acme", ... }</code> is believed. The server only checks that entity ids start with <code class="q5-inline">Oacme/</code>, and that is a consistency check, not an access check.</li>
+          <li><code class="q5-inline">envelope.actor</code> is whatever the client wrote.</li>
+          <li><code class="q5-inline">PutBlob</code> does no membership check, and <code class="q5-inline">blobs.has(hash)</code> is global.</li>
+          <li><code class="q5-inline">apps/evidence-server</code> is an empty slot.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card card-border bg-base-200">
+      <div class="card-body">
+        <h3 class="card-title">After P11 <span class="badge badge-success badge-soft">server decides</span></h3>
+        <ul class="list-disc ml-5 space-y-1 text-sm">
+          <li>Transport: real HTTP. <code class="q5-inline">apps/evidence-server</code> runs <code class="q5-inline">RpcServer.layerHttp</code> on Node, and the device uses <code class="q5-inline">RpcClient.layerProtocolHttp</code>.</li>
+          <li>Who is calling? A <b>verified Principal</b> (<code class="q5-inline">iss</code> + <code class="q5-inline">sub</code>) from a checked token.</li>
+          <li><code class="q5-inline">org</code> becomes a <b>selector</b>: "I want to act in acme". The server checks membership before touching anything (Q3). Failing returns <code class="q5-inline">NotMember</code>.</li>
+          <li><code class="q5-inline">envelope.actor</code> must equal the Principal (Q7).</li>
+          <li>Blobs are keyed per org, and <code class="q5-inline">PutBlob</code> and <code class="q5-inline">CompleteDeferred</code> go through the same middleware.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-soft">
+    <span><b>Why a real transport matters for this gate:</b> the token travels in an HTTP header. With an in-memory pipe there is no header, so "the server checks the token" would be a test of a fake path. P11 has to exercise the path a phone actually uses.</span>
+  </div>
+</section>
+
+<!-- 2 PARTS -->
+<section id="parts" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">2. The parts and how they connect</h2>
+  <p>There are three places: the <b>device</b>, <b>Keycloak</b> (the identity provider, running in Apple Container on your Mac), and the <b>evidence server</b> (Node). The numbered arrows are the three flows the rest of this page explains.</p>
+  <div class="q5-mermaid"><pre class="mermaid">
+flowchart TB
+  subgraph DEV["Device: iOS sim, Android emu, web"]
+    APP["Evidence app"]
+    IDN["Identity service&lt;br/&gt;expo-auth-session&lt;br/&gt;holds tokens"]
+    SYNC["SyncClient&lt;br/&gt;push / pull"]
+    CMW["Client middleware&lt;br/&gt;adds Authorization header"]
+    APP --> SYNC
+    SYNC --> CMW
+    IDN -. "current access token" .-> CMW
+  end
+  subgraph LAB["Mac: Apple Container"]
+    KC["Keycloak&lt;br/&gt;realm viviefs"]
+  end
+  subgraph SRV["apps/evidence-server on Node"]
+    RT["HTTP route POST /rpc"]
+    AMW["AuthMiddleware"]
+    AUTH["Authenticator&lt;br/&gt;jose + cached public keys"]
+    HND["Handlers&lt;br/&gt;Append, Pull, PutBlob,&lt;br/&gt;CompleteDeferred"]
+    LOG[("LogStore&lt;br/&gt;incl. membership datoms")]
+    RT --> AMW
+    AMW --> AUTH
+    AMW -- "Principal" --> HND
+    HND --> LOG
+  end
+  IDN -- "1. sign in once (PKCE)" --> KC
+  CMW -- "2. every call: Bearer token" --> RT
+  AUTH -- "3. fetch public keys, cached" --> KC
+  </pre></div>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Flow 1 - sign in</h3>
+      <p class="text-sm">Rare: once, then silent refreshes. The user sees a Keycloak login page. The output is tokens stored on the device. Q6 decided this runs on iOS, Android and web.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Flow 2 - every call</h3>
+      <p class="text-sm">Frequent: every push, pull, blob upload and command. The token rides along in a header. <b>This is what Q5 is about.</b></p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Flow 3 - public keys</h3>
+      <p class="text-sm">Rare: the server fetches Keycloak's public keys once and caches them. Checking a token is then local maths with no network call. This is the "locally against JWKS" part of Q5.</p>
+    </div></div>
+  </div>
+  <div class="alert alert-warning alert-soft">
+    <span><b>Keycloak is not on the path of every call.</b> The server never asks Keycloak "is this token OK?" per request. It checks the signature itself. Section 10 covers why.</span>
+  </div>
+</section>
+
+<!-- 3 WORDS -->
+<section id="words" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">3. The words, in one place</h2>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table table-zebra">
+      <thead><tr><th class="w-44">Word</th><th>Plain meaning</th><th class="w-60">In ViViEfs</th></tr></thead>
+      <tbody>
+        <tr><td><b>OIDC</b></td><td>OpenID Connect: a standard for "log in somewhere else and come back with proof of who you are". Built on OAuth 2.</td><td>Keycloak locally, any OIDC provider in production (D47).</td></tr>
+        <tr><td><b>Identity provider (IdP)</b></td><td>The service that owns passwords and login screens and issues tokens.</td><td>Keycloak 26.7.3 in Apple Container (the digest complyj pinned).</td></tr>
+        <tr><td><b>Access token</b></td><td>A short-lived pass you show on every request. Usually about 5 minutes.</td><td>Sent in <code class="q5-inline">authorization</code> on every RPC.</td></tr>
+        <tr><td><b>Refresh token</b></td><td>A longer-lived secret used only to get a new access token from the IdP. Never sent to our server.</td><td>Kept in Keychain or Keystore via <code class="q5-inline">expo-secure-store</code> (next round).</td></tr>
+        <tr><td><b>JWT</b></td><td>JSON Web Token: <code class="q5-inline">header.payload.signature</code>, base64url encoded. Anyone can read it; only the key holder can sign it.</td><td>Keycloak access tokens are JWTs. So are the fake's (Q4).</td></tr>
+        <tr><td><b>JWKS</b></td><td>JSON Web Key Set: the IdP's <em>public</em> keys, published at a URL. Used to check signatures.</td><td><code class="q5-inline">{issuer}/protocol/openid-connect/certs</code></td></tr>
+        <tr><td><b>Bearer</b></td><td>"Whoever holds this token may use it", like cash. That is why tokens are short-lived and only travel over trusted channels.</td><td><code class="q5-inline">authorization: Bearer eyJ...</code></td></tr>
+        <tr><td><b>PKCE</b></td><td>Proof Key for Code Exchange. It lets a public app (no secret) sign in safely: only the app that started the login can finish it.</td><td>Flow 1. The detail is in section 5.</td></tr>
+        <tr><td><b>Claims</b></td><td>The fields inside the token payload.</td><td>We rely on <code class="q5-inline">iss</code>, <code class="q5-inline">aud</code>, <code class="q5-inline">sub</code>, <code class="q5-inline">exp</code>.</td></tr>
+        <tr><td><b>RPC middleware</b></td><td>Code that wraps every handler (server side) or every outgoing call (client side). Effect v4 has it built in: <code class="q5-inline">effect/unstable/rpc/RpcMiddleware</code>.</td><td><code class="q5-inline">Authenticated</code> (name proposed).</td></tr>
+        <tr><td><b>Principal</b></td><td>"The verified caller": the result of checking a token. Handlers read it from the Effect context, never from the payload.</td><td><code class="q5-inline">{ issuer, subject }</code>, plus <code class="q5-inline">roles</code> carried but not enforced (Q1).</td></tr>
+        <tr><td><b>Authentication vs authorization</b></td><td>Authentication: <em>who are you?</em> (middleware). Authorization: <em>may you do this?</em> (handler: membership, lease, actor).</td><td>Kept in separate steps on purpose. See section 9.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 4 JWT -->
+<section id="jwt" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">4. Inside an access token</h2>
+  <p>A JWT is three base64url strings joined by dots. The first two are plain JSON that anyone can decode (try <code class="q5-inline">jwt.io</code>). The third is a signature over the first two, made with Keycloak's <em>private</em> key. Change one character of the payload and the signature no longer matches.</p>
+  <div class="card bg-base-200"><div class="card-body">
+    <div class="q5-jwt"><span class="h">eyJhbGciOiJSUzI1NiIsImtpZCI6ImsxIn0</span>.<span class="p">eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL3ZpdmllZnMiLCJhdWQiOiJ2aXZpZWZzLXN5bmMiLCJzdWIiOiI3ZjNjLi4uIiwiZXhwIjoxNzkwMDAwMzAwfQ</span>.<span class="s">Qm9ndXMtc2lnbmF0dXJlLWZvci10ZWFjaGluZy1vbmx5LW5vdC1yZWFs...</span></div>
+    <p class="text-xs opacity-70 mt-2">Illustrative token, shortened. Not a real signature.</p>
+  </div></div>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card card-border border-red-400/40"><div class="card-body p-5">
+      <h3 class="font-semibold text-red-400">Header</h3>
+<pre class="q5-claim whitespace-pre-wrap">{
+  "alg": "RS256",
+  "kid": "k1"
+}</pre>
+      <p class="text-sm"><b>alg</b>: how it was signed. We only accept <code class="q5-inline">RS256</code>, so an attacker cannot pick <code class="q5-inline">none</code>.<br><b>kid</b>: which of Keycloak's keys signed it. It selects the key from the JWKS.</p>
+    </div></div>
+    <div class="card card-border border-purple-400/40"><div class="card-body p-5">
+      <h3 class="font-semibold text-purple-400">Payload (claims)</h3>
+<pre class="q5-claim whitespace-pre-wrap">{
+  "iss": "http://localhost:8080/realms/viviefs",
+  "aud": "viviefs-sync",
+  "sub": "7f3c...",
+  "exp": 1790000300,
+  "iat": 1790000000
+}</pre>
+      <p class="text-sm">Each claim is checked (next table). <b>sub</b> is the stable user id: it becomes <code class="q5-inline">Principal.subject</code>.</p>
+    </div></div>
+    <div class="card card-border border-sky-400/40"><div class="card-body p-5">
+      <h3 class="font-semibold text-sky-400">Signature</h3>
+      <p class="text-sm">RSA-SHA256 over <code class="q5-inline">header.payload</code> with Keycloak's private key. The server checks it with the matching public key from the JWKS.</p>
+      <p class="text-sm">Public key: can only <em>check</em>. Private key: can <em>sign</em>, and never leaves Keycloak.</p>
+    </div></div>
+  </div>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table">
+      <thead><tr><th>Claim</th><th>What the server checks</th><th>Question it answers</th></tr></thead>
+      <tbody>
+        <tr><td class="q5-claim">signature</td><td>Valid under a key in Keycloak's JWKS, with alg <code class="q5-inline">RS256</code></td><td>Did our IdP really issue this, unaltered?</td></tr>
+        <tr><td class="q5-claim">iss</td><td>Exactly <code class="q5-inline">http://localhost:8080/realms/viviefs</code></td><td>Is it from <em>our</em> realm, not another realm or IdP?</td></tr>
+        <tr><td class="q5-claim">aud</td><td>Contains <code class="q5-inline">viviefs-sync</code></td><td>Was it issued <em>for this server</em>, not for some other app using the same Keycloak?</td></tr>
+        <tr><td class="q5-claim">exp / nbf</td><td>Now is inside the validity window, with small clock tolerance</td><td>Is it still fresh? This limits the damage of a leaked token.</td></tr>
+        <tr><td class="q5-claim">sub</td><td>Present. It becomes the Principal.</td><td>Who is it?</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-warning alert-soft">
+    <div>
+      <div class="font-semibold">Two Keycloak details P11 must get right (facts, not choices)</div>
+      <ul class="list-disc ml-5 text-sm">
+        <li><b>Audience:</b> by default a Keycloak access token's <code class="q5-inline">aud</code> is <code class="q5-inline">account</code>, not our API. The realm needs an <em>audience mapper</em> so tokens carry <code class="q5-inline">viviefs-sync</code>. Without it the <code class="q5-inline">aud</code> check either always fails or gets switched off, and switching it off is the classic mistake.</li>
+        <li><b>Issuer:</b> <code class="q5-inline">iss</code> is the URL the device used to reach Keycloak. The Android emulator normally reaches your Mac as <code class="q5-inline">10.0.2.2</code> and iOS as <code class="q5-inline">localhost</code>, which would give two different issuers. The fix (Q6) is a fixed <code class="q5-inline">KC_HOSTNAME=localhost:8080</code> plus <code class="q5-inline">adb reverse tcp:8080 tcp:8080</code>, so every platform sees one issuer.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 5 SIGN IN -->
+<section id="signin" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">5. Where the token comes from (flow 1, PKCE)</h2>
+  <p>Q5 is about <em>using</em> the token, but it helps to see where the token comes from. A mobile app cannot keep a secret: anyone can unpack the app binary. PKCE replaces the secret with a one-time random value that only the app instance which started the login knows.</p>
+  <div class="q5-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant App as Evidence app (Identity)
+  participant Br as System browser sheet
+  participant KC as Keycloak
+  participant SS as Secure store
+  App->>App: verifier = random 43+ chars, challenge = SHA256(verifier)
+  App->>Br: open /auth?client_id, redirect_uri, code_challenge
+  Br->>KC: user types username and password
+  KC-->>App: redirect viviefs://auth?code=XYZ (one-time code)
+  App->>KC: POST /token code=XYZ + verifier
+  Note over KC: SHA256(verifier) == challenge? Only the original app knows verifier.
+  KC-->>App: access_token (about 5 min), refresh_token, id_token
+  App->>SS: keep refresh_token (Keychain / Keystore)
+  </pre></div>
+  <p class="text-sm opacity-80">If another app intercepts <code class="q5-inline">code=XYZ</code> (for example by registering the same URL scheme), it still cannot trade the code for tokens, because it does not have <code class="q5-inline">verifier</code>. That is the whole point of PKCE.</p>
+</section>
+
+<!-- 6 EVERY CALL -->
+<section id="call" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">6. What happens on every call (flow 2, the heart of Q5)</h2>
+  <p>Follow one <code class="q5-inline">push("acme")</code> from the app to the log and back. Steps 1-4 happen on the device, 5-8 in the server middleware, and 9-12 in the handler.</p>
+  <div class="q5-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant SC as SyncClient
+  participant CM as Client mw
+  participant ID as Identity
+  participant AM as Server mw
+  participant AU as Authenticator
+  participant H as Handler
+  participant LS as LogStore
+  SC->>CM: Append {org: acme, ...}
+  CM->>ID: accessToken
+  ID-->>CM: eyJ... (refreshed if expired)
+  CM->>AM: POST /rpc + Bearer eyJ...
+  AM->>AM: header present?
+  AM->>AU: verify(token)
+  AU-->>AM: Principal { iss, sub }
+  AM->>H: run with Principal
+  H->>LS: sub member of acme? (Q2)
+  alt member, actor ok, lease ok
+    H->>LS: append
+    H-->>SC: AppendAck { cursor }
+  else not a member
+    H-->>SC: NotMember
+  end
+  </pre></div>
+  <p>And when the token is bad, the handler <b>never runs</b>:</p>
+  <div class="q5-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant CM as Client middleware
+  participant AM as AuthMiddleware (server)
+  participant AU as Authenticator
+  participant H as Append handler
+  CM->>AM: authorization: Bearer (expired, forged, wrong aud...)
+  AM->>AU: verify(token)
+  AU-->>AM: fails
+  AM-->>CM: Unauthenticated { reason }
+  Note over H: never invoked, so nothing reads or writes the log
+  </pre></div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Why middleware and not a check in each handler?</h3>
+      <p class="text-sm">If every handler had to remember <code class="q5-inline">yield* checkToken(...)</code>, one forgotten line would be an open door. With middleware attached to the whole <code class="q5-inline">RpcGroup</code>, a handler <em>cannot</em> run unauthenticated, and adding a new RPC to the group makes it protected by default.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Why does the handler still check membership?</h3>
+      <p class="text-sm">The middleware answers <em>who</em>. Only the handler knows <em>what</em> is being asked: which org, which execution's lease, which actor on the envelope. Authorization needs that context, so it lives next to the other server-side validation in <a class="link" href="../libs/sync/server/src/server.ts">server.ts</a>.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- 7 KEYS -->
+<section id="keys" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">7. Public keys and caching (flow 3)</h2>
+  <p>To check a signature, the server needs Keycloak's public key. It fetches the JWKS the first time, keeps it in memory, and after that verifies with no network call. When Keycloak rotates keys, new tokens carry a new <code class="q5-inline">kid</code>. The server does not know that key yet, so it re-fetches once. <code class="q5-inline">jose</code>'s <code class="q5-inline">createRemoteJWKSet</code> does all of this, including a cooldown so a flood of bad <code class="q5-inline">kid</code>s cannot make the server hammer Keycloak.</p>
+  <div class="q5-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant AU as Authenticator (server)
+  participant C as In-memory key cache
+  participant KC as Keycloak
+  AU->>C: key for kid k1?
+  C-->>AU: miss
+  AU->>KC: GET /realms/viviefs/protocol/openid-connect/certs
+  KC-->>AU: { keys: [ { kid: k1, n, e } ] }
+  AU->>C: store k1
+  Note over AU,C: next thousands of calls: hit, no network
+  AU->>C: key for kid k2? (Keycloak rotated)
+  C-->>AU: miss
+  AU->>KC: GET .../certs (at most once per cooldown)
+  KC-->>AU: { keys: [k1, k2] }
+  </pre></div>
+  <div class="alert alert-soft">
+    <span><b>Consequence:</b> if Keycloak goes down, already-signed-in devices keep syncing until their access token expires (about 5 minutes). After that, refresh fails and calls get <code class="q5-inline">Unauthenticated</code>. Local work keeps going into the outbox (offline-first is unchanged) and syncs once sign-in works again. Exact expiry and offline behaviour is a next-round question.</span>
+  </div>
+</section>
+
+<!-- 8 CODE -->
+<section id="code" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">8. The code, as it would look</h2>
+  <p>This is a sketch built on Effect's own pattern. <code class="q5-inline">repos/effect/packages/platform/node/test/fixtures/rpc-schemas.ts</code> defines an <code class="q5-inline">AuthMiddleware</code> that <code class="q5-inline">provides: CurrentUser</code>, and that is exactly our shape. The names (<code class="q5-inline">Authenticated</code>, <code class="q5-inline">Principal</code>, <code class="q5-inline">Authenticator</code>) still go through the glossary pass. The placements are proposals.</p>
+
+  <h3 class="text-xl font-semibold pt-2">8a. The wire contract gets one line: <code class="q5-inline">.middleware(Authenticated)</code></h3>
+  <p class="text-sm opacity-80"><code class="q5-inline">libs/sync/protocol/src/rpc.ts</code> (excerpt). The <code class="q5-inline">org</code> field stays, but its meaning changes from "trusted" to "selector, checked".</p>
+  <div id="diff-rpc" class="q5-code"></div>
+
+  <h3 class="text-xl font-semibold pt-4">8b. The middleware tag and the Principal: shared by device and server</h3>
+  <p class="text-sm opacity-80">Proposed: <code class="q5-inline">libs/sync/protocol/src/auth.ts</code>. <code class="q5-inline">provides: Principal</code> means: inside a handler of this group, <code class="q5-inline">yield* Principal</code> type-checks. <code class="q5-inline">requiredForClient: true</code> means: building a client without the client half of the middleware is a <b>compile error</b>. That is D52-D57's "a missing implementation is a compile error", applied to auth.</p>
+  <div id="file-auth" class="q5-code"></div>
+
+  <h3 class="text-xl font-semibold pt-4">8c. Server half: read the header, verify, provide the Principal</h3>
+  <p class="text-sm opacity-80">Proposed: <code class="q5-inline">libs/sync/server/src/auth.ts</code> and <code class="q5-inline">libs/identity</code> (the OIDC <code class="q5-inline">Authenticator</code>). <code class="q5-inline">jose</code> runs only here, on Node. The device never verifies tokens.</p>
+  <div id="file-server" class="q5-code"></div>
+
+  <h3 class="text-xl font-semibold pt-4">8d. Device half: attach the token to every outgoing call</h3>
+  <p class="text-sm opacity-80">Proposed: <code class="q5-inline">libs/sync/client/src/auth.ts</code>. <code class="q5-inline">Identity</code> is the device-side service from Q4. It returns a fresh access token and refreshes when needed.</p>
+  <div id="file-client" class="q5-code"></div>
+
+  <h3 class="text-xl font-semibold pt-4">8e. A handler: identity comes from context, never from the payload</h3>
+  <p class="text-sm opacity-80"><code class="q5-inline">libs/sync/server/src/server.ts</code> (sketch of the change to <code class="q5-inline">Append</code>).</p>
+  <div id="file-handler" class="q5-code"></div>
+
+  <h3 class="text-xl font-semibold pt-4">8f. Composition: who plugs what in</h3>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table">
+      <thead><tr><th>Where</th><th>Provides</th><th>So that</th></tr></thead>
+      <tbody>
+        <tr><td><code class="q5-inline">apps/evidence-server</code></td><td><code class="q5-inline">RpcServer.layerHttp({ group: SyncRpcs, path: '/rpc', protocol: 'http' })</code> + <code class="q5-inline">authenticatedLayer</code> + <code class="q5-inline">Authenticator.oidc(...)</code> + Node HTTP server</td><td>A phone can reach it. Every handler is wrapped. Keycloak is the IdP.</td></tr>
+        <tr><td><code class="q5-inline">apps/evidence-mobile</code></td><td><code class="q5-inline">RpcClient.layerProtocolHttp({ url })</code> + <code class="q5-inline">FetchHttpClient</code> + <code class="q5-inline">authenticatedClient</code> + <code class="q5-inline">Identity.oidc</code></td><td>Every call carries a token. Sign-in goes through <code class="q5-inline">expo-auth-session</code>.</td></tr>
+        <tr><td>P11 probe / tests</td><td>The same server layers, with <code class="q5-inline">Authenticator</code> pointed at the fake's JWKS (Q4)</td><td>The fake exercises the <em>same</em> verification code, not a bypass.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="text-sm opacity-80"><b>Why <code class="q5-inline">protocol: 'http'</code> and not the WebSocket default:</b> each call is a separate, ordinary HTTP request with its own header. That is easy to reason about, to trace in motel, and to reject. Pull is already one finite page per call (P09), so nothing needs a long-lived socket yet. WebSocket stays a later option, if live push is ever wanted.</p>
+</section>
+
+<!-- 9 STOPS -->
+<section id="stops" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">9. What each check stops</h2>
+  <p>Read this table as the P11 test plan in miniature. Every row becomes a probe check, and the "allowed" row is the positive control (cross-organization denied <em>while</em> same-organization allowed).</p>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table table-zebra">
+      <thead><tr><th>Attempt</th><th>Stopped by</th><th>Where</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Call with no token</td><td>header missing</td><td class="whitespace-nowrap">middleware</td><td><span class="badge badge-error badge-soft">Unauthenticated</span></td></tr>
+        <tr><td>Token with one payload character changed (e.g. <code class="q5-inline">sub</code>)</td><td>signature</td><td class="whitespace-nowrap">middleware</td><td><span class="badge badge-error badge-soft">Unauthenticated</span></td></tr>
+        <tr><td>Token signed with the attacker's own key, or <code class="q5-inline">alg: none</code></td><td>signature + allowed algorithms</td><td class="whitespace-nowrap">middleware</td><td><span class="badge badge-error badge-soft">Unauthenticated</span></td></tr>
+        <tr><td>Genuine token from another realm or IdP</td><td><code class="q5-inline">iss</code> (and unknown key)</td><td class="whitespace-nowrap">middleware</td><td><span class="badge badge-error badge-soft">Unauthenticated</span></td></tr>
+        <tr><td>Genuine token issued for a different app in our realm</td><td><code class="q5-inline">aud</code></td><td class="whitespace-nowrap">middleware</td><td><span class="badge badge-error badge-soft">Unauthenticated</span></td></tr>
+        <tr><td>Stolen token used an hour later</td><td><code class="q5-inline">exp</code></td><td class="whitespace-nowrap">middleware</td><td><span class="badge badge-error badge-soft">Unauthenticated</span></td></tr>
+        <tr><td>Valid user, asks for <code class="q5-inline">org: "other"</code> they don't belong to</td><td>membership (Q2, Q3)</td><td>handler</td><td><span class="badge badge-error badge-soft">NotMember</span></td></tr>
+        <tr><td>Valid member, but a datom's entity is under another org's prefix</td><td>prefix check (exists today)</td><td>handler</td><td><span class="badge badge-error badge-soft">OrgMismatch</span></td></tr>
+        <tr><td>Valid member writes <code class="q5-inline">envelope.actor = "someone-else"</code></td><td>actor == Principal (Q7)</td><td>handler</td><td><span class="badge badge-error badge-soft">ActorMismatch</span> (name TBD)</td></tr>
+        <tr><td>Membership revoked 1 minute ago, token still valid for 4 more</td><td>membership read per request (Q2)</td><td>handler</td><td><span class="badge badge-error badge-soft">NotMember</span></td></tr>
+        <tr><td>Probe whether another org has a file</td><td>blobs keyed per org (Q7)</td><td>handler</td><td><span class="badge badge-error badge-soft">NotMember</span> or own-org <code class="q5-inline">FileMissing</code></td></tr>
+        <tr class="bg-success/10"><td><b>Valid member of acme, correct actor, acme entities</b></td><td>all checks pass</td><td>-</td><td><span class="badge badge-success">AppendAck</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-info alert-soft">
+    <span><b>Pattern to notice:</b> the top six rows are <em>authentication</em>. They are the same for every RPC and live once, in middleware. The bottom rows are <em>authorization</em>. They depend on the request and live in the handler. Keeping them apart is what lets the fake (Q4) and Keycloak share everything below the middleware.</span>
+  </div>
+</section>
+
+<!-- 10 WHY -->
+<section id="why" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">10. Why this design (the choices inside Q5)</h2>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card card-border border-success/50 bg-base-200"><div class="card-body p-5">
+      <div class="flex items-center gap-2"><h3 class="font-semibold">Local verification (JWKS)</h3><span class="badge badge-success badge-sm">chosen</span></div>
+      <ul class="text-sm list-disc ml-4 space-y-1">
+        <li>No network call per request, so it is fast.</li>
+        <li>The server keeps working through short Keycloak outages.</li>
+        <li>Works with any OIDC provider unchanged (D47).</li>
+        <li><b>Cost:</b> a revoked <em>token</em> stays valid until <code class="q5-inline">exp</code>. We don't care: <em>membership</em> is checked per request from the log (Q2), so revoking access is immediate anyway.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200"><div class="card-body p-5">
+      <div class="flex items-center gap-2"><h3 class="font-semibold">Introspection</h3><span class="badge badge-ghost badge-sm">rejected</span></div>
+      <ul class="text-sm list-disc ml-4 space-y-1">
+        <li>The server asks Keycloak "is this token active?" on every call.</li>
+        <li>One more network hop per request. Keycloak becomes a hard runtime dependency of sync.</li>
+        <li>Its one advantage (instant token revocation) is already covered by per-request membership.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200"><div class="card-body p-5">
+      <div class="flex items-center gap-2"><h3 class="font-semibold">Hand-written WebCrypto</h3><span class="badge badge-ghost badge-sm">rejected</span></div>
+      <ul class="text-sm list-disc ml-4 space-y-1">
+        <li>Feasible: <code class="q5-inline">crypto.subtle.verify</code> plus base64url parsing.</li>
+        <li>But JWT validation is a well-known source of security bugs: alg confusion, <code class="q5-inline">kid</code> handling, clock skew, key caching and rotation.</li>
+        <li><code class="q5-inline">jose</code> 6.2.12: MIT, <b>zero dependencies</b>, widely audited, runs on Node, browsers and edge runtimes.</li>
+      </ul>
+    </div></div>
+  </div>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table">
+      <thead><tr><th>Other choice inside Q5</th><th>Pick</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Where the token travels</td><td>HTTP <code class="q5-inline">authorization</code> header</td><td>Standard. Keeps identity out of RPC payload schemas, so the payload stays about the domain.</td></tr>
+        <tr><td>Session cookie vs bearer token</td><td>Bearer</td><td>complyj used server sessions with cookies for a browser. A native app has no cookie jar we want to rely on, and bearer works the same on iOS, Android and web.</td></tr>
+        <tr><td>Where auth is enforced</td><td>Middleware on the whole <code class="q5-inline">SyncRpcs</code> group</td><td>Protected by default. A new RPC cannot be added unprotected by accident.</td></tr>
+        <tr><td>What handlers receive</td><td><code class="q5-inline">Principal</code> via Effect context</td><td>Identity is a service in the type, like <code class="q5-inline">LogStore</code>. Handlers cannot see raw tokens.</td></tr>
+        <tr><td>HTTP vs WebSocket</td><td>HTTP now</td><td>One request, one header, one check. WebSocket later only if live push is needed.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 11 FAKE -->
+<section id="fake" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">11. Where the fake identity fits (link to Q4)</h2>
+  <p>Q4 chose a fake that issues <b>real JWTs signed with a local key</b>. Seen through Q5, the reason is clear: the fake replaces only the <em>top</em> of the picture (who signs tokens and where the public key comes from). Everything from the HTTP header down (middleware, <code class="q5-inline">jose</code> verification, Principal, membership) is the same code in both setups.</p>
+  <div class="q5-mermaid"><pre class="mermaid">
+flowchart TB
+  subgraph SWAP["Swapped per setup"]
+    direction LR
+    F["Fake: local key pair,&lt;br/&gt;signs JWTs in-process,&lt;br/&gt;serves its own JWKS"]
+    K["Keycloak: realm viviefs,&lt;br/&gt;PKCE sign-in,&lt;br/&gt;JWKS at /certs"]
+  end
+  subgraph SAME["Identical in both"]
+    H1["authorization: Bearer header"]
+    H2["AuthMiddleware"]
+    H3["jose: signature, iss, aud, exp"]
+    H4["Principal in context"]
+    H5["Membership, actor, lease checks"]
+    H1 --> H2 --> H3 --> H4 --> H5
+  end
+  F --> H1
+  K --> H1
+  </pre></div>
+  <p class="text-sm opacity-80">The contract suite runs the same checks from section 9 against both. If the fake verified tokens differently, the suite would pass on the fake and tell us nothing about Keycloak. That is the risk ADR-0022 names: "leaking fake-identity assumptions into server checks".</p>
+</section>
+
+<!-- 12 QUIZ -->
+<section id="quiz" class="q5-section space-y-4">
+  <h2 class="text-2xl font-bold">12. Check yourself</h2>
+  <p class="opacity-80">Try to answer before opening each one.</p>
+  <div class="space-y-2">
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Alice has a valid token but is not in org <code class="q5-inline">acme</code>. She sends <code class="q5-inline">Append { org: "acme" }</code>. Does the middleware let her through?</div>
+      <div class="collapse-content text-sm"><p><b>Yes.</b> The middleware only answers "who is this?", and she really is Alice. The <b>handler</b> then rejects with <code class="q5-inline">NotMember</code>. Authentication passed, authorization failed. If you expected the middleware to stop her, that is the one distinction worth remembering from this page.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Why doesn't the device need <code class="q5-inline">jose</code>?</div>
+      <div class="collapse-content text-sm"><p>The device only <em>carries</em> the token. It never decides whether a token is valid; that is the server's job. So there is no JWT library in the Hermes bundle, which also helps the 10 MB bundle budget.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Bob's membership is removed at 10:00. His access token is valid until 10:04. What happens to his push at 10:01?</div>
+      <div class="collapse-content text-sm"><p><b>Rejected with <code class="q5-inline">NotMember</code>.</b> The token is still valid, so authentication passes. But membership is read from the log on every request (Q2), not from the token. This is why local verification's weakness (tokens can't be revoked early) doesn't matter here.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Someone copies a Keycloak token issued for a different app in our realm (say, an admin console). Which check stops it?</div>
+      <div class="collapse-content text-sm"><p><b><code class="q5-inline">aud</code>.</b> The signature and <code class="q5-inline">iss</code> are genuine; it really is from our Keycloak. But it was issued for another audience. That is also why the realm needs the audience mapper (section 4).</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Keycloak is down for 10 minutes. Does a signed-in device keep syncing?</div>
+      <div class="collapse-content text-sm"><p><b>For a few minutes, yes.</b> The server has the keys cached and the access token is still valid. Once the token expires, the device can't refresh, so calls get <code class="q5-inline">Unauthenticated</code>. Local writes continue into the outbox and sync once Keycloak is back. How the app shows this is a next-round question.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">A developer adds a new RPC <code class="q5-inline">ListMembers</code> to <code class="q5-inline">SyncRpcs</code> and forgets auth. What happens?</div>
+      <div class="collapse-content text-sm"><p>Nothing bad: the middleware is on the <em>group</em>, so the new RPC is authenticated automatically, and its handler can <code class="q5-inline">yield* Principal</code>. They still have to write the membership check. That part can't be generic, which is why the P11 probe asserts it per RPC.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Why can't the P11 probe keep using <code class="q5-inline">RpcTest</code> like P09?</div>
+      <div class="collapse-content text-sm"><p>There are no HTTP headers in an in-memory pipe, and no network between a simulator and a server. The gate says "PKCE from the simulator; membership enforced on sync". That needs the phone to send a real header to a real server. Node-only checks can still use the same layers for speed, but the gate's device checks go over HTTP.</p></div></div>
+  </div>
+</section>
+
+<footer class="pt-6 border-t border-base-content/10 text-sm opacity-70 space-y-1">
+  <p>Sources checked in this repo: <code class="q5-inline">libs/sync/protocol/src/rpc.ts</code>, <code class="q5-inline">libs/sync/server/src/server.ts</code>, <code class="q5-inline">tools/qualification/src/probes/p09-checks.ts</code>, <code class="q5-inline">repos/effect/packages/effect/src/unstable/rpc/RpcMiddleware.ts</code>, <code class="q5-inline">RpcServer.ts</code> (<code class="q5-inline">layerHttp</code>), <code class="q5-inline">RpcClient.ts</code> (<code class="q5-inline">layerProtocolHttp</code>), <code class="q5-inline">repos/effect/packages/platform/node/test/fixtures/rpc-schemas.ts</code>. complyj ADR-0009 for the Keycloak lesson. <code class="q5-inline">jose</code> 6.2.12 licence from the npm registry.</p>
+  <p>Nothing here is implemented. Names are proposals pending the glossary pass. The Keycloak token lifetime (about 5 minutes) is the realm default and will be set explicitly in the realm file.</p>
+</footer>
+</div>
+
+<!-- CODE SOURCES -->
+<script type="text/plain" id="src-rpc-old">export const Append = Rpc.make('Append', {
+  payload: {
+    org: Schema.String,
+    basis: Schema.Number,
+    envelope: Envelope,
+    datoms: Schema.Array(Datom),
+  },
+  success: AppendAck,
+  error: Rejection,
+})
+
+export const SyncRpcs = RpcGroup.make(Append, Pull, PutBlob)
+</script>
+<script type="text/plain" id="src-rpc-new">export const Append = Rpc.make('Append', {
+  payload: {
+    org: Schema.String, // selector: the server checks membership before use
+    basis: Schema.Number,
+    envelope: Envelope,
+    datoms: Schema.Array(Datom),
+  },
+  success: AppendAck,
+  error: Rejection, // now also NotMember, ActorMismatch
+})
+
+export const SyncRpcs = RpcGroup.make(Append, Pull, PutBlob, CompleteDeferred)
+  .middleware(Authenticated) // every RPC in the group: token required
+</script>
+<script type="text/plain" id="src-auth">import * as Context from 'effect/Context'
+import * as Schema from 'effect/Schema'
+import * as RpcMiddleware from 'effect/unstable/rpc/RpcMiddleware'
+
+/** The verified caller. Handlers read this, never the payload. */
+export class Principal extends Context.Service<
+  Principal,
+  {
+    readonly issuer: string
+    readonly subject: string
+    readonly roles: ReadonlyArray<string> // carried, not enforced (Q1)
+  }
+>()('viviefs/identity/Principal') {}
+
+export class Unauthenticated extends Schema.TaggedError<Unauthenticated>()(
+  'Unauthenticated',
+  { reason: Schema.Literals(['missing', 'invalid', 'expired']) },
+) {}
+
+/** Server: turns a header into a Principal. Client: must attach the header. */
+export class Authenticated extends RpcMiddleware.Service<
+  Authenticated,
+  { provides: Principal }
+>()('viviefs/sync/Authenticated', {
+  error: Unauthenticated,
+  requiredForClient: true,
+}) {}
+</script>
+<script type="text/plain" id="src-server">import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
+
+// libs/identity: the OIDC Authenticator (the fake differs only in issuer and keys)
+export const oidcAuthenticator = (options: {
+  readonly issuer: string // http://localhost:8080/realms/viviefs
+  readonly audience: string // viviefs-sync
+}) => {
+  const keys = createRemoteJWKSet(
+    new URL(`${options.issuer}/protocol/openid-connect/certs`),
+  ) // fetched once, cached, re-fetched on an unknown kid
+  return Authenticator.of({
+    verify: (token) =>
+      Effect.tryPromise({
+        try: () =>
+          jwtVerify(token, keys, {
+            issuer: options.issuer,
+            audience: options.audience,
+            algorithms: ['RS256'],
+          }),
+        catch: () => new Unauthenticated({ reason: 'invalid' }),
+      }).pipe(
+        Effect.map(({ payload }) => ({
+          issuer: options.issuer,
+          subject: payload.sub ?? '',
+          roles: [],
+        })),
+      ),
+  })
+}
+
+// libs/sync/server: the middleware, one per server
+export const authenticatedLayer = Layer.effect(
+  Authenticated,
+  Effect.gen(function* () {
+    const authenticator = yield* Authenticator
+    return Authenticated.of((handler, { headers }) =>
+      Effect.gen(function* () {
+        const header = headers['authorization'] ?? ''
+        if (!header.startsWith('Bearer ')) {
+          return yield* new Unauthenticated({ reason: 'missing' })
+        }
+        const principal = yield* authenticator.verify(header.slice(7))
+        return yield* Effect.provideService(handler, Principal, principal)
+      }),
+    )
+  }),
+)
+</script>
+<script type="text/plain" id="src-client">import * as Effect from 'effect/Effect'
+import * as Headers from 'effect/unstable/http/Headers'
+import * as RpcMiddleware from 'effect/unstable/rpc/RpcMiddleware'
+
+export const authenticatedClient = RpcMiddleware.layerClient(
+  Authenticated,
+  ({ request, next }) =>
+    Effect.gen(function* () {
+      const identity = yield* Identity
+      const token = yield* identity.accessToken // refreshes when expired
+      return yield* next({
+        ...request,
+        headers: Headers.set(request.headers, 'authorization', `Bearer ${token}`),
+      })
+    }),
+)
+</script>
+<script type="text/plain" id="src-handler">Append: (request: AppendRequest) =>
+  Effect.gen(function* () {
+    const principal = yield* Principal // from the middleware, cannot be forged
+    yield* requireMember(principal, request.org) // Q2 + Q3: NotMember
+    if (request.envelope.actor !== principal.subject) {
+      return yield* new ActorMismatch({ actor: request.envelope.actor }) // Q7
+    }
+    return yield* accept(catalog, request, { store, sql, blobs }) // P09 checks, unchanged
+  }).pipe(asRpcError, Effect.withSpan('SyncRpc.Append'))
+</script>
+
+<script type="module">
+  import { File, FileDiff } from "https://esm.sh/@pierre/diffs@1.2.10?bundle";
+  const theme = { light: "github-light", dark: "github-dark" };
+  const options = { theme, themeType: "dark", overflow: "wrap" };
+  const src = (id) => document.getElementById(id).textContent.replace(/^\n/, "");
+  new FileDiff({ ...options, diffStyle: "split" }).render({
+    containerWrapper: document.querySelector("#diff-rpc"),
+    oldFile: { name: "libs/sync/protocol/src/rpc.ts", contents: src("src-rpc-old") },
+    newFile: { name: "libs/sync/protocol/src/rpc.ts", contents: src("src-rpc-new") },
+  });
+  const files = [
+    ["#file-auth", "libs/sync/protocol/src/auth.ts", "src-auth"],
+    ["#file-server", "libs/sync/server/src/auth.ts", "src-server"],
+    ["#file-client", "libs/sync/client/src/auth.ts", "src-client"],
+    ["#file-handler", "libs/sync/server/src/server.ts", "src-handler"],
+  ];
+  for (const [sel, name, id] of files) {
+    new File(options).render({
+      containerWrapper: document.querySelector(sel),
+      file: { name, contents: src(id) },
+    });
+  }
+</script>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) { paint.clearRect(0,0,1,1); paint.fillStyle="#000"; paint.fillStyle=color; paint.fillRect(0,0,1,1); return paint.getImageData(0,0,1,1).data; }
+  function compositeRgba(f, b) {
+    const fa = f[3]/255, ba = b[3]/255, a = fa + ba*(1-fa);
+    if (a === 0) return [0,0,0,0];
+    return [(f[0]*fa + b[0]*ba*(1-fa))/a, (f[1]*fa + b[1]*ba*(1-fa))/a, (f[2]*fa + b[2]*ba*(1-fa))/a, a*255];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rb = toRgba(getComputedStyle(root).backgroundColor);
+    const bb = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0,0,0,0];
+    const [r,g,b,a] = compositeRgba(bb, rb);
+    if (a > 0) return (0.2126*r + 0.7152*g + 0.0722*b)/255 < 0.5;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied, rendering = false, queued = false;
+  function queueRender() { queued = true; if (rendering) return; void render(); }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "strict" });
+        for (const { el, src } of diagrams) { el.removeAttribute("data-processed"); el.textContent = src; }
+        try { await mermaid.run({ nodes: diagrams.map((d) => d.el) }); } catch (e) { console.error("Mermaid render failed:", e); return; }
+        applied = theme;
+      }
+    } finally { rendering = false; if (queued) queueRender(); }
+  }
+  if (document.readyState === "complete") queueRender(); else window.addEventListener("load", queueRender, { once: true });
+  const obs = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) if (el) obs.observe(el, { attributes: true, attributeFilter: ["data-theme","class","style"] });
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>
