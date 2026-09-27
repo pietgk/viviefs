@@ -25,6 +25,16 @@ encrypted with a per-subject key; erasure destroys the key; projections show
 "erased". Bulky personal files are content-hashed blobs that can be deleted.
 The log stays immutable and syncable.
 
+Design inputs from the P11 grilling (2026-09-27,
+[ADR-0022](0022-identity-and-organization-isolation.md)):
+
+- The subject is the person: one per human, across organizations. Erasing a
+  person destroys one key and affects every organization at once.
+- Anything that hashes the log (a future tamper-evidence chain) hashes the
+  stored ciphertext, never plaintext, so erasure does not break it.
+- Local deletion of an organization's copy after a revoked membership is
+  decided here.
+
 P12 and P13 are follow-on, not foundation closure.
 
 ## Trade-offs

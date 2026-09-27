@@ -1,0 +1,152 @@
+# P11 design review: identity
+
+Review before the gate runs. This page does not pass P11 and does not edit the ledger. It records the P11 grilling (2026-09-27), splits the claim into checks that can each fail, and lists the build steps.
+
+| Part | State on 2026-09-27 |
+| --- | --- |
+| Grilling (Q1-Q20) | agreed |
+| Glossary and ADR-0022 amendment | written |
+| `libs/identity`, server boundary, Keycloak lab, device sign-in | not started |
+| Probe (`p11.ts`) and evidence note | not started |
+| Gate P11 | not run |
+
+Teaching pages written during the grilling (committed under `.lavish/`; step 7 decides their long-term home):
+
+- [How a request proves who sent it](../../.lavish/p11-q5-token-transport.html) (Q5)
+- [Who can tamper with the datom log, and what stops them](../../.lavish/p11-log-tampering.html) (Q14, Q15)
+
+## 1. The claim
+
+From [06-qualification-gates.md](../plan/bootstrap/06-qualification-gates.md):
+
+> **P11 Identity.** Fake and OIDC implementations satisfy one identity contract. Keycloak on Apple Container with PKCE from iOS, Android and web; membership enforced on sync, lease and commands. Positive control: cross-organization access denied while same-organization access allowed.
+
+Decisions behind it: D18 (server-side isolation, never trust a client org id) and D47 (OIDC, Keycloak locally, PKCE on device, a fake for early gates). ADR: [0022](../adr/0022-identity-and-organization-isolation.md).
+
+| # | Check | Where | How it can fail |
+| --- | --- | --- | --- |
+| 1 | **Token contract**: the fake issuer and Keycloak both pass one suite. A valid token gives a caller. A missing token, changed payload, `alg: none`, wrong `iss`, wrong `aud` or expired token gives `TokenRejected` | Node | a check differs between fake and Keycloak, or a bad token passes |
+| 2 | **PKCE sign-in**: a user signs in at Keycloak and the token authenticates a push | iOS simulator, Android emulator, web | redirect, token exchange or issuer differs per platform |
+| 3 | **Positive control**: a member of `acme` gets `AppendAck`; the same token asking for `other` gets `MembershipMissing`, on `Append`, `Pull`, `PutBlob` and `CompleteDeferred` | Node, and one device run | a non-member is served, or a member is refused |
+| 4 | **Lease**: a non-member's lease datom is refused; the member's lease is accepted | Node | lease fencing ignores membership |
+| 5 | **Actor**: an envelope naming another person, or `server`, gives `ActorMismatch` | Node | the envelope's actor is trusted |
+| 6 | **Server-only attributes**: a client changeset that writes membership gives `ServerOnlyAttribute` | Node | a member can grant membership |
+| 7 | **Revocation**: after `revokeMembership`, the next call with a still-valid token gives `MembershipMissing`; that org's outbox rows become `rejected` and the local copy stays read-only | Node | revocation waits for token expiry |
+| 8 | **Acceptance time**: the server stamps `acceptedAt` on accept, `Pull` returns it, and an outbox envelope has none | Node | the device can set it, or it is lost |
+| 9 | **Blobs per organization**: the same hash in two orgs is stored independently; `FileMissing` reflects only the caller's org | Node | one org learns whether another holds a file |
+| 10 | **Sign-in needed**: a failed refresh keeps the outbox; signing in again resumes sync | iOS, Android, web | work is discarded, or sync loops on a dead session |
+| 11 | **Database per person**: A signs out, B signs in and sees none of A's data or outbox; A signs back in and finds both intact | iOS, Android, web | data or outbox leaks between people on one device |
+
+Not a gate check, a verify rule: only tests, `tools/` and dev composition may import the fake issuer.
+
+## 2. The picture
+
+```mermaid
+flowchart TB
+  subgraph DEV["Device"]
+    SS["SignInSession<br/>tokens, refresh, sign out"]
+    SC["SyncClient"]
+    CM["BearerAuthentication<br/>client half: adds the header"]
+    SC --> CM
+    SS -. "access token" .-> CM
+  end
+  KC["Identity provider<br/>Keycloak on Apple Container"]
+  subgraph SRV["apps/evidence-server"]
+    BA["BearerAuthentication<br/>server half"]
+    TV["TokenVerifier<br/>jose, cached JWKS"]
+    PM["(iss, sub) to Person<br/>server-side table"]
+    H["Handlers<br/>membership, actor, lease,<br/>server-only attributes, acceptedAt"]
+    LOG[("Log<br/>O{org}/M{person} memberships")]
+    BA --> TV
+    BA --> PM
+    BA -- "Caller" --> H
+    H --> LOG
+  end
+  SS -- "PKCE sign-in" --> KC
+  CM -- "HTTP, Bearer token" --> BA
+  TV -- "public keys" --> KC
+```
+
+## 3. Decisions
+
+Grilling 2026-09-27. Each answer is the agreed recommendation unless noted.
+
+| Q | Question | Decision |
+| --- | --- | --- |
+| Q1 | Roles in P11 | Membership only is enforced. Roles are carried in the caller and not enforced. Read-side roles and partial sync stay deferred. |
+| Q2 | Where membership lives | Datoms in the organization's log, written only by the server and read on every request. The identity provider only authenticates. |
+| Q3 | `org` on the wire | Kept as a selector. The server checks membership before using it; failure is `MembershipMissing`. |
+| Q4 | Contract and fake | Two services under the identity pattern: `SignInSession` (device) and `TokenVerifier` (server), with one contract suite. The fake issuer signs real JWTs with a local key and goes through the same verification. Only tests, `tools/` and dev composition may import it. |
+| Q5 | Transport and token travel | Effect RPC over HTTP (`protocol: 'http'`) in `apps/evidence-server`. RPC middleware reads `authorization: Bearer`, verifies locally against cached JWKS with `jose` (MIT, no dependencies), and provides the caller. No introspection. |
+| Q6 | Platforms | iOS simulator, Android emulator and web. One issuer on every platform: `KC_HOSTNAME=localhost:8080` plus `adb reverse`. |
+| Q7 | Commands, leases, blobs | `CompleteDeferred` becomes an authenticated RPC. Leases are covered by the membership check on `Append`. Blobs are keyed per organization. The envelope's actor must be the caller's person. |
+| Q8 | Who a changeset names | A person: one per human, an opaque id minted by the server. The server maps each identity-provider subject `(iss, sub)` to it, so history survives a change of identity provider. |
+| Q9 | Token storage | iOS and Android: refresh token in `expo-secure-store`, scope `offline_access`. Web: in memory only for P11; production web sessions go with production hosting. Never `localStorage`. |
+| Q10 | Expiry while offline | Local writes need no token. Only push, pull and upload do. Network failure retries; a failed refresh (`invalid_grant`) enters "sign-in needed" and keeps the outbox. |
+| Q11 | Two people on one device | One local database per person. Signing out closes it; "remove this account from this device" deletes it. The device id stays per install. |
+| Q12 | Local copy after `MembershipMissing` | Read-only and marked revoked. That org's outbox rows become `rejected` and are kept. Local deletion is decided with P13. |
+| Q13 | Trace projector on devices | Not in P11. Wired with the first consumer app. |
+| Q14 | Server acceptance time | In P11. The server stamps it on every accepted changeset; it syncs as a server-authored fact. |
+| Q15 | Tamper-evidence of stored history, signed changesets | Deferred to before the first consumer app that makes audit claims, in its own grilling together with P13. Direction: hash chain with device-held checkpoints first; signatures only if a consumer needs proof against the operator. Constraints from now: no compaction of the server log, and crypto-shredding hashes stored ciphertext. |
+| Q16 | Where the person lives | Superseded. A per-organization person entity was proposed and withdrawn: it contradicted Q8 and protected against a leak that does not exist (members of one org cannot read another org's log). The person is an id, not an entity in any org. Membership is the entity `O{org}/M{person}`. |
+| Q17 | Who grants and revokes membership | Only the server operator, through server-side `grantMembership` and `revokeMembership` outside the device RPC group. They mint the person if missing. The lab seed pins Keycloak user ids in the realm file. |
+| Q18 | How "server-only" is expressed | A flag on the attribute in the catalog, next to `policy` and `defining`. A client changeset containing one is rejected whole with `ServerOnlyAttribute`. |
+| Q19 | Where the acceptance time lives | A field on the envelope, `acceptedAt`, empty until the server accepts. |
+| Q20 | Names | Section 4. |
+
+## 4. Names
+
+Checked against the repo's conventions: services are role nouns (`LogStore`, `SyncClient`, `TraceSink`), errors name a thing and its condition (`FileMissing`, `OrgMismatch`, `ManifestRejected`). Glossary entries are in [CONTEXT.md](../../CONTEXT.md).
+
+| Name | Kind | Meaning |
+| --- | --- | --- |
+| `SignInSession` | device service | The device's session with the identity provider: sign in, current access token, refresh, sign out, state |
+| `TokenVerifier` | server service | Checks an access token and returns the caller; implementations `oidc` and the fake |
+| `FakeIssuer` | test implementation | In-process issuer with a local key pair; signs real JWTs and serves its own JWKS |
+| `Caller` | per-request context value | The verified requester: person, `iss`, `sub`, roles carried |
+| `BearerAuthentication` | RPC middleware | Requires and verifies a bearer token on every RPC in the group; provides `Caller` |
+| `Person` | id | One per human, across organizations; what `envelope.actor` holds |
+| `Membership` | entity `O{org}/M{person}` | A person's right to act in one organization; server-only |
+| `TokenRejected` `{ reason }` | error | Token missing, invalid or expired; the handler never ran |
+| `MembershipMissing` `{ org }` | error | The caller is not, or no longer, a member of the requested org |
+| `ActorMismatch` `{ actor, caller }` | error | The envelope's actor is not the caller's person |
+| `ServerOnlyAttribute` `{ attribute }` | error | A client changeset writes an attribute only the server may write |
+| `acceptedAt` | envelope field | Server time of acceptance |
+
+Two deliberate choices:
+
+- **No `Identity` class.** D47 says "behind an `Identity` service". The pattern and the lib keep the name identity; the service splits into `SignInSession` and `TokenVerifier`, because one device-side and one server-side role do not fit one name. Recorded in ADR-0022.
+- **No `Actor` type or entity.** `actor` stays as the envelope field (a column of the pinned `changesets` table) and `ActorMismatch` names that field, like `OrgMismatch` names `org`. "Actor" is not used for anything else, so it keeps its XState meaning.
+
+## 5. Tampering: what P11 claims and what it does not
+
+| Tamper point | After P11 |
+| --- | --- |
+| A user edits the log on their own device | Only that device is misled; the server re-validates every push |
+| A client crafts a changeset (other actor, other org, self-granted membership) | Refused: `ActorMismatch`, `MembershipMissing`, `OrgMismatch`, `ServerOnlyAttribute` |
+| Bytes change in flight | Manifest hash; TLS is production hosting |
+| A device claims a past time | Kept as the device's claim; `acceptedAt` records when the server received it |
+| An operator or database admin edits stored rows | **Not detected.** Stored history is trusted, not provable, until Q15 is decided |
+
+## 6. Out of scope for P11
+
+Display names and profiles, roles in use, invitations, self-service membership, identity-provider migration tooling, local deletion after revocation, tamper-evidence, the trace projector on devices, production web sessions, TLS. Each has a decision point in [10-open-items-and-risks.md](../plan/bootstrap/10-open-items-and-risks.md).
+
+## 7. Build steps
+
+Each step ends with a commit and a green `pnpm verify`.
+
+1. Glossary, ADR-0022 amendment, this review, open items (this commit).
+2. `libs/identity`: `Caller`, `TokenVerifier` with `oidc` (`jose`) and `FakeIssuer`, the contract suite on the fake. Module-boundary rule for the fake.
+3. Log and protocol: `acceptedAt` on the envelope in every log store, the catalog's server-only flag, `Membership`, the person table, `grantMembership` / `revokeMembership`, `BearerAuthentication`, the new errors, blobs per org, `CompleteDeferred` as an RPC. P09's checks move onto the authenticated protocol.
+4. `apps/evidence-server`: HTTP composition with `TokenVerifier.oidc`.
+5. Keycloak lab: image pinned by digest in `lab-images.json` (26.7.3, the digest complyj pinned), realm file with pinned users and an audience mapper, the contract suite against Keycloak.
+6. Device: `SignInSession` over `expo-auth-session` and `expo-secure-store`, the client half of `BearerAuthentication`, one database per person, the sign-in-needed state.
+7. `p11.ts` with checks 1-11, the evidence note with span review, ADR-0022 Observed.
+8. A sequential P01-P11 run on one committed tree.
+
+## 8. Consequences for other gates
+
+- The ledger fingerprint covers every lib and app the probes use, so any P11 change marks P01-P10 stale. Step 8 re-runs them in one sequential run.
+- `libs/identity` and `apps/evidence-server` are not yet in `inputsFingerprint()`. Step 2 adds them.
+- The `journal.ts` comment fix waits for the first engine change. P11 is not expected to change the engine.

@@ -24,3 +24,4 @@ From P09 on, the dated note includes a Review section: a reading order, the prob
 - [2026-09-27-bundle-size.md](2026-09-27-bundle-size.md) - Bundle size: budget, and why the app grew since P01 (not a gate)
 - [p08-comparison.md](p08-comparison.md) - P08 review: IntentComposer in effect-machine
 - [p10-design-review.md](p10-design-review.md) - P10 design review before the gate runs (does not pass a gate)
+- [p11-design-review.md](p11-design-review.md) - P11 grilling record and design review before the gate runs (does not pass a gate)

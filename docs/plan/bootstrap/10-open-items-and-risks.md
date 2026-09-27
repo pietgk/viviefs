@@ -17,7 +17,7 @@ the named gate.
 
 **Named slot, empty** (create the project, ADR or gate id; do not invent the mechanism):
 
-- Identity. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
+- Identity: being filled by P11. The grilling (2026-09-27) is recorded in [p11-design-review.md](../../evidence/p11-design-review.md) and ADR-0022. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
 - Sampling of durable spans: the envelope records `sampled`; the trace projector does not honour it yet (P10). Decided with the production telemetry backend.
 - Quarantine of user content after a lost lease (D15). Direction agreed 2026-09-27: a human-conflict entry (D34) that names the stranded content, resolved by a command (attach to the execution, keep as standalone evidence, or discard). Mechanism and UX in its own grilling and gate after P11; not needed for P11.
 
@@ -44,7 +44,7 @@ the named gate.
 | A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 (measured 2026-09-20: 646 lines in `engine.ts`; seven kill boundaries on sqlite-node and PGlite; memory engine failed durability; upload hash is computed before the activity, ADR-0012) |
 | `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 (measured 2026-09-20/21: projector keys and capture-screen query atoms, ADR-0019) |
 | Traces derived from the log are lossless and stable across replays, in motel, Jaeger and otel-lgtm | D32, D45' | P10 (measured 2026-09-26 on sqlite-node and PGlite: one trace, entity-keyed ids, one span per attempt after a kill, retry linked, backlog exported after a disabled trace cursor; host only, ADR-0018) |
-| Keycloak PKCE flow from Expo on Apple Container | complyj qualified Keycloak, not with Expo | P11 |
+| Keycloak PKCE flow from Expo on Apple Container, on iOS, Android and web | complyj qualified Keycloak, not with Expo | P11 |
 
 ## Closed in this pass
 
@@ -68,18 +68,22 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 
 | Item | What it is | Decide when | Agreed direction |
 |---|---|---|---|
-| Production hosting, deployment topology, production telemetry backend | Where the server runs; which backend replaces the local lab sinks | The first consumer app leaves the lab | Decide then, together with sampling of durable spans |
+| Production hosting, deployment topology, production telemetry backend | Where the server runs; which backend replaces the local lab sinks; TLS; how the web app keeps its sign-in session (P11 keeps it in memory) | The first consumer app leaves the lab | Decide then, together with sampling of durable spans |
 | Engine scale-out (Effect Cluster), multi-runner server | Server-side workflows on more than one runner | A real server-side workflow load or an availability need | Keep; the server never runs device workflows (D14) |
 | Product apps into viviefs as app pairs (D55) | Whether BirVana, ERP and GRC live here | Before the first consumer app | Decide after P11-P14 |
 | Encryption at rest per consumer app (D50) | Which apps turn on SQLCipher | At the start of an app that holds sensitive data | Per app, once P12 has qualified SQLCipher |
 | Docs site generator (Starlight assumed; Twoslash or equivalent for sample checks) | Work order step 7: docs and teaching | Right after P11 | Step 7 runs right after P11, before P12-P14 |
 | Quarantine after a lost lease (D15) | User content stranded when a device loses its lease | After P11, in its own grilling | Human-conflict entry (D34) resolved by a command; its own gate. P09 already rejects the stale journal write before it enters the device log; user content stays in the log |
-| Partial sync (prefix subscriptions), history consolidation, client-side data access on a full-org replica | Devices hold the whole organization's log | When roles restrict data within an organization, or a replica grows too large | Raise in the P11 grilling: roles inside an organization bring these forward. Server isolation (D18) stays authoritative |
+| Partial sync (prefix subscriptions), history consolidation, client-side data access on a full-org replica | Devices hold the whole organization's log | When roles restrict data within an organization, or a replica grows too large | Raised in the P11 grilling (2026-09-27): roles are carried, not enforced, so nothing is brought forward. Server isolation (D18) stays authoritative |
 | React Native Storybook | Stories for native-only components | The first native-only component | Keep |
 | Physical devices, and a visible local-notification tap that completes a deferred | Everything so far ran on simulators; P07 completed the deferred from JavaScript, the banner tap was not observed (ADR-0013) | Before the first consumer app | One real-phone run on iOS and Android covering both |
+| Tamper-evidence of stored history, and signed changesets | An operator or database admin can edit the server's rows undetected; devices trust what they pull | Before the first consumer app that makes audit claims, in its own grilling, together with P13 | Hash chain over accepted changesets with device-held checkpoints first; signed changesets only if a consumer needs proof against the operator. Until then the server log is never compacted, and crypto-shredding hashes stored ciphertext (P11 grilling Q15) |
+| Roles in use, invitations, self-service membership | P11 enforces membership only; the operator grants and revokes | The first consumer app that needs a role | Roles are already carried in the caller; the first enforced role comes with its consumer |
+| Local deletion after a revoked membership | P11 keeps the organization's copy read-only on the device | With P13 | Deletion is a courtesy, not security; decide it with erasure |
+| Identity provider migration | Moving people to a new identity provider | When a consumer changes provider | The server's `(iss, sub)` to person table already allows it; tooling then |
 | Datom `op` as `TEXT` (`assert` / `retract`) or a boolean | Storage cost next to `e`, `a`, `v`; a change re-runs P04-P09 | When a storage or performance budget exists | Keep (deferred 2026-09-22) |
-| The trace projector on iOS, Android and web | P10 ran it on the host; P03 measured OTLP from Hermes | When the evidence app or a consumer app runs the projector | Wire it with P11 or the first consumer app, and extend a device run to check it |
-| `journal.ts` comment "journals written before 2026-09-27" | Should name commit `a067a0d6f` | The first engine change in P11 | Fix then; touching it now marks the closure passes stale |
+| The trace projector on iOS, Android and web | P10 ran it on the host; P03 measured OTLP from Hermes | When the evidence app or a consumer app runs the projector | Not in P11 (P11 grilling). Wire it with the first consumer app, and extend a device run to check it |
+| `journal.ts` comment "journals written before 2026-09-27" | Should name commit `a067a0d6f` | The first engine change | Fix then; P11 is not expected to change the engine |
 
 ## Risks
 

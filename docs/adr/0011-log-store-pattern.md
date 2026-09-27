@@ -36,6 +36,12 @@ refuses unknown attributes with a typed upgrade error.
 Snapshots and compaction only past a horizon every device has acknowledged.
 Finished workflow journals archive to the server.
 
+The server's log is never compacted (P11 grilling, 2026-09-27). It is the
+audit trail, and a future hash chain over accepted changesets must be able to
+cover all of it. This holds until tamper-evidence is decided, before the first
+consumer app that makes audit claims ([ADR-0022](0022-identity-and-organization-isolation.md)).
+Device compaction is unaffected.
+
 Analytics is a projection to Parquet or DuckLake queried by DuckDB. DuckDB is
 never the durable log. Effect v4 has no DuckDB `SqlClient`.
 

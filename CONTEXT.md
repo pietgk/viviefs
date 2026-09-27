@@ -86,9 +86,19 @@ per attribute policy.
 
 **Envelope**:
 One fixed-shape record per changeset, keyed by `cs`: actor, device, lease epoch,
-trace context, command name. Stored in the `changesets` table, not as datoms; a
-self-committed datom has its own.
+trace context, command name, acceptance time. Stored in the `changesets` table,
+not as datoms; a self-committed datom has its own.
 _Avoid_: headers, metadata datoms
+
+**actor**:
+The envelope field naming who authored a changeset: a person, or the server. A
+field name only; there is no Actor entity or type.
+_Avoid_: Actor as an entity or type name, author
+
+**Acceptance time**:
+The server's clock time when it accepted a changeset, recorded on its envelope.
+Unlike `tx`, not a device claim.
+_Avoid_: timestamp, received time
 
 **HLC**:
 Hybrid logical clock `(pt, c)` that mints every `tx`: server-corrected physical
@@ -121,6 +131,7 @@ Node, Postgres).
 **Organization**:
 The `O{org}/` root of the id tree and the isolation unit. The server enforces
 membership; the first sync protocol replicates the whole organization.
+_Avoid_: tenant, org account
 
 **Command**:
 A pure Effect function `(readModel, intent) -> changeset or DomainError`, shared by
@@ -167,6 +178,61 @@ An attribute marked so its values are encrypted per subject for crypto-shredding
 **Crypto-shredding**:
 Erasure by destroying the per-subject key so personal values become unreadable
 while the log stays intact.
+
+**Tamper-evidence**:
+The property that a change to accepted history can be detected afterwards. Not
+provided yet: stored history is trusted, not provable.
+_Avoid_: tamper-proof, immutable storage
+
+## Identity
+
+**Identity provider**:
+The external service that owns logins and issues access tokens: Keycloak in the
+lab, any OIDC provider in production. It authenticates; it does not hold
+membership.
+_Avoid_: auth server, IdP (in code)
+
+**Access token**:
+A short-lived signed token that proves who is calling, sent with every request
+to the server.
+_Avoid_: session, API key
+
+**Sign-in session**:
+The device's relationship with the identity provider: signed out, signed in, or
+sign-in needed. The only thing called a session.
+_Avoid_: login state
+
+**Token verifier**:
+The server-side check that turns an access token into a caller.
+_Avoid_: authenticator
+
+**Fake issuer**:
+The test implementation of the identity provider: it signs real access tokens
+with a local key. Allowed only in tests, tools and dev composition.
+_Avoid_: mock identity, stub auth
+
+**Bearer authentication**:
+The server boundary that requires and verifies an access token before any
+handler runs. Authentication only; authorization is membership, actor and lease.
+_Avoid_: auth middleware
+
+**Caller**:
+The verified requester of one server request: a person and their identity
+provider subject.
+_Avoid_: principal, current user, session
+
+**Person**:
+One human, across all organizations, identified by an opaque id the server
+mints and maps from identity provider subjects.
+_Avoid_: user, member, Actor
+
+**Membership**:
+A person's right to act in one organization, granted and revoked only by the
+server.
+_Avoid_: access, role (roles are carried, not enforced yet)
+
+**Server-only attribute**:
+An attribute that only server-authored changesets may write, such as membership.
 
 ## Durable execution
 
