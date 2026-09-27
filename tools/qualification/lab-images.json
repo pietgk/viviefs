@@ -12,6 +12,12 @@
       "resolvedFrom": "docker.io/grafana/otel-lgtm:0.33.1 on 2026-09-24",
       "license": "Apache-2.0 for the image repository; bundles Grafana, Loki, Tempo and Pyroscope under AGPL-3.0. Run as a local lab viewer only: not a dependency, never shipped (P10 choice G).",
       "gap": "P10 check 5: the otel-lgtm telemetry sink (D45')"
+    },
+    "keycloak": {
+      "image": "quay.io/keycloak/keycloak@sha256:a9a5820e4daea7dec93adfb631fc386c93cb57d6572cddd5eb06d4acd629794b",
+      "resolvedFrom": "quay.io/keycloak/keycloak:26.7.3 (same digest as complyj tools/qualification/artifacts.json)",
+      "license": "Apache-2.0",
+      "gap": "P11: the OIDC identity provider for the token contract and device PKCE sign-in (D47)"
     }
   }
 }

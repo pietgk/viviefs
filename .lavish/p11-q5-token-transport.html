@@ -35,9 +35,23 @@
     <span class="badge badge-primary">P11 grilling</span>
     <span class="badge badge-outline">Q5 - transport and token travel</span>
     <span class="badge badge-soft badge-success">Decided 2026-09-27</span>
-    <span class="badge badge-soft badge-warning">Not built; names pending glossary pass</span>
+    <span class="badge badge-soft badge-info">Built in P11 steps 2-4</span>
   </div>
   <h1 class="text-4xl font-bold leading-tight">How a request proves who sent it</h1>
+  <div class="alert alert-warning alert-soft">
+    <div>
+      <div class="font-semibold">Names on this page predate the naming pass (Q20). The code uses:</div>
+      <ul class="list-disc ml-5 text-sm mt-1">
+        <li><code class="q5-inline">Principal</code> is now <code class="q5-inline">Caller</code> (person, provider account, roles)</li>
+        <li><code class="q5-inline">AuthMiddleware</code> / <code class="q5-inline">Authenticated</code> is now <code class="q5-inline">BearerAuthentication</code> (<a class="link" href="../libs/sync/protocol/src/rpc.ts">rpc.ts</a>)</li>
+        <li><code class="q5-inline">Authenticator</code> is now <code class="q5-inline">TokenVerifier</code>, returning a <code class="q5-inline">ProviderAccount</code> (<a class="link" href="../libs/identity/src/token-verifier.ts">token-verifier.ts</a>)</li>
+        <li>The device-side <code class="q5-inline">Identity</code> is now <code class="q5-inline">SignInSession</code></li>
+        <li><code class="q5-inline">Unauthenticated</code> is now <code class="q5-inline">TokenRejected</code>; <code class="q5-inline">NotMember</code> is now <code class="q5-inline">MembershipMissing</code></li>
+      </ul>
+      <div class="text-sm mt-1">The code sketches below show the shape; the linked files are the truth. See <a class="link" href="../docs/evidence/p11-design-review.md">the P11 design review</a> for every decision.</div>
+    </div>
+  </div>
+
   <p class="text-lg opacity-80">Q5 answers one question: <em>when a device calls the server, how does the server know which person is calling, and how is that fact handed to the code that decides what they may do?</em> This page builds the answer from the ground up: the parts, the token, the three flows, the code, and what each check stops.</p>
   <div class="alert alert-info alert-soft">
     <div>
@@ -228,7 +242,7 @@ flowchart TB
     <div>
       <div class="font-semibold">Two Keycloak details P11 must get right (facts, not choices)</div>
       <ul class="list-disc ml-5 text-sm">
-        <li><b>Audience:</b> by default a Keycloak access token's <code class="q5-inline">aud</code> is <code class="q5-inline">account</code>, not our API. The realm needs an <em>audience mapper</em> so tokens carry <code class="q5-inline">viviefs-sync</code>. Without it the <code class="q5-inline">aud</code> check either always fails or gets switched off, and switching it off is the classic mistake.</li>
+        <li><b>Audience:</b> by default a Keycloak access token does not name our API in <code class="q5-inline">aud</code>. Measured in P11 step 5: without a mapper, Keycloak 26.7.3 left <code class="q5-inline">aud</code> out entirely (it can also say <code class="q5-inline">account</code>, depending on scopes). The realm needs an <em>audience mapper</em> so tokens carry <code class="q5-inline">viviefs-sync</code>. Without it the <code class="q5-inline">aud</code> check either always fails or gets switched off, and switching it off is the classic mistake.</li>
         <li><b>Issuer:</b> <code class="q5-inline">iss</code> is the URL the device used to reach Keycloak. The Android emulator normally reaches your Mac as <code class="q5-inline">10.0.2.2</code> and iOS as <code class="q5-inline">localhost</code>, which would give two different issuers. The fix (Q6) is a fixed <code class="q5-inline">KC_HOSTNAME=localhost:8080</code> plus <code class="q5-inline">adb reverse tcp:8080 tcp:8080</code>, so every platform sees one issuer.</li>
       </ul>
     </div>
