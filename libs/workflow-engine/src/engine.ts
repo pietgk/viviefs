@@ -75,12 +75,13 @@ export class Leases extends Context.Service<
 
 const envelope = (
   cs: string,
+  actor: string,
   device: string,
   leaseEpoch: number | null,
   trace: TraceContext,
 ): EnvelopeType => ({
   cs,
-  actor: 'engine',
+  actor,
   device,
   leaseEpoch,
   traceId: trace.traceId,
@@ -211,7 +212,7 @@ export const engineLayer: Layer.Layer<
               cs: tx,
             },
           ],
-          envelope(tx, device.id, holder?.epoch ?? null, trace),
+          envelope(tx, config.actor, device.id, holder?.epoch ?? null, trace),
         )
       }).pipe(Effect.orDie)
 

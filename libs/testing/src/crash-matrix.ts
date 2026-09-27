@@ -30,6 +30,7 @@ import {
   type CheckResult,
   type MutableClock,
 } from './log-store-conformance.ts'
+import { LAB_PERSON } from './lab.ts'
 
 export const P06_DATOM_CHECK_NAMES = [
   'kill before activity',
@@ -148,7 +149,7 @@ const env = (
   probeLayer(tracker).pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(deviceId)),
-    Layer.provide(engineConfigLayer(ORG)),
+    Layer.provide(engineConfigLayer({ org: ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(deviceId)),
     Layer.provide(hook),
     Layer.provide(noopWakeScheduler),

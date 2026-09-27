@@ -28,6 +28,7 @@ import {
 } from '@viviefs/workflow-engine'
 import type { StoreFactory } from './crash-matrix.ts'
 import type { MutableClock } from './log-store-conformance.ts'
+import { LAB_PERSON } from './lab.ts'
 
 class CheckFailed extends Schema.TaggedError<CheckFailed>()('CheckFailed', {
   reason: Schema.String,
@@ -72,7 +73,7 @@ const session = (openStore: StoreFactory, clock: MutableClock) =>
   exitsLayer.pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer('p06')),
+    Layer.provide(engineConfigLayer({ org: 'p06', actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(noopCrashHook),
     Layer.provide(noopWakeScheduler),

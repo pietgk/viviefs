@@ -38,17 +38,23 @@ import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
 import {
   SyncClient,
   SyncRpc,
+  bearerAuthenticationClient,
   syncClientLayer,
   syncRpcLayer,
   type Outgoing,
 } from '@viviefs/sync-client'
 import { SyncRpcs } from '@viviefs/sync-protocol'
-import { SyncAuthority, syncServerLayer } from '@viviefs/sync-server'
+import {
+  Memberships,
+  SyncAuthority,
+  syncServerLayer,
+} from '@viviefs/sync-server'
 import {
   makeMutableClock,
   type CheckResult,
   type MutableClock,
 } from '@viviefs/testing'
+import { fakeSignInSession, makeFakeIssuer } from '@viviefs/testing/identity'
 import { withTempDirectory } from '@viviefs/testing/node'
 import {
   CrashHook,
@@ -114,6 +120,8 @@ const runCheck = (
 
 type Device = {
   readonly id: string
+  /** The device's signed-in person; every envelope it writes names it. */
+  readonly person: string
   readonly client: SyncClient['Service']
   readonly store: LogStore['Service']
   readonly projector: Projector['Service']
@@ -139,13 +147,13 @@ const storeLayer = (
 
 const envelopeFor = (
   cs: string,
-  device: string,
+  device: Device,
   command: string,
   leaseEpoch: number | null,
 ) => ({
   cs,
-  actor: device,
-  device,
+  actor: device.person,
+  device: device.id,
   leaseEpoch,
   traceId: TRACE,
   spanId: SPAN,
@@ -153,6 +161,21 @@ const envelopeFor = (
   command,
   acceptedAt: null,
 })
+
+// P09 checks run authenticated since P11: every device is a member of every
+// organization these checks use. P11's own checks cover who may not.
+const P09_ORGS = [
+  'offline',
+  'stream',
+  'acme',
+  'other',
+  'dedup',
+  'reject',
+  'upgrade',
+  'fence',
+  'deferred',
+  'files',
+] as const
 
 const session = <A>(
   directory: string,
@@ -165,20 +188,35 @@ const session = <A>(
   }) => Effect.Effect<A, unknown>,
 ) =>
   Effect.gen(function* () {
+    const issuer = yield* makeFakeIssuer({
+      issuer: 'http://p09.test/realms/viviefs',
+      audience: 'viviefs-sync',
+    })
     const server = yield* Layer.build(
       syncServerLayer(catalog).pipe(
         Layer.provide(
           storeLayer(directory, `${prefix}-server.sqlite`, 'p09-server', clock),
         ),
         Layer.provide(layerMemory),
+        Layer.provide(issuer.verifier),
       ),
     )
-    const rpcClient = yield* RpcTest.makeClient(SyncRpcs).pipe(
-      Effect.provide(server),
-    )
-    const rpc = syncRpcLayer(rpcClient)
+    const memberships = Context.get(server, Memberships)
     const built = new Map<string, Device>()
     for (const [name, deviceId] of devices) {
+      let person = ''
+      for (const org of P09_ORGS) {
+        person = yield* memberships.grant(org, issuer.account(deviceId))
+      }
+      const rpcClient = yield* RpcTest.makeClient(SyncRpcs).pipe(
+        Effect.provide(server),
+        Effect.provide(
+          bearerAuthenticationClient.pipe(
+            Layer.provide(fakeSignInSession(issuer, deviceId)),
+          ),
+        ),
+      )
+      const rpc = syncRpcLayer(rpcClient)
       const ctx = yield* Layer.build(
         syncClientLayer(catalog).pipe(
           Layer.provideMerge(
@@ -191,6 +229,7 @@ const session = <A>(
       )
       built.set(name, {
         id: deviceId,
+        person,
         client: Context.get(ctx, SyncClient),
         store: Context.get(ctx, LogStore),
         projector: Context.get(ctx, Projector),
@@ -222,7 +261,7 @@ const mint = (device: Device, basis: number) =>
       memberTx,
       extraTx,
       commitTx,
-      actor: device.id,
+      actor: device.person,
       device: device.id,
       basis,
     }
@@ -244,7 +283,7 @@ const selfCommit = (
     const changeset: Outgoing = {
       org: options.org,
       basis: 0,
-      envelope: envelopeFor(tx, device.id, options.command, options.epoch),
+      envelope: envelopeFor(tx, device, options.command, options.epoch),
       datoms: [
         {
           e: options.entity,
@@ -292,7 +331,7 @@ const outboxOffline = (directory: string, clock: MutableClock) =>
       )
       const draft = yield* a.projector.facts({
         view: 'draft',
-        actor: a.id,
+        actor: a.person,
         prefix: orgId(org),
       })
       yield* require(
@@ -498,7 +537,7 @@ const typedRejection = (directory: string, clock: MutableClock) =>
       yield* a.client.submit(kept)
       const draft = yield* a.projector.facts({
         view: 'draft',
-        actor: a.id,
+        actor: a.person,
         prefix: orgId(org),
       })
       yield* require(valueOf(draft, item, Attr.itemSeal) === 'silver', 'draft seal')
@@ -552,7 +591,7 @@ const unknownAttribute = (directory: string, clock: MutableClock) =>
       const changeset: Outgoing = {
         org,
         basis: 0,
-        envelope: envelopeFor(tx, a.id, 'evidence.unknown', null),
+        envelope: envelopeFor(tx, a, 'evidence.unknown', null),
         datoms: [
           member,
           {
@@ -689,7 +728,7 @@ const serverDeferred = (directory: string, clock: MutableClock) =>
       const engineLive = waitLayer.pipe(
         Layer.provideMerge(engineLayer),
         Layer.provide(Layer.succeedContext(a.context)),
-        Layer.provide(engineConfigLayer(org)),
+        Layer.provide(engineConfigLayer({ org, actor: a.person })),
         Layer.provide(deviceLayer(a.id)),
         Layer.provide(hook),
         Layer.provide(noopWakeScheduler),
@@ -755,7 +794,7 @@ const fileManifest = (directory: string, clock: MutableClock) =>
       const changeset: Outgoing = {
         org,
         basis: 0,
-        envelope: envelopeFor(cs, a.id, 'evidence.file', null),
+        envelope: envelopeFor(cs, a, 'evidence.file', null),
         datoms: [
           captured,
           member,

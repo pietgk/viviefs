@@ -31,6 +31,7 @@ export {
   P07_PARKED_ATTR,
   runLaunchSweepChecks,
 } from './launch-sweep.ts'
+export { LAB_PERSON } from './lab.ts'
 export { runUnscoped } from './run-unscoped.ts'
 export {
   P10_ENGINE_CHECK_COUNT,

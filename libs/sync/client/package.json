@@ -16,6 +16,7 @@
   "dependencies": {
     "@viviefs/blobs": "workspace:*",
     "@viviefs/datom": "workspace:*",
+    "@viviefs/identity": "workspace:*",
     "@viviefs/sync-protocol": "workspace:*",
     "effect": "4.0.0-rc.116"
   }

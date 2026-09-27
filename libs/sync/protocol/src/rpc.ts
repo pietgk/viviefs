@@ -1,7 +1,42 @@
 import * as Schema from 'effect/Schema'
 import * as Rpc from 'effect/unstable/rpc/Rpc'
 import * as RpcGroup from 'effect/unstable/rpc/RpcGroup'
+import * as RpcMiddleware from 'effect/unstable/rpc/RpcMiddleware'
 import { Datom, Envelope, StoredDatom } from '@viviefs/datom'
+import { Caller, SignInNeeded, TokenRejected } from '@viviefs/identity'
+
+/**
+ * Bearer authentication (P11, ADR-0022). On every RPC in the group the server
+ * half requires `authorization: Bearer`, verifies the token and provides the
+ * `Caller`; the client half attaches the current access token. Building a
+ * client without the client half is a compile error. Authentication only:
+ * membership, actor and lease are checked by the handlers.
+ */
+export class BearerAuthentication extends RpcMiddleware.Service<
+  BearerAuthentication,
+  { provides: Caller; clientError: SignInNeeded }
+>()('viviefs/sync/BearerAuthentication', {
+  error: TokenRejected,
+  requiredForClient: true,
+}) {}
+
+/** The caller is not, or no longer, a member of the requested organization. */
+export class MembershipMissing extends Schema.TaggedError<MembershipMissing>()(
+  'MembershipMissing',
+  { org: Schema.String },
+) {}
+
+/** The envelope names an actor other than the caller's person. */
+export class ActorMismatch extends Schema.TaggedError<ActorMismatch>()(
+  'ActorMismatch',
+  { actor: Schema.String, caller: Schema.NullOr(Schema.String) },
+) {}
+
+/** A client changeset writes an attribute only the server may write. */
+export class ServerOnlyAttribute extends Schema.TaggedError<ServerOnlyAttribute>()(
+  'ServerOnlyAttribute',
+  { attribute: Schema.String },
+) {}
 
 export class UnknownAttribute extends Schema.TaggedError<UnknownAttribute>()(
   'UnknownAttribute',
@@ -56,6 +91,9 @@ export const Rejection = Schema.Union([
   OrgMismatch,
   FileMissing,
   ManifestRejected,
+  MembershipMissing,
+  ActorMismatch,
+  ServerOnlyAttribute,
 ])
 export type Rejection = typeof Rejection.Type
 
@@ -93,6 +131,7 @@ export const Pull = Rpc.make('Pull', {
     cursor: Schema.Number,
   },
   success: PullPage,
+  error: MembershipMissing,
   stream: true,
 })
 
@@ -103,10 +142,27 @@ export const PutBlob = Rpc.make('PutBlob', {
     text: Schema.String,
   },
   success: PutBlobAck,
-  error: Schema.Union([BlobHashMismatch, OrgMismatch]),
+  error: Schema.Union([BlobHashMismatch, MembershipMissing]),
 })
 
-export const SyncRpcs = RpcGroup.make(Append, Pull, PutBlob)
+/** A member completes a deferred in their organization (D40, P11 Q7). */
+export const CompleteDeferred = Rpc.make('CompleteDeferred', {
+  payload: {
+    org: Schema.String,
+    executionId: Schema.String,
+    deferredName: Schema.String,
+    exit: Schema.String,
+  },
+  error: MembershipMissing,
+})
+
+/** Every RPC in the group is authenticated; a new one is by default. */
+export const SyncRpcs = RpcGroup.make(
+  Append,
+  Pull,
+  PutBlob,
+  CompleteDeferred,
+).middleware(BearerAuthentication)
 
 export type AppendRequest = {
   readonly org: string

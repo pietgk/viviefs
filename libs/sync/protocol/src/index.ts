@@ -1,14 +1,18 @@
 /**
  * P09 sync contract. Effect RPC, append-and-acknowledge up, one
  * organization cursor stream down. Client and server are adapters;
- * this package is the shared core.
+ * this package is the shared core. P11 authenticates every RPC.
  */
 export {
+  ActorMismatch,
   Append,
   AppendAck,
+  BearerAuthentication,
   BlobHashMismatch,
   BasisRejected,
+  CompleteDeferred,
   FileMissing,
+  MembershipMissing,
   ManifestRejected,
   OrgMismatch,
   Pull,
@@ -16,6 +20,7 @@ export {
   PutBlob,
   PutBlobAck,
   Rejection,
+  ServerOnlyAttribute,
   StaleLease,
   SyncRpcs,
   UnknownAttribute,

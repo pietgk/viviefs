@@ -10,7 +10,8 @@ import type { ProviderAccount } from './token-verifier.ts'
 export class Caller extends Context.Service<
   Caller,
   {
-    readonly person: string
+    /** Null when this account was never granted membership anywhere. */
+    readonly person: string | null
     readonly account: ProviderAccount
     readonly roles: ReadonlyArray<string>
   }

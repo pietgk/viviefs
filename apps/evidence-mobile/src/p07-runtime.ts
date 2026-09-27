@@ -30,7 +30,7 @@ import {
   type DeferredNotificationData,
 } from '@viviefs/platform-native'
 import { otlpJsonLayer } from '@viviefs/telemetry'
-import { P07_PARKED_ATTR, type CheckResult } from '@viviefs/testing'
+import { LAB_PERSON, P07_PARKED_ATTR, type CheckResult } from '@viviefs/testing'
 import {
   engineConfigLayer,
   engineLayer,
@@ -247,7 +247,7 @@ export const runP07Session = (
     Layer.provide(upload),
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore),
-    Layer.provide(engineConfigLayer(P07_ORG)),
+    Layer.provide(engineConfigLayer({ org: P07_ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(deviceId)),
     Layer.provide(noopCrashHook),
     Layer.provide(expoWakeScheduler),

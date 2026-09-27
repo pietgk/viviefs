@@ -532,6 +532,9 @@ importers:
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../../datom
+      '@viviefs/identity':
+        specifier: workspace:*
+        version: link:../../identity
       '@viviefs/sync-protocol':
         specifier: workspace:*
         version: link:../protocol
@@ -544,6 +547,9 @@ importers:
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../../datom
+      '@viviefs/identity':
+        specifier: workspace:*
+        version: link:../../identity
       effect:
         specifier: 4.0.0-rc.116
         version: 4.0.0-rc.116
@@ -556,6 +562,9 @@ importers:
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../../datom
+      '@viviefs/identity':
+        specifier: workspace:*
+        version: link:../../identity
       '@viviefs/sync-protocol':
         specifier: workspace:*
         version: link:../protocol

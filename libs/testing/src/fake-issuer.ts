@@ -10,6 +10,7 @@ import * as Clock from 'effect/Clock'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import {
+  SignInSession,
   TokenVerifier,
   makeTokenVerifier,
   type ProviderAccount,
@@ -90,3 +91,13 @@ export const makeFakeIssuer = Effect.fn('FakeIssuer.make')(function* (options: {
   }
   return issuer
 })
+
+/** A signed-in session for `subject`: every call gets a fresh fake token. */
+export const fakeSignInSession = (
+  fake: FakeIssuer,
+  subject: string,
+): Layer.Layer<SignInSession> =>
+  Layer.succeed(
+    SignInSession,
+    SignInSession.of({ accessToken: fake.sign({ subject }) }),
+  )

@@ -10,6 +10,9 @@
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"],
   "references": [
     {
+      "path": "../../identity/tsconfig.lib.json"
+    },
+    {
       "path": "../../datom/tsconfig.lib.json"
     }
   ]

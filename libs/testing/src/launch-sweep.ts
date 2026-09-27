@@ -25,6 +25,7 @@ import {
   type MutableClock,
 } from './log-store-conformance.ts'
 import { type StoreFactory } from './crash-matrix.ts'
+import { LAB_PERSON } from './lab.ts'
 
 export const P07_HOST_CHECK_NAMES = [
   'launch sweep resumes',
@@ -93,7 +94,7 @@ const env = (
   probeLayer(calls).pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer(ORG)),
+    Layer.provide(engineConfigLayer({ org: ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(hook),
     Layer.provide(noopWakeScheduler),

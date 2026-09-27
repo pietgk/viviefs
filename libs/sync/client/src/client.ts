@@ -4,13 +4,20 @@
  * acknowledges the commit. A typed rejection aborts the open
  * changeset, rebuilds read models, and leaves the rest of the
  * outbox to be pushed.
+ *
+ * P11: every call carries the sign-in session's access token. A
+ * token or sign-in failure stops a push and keeps the outbox. A
+ * lost membership rejects that organization's outbox, keeps the
+ * rows, and makes the local copy read-only until a pull succeeds.
  */
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
+import * as Headers from 'effect/unstable/http/Headers'
 import * as Reactivity from 'effect/unstable/reactivity/Reactivity'
+import * as RpcMiddleware from 'effect/unstable/rpc/RpcMiddleware'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
 import type { SqlError } from 'effect/unstable/sql/SqlError'
 import { blobHash } from '@viviefs/blobs'
@@ -27,13 +34,36 @@ import {
   type Catalog,
 } from '@viviefs/datom'
 import {
-  BlobHashMismatch,
-  OrgMismatch,
+  SignInSession,
+  type SignInNeeded,
+  type TokenRejected,
+} from '@viviefs/identity'
+import {
+  BearerAuthentication,
+  MembershipMissing,
+  Rejection,
   type AppendAck,
   type AppendRequest,
+  type BlobHashMismatch,
   type PullPage,
-  type Rejection,
 } from '@viviefs/sync-protocol'
+
+/** Client half of bearer authentication: the current access token on every call. */
+export const bearerAuthenticationClient = RpcMiddleware.layerClient(
+  BearerAuthentication,
+  ({ request, next }) =>
+    Effect.gen(function* () {
+      const session = yield* SignInSession
+      const token = yield* session.accessToken
+      return yield* next({
+        ...request,
+        headers: Headers.set(request.headers, 'authorization', `Bearer ${token}`),
+      })
+    }),
+)
+
+/** The call never reached a handler: no valid token, or no sign-in. */
+export type Unauthenticated = TokenRejected | SignInNeeded
 
 const Payload = Schema.Struct({
   basis: Schema.Number,
@@ -65,18 +95,18 @@ export type PushResult = {
 type RpcShape = {
   readonly Append: (
     request: AppendRequest,
-  ) => Effect.Effect<AppendAck, Rejection>
+  ) => Effect.Effect<AppendAck, Rejection | Unauthenticated>
   readonly Pull: (request: {
     readonly org: string
     readonly cursor: number
-  }) => Stream.Stream<PullPage, never>
+  }) => Stream.Stream<PullPage, MembershipMissing | Unauthenticated>
   readonly PutBlob: (request: {
     readonly org: string
     readonly hash: string
     readonly text: string
   }) => Effect.Effect<
     { readonly hash: string },
-    BlobHashMismatch | OrgMismatch
+    BlobHashMismatch | MembershipMissing | Unauthenticated
   >
 }
 
@@ -85,18 +115,18 @@ export class SyncRpc extends Context.Service<
   {
     readonly append: (
       request: AppendRequest,
-    ) => Effect.Effect<AppendAck, Rejection>
+    ) => Effect.Effect<AppendAck, Rejection | Unauthenticated>
     readonly pull: (request: {
       readonly org: string
       readonly cursor: number
-    }) => Effect.Effect<PullPage>
+    }) => Effect.Effect<PullPage, MembershipMissing | Unauthenticated>
     readonly putBlob: (request: {
       readonly org: string
       readonly hash: string
       readonly text: string
     }) => Effect.Effect<
       { readonly hash: string },
-      BlobHashMismatch | OrgMismatch
+      BlobHashMismatch | MembershipMissing | Unauthenticated
     >
   }
 >()('viviefs/sync/SyncRpc') {}
@@ -134,20 +164,29 @@ export class SyncClient extends Context.Service<
   {
     readonly submit: (
       changeset: Outgoing,
-    ) => Effect.Effect<void, FutureSkew | InvalidTx | SqlError>
+    ) => Effect.Effect<
+      void,
+      FutureSkew | InvalidTx | SqlError | MembershipMissing
+    >
     readonly push: (
       org: string,
     ) => Effect.Effect<
       PushResult,
-      FutureSkew | InvalidTx | SqlError | Rejection
+      FutureSkew | InvalidTx | SqlError | Rejection | Unauthenticated
     >
     readonly pull: (
       org: string,
-    ) => Effect.Effect<number, FutureSkew | InvalidTx | SqlError>
+    ) => Effect.Effect<
+      number,
+      FutureSkew | InvalidTx | SqlError | MembershipMissing | Unauthenticated
+    >
     readonly upload: (
       org: string,
       text: string,
-    ) => Effect.Effect<string, BlobHashMismatch | OrgMismatch>
+    ) => Effect.Effect<
+      string,
+      BlobHashMismatch | MembershipMissing | Unauthenticated
+    >
   }
 >()('viviefs/sync/SyncClient') {}
 
@@ -165,6 +204,9 @@ const migrateSqlite = Effect.gen(function* () {
     org TEXT PRIMARY KEY,
     cursor INTEGER NOT NULL
   )`
+  yield* sql`CREATE TABLE IF NOT EXISTS sync_revoked (
+    org TEXT PRIMARY KEY
+  )`
 })
 
 const migratePg = Effect.gen(function* () {
@@ -180,6 +222,9 @@ const migratePg = Effect.gen(function* () {
   yield* sql`CREATE TABLE IF NOT EXISTS sync_cursor (
     org TEXT PRIMARY KEY,
     cursor BIGINT NOT NULL
+  )`
+  yield* sql`CREATE TABLE IF NOT EXISTS sync_revoked (
+    org TEXT PRIMARY KEY
   )`
 })
 
@@ -215,6 +260,22 @@ const makeClient = Effect.gen(function* () {
       ON CONFLICT (org) DO UPDATE SET cursor = ${cursor}
     `
 
+  // Operational state of this replica (ADR-0006): the server said this
+  // device's person is no longer a member of the organization.
+  const isRevoked = (org: string) =>
+    Effect.map(
+      sql<{ org: string }>`SELECT org FROM sync_revoked WHERE org = ${org}`,
+      (rows) => rows.length > 0,
+    )
+
+  const markRevoked = (org: string) =>
+    Effect.asVoid(
+      sql`INSERT INTO sync_revoked (org) VALUES (${org}) ON CONFLICT (org) DO NOTHING`,
+    )
+
+  const clearRevoked = (org: string) =>
+    Effect.asVoid(sql`DELETE FROM sync_revoked WHERE org = ${org}`)
+
   const abortLocal = (
     changeset: { readonly envelope: typeof Envelope.Type },
     tag: string,
@@ -243,6 +304,9 @@ const makeClient = Effect.gen(function* () {
       'sync.device': changeset.envelope.device,
       'sync.command': changeset.envelope.command,
     })
+    if (yield* isRevoked(changeset.org)) {
+      return yield* new MembershipMissing({ org: changeset.org })
+    }
     const self =
       changeset.datoms.length === 1 &&
       changeset.datoms[0]?.cs === changeset.datoms[0]?.tx
@@ -283,7 +347,12 @@ const makeClient = Effect.gen(function* () {
   const pull = Effect.fn('SyncClient.pull')(function* (org: string) {
     yield* noteDevice
     const cursor = yield* readCursor(org)
-    const page = yield* rpc.pull({ org, cursor })
+    const page = yield* rpc.pull({ org, cursor }).pipe(
+      Effect.tapError((error) =>
+        error._tag === 'MembershipMissing' ? markRevoked(org) : Effect.void,
+      ),
+    )
+    yield* clearRevoked(org)
     const byCs = new Map<string, Array<(typeof page.datoms)[number]>>()
     for (const datom of page.datoms) {
       const list = byCs.get(datom.cs) ?? []
@@ -327,6 +396,7 @@ const makeClient = Effect.gen(function* () {
     const rejected: Array<{ cs: string; tag: string }> = []
     const waiting: Array<{ cs: string; hash: string }> = []
     let rebuilt = false
+    let revoked = false
     for (const row of rows) {
       const decoded = Schema.decodeUnknownSync(PayloadJson)(row.payload)
       const outcome = yield* rpc
@@ -341,7 +411,9 @@ const makeClient = Effect.gen(function* () {
           Effect.catchTag('FileMissing', (error) =>
             Effect.succeed({ _tag: 'waiting' as const, hash: error.hash }),
           ),
-          Effect.catch((error) =>
+          // A rejection judges this changeset. An authentication failure does
+          // not: it stops the push and the outbox stays as it is.
+          Effect.catchIf(Schema.is(Rejection), (error) =>
             Effect.succeed({ _tag: 'rejected' as const, tag: error._tag }),
           ),
         )
@@ -387,8 +459,12 @@ const makeClient = Effect.gen(function* () {
         decoded.envelope.device,
         decoded.envelope.command,
       )
+      if (outcome.tag === 'MembershipMissing') {
+        yield* markRevoked(org)
+        revoked = true
+      }
     }
-    yield* pull(org)
+    if (!revoked) yield* pull(org)
     return { acked, rejected, waiting, rebuilt } satisfies PushResult
   })
 

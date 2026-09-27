@@ -15,16 +15,19 @@
   ],
   "references": [
     {
-      "path": "../../blobs/tsconfig.lib.json"
-    },
-    {
-      "path": "../../datom/tsconfig.lib.json"
+      "path": "../../workflow-engine/tsconfig.lib.json"
     },
     {
       "path": "../protocol/tsconfig.lib.json"
     },
     {
-      "path": "../../workflow-engine/tsconfig.lib.json"
+      "path": "../../identity/tsconfig.lib.json"
+    },
+    {
+      "path": "../../datom/tsconfig.lib.json"
+    },
+    {
+      "path": "../../blobs/tsconfig.lib.json"
     }
   ]
 }

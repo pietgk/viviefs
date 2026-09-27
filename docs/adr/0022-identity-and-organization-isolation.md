@@ -91,7 +91,14 @@ self-service membership come with the first consumer app that needs them).
 - Blobs are keyed per organization.
 - `CompleteDeferred` is an authenticated RPC.
 
-**Device.** One local database per person; signing out closes it. Refresh
+**Authenticated but not a member.** An account that was never granted
+membership verifies, and its caller has no person. Every handler then answers
+`MembershipMissing`; nothing is minted.
+
+**Device.** The workflow engine writes its journal on behalf of the signed-in
+person (`EngineConfig.actor`), so a pushed journal write passes the actor
+check. Lab runs that never reach a server use a fixed lab person. One local
+database per person; signing out closes it. Refresh
 token in `expo-secure-store` with `offline_access` on iOS and Android; in
 memory on web. A failed refresh enters sign-in-needed and keeps the outbox.
 After `MembershipMissing` the org's local copy is read-only and its outbox rows

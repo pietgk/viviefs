@@ -47,6 +47,7 @@ import {
 } from '@viviefs/workflow-engine'
 import type { StoreFactory } from './crash-matrix.ts'
 import type { CheckResult, MutableClock } from './log-store-conformance.ts'
+import { LAB_PERSON } from './lab.ts'
 
 export const P10_ORG = 'p10'
 const DEVICE = 'p10-a'
@@ -116,7 +117,7 @@ const session = (
   probeLayer(clock, runs).pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer(P10_ORG)),
+    Layer.provide(engineConfigLayer({ org: P10_ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(hook),
     Layer.provide(noopWakeScheduler),

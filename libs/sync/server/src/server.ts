@@ -1,12 +1,17 @@
 /**
- * Server authority for P09. Validates a changeset, then appends it.
- * The server stores datoms. It does not run device workflow code.
+ * Server authority for P09, authenticated since P11. Validates a changeset,
+ * then appends it. The server stores datoms. It does not run device workflow
+ * code.
  */
+import * as Clock from 'effect/Clock'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
+import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
+import * as Semaphore from 'effect/Semaphore'
 import * as Stream from 'effect/Stream'
+import * as Headers from 'effect/unstable/http/Headers'
 import type { SqlError } from 'effect/unstable/sql/SqlError'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
 import { BlobStore } from '@viviefs/blobs'
@@ -15,25 +20,39 @@ import {
   FutureSkew,
   InvalidTx,
   LogStore,
+  accountId,
   changesetMembers,
   decodeCommit,
   deferredId,
+  encodeCommit,
   hashMembers,
+  identityCatalog,
   indexCatalog,
   isSystemAttr,
+  membershipId,
   orgId,
   underPrefix,
   type Catalog,
   type Datom,
+  type EnvelopeType,
 } from '@viviefs/datom'
+import {
+  Caller,
+  TokenVerifier,
+  type ProviderAccount,
+} from '@viviefs/identity'
 import { decodeLease } from '@viviefs/workflow-engine'
 import {
+  ActorMismatch,
   BasisRejected,
+  BearerAuthentication,
   BlobHashMismatch,
   FileMissing,
   ManifestRejected,
+  MembershipMissing,
   OrgMismatch,
   Rejection,
+  ServerOnlyAttribute,
   StaleLease,
   SyncRpcs,
   UnknownAttribute,
@@ -110,6 +129,219 @@ const storedLease = (sql: Sql, entity: string) =>
     return decodeLease(value)
   })
 
+const serverEnvelope = (
+  cs: string,
+  command: string,
+  acceptedAt: number,
+): EnvelopeType => ({
+  cs,
+  actor: 'server',
+  device: 'server',
+  leaseEpoch: null,
+  traceId: '00000000000000000000000000000000',
+  spanId: '0000000000000000',
+  sampled: false,
+  command,
+  acceptedAt,
+})
+
+/**
+ * Who is a member of what (P11, ADR-0022). Reads the account entity and
+ * membership datoms from the log; `grant` and `revoke` are the operator's
+ * commands and the only writers. `grant` is the only place a person is
+ * minted. Writes are serialized, so one account never gets two people.
+ */
+export class Memberships extends Context.Service<
+  Memberships,
+  {
+    readonly personOf: (
+      account: ProviderAccount,
+    ) => Effect.Effect<string | null, SqlError>
+    readonly isMember: (
+      person: string,
+      org: string,
+    ) => Effect.Effect<boolean, SqlError>
+    readonly grant: (
+      org: string,
+      account: ProviderAccount,
+    ) => Effect.Effect<string, FutureSkew | InvalidTx | SqlError>
+    readonly revoke: (
+      org: string,
+      account: ProviderAccount,
+    ) => Effect.Effect<void, FutureSkew | InvalidTx | SqlError>
+  }
+>()('viviefs/sync/Memberships') {}
+
+const membershipsLayer: Layer.Layer<
+  Memberships,
+  never,
+  LogStore | SqlClient.SqlClient
+> = Layer.effect(
+  Memberships,
+  Effect.gen(function* () {
+    const store = yield* LogStore
+    const sql = yield* SqlClient.SqlClient
+    const writes = yield* Semaphore.make(1)
+
+    const personOf = Effect.fnUntraced(function* (
+      account: ProviderAccount,
+    ) {
+      const entity = yield* accountId(account).pipe(Effect.orDie)
+      const rows = yield* sql<{ v: string }>`
+        SELECT v FROM datoms
+        WHERE e = ${entity} AND a = ${Attr.accountPerson} AND op = 'assert'
+        ORDER BY seq
+        LIMIT 1
+      `
+      return rows[0]?.v ?? null
+    })
+
+    const isMember = Effect.fnUntraced(function* (
+      person: string,
+      org: string,
+    ) {
+      const rows = yield* sql<{ op: string }>`
+        SELECT op FROM datoms
+        WHERE e = ${membershipId(org, person)} AND a = ${Attr.membershipGranted}
+        ORDER BY seq DESC
+        LIMIT 1
+      `
+      return rows[0]?.op === 'assert'
+    })
+
+    // The account entity goes in a changeset of its own: Pull sends every
+    // member of a changeset that touches an organization (ADR-0010).
+    const mintPerson = (account: ProviderAccount) =>
+      Effect.gen(function* () {
+        const person = yield* store.mint()
+        const entity = yield* accountId(account).pipe(Effect.orDie)
+        const cs = yield* store.mint()
+        const member = (a: string, v: string) =>
+          Effect.map(store.mint(), (tx): Datom => ({
+            e: entity,
+            a,
+            v,
+            tx,
+            op: 'assert',
+            cs,
+          }))
+        const members = [
+          yield* member(Attr.accountPerson, person),
+          yield* member(Attr.accountIssuer, account.issuer),
+          yield* member(Attr.accountSubject, account.subject),
+        ]
+        const hash = yield* hashMembers(members).pipe(Effect.orDie)
+        const commit: Datom = {
+          e: cs,
+          a: Attr.changesetCommit,
+          v: encodeCommit({ n: members.length, hash, basis: 0, files: [] }),
+          tx: yield* store.mint(),
+          op: 'assert',
+          cs,
+        }
+        const now = yield* Clock.currentTimeMillis
+        yield* store.append(
+          [...members, commit],
+          serverEnvelope(cs, 'server.linkAccount', now),
+        )
+        return person
+      })
+
+    const writeMembership = (
+      org: string,
+      person: string,
+      op: 'assert' | 'retract',
+      command: string,
+    ) =>
+      Effect.gen(function* () {
+        const tx = yield* store.mint()
+        const now = yield* Clock.currentTimeMillis
+        yield* store.append(
+          [
+            {
+              e: membershipId(org, person),
+              a: Attr.membershipGranted,
+              v: person,
+              tx,
+              op,
+              cs: tx,
+            },
+          ],
+          serverEnvelope(tx, command, now),
+        )
+      })
+
+    const grant = Effect.fn('Memberships.grant')(function* (
+      org: string,
+      account: ProviderAccount,
+    ) {
+      return yield* writes.withPermits(1)(
+        Effect.gen(function* () {
+          const person = (yield* personOf(account)) ?? (yield* mintPerson(account))
+          if (!(yield* isMember(person, org))) {
+            yield* writeMembership(org, person, 'assert', 'server.grantMembership')
+          }
+          return person
+        }),
+      )
+    })
+
+    const revoke = Effect.fn('Memberships.revoke')(function* (
+      org: string,
+      account: ProviderAccount,
+    ) {
+      yield* writes.withPermits(1)(
+        Effect.gen(function* () {
+          const person = yield* personOf(account)
+          if (person !== null && (yield* isMember(person, org))) {
+            yield* writeMembership(org, person, 'retract', 'server.revokeMembership')
+          }
+        }),
+      )
+    })
+
+    return Memberships.of({ personOf, isMember, grant, revoke })
+  }),
+)
+
+/**
+ * Server half of bearer authentication: verify the token, find the person,
+ * provide the caller. A missing or bad token never reaches a handler.
+ */
+const bearerAuthenticationLayer: Layer.Layer<
+  BearerAuthentication,
+  never,
+  TokenVerifier | Memberships
+> = Layer.effect(
+  BearerAuthentication,
+  Effect.gen(function* () {
+    const verifier = yield* TokenVerifier
+    const memberships = yield* Memberships
+    return BearerAuthentication.of((handler, { headers }) =>
+      Effect.gen(function* () {
+        const header = Option.getOrElse(
+          Headers.get(headers, 'authorization'),
+          () => '',
+        )
+        const token = header.startsWith('Bearer ') ? header.slice(7) : ''
+        const verified = yield* verifier.verify(token)
+        const person = yield* memberships
+          .personOf(verified.account)
+          .pipe(Effect.orDie)
+        return yield* Effect.provideService(
+          handler,
+          Caller,
+          Caller.of({
+            person,
+            account: verified.account,
+            roles: verified.roles,
+          }),
+        )
+      }),
+    )
+  }),
+)
+
 export class SyncAuthority extends Context.Service<
   SyncAuthority,
   {
@@ -141,6 +373,7 @@ const authorityLayer: Layer.Layer<SyncAuthority, never, LogStore> =
               options.executionId,
               options.deferredName,
             )
+            const now = yield* Clock.currentTimeMillis
             yield* store.append(
               [
                 {
@@ -152,17 +385,7 @@ const authorityLayer: Layer.Layer<SyncAuthority, never, LogStore> =
                   cs: tx,
                 },
               ],
-              {
-                cs: tx,
-                actor: 'server',
-                device: 'server',
-                leaseEpoch: null,
-                traceId: '00000000000000000000000000000000',
-                spanId: '0000000000000000',
-                sampled: false,
-                command: 'server.deferred',
-                acceptedAt: null,
-              },
+              serverEnvelope(tx, 'server.deferred', now),
             )
           },
         ),
@@ -173,6 +396,7 @@ const authorityLayer: Layer.Layer<SyncAuthority, never, LogStore> =
 const accept = (
   catalog: Catalog,
   request: AppendRequest,
+  caller: Caller['Service'],
   services: {
     readonly store: LogStore['Service']
     readonly sql: Sql
@@ -184,8 +408,17 @@ const accept = (
 > =>
   Effect.gen(function* () {
     const { store, sql, blobs } = services
-    const indexed = indexCatalog(catalog)
+    const indexed = indexCatalog({
+      types: [...catalog.types, ...identityCatalog.types],
+    })
     const { org, envelope, datoms } = request
+
+    if (envelope.actor !== caller.person) {
+      return yield* new ActorMismatch({
+        actor: envelope.actor,
+        caller: caller.person,
+      })
+    }
 
     if (datoms.length === 0) {
       return yield* new ManifestRejected({
@@ -233,6 +466,9 @@ const accept = (
       ) {
         continue
       }
+      if (indexed.byAttr.get(datom.a)?.spec.authority === 'server') {
+        return yield* new ServerOnlyAttribute({ attribute: datom.a })
+      }
       if (!inOrg(datom.e, org)) {
         return yield* new OrgMismatch({ org, entity: datom.e })
       }
@@ -264,7 +500,7 @@ const accept = (
         })
       }
       for (const hash of manifest.files) {
-        if ((yield* blobs.has(hash)) === false) {
+        if ((yield* blobs.has(org, hash)) === false) {
           return yield* new FileMissing({ hash })
         }
       }
@@ -343,7 +579,11 @@ const accept = (
       }
     }
 
-    yield* store.append(datoms as ReadonlyArray<Datom>, envelope)
+    const acceptedAt = yield* Clock.currentTimeMillis
+    yield* store.append(datoms as ReadonlyArray<Datom>, {
+      ...envelope,
+      acceptedAt,
+    })
     return { cursor: yield* cursorOf(sql) }
   })
 
@@ -360,41 +600,74 @@ const handlerLayer = (catalog: Catalog) =>
       const store = yield* LogStore
       const sql = yield* SqlClient.SqlClient
       const blobs = yield* BlobStore
+      const memberships = yield* Memberships
+      const authority = yield* SyncAuthority
+
+      // Membership comes first: a non-member learns nothing, not even
+      // whether a changeset it names already exists.
+      const requireMembership = (org: string) =>
+        Effect.gen(function* () {
+          const caller = yield* Caller
+          const member =
+            caller.person !== null &&
+            (yield* memberships
+              .isMember(caller.person, org)
+              .pipe(Effect.orDie))
+          if (!member) return yield* new MembershipMissing({ org })
+          return caller
+        })
+
+      const pageOf = (request: {
+        readonly org: string
+        readonly cursor: number
+      }) =>
+        Effect.gen(function* () {
+          const rows = yield* store.streamFrom(request.cursor)
+          const end = rows.at(-1)?.seq ?? request.cursor
+          const csInOrg = new Set<string>()
+          for (const row of rows) {
+            if (
+              row.a !== Attr.changesetCommit &&
+              row.a !== Attr.changesetAbort &&
+              inOrg(row.e, request.org)
+            ) {
+              csInOrg.add(row.cs)
+            }
+          }
+          const mine = rows.filter((row) => csInOrg.has(row.cs))
+          const envelopes = []
+          const seen = new Set<string>()
+          for (const row of mine) {
+            if (seen.has(row.cs)) continue
+            seen.add(row.cs)
+            const envelope = yield* store.envelope(row.cs)
+            if (envelope) envelopes.push(envelope)
+          }
+          return {
+            cursor: end,
+            datoms: [...mine],
+            envelopes,
+          }
+        })
+
       return {
         Append: (request: AppendRequest) =>
-          asRpcError(accept(catalog, request, { store, sql, blobs })).pipe(
-            Effect.withSpan('SyncRpc.Append'),
-          ),
+          asRpcError(
+            Effect.gen(function* () {
+              const caller = yield* requireMembership(request.org)
+              return yield* accept(catalog, request, caller, {
+                store,
+                sql,
+                blobs,
+              })
+            }),
+          ).pipe(Effect.withSpan('SyncRpc.Append')),
         Pull: (request: { readonly org: string; readonly cursor: number }) =>
           Stream.fromEffect(
-            Effect.orDie(Effect.gen(function* () {
-              const rows = yield* store.streamFrom(request.cursor)
-              const end = rows.at(-1)?.seq ?? request.cursor
-              const csInOrg = new Set<string>()
-              for (const row of rows) {
-                if (
-                  row.a !== Attr.changesetCommit &&
-                  row.a !== Attr.changesetAbort &&
-                  inOrg(row.e, request.org)
-                ) {
-                  csInOrg.add(row.cs)
-                }
-              }
-              const mine = rows.filter((row) => csInOrg.has(row.cs))
-              const envelopes = []
-              const seen = new Set<string>()
-              for (const row of mine) {
-                if (seen.has(row.cs)) continue
-                seen.add(row.cs)
-                const envelope = yield* store.envelope(row.cs)
-                if (envelope) envelopes.push(envelope)
-              }
-              return {
-                cursor: end,
-                datoms: [...mine],
-                envelopes,
-              }
-            }).pipe(Effect.withSpan('SyncRpc.Pull'))),
+            Effect.gen(function* () {
+              yield* requireMembership(request.org)
+              return yield* Effect.orDie(pageOf(request))
+            }).pipe(Effect.withSpan('SyncRpc.Pull')),
           ),
         PutBlob: (request: {
           readonly org: string
@@ -402,22 +675,35 @@ const handlerLayer = (catalog: Catalog) =>
           readonly text: string
         }) =>
           Effect.gen(function* () {
-            if (request.org.length === 0) {
-              return yield* new OrgMismatch({
-                org: request.org,
-                entity: request.hash,
-              })
-            }
-            yield* blobs.put(request.hash, request.text).pipe(
+            yield* requireMembership(request.org)
+            yield* blobs.put(request.org, request.hash, request.text).pipe(
               Effect.mapError(
                 (error) => new BlobHashMismatch({ hash: error.hash }),
               ),
             )
             return { hash: request.hash }
           }).pipe(Effect.withSpan('SyncRpc.PutBlob')),
+        CompleteDeferred: (request: {
+          readonly org: string
+          readonly executionId: string
+          readonly deferredName: string
+          readonly exit: string
+        }) =>
+          Effect.gen(function* () {
+            yield* requireMembership(request.org)
+            yield* authority.completeDeferred(request).pipe(Effect.orDie)
+          }).pipe(Effect.withSpan('SyncRpc.CompleteDeferred')),
       }
     }),
   )
 
+/**
+ * The sync server: authenticated handlers, the server authority, and the
+ * operator's membership commands. Needs a log store, its SQL client, a blob
+ * store and a token verifier.
+ */
 export const syncServerLayer = (catalog: Catalog) =>
-  Layer.mergeAll(handlerLayer(catalog), authorityLayer)
+  Layer.mergeAll(handlerLayer(catalog), bearerAuthenticationLayer).pipe(
+    Layer.provideMerge(authorityLayer),
+    Layer.provideMerge(membershipsLayer),
+  )
