@@ -8,6 +8,8 @@ export type AttributeSpec = {
   readonly name: string
   readonly policy: ConflictPolicy
   readonly defining?: boolean
+  /** `server`: only server-authored changesets may write it (P11). */
+  readonly authority?: 'server'
 }
 
 export type EntityTypeSpec = {
@@ -133,6 +135,48 @@ export const engineCatalog: Catalog = {
       userContent: false,
       attributes: [
         { name: Attr.clockWakeAt, policy: 'write-once', defining: true },
+      ],
+    },
+  ],
+}
+
+/**
+ * Identity catalog pinned by P11 (ADR-0022). Every attribute is server-only.
+ * The account entity `A{sha256(iss, sub)}` lives under a server-only root and
+ * never leaves the server; an account never changes person. Membership
+ * `O{org}/M{person}` syncs with its organization; retracting the defining
+ * attribute revokes it.
+ */
+export const identityCatalog: Catalog = {
+  types: [
+    {
+      name: 'account',
+      defining: Attr.accountPerson,
+      composition: 'root',
+      userContent: false,
+      attributes: [
+        {
+          name: Attr.accountPerson,
+          policy: 'write-once',
+          defining: true,
+          authority: 'server',
+        },
+        { name: Attr.accountIssuer, policy: 'write-once', authority: 'server' },
+        { name: Attr.accountSubject, policy: 'write-once', authority: 'server' },
+      ],
+    },
+    {
+      name: 'membership',
+      defining: Attr.membershipGranted,
+      composition: 'prefix',
+      userContent: false,
+      attributes: [
+        {
+          name: Attr.membershipGranted,
+          policy: 'lww',
+          defining: true,
+          authority: 'server',
+        },
       ],
     },
   ],

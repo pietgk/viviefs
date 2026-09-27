@@ -151,6 +151,7 @@ const envelopeFor = (
   spanId: SPAN,
   sampled: false,
   command,
+  acceptedAt: null,
 })
 
 const session = <A>(

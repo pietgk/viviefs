@@ -24,8 +24,13 @@ const migrateSqlite = Effect.gen(function* () {
     trace_id TEXT NOT NULL,
     span_id TEXT NOT NULL,
     sampled INTEGER NOT NULL,
-    command TEXT NOT NULL
+    command TEXT NOT NULL,
+    accepted_at INTEGER
   )`
+  const columns = yield* sql<{ name: string }>`PRAGMA table_info(changesets)`
+  if (!columns.some((column) => column.name === 'accepted_at')) {
+    yield* sql`ALTER TABLE changesets ADD COLUMN accepted_at INTEGER`
+  }
   yield* sql`CREATE TABLE IF NOT EXISTS hlc_state (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     last_pt INTEGER NOT NULL,
@@ -61,8 +66,10 @@ const migratePg = Effect.gen(function* () {
     trace_id TEXT NOT NULL,
     span_id TEXT NOT NULL,
     sampled INTEGER NOT NULL,
-    command TEXT NOT NULL
+    command TEXT NOT NULL,
+    accepted_at BIGINT
   )`
+  yield* sql`ALTER TABLE changesets ADD COLUMN IF NOT EXISTS accepted_at BIGINT`
   yield* sql`CREATE TABLE IF NOT EXISTS hlc_state (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     last_pt BIGINT NOT NULL,
@@ -80,7 +87,8 @@ const migratePg = Effect.gen(function* () {
  * Creates the P04 log-store tables. Column names are pinned here (D58
  * `changesets` plus the datoms / hlc_state / device_cursors tables).
  * `device_cursors.device` holds any consumer id: a device, or a trace sink
- * as `trace/<sink>` (P10). The name stays pinned.
+ * as `trace/<sink>` (P10). The name stays pinned. `changesets.accepted_at`
+ * was added by P11 and is added to tables created before it.
  */
 export const migrateLogStore: Effect.Effect<
   void,

@@ -39,7 +39,7 @@ export type ProviderAccount = typeof ProviderAccount.Type
 export const VerifiedToken = Schema.Struct({
   account: ProviderAccount,
   roles: Schema.Array(Schema.String),
-  expiresAtMs: Schema.Number,
+  expiresAtMs: Schema.Finite,
 })
 export type VerifiedToken = typeof VerifiedToken.Type
 
@@ -67,7 +67,7 @@ export class TokenVerifier extends Context.Service<
 const Claims = Schema.Struct({
   iss: Schema.String,
   sub: Schema.String,
-  exp: Schema.Number,
+  exp: Schema.Finite,
   realm_access: Schema.optionalKey(
     Schema.Struct({ roles: Schema.Array(Schema.String) }),
   ),

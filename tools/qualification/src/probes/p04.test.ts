@@ -8,10 +8,11 @@ describe('P04 log store picks', () => {
     expect(APPEND_VOLUME).toBe(2_000)
   })
 
-  it('names eleven conformance checks including the duplicate-append positive control', () => {
-    expect(P04_CHECK_COUNT).toBe(11)
+  it('names twelve conformance checks including the duplicate-append positive control', () => {
+    expect(P04_CHECK_COUNT).toBe(12)
     expect(P04_CHECK_NAMES).toContain('duplicate append')
     expect(P04_CHECK_NAMES).toContain('hlc future skew')
     expect(P04_CHECK_NAMES).toContain('compaction horizon')
+    expect(P04_CHECK_NAMES).toContain('acceptance time')
   })
 })

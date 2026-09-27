@@ -37,6 +37,11 @@ export const Envelope = Schema.Struct({
   spanId: Schema.String,
   sampled: Schema.Boolean,
   command: Schema.String,
+  /**
+   * Server wall-clock milliseconds when the server accepted the changeset.
+   * Null until then. Set once: a later value never replaces it.
+   */
+  acceptedAt: Schema.NullOr(Schema.Int),
 })
 export type Envelope = typeof Envelope.Type
 

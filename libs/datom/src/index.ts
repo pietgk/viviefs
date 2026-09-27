@@ -48,6 +48,8 @@ export {
 } from './vocabulary.ts'
 export type { AttrName } from './vocabulary.ts'
 export {
+  ACCOUNT_ROOT,
+  accountIdFromHash,
   activityId,
   ancestorIds,
   ancestorPrefixes,
@@ -59,11 +61,18 @@ export {
   executionId,
   itemId,
   listId,
+  membershipId,
   orgId,
   parentId,
   underPrefix,
 } from './ids.ts'
-export { engineCatalog, evidenceCatalog, indexCatalog } from './catalog.ts'
+export {
+  engineCatalog,
+  evidenceCatalog,
+  identityCatalog,
+  indexCatalog,
+} from './catalog.ts'
+export { accountId } from './account.ts'
 export type {
   AttributeLookup,
   AttributeSpec,

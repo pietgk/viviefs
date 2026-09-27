@@ -56,6 +56,7 @@ const envelopeFor = (
   spanId: 'dddddddddddddddd',
   sampled: false,
   command: 'p05.probe',
+  acceptedAt: null,
 })
 
 const runCheck = (

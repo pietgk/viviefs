@@ -210,7 +210,8 @@ export const layer = Layer.effect(
 
           yield* sql`
             INSERT INTO changesets (
-              cs, actor, device, lease_epoch, trace_id, span_id, sampled, command
+              cs, actor, device, lease_epoch, trace_id, span_id, sampled, command,
+              accepted_at
             ) VALUES (
               ${envelope.cs},
               ${envelope.actor},
@@ -219,9 +220,11 @@ export const layer = Layer.effect(
               ${envelope.traceId},
               ${envelope.spanId},
               ${envelope.sampled ? 1 : 0},
-              ${envelope.command}
+              ${envelope.command},
+              ${envelope.acceptedAt}
             )
-            ON CONFLICT (cs) DO NOTHING
+            ON CONFLICT (cs) DO UPDATE SET accepted_at = excluded.accepted_at
+            WHERE changesets.accepted_at IS NULL
           `
 
           let inserted = 0
@@ -258,8 +261,10 @@ export const layer = Layer.effect(
         span_id: string
         sampled: unknown
         command: string
+        accepted_at: unknown
       }>`
-        SELECT cs, actor, device, lease_epoch, trace_id, span_id, sampled, command
+        SELECT cs, actor, device, lease_epoch, trace_id, span_id, sampled, command,
+          accepted_at
         FROM changesets
         WHERE cs = ${cs}
       `
@@ -274,6 +279,7 @@ export const layer = Layer.effect(
         spanId: row.span_id,
         sampled: asSeq(row.sampled) === 1,
         command: row.command,
+        acceptedAt: row.accepted_at == null ? null : asSeq(row.accepted_at),
       } satisfies Envelope
     })
 

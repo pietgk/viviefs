@@ -87,6 +87,7 @@ const envelope = (
   spanId: trace.spanId,
   sampled: trace.sampled,
   command: 'workflow.engine',
+  acceptedAt: null,
 })
 
 const latest = (

@@ -1,6 +1,11 @@
 import { describe, expect, it } from '@effect/vitest'
 import { Attr, CHANGESET_TTL_MS, isSystemAttr } from './vocabulary.ts'
-import { engineCatalog, evidenceCatalog, indexCatalog } from './catalog.ts'
+import {
+  engineCatalog,
+  evidenceCatalog,
+  identityCatalog,
+  indexCatalog,
+} from './catalog.ts'
 
 describe('P05 vocabulary', () => {
   it('pins changeset control and evidence exemplar names', () => {
@@ -59,5 +64,24 @@ describe('P10 engine vocabulary', () => {
     expect(byAttr.get(Attr.activityStarted)?.type.defining).toBe(
       Attr.activityExit,
     )
+  })
+})
+
+describe('P11 identity vocabulary', () => {
+  it('pins account and membership attribute names', () => {
+    expect(Attr.accountPerson).toBe('viviefs/account/person')
+    expect(Attr.accountIssuer).toBe('viviefs/account/issuer')
+    expect(Attr.accountSubject).toBe('viviefs/account/subject')
+    expect(Attr.membershipGranted).toBe('viviefs/membership/granted')
+    expect(isSystemAttr(Attr.membershipGranted)).toBe(true)
+  })
+
+  it('marks every identity attribute server-only', () => {
+    const { byAttr, byDefining } = indexCatalog(identityCatalog)
+    expect(byDefining.size).toBe(2)
+    expect([...byAttr.values()].every((l) => l.spec.authority === 'server')).toBe(true)
+    expect(byAttr.get(Attr.accountPerson)?.spec.policy).toBe('write-once')
+    expect(byAttr.get(Attr.membershipGranted)?.spec.policy).toBe('lww')
+    expect(byAttr.get(Attr.accountPerson)?.type.composition).toBe('root')
   })
 })

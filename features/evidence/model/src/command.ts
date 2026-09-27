@@ -46,6 +46,7 @@ const envelopeFor = (mint: CommandMint, command: string): EnvelopeType => ({
   spanId: 'ffffffffffffffff',
   sampled: false,
   command,
+  acceptedAt: null,
 })
 
 const finish = (

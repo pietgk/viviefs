@@ -125,6 +125,7 @@ const envelope = (cs: string, device: string): EnvelopeType => ({
   spanId: '0000000000000000',
   sampled: false,
   command: 'p07.park',
+  acceptedAt: null,
 })
 
 const parkGateLayer = Layer.effect(

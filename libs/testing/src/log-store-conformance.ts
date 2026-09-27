@@ -24,6 +24,7 @@ export type CheckResult = {
 export const P04_CHECK_NAMES = [
   'append',
   'duplicate append',
+  'acceptance time',
   'hlc mint',
   'hlc backwards clock',
   'hlc reboot',
@@ -78,6 +79,7 @@ const envelopeFor = (cs: string): EnvelopeType => ({
   spanId: 'bbbbbbbbbbbbbbbb',
   sampled: false,
   command: 'p04.probe',
+  acceptedAt: null,
 })
 
 const selfCommitted = (e: string, v: string, tx: string) => ({
@@ -186,6 +188,33 @@ export const runLogStoreChecks = (
               throw new Error('new tx missing after duplicate')
             }
             return { duplicates: duplicate.duplicates, insertedNew: fresh.inserted }
+          }),
+        ),
+      ),
+    )
+
+    checks.push(
+      yield* runCheck(
+        'acceptance time',
+        use(
+          Effect.gen(function* () {
+            const store = yield* LogStore
+            const tx = yield* store.mint()
+            const datom = selfCommitted('Oprobe/Laccepted', 'one', tx)
+            const local = envelopeFor(tx)
+            yield* store.append([datom], local)
+            const before = (yield* store.envelope(tx))?.acceptedAt
+            yield* store.append([datom], { ...local, acceptedAt: 1_000 })
+            const filled = (yield* store.envelope(tx))?.acceptedAt
+            yield* store.append([datom], { ...local, acceptedAt: 2_000 })
+            yield* store.append([datom], local)
+            const kept = (yield* store.envelope(tx))?.acceptedAt
+            if (before !== null || filled !== 1_000 || kept !== 1_000) {
+              throw new Error(
+                `acceptedAt ${JSON.stringify({ before, filled, kept })}`,
+              )
+            }
+            return { before, filled, kept }
           }),
         ),
       ),

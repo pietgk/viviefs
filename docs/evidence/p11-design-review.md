@@ -7,6 +7,7 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | Grilling (Q1-Q20) | agreed |
 | Glossary and ADR-0022 amendment | written |
 | `libs/identity`: `TokenVerifier` (OIDC over discovery and JWKS), `Caller`; fake issuer and token contract in `@viviefs/testing/identity` | done (step 2): 9 contract checks pass on the fake and on the OIDC verifier against a served fake; a payload-trusting verifier fails 7 of them; removing the audience check fails exactly `foreign audience` |
+| Log (step 3a): `acceptedAt` on the envelope, set once, in every store; identity catalog (account, membership) with server-only attributes; `membershipId`, `accountId` | done: P04 gains check 12 `acceptance time` (sqlite-node and PGlite pass); an existing `changesets` table gains the column |
 | Server boundary, Keycloak lab, device sign-in | not started |
 | Probe (`p11.ts`) and evidence note | not started |
 | Gate P11 | not run |

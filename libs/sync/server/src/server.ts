@@ -161,6 +161,7 @@ const authorityLayer: Layer.Layer<SyncAuthority, never, LogStore> =
                 spanId: '0000000000000000',
                 sampled: false,
                 command: 'server.deferred',
+                acceptedAt: null,
               },
             )
           },

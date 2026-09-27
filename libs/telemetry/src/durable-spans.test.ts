@@ -70,6 +70,7 @@ const envelope = (cs: string, context: { traceId: string; spanId: string }): Env
   spanId: context.spanId,
   sampled: true,
   command: 'test.command',
+  acceptedAt: null,
 })
 envelopes.set(byEntity(EXEC, Attr.workflowStarted).cs, envelope(byEntity(EXEC, Attr.workflowStarted).cs, CALLER))
 envelopes.set(byEntity(APPROVAL, Attr.deferredExit).cs, envelope(byEntity(APPROVAL, Attr.deferredExit).cs, { traceId: 'e'.repeat(32), spanId: 'f'.repeat(16) }))

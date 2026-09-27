@@ -14,6 +14,16 @@ export const itemId = (org: string, list: string, item: string): string =>
 export const evidenceId = (org: string, evidence: string): string =>
   `${orgId(org)}/E${evidence}`
 
+/** A person's membership of one organization (P11). */
+export const membershipId = (org: string, person: string): string =>
+  `${orgId(org)}/M${person}`
+
+/** Server-only root `A`: one entity per identity-provider account (P11). */
+export const ACCOUNT_ROOT = 'A'
+
+export const accountIdFromHash = (hashHex: string): string =>
+  `${ACCOUNT_ROOT}${hashHex}`
+
 /**
  * Journal path segments encode `/` so `DurableClock/wait` cannot look like
  * another composition level. Separator `/` stays the id tree delimiter (D38).
