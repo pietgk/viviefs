@@ -98,7 +98,7 @@ membership verifies, and its caller has no person. Every handler then answers
 **Device.** The workflow engine writes its journal on behalf of the signed-in
 person (`EngineConfig.actor`), so a pushed journal write passes the actor
 check. Lab runs that never reach a server use a fixed lab person. One local
-database per person; signing out closes it. Refresh
+replica per provider account; signing out closes it. Refresh
 token in `expo-secure-store` with `offline_access` on iOS and Android; in
 memory on web. A failed refresh enters sign-in-needed and keeps the outbox.
 After `MembershipMissing` the org's local copy is read-only and its outbox rows
@@ -140,7 +140,7 @@ P11 checks, each able to fail on its own, are listed in the
 contract on fake and Keycloak; PKCE on iOS, Android and web; membership on
 `Append`, `Pull`, `PutBlob` and `CompleteDeferred`; lease; actor; server-only
 attributes; immediate revocation; `acceptedAt`; blobs per organization;
-sign-in-needed; one database per person. Positive control: cross-organization
+sign-in-needed; one local replica per provider account. Positive control: cross-organization
 access denied while same-organization access allowed.
 
 Stated limitation: stored history is trusted, not provable, against an
@@ -150,6 +150,18 @@ against the operator) is decided before the first consumer app that makes
 audit claims, together with P13. Until then the server log is never compacted.
 
 The lab runs plain HTTP. TLS is decided with production hosting.
+
+Known limitations (P11 grilling Q23, 2026-09-28), decided in the identity,
+keys and trust step (Q24): `envelope.device` is chosen by the device and not
+authenticated; any member of an organization may take over any execution's
+lease there by raising the epoch, which is how failover works (D15), but who
+may take a lease is unspecified.
+
+**How a device labels its writes** (Q22). The device keeps a copy of the
+server's statement about the signed-in provider account, from the `Caller`
+RPC: its person (or none) and its memberships. It is fetched again at every
+sign-in and treated as stale when the server refuses. The device never
+decides who it is.
 
 ## Outcome
 

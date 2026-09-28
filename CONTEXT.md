@@ -187,10 +187,10 @@ _Avoid_: tamper-proof, immutable storage
 ## Identity
 
 **Identity provider**:
-The external service that owns logins and issues access tokens: Keycloak in the
-lab, any OIDC provider in production. It authenticates; it does not hold
-membership.
-_Avoid_: auth server, IdP (in code)
+The external service that authenticates the holder of a provider account and
+issues access tokens: Keycloak in the lab, any OIDC provider in production. It
+does not know people or memberships.
+_Avoid_: auth server, IdP (in code), account provider
 
 **Access token**:
 A short-lived signed token that proves who is calling, sent with every request
@@ -198,9 +198,21 @@ to the server.
 _Avoid_: session, API key
 
 **Sign-in session**:
-The device's relationship with the identity provider: signed out, signed in, or
-sign-in needed. The only thing called a session.
-_Avoid_: login state
+On one device, the tokens that prove a provider account recently authenticated
+at the identity provider, with their state: signed in, or sign-in needed.
+Signing out ends it. A device has at most one active. The only thing called a
+session.
+_Avoid_: login state, identity
+
+**Device**:
+One installation of an app. It keeps one local replica per provider account
+that signed in on it. Its id is chosen by the device and not authenticated.
+_Avoid_: client, peer
+
+**Local replica**:
+A device's copy of what one provider account may sync, in its own database.
+Signing out closes it; removing the account from the device deletes it.
+_Avoid_: cache, local store
 
 **Provider account**:
 A person's account at one identity provider, identified by the token's issuer

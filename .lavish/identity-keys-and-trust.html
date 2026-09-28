@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Identity, keys and trust</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+  body { font-size: 16px; line-height: 1.6; }
+  .ikt-section { scroll-margin-top: 1rem; }
+  .ikt-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .ikt-mermaid svg { margin: 0 auto; }
+  code.ikt-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  td.ikt-term { white-space: nowrap; overflow-wrap: normal; font-weight: 600; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">P11 grilling</span>
+    <span class="badge badge-outline">Q22, Q23, Q24</span>
+    <span class="badge badge-soft badge-success">Decided 2026-09-28</span>
+    <span class="badge badge-soft badge-warning">Deep dive: not started</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Identity, keys and trust</h1>
+  <p class="text-lg opacity-80">What "signed in" actually means, who vouches for what, how a device labels its own writes, and how our account-based model compares with vivief's key-based model and with Holochain. The page is meant for reasoning now and for the deep dive later.</p>
+  <div class="alert alert-info alert-soft">
+    <div>
+      <div class="font-semibold">The whole answer in four sentences</div>
+      <ol class="list-decimal ml-5 mt-1 space-y-1">
+        <li>Signing in means <b>a provider account</b> proved itself to the <b>identity provider</b>, and the device now holds tokens that prove it. It is not "the device" and not "the person" signing in.</li>
+        <li>The <b>person</b> is our server's concept. The server maps provider accounts to people, and only the server can.</li>
+        <li>A device never decides who it is. It keeps a <b>copy of the server's statement</b> (the <code class="ikt-inline">Caller</code> RPC) and labels its writes with it; the server checks the label again on every write.</li>
+        <li>A <b>key-based</b> model (vivief, Holochain) would make identity cryptographic and checkable by anyone. That belongs in one deep-dive step, together with tamper-evidence, before the first app that makes audit claims.</li>
+      </ol>
+    </div>
+  </div>
+  <nav class="flex flex-wrap gap-2 text-sm">
+    <a class="btn btn-sm btn-ghost" href="#words">1. The words</a>
+    <a class="btn btn-sm btn-ghost" href="#signin">2. What signing in means</a>
+    <a class="btn btn-sm btn-ghost" href="#label">3. How a device labels its writes</a>
+    <a class="btn btn-sm btn-ghost" href="#trust">4. Trust chains</a>
+    <a class="btn btn-sm btn-ghost" href="#models">5. Three models</a>
+    <a class="btn btn-sm btn-ghost" href="#limits">6. Known limitations</a>
+    <a class="btn btn-sm btn-ghost" href="#deepdive">7. The deep dive</a>
+    <a class="btn btn-sm btn-ghost" href="#quiz">8. Check yourself</a>
+  </nav>
+</header>
+
+<!-- 1 WORDS -->
+<section id="words" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">1. The words, and who vouches for each</h2>
+  <p>These are the definitions in <code class="ikt-inline">CONTEXT.md</code>. The column that matters most is the last one: every term has exactly one party that stands behind it.</p>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table table-zebra">
+      <thead><tr><th>Term</th><th>What it is</th><th>Example</th><th>Vouched for by</th></tr></thead>
+      <tbody>
+        <tr><td class="ikt-term">Identity provider</td><td>The external service that authenticates the holder of a provider account and issues tokens. Knows nothing about people or memberships.</td><td>Keycloak (lab), any OIDC provider (production)</td><td>itself</td></tr>
+        <tr><td class="ikt-term">Provider account</td><td>One account at one identity provider, identified by issuer and subject <code class="ikt-inline">(iss, sub)</code>. We never say just "account".</td><td><code class="ikt-inline">(http://localhost:28080/realms/viviefs, a11ce000-…)</code></td><td>the identity provider</td></tr>
+        <tr><td class="ikt-term">Authentication</td><td>The identity provider checking that someone holds a provider account: password, passkey, second factor. Only the identity provider does it.</td><td>Alice types her password at Keycloak</td><td>the identity provider</td></tr>
+        <tr><td class="ikt-term">Sign-in session</td><td>On one device, the tokens that prove a provider account recently authenticated, with their state: <em>signed in</em> or <em>sign-in needed</em>. Signing out ends it. At most one is active per device.</td><td>Alice's tokens on her phone</td><td>the identity provider's signature on the tokens</td></tr>
+        <tr><td class="ikt-term">Device</td><td>One installation of an app. Its id is chosen by the device itself.</td><td><code class="ikt-inline">p11-a</code></td><td><b>nobody</b> (Q23)</td></tr>
+        <tr><td class="ikt-term">Local replica</td><td>A device's copy of what one provider account may sync, in its own database. Signing out closes it; removing the account from the device deletes it.</td><td>Alice's database on her phone</td><td>the device itself (self-trust)</td></tr>
+        <tr><td class="ikt-term">Person</td><td>One human, across organizations, with an opaque id the server mints. The server maps provider accounts to it through the account entity in its log.</td><td><code class="ikt-inline">P7</code></td><td>our server</td></tr>
+        <tr><td class="ikt-term">Membership</td><td>A person's right to act in one organization. Server-only datoms.</td><td><code class="ikt-inline">Oacme/M{P7}</code></td><td>our server</td></tr>
+        <tr><td class="ikt-term">Caller</td><td>The server's per-request answer to "who is this?": the verified provider account, its person (or none), the roles it carries.</td><td>this one <code class="ikt-inline">Append</code></td><td>our server, for that request</td></tr>
+        <tr><td class="ikt-term">Roles</td><td>Claims the identity provider puts in the token. Carried, not enforced (Q1).</td><td><code class="ikt-inline">member</code></td><td>the identity provider</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ikt-mermaid"><pre class="mermaid">
+flowchart LR
+  subgraph IDP["Identity provider (Keycloak)"]
+    PA["Provider account&lt;br/&gt;(iss, sub)"]
+  end
+  subgraph DEV["Device"]
+    SS["Sign-in session&lt;br/&gt;tokens + state"]
+    LR[("Local replica&lt;br/&gt;one per provider account")]
+  end
+  subgraph SRV["Our server"]
+    AE["Account entity&lt;br/&gt;A{hash(iss, sub)}"]
+    P["Person P7"]
+    M["Membership&lt;br/&gt;Oacme/M{P7}"]
+  end
+  PA -- "authenticates, issues tokens" --> SS
+  SS -- "token on every call" --> AE
+  AE -- "names" --> P
+  P -- "may act in" --> M
+  SS --- LR
+  </pre></div>
+  <div class="alert alert-soft">
+    <span><b>Where the words overlapped before:</b> "identity" was used for the provider account, the session and the person all at once. After this pass, <em>identity</em> is only the name of the pattern (<code class="ikt-inline">@viviefs/identity</code>). Nothing in the code or glossary is called "an identity".</span>
+  </div>
+</section>
+
+<!-- 2 SIGN IN -->
+<section id="signin" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">2. What signing in means</h2>
+  <p>A precise version of "the device is signed in": the <b>holder</b> of a provider account authenticated at the identity provider, and the identity provider gave the device tokens that say so. The device carries the proof; it did not authenticate, and it does not become anybody.</p>
+  <div class="ikt-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant H as Alice (holder)
+  participant D as Device
+  participant K as Identity provider
+  participant S as Our server
+  D->>K: start sign-in (PKCE)
+  H->>K: password or passkey (authentication)
+  K-->>D: tokens for provider account (iss, sub)
+  Note over D: sign-in session: signed in
+  D->>S: call + access token
+  S->>S: verify token, look up person
+  S-->>D: answer as Caller (person P7)
+  </pre></div>
+  <div class="ikt-mermaid"><pre class="mermaid">
+stateDiagram-v2
+  [*] --> SignedIn: sign in (PKCE)
+  SignedIn --> SignInNeeded: refresh refused (invalid_grant)
+  SignInNeeded --> SignedIn: sign in again
+  SignedIn --> [*]: sign out (session ends, local replica closes)
+  SignInNeeded --> [*]: sign out
+  </pre></div>
+  <p class="text-sm opacity-80">"Signed out" is not a state of a session: signing out ends the session. The local replica stays on the device until someone removes the account from it (Q11).</p>
+</section>
+
+<!-- 3 LABEL -->
+<section id="label" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">3. How a device labels its writes (Q22)</h2>
+  <p>Every changeset carries <code class="ikt-inline">envelope.actor</code>, and the server refuses it unless that is the caller's person. The device has to write that label <em>before</em> it reaches the server, because offline drafts exist. So it keeps a copy of the server's own statement.</p>
+  <div class="ikt-mermaid"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant D as Device (sign-in session)
+  participant S as Our server
+  D->>S: Caller
+  S-->>D: person P7, memberships [acme]
+  Note over D: kept inside the sign-in session
+  D->>D: offline edit, envelope.actor = P7
+  D->>S: Append (actor P7)
+  S->>S: actor == caller's person? member of acme?
+  S-->>D: AppendAck
+  Note over D,S: on a refusal (MembershipMissing, ActorMismatch) the copy is stale: fetch Caller again
+  </pre></div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">What the device knows</h3>
+      <p class="text-sm">Nothing about itself that anyone trusts. It holds tokens (the identity provider's statement) and a copy of <code class="ikt-inline">Caller</code> (the server's statement). Both expire or go stale.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">What the server trusts</h3>
+      <p class="text-sm">Only the token's signature and its own log. The label on a changeset is a claim the server checks, every time.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- 4 TRUST -->
+<section id="trust" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">4. Trust chains</h2>
+  <div class="ikt-mermaid"><pre class="mermaid">
+flowchart TB
+  U["Alice"] -- "self-trust" --> D["Her device and local replica"]
+  D -- "TLS (production), plain HTTP (lab)" --> S["Our server"]
+  S -- "signing keys fetched from the provider's JWKS URL;&lt;br/&gt;that URL's TLS certificate chains to a root CA" --> K["Identity provider"]
+  S -- "trusted, not provable (Q15)" --> L[("Server log")]
+  X(["Device's own claims:&lt;br/&gt;device id, actor label"]) -. "trusted by nobody" .-> S
+  classDef warn fill:#7f1d1d,stroke:#f87171,color:#fee2e2
+  class X warn
+  </pre></div>
+  <p class="text-sm opacity-80">A token is not a certificate. The identity provider signs tokens with a key, and the server trusts that key because it fetched it from the provider's own URL. What chains to a root authority is the TLS certificate of that URL, which is why production needs TLS.</p>
+</section>
+
+<!-- 5 MODELS -->
+<section id="models" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">5. Three models side by side</h2>
+  <p>The biggest difference is where identity is rooted: an account at a provider, or a key the device holds.</p>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table">
+      <thead><tr><th></th><th>viviefs today (P11)</th><th>vivief (earlier design)</th><th>Holochain</th></tr></thead>
+      <tbody>
+        <tr><td class="ikt-term">Identity is</td><td>A provider account, mapped to a person by the server</td><td>A keypair per device (Noise ED25519, later iroh-net). "The keypair IS the peer identity."</td><td>The agent's public key</td></tr>
+        <tr><td class="ikt-term">Proven by</td><td>A token signed by the identity provider</td><td>The transport handshake with that key</td><td>Signatures on every action</td></tr>
+        <tr><td class="ikt-term">More devices</td><td>Each signs in with the same provider account</td><td>Device links as datoms: <code class="ikt-inline">identity/device</code> asserted from a primary client (QR code)</td><td>DeepKey links device keys to one key set</td></tr>
+        <tr><td class="ikt-term">Who validates writes</td><td>Our server (D18)</td><td>The server checks handshake keys against device datoms; Contracts validate datoms</td><td>Every peer runs the same validation rules (integrity zomes)</td></tr>
+        <tr><td class="ikt-term">History</td><td>The server log, trusted not provable</td><td>Hypercore append-only logs (signed)</td><td>Each agent's source chain: signed, hash-linked</td></tr>
+        <tr><td class="ikt-term">Joining a group</td><td>Membership datoms, granted by the operator</td><td>Trust and Projection Contracts</td><td>A membrane proof</td></tr>
+        <tr><td class="ikt-term">Authorization kept apart from identity?</td><td>Yes: middleware authenticates, handlers authorize</td><td>Yes, explicitly: "separate concerns, must not be conflated"</td><td>Validation rules and capability grants</td></tr>
+        <tr><td class="ikt-term">Cost</td><td>Low; built</td><td>Key management, device linking UX</td><td>A Rust conductor and WASM sandbox; built for trustless multi-party settings</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">What vivief already concluded</h3>
+      <ul class="text-sm list-disc ml-4 space-y-1">
+        <li>Holochain's split between validation rules every peer runs and application logic validated the Contract / effectHandler split; the runtime was not adopted: "Vivief is a small trusted-party system. Massive overhead."</li>
+        <li>Identity is datoms: external ids, keypairs and device links on the same entity.</li>
+        <li>Transport identity and application authorization are separate concerns.</li>
+      </ul>
+      <p class="text-xs opacity-70">Sources: <code class="ikt-inline">vivief/docs/contract/adr/0047-datom-store-sync.md</code> section 9, <code class="ikt-inline">contract/datom/architecture.md</code> section 11.4, <code class="ikt-inline">archive/vivief-concepts/vivief-concepts-old-7-concepts.md</code> section 6.3, <code class="ikt-inline">archive/p2p/vivief-p2p-lean-stack-adr.md</code>, <code class="ikt-inline">contract/p2p/lean-stack-v2.md</code>.</p>
+    </div></div>
+    <div class="card card-border border-warning/50 bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">A caution on the Holochain column</h3>
+      <p class="text-sm">The Holochain column is from memory and from vivief's notes. The deep dive checks it against Holochain's own documentation before any decision rests on it.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- 6 LIMITS -->
+<section id="limits" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">6. Known limitations, recorded not fixed (Q23)</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border border-error/40 bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">The device id is not authenticated</h3>
+      <p class="text-sm"><code class="ikt-inline">envelope.device</code> is whatever the device writes. Nothing binds it to a key or to a person. A key per device, linked to its person, would.</p>
+    </div></div>
+    <div class="card card-border border-error/40 bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Who may take over a lease is unspecified</h3>
+      <p class="text-sm">Any member of an organization can take over any execution's lease there by raising the epoch. That is how failover works (D15), but which member, and which device, is an authorization question for roles and device identity.</p>
+    </div></div>
+  </div>
+  <p class="text-sm opacity-80">Both are in ADR-0022. P11 still enforces what its gate claims: membership on sync, lease and commands.</p>
+</section>
+
+<!-- 7 DEEP DIVE -->
+<section id="deepdive" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">7. The deep dive: one step, "Identity, keys and trust" (Q24)</h2>
+  <div class="alert alert-info alert-soft">
+    <span><b>Starting point:</b> earlier vivief work and other research already hold a lot of P2P and identity thinking. The deep dive starts from that, not from a blank page, and records which of its conclusions still hold for viviefs.</span>
+  </div>
+  <div class="overflow-x-auto rounded-box border border-base-content/10">
+    <table class="table">
+      <thead><tr><th>Question</th><th>Why it belongs here</th></tr></thead>
+      <tbody>
+        <tr><td>Hash chain with device-held checkpoints, and signed changesets</td><td>Q15, merged in: signing is the identity decision</td></tr>
+        <tr><td>A key per device, linked to a person (device links as datoms, as in vivief)</td><td>Closes the unauthenticated device id; makes <code class="ikt-inline">actor</code> a signature instead of a label</td></tr>
+        <tr><td>One person, several devices: linking, recovery, a lost phone, revocation</td><td>Keys make this the hard part</td></tr>
+        <tr><td>How provider accounts relate to keys</td><td>The identity provider may stay the way people sign in while keys prove authorship</td></tr>
+        <tr><td>Fit with P13: one key per person for crypto-shredding</td><td>Signing keys and erasure keys must not be confused</td></tr>
+        <tr><td>Who may take over a lease</td><td>Q23</td></tr>
+        <tr><td>Is P2P a goal at all?</td><td>Decides whether validation stays on the server (D18) or also runs on peers</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">When</h3>
+      <p class="text-sm">Before the first consumer app that makes audit claims, together with P13. Until then: no server log compaction; crypto-shredding hashes stored ciphertext.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Inputs</h3>
+      <p class="text-sm">vivief's P2P, identity and security documents; Holochain from primary sources; other key-based systems found during research.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">Shape</h3>
+      <p class="text-sm">Research first, then a grilling, then ADRs and a gate, like P11.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- 8 QUIZ -->
+<section id="quiz" class="ikt-section space-y-4">
+  <h2 class="text-2xl font-bold">8. Check yourself</h2>
+  <div class="space-y-2">
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Alice signs in on her phone. Who authenticated?</div>
+      <div class="collapse-content text-sm"><p>Alice, as the holder of a provider account, at the identity provider. The phone only started the flow and received the tokens.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Does Keycloak know that Alice is person P7?</div>
+      <div class="collapse-content text-sm"><p>No. Keycloak knows provider accounts. Only our server maps a provider account to a person, through the account entity in its log.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">A tampered phone writes <code class="ikt-inline">actor = P9</code>. What happens?</div>
+      <div class="collapse-content text-sm"><p>Locally, nothing stops it. When it pushes, the server compares the label with the caller's person and answers <code class="ikt-inline">ActorMismatch</code>. The label is a claim, not an identity.</p></div></div>
+    <div class="collapse collapse-arrow bg-base-200"><input type="checkbox"><div class="collapse-title font-medium">Why not fix the device id in P11?</div>
+      <div class="collapse-content text-sm"><p>Doing it properly means device keys, and that is the same decision as signed changesets. Deciding half of it now would mean deciding it twice.</p></div></div>
+  </div>
+</section>
+
+<footer class="pt-6 border-t border-base-content/10 text-sm opacity-70 space-y-1">
+  <p>Related pages: <a class="link" href="p11-q5-token-transport.html">How a request proves who sent it</a> · <a class="link" href="p11-log-tampering.html">Who can tamper with the datom log</a>. Decisions: <a class="link" href="../docs/evidence/p11-design-review.md">P11 design review</a> (Q22-Q24), ADR-0022, <code class="ikt-inline">CONTEXT.md</code> (Identity section).</p>
+</footer>
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) { paint.clearRect(0,0,1,1); paint.fillStyle="#000"; paint.fillStyle=color; paint.fillRect(0,0,1,1); return paint.getImageData(0,0,1,1).data; }
+  function compositeRgba(f, b) {
+    const fa = f[3]/255, ba = b[3]/255, a = fa + ba*(1-fa);
+    if (a === 0) return [0,0,0,0];
+    return [(f[0]*fa + b[0]*ba*(1-fa))/a, (f[1]*fa + b[1]*ba*(1-fa))/a, (f[2]*fa + b[2]*ba*(1-fa))/a, a*255];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rb = toRgba(getComputedStyle(root).backgroundColor);
+    const bb = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0,0,0,0];
+    const [r,g,b,a] = compositeRgba(bb, rb);
+    if (a > 0) return (0.2126*r + 0.7152*g + 0.0722*b)/255 < 0.5;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied, rendering = false, queued = false;
+  function queueRender() { queued = true; if (rendering) return; void render(); }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "strict" });
+        for (const { el, src } of diagrams) { el.removeAttribute("data-processed"); el.textContent = src; }
+        try { await mermaid.run({ nodes: diagrams.map((d) => d.el) }); } catch (e) { console.error("Mermaid render failed:", e); return; }
+        applied = theme;
+      }
+    } finally { rendering = false; if (queued) queueRender(); }
+  }
+  if (document.readyState === "complete") queueRender(); else window.addEventListener("load", queueRender, { once: true });
+  const obs = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) if (el) obs.observe(el, { attributes: true, attributeFilter: ["data-theme","class","style"] });
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>

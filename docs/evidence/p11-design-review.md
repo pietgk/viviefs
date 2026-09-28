@@ -41,7 +41,7 @@ Decisions behind it: D18 (server-side isolation, never trust a client org id) an
 | 8 | **Acceptance time**: the server stamps `acceptedAt` on accept, `Pull` returns it, and an outbox envelope has none | Node | the device can set it, or it is lost |
 | 9 | **Blobs per organization**: the same hash in two orgs is stored independently; `FileMissing` reflects only the caller's org | Node | one org learns whether another holds a file |
 | 10 | **Sign-in needed**: a failed refresh keeps the outbox; signing in again resumes sync | iOS, Android, web | work is discarded, or sync loops on a dead session |
-| 11 | **Database per person**: A signs out, B signs in and sees none of A's data or outbox; A signs back in and finds both intact | iOS, Android, web | data or outbox leaks between people on one device |
+| 11 | **Local replica per provider account**: A signs out, B signs in and sees none of A's data or outbox; A signs back in and finds both intact | iOS, Android, web | data or outbox leaks between people on one device |
 | 12 | **Server-only root**: after `grantMembership`, a member's `Pull` contains the membership and no account datom; a client changeset that writes an account entity is refused | Node | an account datom (a provider subject) reaches a device, or a client links an account |
 
 Not a gate check, a verify rule: only tests, `tools/` and dev composition may import the fake issuer. It lives in `libs/testing` (`layer:testing`), which no core, adapter or feature project may depend on.
@@ -90,7 +90,7 @@ Grilling 2026-09-27. Each answer is the agreed recommendation unless noted.
 | Q8 | Who a changeset names | A person: one per human, an opaque id minted by the server. The server maps each identity-provider subject `(iss, sub)` to it, so history survives a change of identity provider. |
 | Q9 | Token storage | iOS and Android: refresh token in `expo-secure-store`, scope `offline_access`. Web: in memory only for P11; production web sessions go with production hosting. Never `localStorage`. |
 | Q10 | Expiry while offline | Local writes need no token. Only push, pull and upload do. Network failure retries; a failed refresh (`invalid_grant`) enters "sign-in needed" and keeps the outbox. |
-| Q11 | Two people on one device | One local database per person. Signing out closes it; "remove this account from this device" deletes it. The device id stays per install. |
+| Q11 | Two people on one device | One local replica per provider account (amended 2026-09-28: the device knows the account before it knows the person). Signing out closes it; "remove this account from this device" deletes it. The device id stays per install. |
 | Q12 | Local copy after `MembershipMissing` | Read-only and marked revoked. That org's outbox rows become `rejected` and are kept. Local deletion is decided with P13. |
 | Q13 | Trace projector on devices | Not in P11. Wired with the first consumer app. |
 | Q14 | Server acceptance time | In P11. The server stamps it on every accepted changeset; it syncs as a server-authored fact. |
@@ -101,6 +101,9 @@ Grilling 2026-09-27. Each answer is the agreed recommendation unless noted.
 | Q19 | Where the acceptance time lives | A field on the envelope, `acceptedAt`, empty until the server accepts. |
 | Q20 | Names | Section 4. |
 | Q21 | The account-to-person mapping: a `people` table or the log | The log (2026-09-27, raised after step 2). A table would be the first domain fact outside the log: no history, outside the audit trail and a future hash chain. Account entity `A{sha256(iss, sub)}` under a server-only root; persons are minted only by `grantMembership`; account datoms travel in their own changeset. ADR-0006 now states "domain truth lives only in the log". |
+| Q22 | How a device labels its writes with the right person | Reframed 2026-09-28: a device does not know who it is; it keeps a copy of the server's statement. One authenticated RPC, `Caller`, returns what the server knows about the signed-in provider account: its person (or none) and its memberships. The device keeps it inside the sign-in session, fetches it again at every sign-in, and treats it as stale when the server refuses. |
+| Q23 | Device identity and lease authorization | Recorded as known limitations in ADR-0022, not fixed in P11: `envelope.device` is chosen by the device and not authenticated, and any member may take over any execution's lease in its organization (by design for failover; who may is unspecified). Decided in the identity, keys and trust step. |
+| Q24 | When to design identity properly | One step, "Identity, keys and trust", merging Q15 (tamper-evidence, signed changesets) with device keys, person key sets, recovery, revocation, lease authorization and whether P2P is a goal. Before the first consumer app that makes audit claims. Inputs: vivief's P2P and identity work, Holochain from primary sources. Explainer: [identity, keys and trust](../../.lavish/identity-keys-and-trust.html). |
 
 ## 4. Names
 
@@ -153,7 +156,7 @@ Each step ends with a commit and a green `pnpm verify`.
 3. Log and protocol: `acceptedAt` on the envelope in every log store, the catalog's server-only flag, `Membership`, the account entity, `grantMembership` / `revokeMembership`, `BearerAuthentication`, the new errors, blobs per org, `CompleteDeferred` as an RPC. P09's checks move onto the authenticated protocol.
 4. `apps/evidence-server`: HTTP composition with `TokenVerifier.oidc`.
 5. Keycloak lab: image pinned by digest in `lab-images.json` (26.7.3, the digest complyj pinned), realm file with pinned users and an audience mapper, the contract suite against Keycloak.
-6. Device: `SignInSession` over `expo-auth-session` and `expo-secure-store`, the client half of `BearerAuthentication`, one database per person, the sign-in-needed state.
+6. Device: `SignInSession` over `expo-auth-session` and `expo-secure-store`, the client half of `BearerAuthentication`, the `Caller` RPC (Q22), one local replica per provider account, the sign-in-needed state.
 7. `p11.ts` with checks 1-11, the evidence note with span review, ADR-0022 Observed.
 8. A sequential P01-P11 run on one committed tree.
 
