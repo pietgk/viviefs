@@ -19,6 +19,7 @@ it('prints usage and exits 1 when the action is missing', async () => {
   expect(result.stderr).toContain('Usage: pnpm qualify')
   expect(result.stderr).toContain('--gate')
   expect(result.stderr).toContain('--foundation')
+  expect(result.stderr).toContain('--through')
   expect(result.stderr).toContain(implementedGates.join(', '))
 })
 
@@ -45,6 +46,18 @@ it('accepts --foundation as a qualify flag before refusing an unimplemented gate
   expect(result.code).toBe(1)
   expect(result.stderr).toContain('not implemented')
   expect(result.stderr).not.toContain('Unknown or incomplete argument')
+})
+
+it('refuses --through an unimplemented gate before running anything', async () => {
+  const result = await runCli(['qualify', '--through', 'P99'])
+  expect(result.code).toBe(1)
+  expect(result.stderr).toContain('P99 is not implemented')
+})
+
+it('refuses --through combined with another selector', async () => {
+  const result = await runCli(['qualify', '--through', 'P11', '--gate', 'P01'])
+  expect(result.code).toBe(1)
+  expect(result.stderr).toContain('--through cannot be combined')
 })
 
 it('prints cumulative ledger state', async () => {

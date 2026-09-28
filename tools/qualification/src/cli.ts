@@ -9,7 +9,7 @@ import { command } from './process.ts'
 import { beginGate, ledgerState, recordGate } from './ledger.ts'
 import { foundationGates, gateProbes, implementedGates } from './gates.ts'
 
-export const USAGE = `Usage: pnpm qualify [--gate Pnn | --foundation]. pnpm ledger prints cumulative state. Gates: ${implementedGates.join(', ')}.`
+export const USAGE = `Usage: pnpm qualify [--gate Pnn | --foundation | --through Pnn]. pnpm ledger prints cumulative state. Gates: ${implementedGates.join(', ')}.`
 
 class UsageError extends Schema.TaggedError<UsageError>()('UsageError', {
   message: Schema.String,
@@ -42,12 +42,20 @@ const failUsage = Effect.fnUntraced(function* () {
 const qualifyRun = Effect.fnUntraced(function* (options: {
   readonly gate: string | undefined
   readonly foundationOnly: boolean
+  readonly through: string | undefined
 }) {
-  const { gate, foundationOnly } = options
-  if (gate && !implementedGates.includes(gate)) {
-    const message = `${gate} is not implemented as a complete gate. No passing placeholder exists.`
+  const { gate, foundationOnly, through } = options
+  for (const requested of [gate, through]) {
+    if (requested && !implementedGates.includes(requested)) {
+      const message = `${requested} is not implemented as a complete gate. No passing placeholder exists.`
+      yield* Console.error(message)
+      return yield* new QualifyFailed({ message })
+    }
+  }
+  if (through && (gate || foundationOnly)) {
+    const message = '--through cannot be combined with --gate or --foundation.'
     yield* Console.error(message)
-    return yield* new QualifyFailed({ message })
+    return yield* new UsageError({ message })
   }
   const directory = resolve(
     '.artifacts/qualification',
@@ -57,14 +65,16 @@ const qualifyRun = Effect.fnUntraced(function* (options: {
     try: () => mkdir(directory, { recursive: true }),
     catch: (error) => new QualifyFailed({ message: String(error) }),
   })
-  const selected = gateProbes.filter((probe) => {
+  const selected = gateProbes.filter((probe, index) => {
     if (gate) return probe.gate === gate
     if (foundationOnly) return probe.stage === 'foundation'
+    if (through) return index <= implementedGates.indexOf(through)
     return true
   })
   const results: Record<string, unknown> = {
     sequential: !gate,
     foundationOnly,
+    through: through ?? null,
     gates: Object.fromEntries(implementedGates.map((id) => [id, 'not run'])),
     probes: {},
   }
@@ -185,6 +195,18 @@ const qualifyRun = Effect.fnUntraced(function* (options: {
       }
       return
     }
+    if (through) {
+      const required = selected.map((probe) => probe.gate)
+      const throughPassing = state.filter(
+        (entry) => required.includes(entry.gate) && entry.status === 'pass',
+      ).length
+      if (throughPassing !== required.length) {
+        const message = `Qualification incomplete: not every ${required[0]}-${through} gate passes under the current qualification inputs.`
+        yield* Console.log(message)
+        return yield* new QualifyIncomplete({ message })
+      }
+      return
+    }
     if (passing !== implementedGates.length) {
       const message =
         'Qualification incomplete: not every gate passes under the current qualification inputs.'
@@ -236,13 +258,25 @@ const foundation = Flag.Boolean('foundation').pipe(
   Flag.withDescription('Run only the P01-P10 foundation gates'),
 )
 
+const through = Flag.String('through').pipe(
+  Flag.optional,
+  Flag.withDescription(
+    'Run every gate in order up to and including this one, on a committed tree',
+  ),
+)
+
 const qualifyCommand = Command.make(
   'qualify',
-  { gate, foundation },
-  Effect.fnUntraced(function* ({ gate: selected, foundation: foundationOnly }) {
+  { gate, foundation, through },
+  Effect.fnUntraced(function* ({
+    gate: selected,
+    foundation: foundationOnly,
+    through: last,
+  }) {
     yield* qualifyRun({
       gate: Option.getOrUndefined(selected),
       foundationOnly,
+      through: Option.getOrUndefined(last),
     })
   }),
 ).pipe(Command.withDescription('Run qualification probes and record the ledger'))

@@ -43,6 +43,7 @@ passing placeholder.
 pnpm ledger                 # Cumulative state.
 pnpm qualify --gate P01     # One probe
 pnpm qualify --foundation   # P01-P10 in order, on a committed tree
+pnpm qualify --through P11  # P01-P11 in order, on a committed tree
 pnpm qualify                # P01-P14 in order
 ```
 
