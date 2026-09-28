@@ -161,6 +161,9 @@ export class Memberships extends Context.Service<
       person: string,
       org: string,
     ) => Effect.Effect<boolean, SqlError>
+    readonly organizationsOf: (
+      person: string,
+    ) => Effect.Effect<ReadonlyArray<string>, SqlError>
     readonly grant: (
       org: string,
       account: ProviderAccount,
@@ -207,6 +210,26 @@ const membershipsLayer: Layer.Layer<
         LIMIT 1
       `
       return rows[0]?.op === 'assert'
+    })
+
+    // Latest membership fact per organization, in log order.
+    const organizationsOf = Effect.fnUntraced(function* (person: string) {
+      const rows = yield* sql<{ e: string; op: string }>`
+        SELECT e, op FROM datoms
+        WHERE a = ${Attr.membershipGranted} AND v = ${person}
+        ORDER BY seq
+      `
+      const suffix = `/M${person}`
+      const latest = new Map<string, string>()
+      for (const row of rows) {
+        if (row.e.startsWith('O') && row.e.endsWith(suffix)) {
+          latest.set(row.e.slice(1, row.e.length - suffix.length), row.op)
+        }
+      }
+      return [...latest]
+        .filter(([, op]) => op === 'assert')
+        .map(([org]) => org)
+        .sort()
     })
 
     // The account entity goes in a changeset of its own: Pull sends every
@@ -300,7 +323,7 @@ const membershipsLayer: Layer.Layer<
       )
     })
 
-    return Memberships.of({ personOf, isMember, grant, revoke })
+    return Memberships.of({ personOf, isMember, organizationsOf, grant, revoke })
   }),
 )
 
@@ -693,6 +716,22 @@ const handlerLayer = (catalog: Catalog) =>
             yield* requireMembership(request.org)
             yield* authority.completeDeferred(request).pipe(Effect.orDie)
           }).pipe(Effect.withSpan('SyncRpc.CompleteDeferred')),
+        Caller: () =>
+          Effect.gen(function* () {
+            const caller = yield* Caller
+            const organizations =
+              caller.person === null
+                ? []
+                : yield* memberships
+                    .organizationsOf(caller.person)
+                    .pipe(Effect.orDie)
+            return {
+              person: caller.person,
+              account: caller.account,
+              roles: [...caller.roles],
+              organizations: [...organizations],
+            }
+          }).pipe(Effect.withSpan('SyncRpc.Caller')),
       }
     }),
   )

@@ -3,7 +3,12 @@ import * as Rpc from 'effect/unstable/rpc/Rpc'
 import * as RpcGroup from 'effect/unstable/rpc/RpcGroup'
 import * as RpcMiddleware from 'effect/unstable/rpc/RpcMiddleware'
 import { Datom, Envelope, StoredDatom } from '@viviefs/datom'
-import { Caller, SignInNeeded, TokenRejected } from '@viviefs/identity'
+import {
+  Caller,
+  ProviderAccount,
+  SignInNeeded,
+  TokenRejected,
+} from '@viviefs/identity'
 
 /**
  * Bearer authentication (P11, ADR-0022). On every RPC in the group the server
@@ -156,12 +161,29 @@ export const CompleteDeferred = Rpc.make('CompleteDeferred', {
   error: MembershipMissing,
 })
 
+/**
+ * The server's statement about the signed-in provider account (P11 Q22):
+ * its person, or none, and the organizations that person may act in. A device
+ * keeps it inside its sign-in session to label its writes; it never decides
+ * who it is.
+ */
+export const CallerStatement = Schema.Struct({
+  person: Schema.NullOr(Schema.String),
+  account: ProviderAccount,
+  roles: Schema.Array(Schema.String),
+  organizations: Schema.Array(Schema.String),
+})
+export type CallerStatement = typeof CallerStatement.Type
+
+export const CallerRpc = Rpc.make('Caller', { success: CallerStatement })
+
 /** Every RPC in the group is authenticated; a new one is by default. */
 export const SyncRpcs = RpcGroup.make(
   Append,
   Pull,
   PutBlob,
   CompleteDeferred,
+  CallerRpc,
 ).middleware(BearerAuthentication)
 
 export type AppendRequest = {

@@ -10,6 +10,8 @@ export {
   BearerAuthentication,
   BlobHashMismatch,
   BasisRejected,
+  CallerRpc,
+  CallerStatement,
   CompleteDeferred,
   FileMissing,
   MembershipMissing,

@@ -45,6 +45,7 @@ import {
   type AppendAck,
   type AppendRequest,
   type BlobHashMismatch,
+  type CallerStatement,
   type PullPage,
 } from '@viviefs/sync-protocol'
 
@@ -108,6 +109,7 @@ type RpcShape = {
     { readonly hash: string },
     BlobHashMismatch | MembershipMissing | Unauthenticated
   >
+  readonly Caller: () => Effect.Effect<CallerStatement, Unauthenticated>
 }
 
 export class SyncRpc extends Context.Service<
@@ -128,6 +130,8 @@ export class SyncRpc extends Context.Service<
       { readonly hash: string },
       BlobHashMismatch | MembershipMissing | Unauthenticated
     >
+    /** The server's statement about the signed-in provider account (Q22). */
+    readonly caller: Effect.Effect<CallerStatement, Unauthenticated>
   }
 >()('viviefs/sync/SyncRpc') {}
 
@@ -156,6 +160,7 @@ export const syncRpcLayer = (client: RpcShape): Layer.Layer<SyncRpc> =>
           }),
         ),
       putBlob: (request) => client.PutBlob(request),
+      caller: Effect.suspend(() => client.Caller()),
     }),
   )
 

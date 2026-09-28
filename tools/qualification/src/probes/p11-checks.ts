@@ -58,6 +58,7 @@ export const P11_NODE_CHECK_NAMES = [
   'blobs per organization',
   'missing token',
   'sign-in needed keeps outbox',
+  'caller statement',
 ] as const
 
 export const P11_NODE_CHECK_COUNT = P11_NODE_CHECK_NAMES.length
@@ -510,6 +511,43 @@ const signInNeeded = (directory: string, clock: MutableClock) =>
       }),
   )
 
+/**
+ * p11-check callerStatement
+ * `Caller` is the server's statement a device labels its writes with (Q22). For A it names A's person and `acme`. After a grant in `other` it names both; after `acme` is revoked, only `other`. C, never granted, gets no person and no organizations.
+ */
+const callerStatement = (directory: string, clock: MutableClock) =>
+  world(
+    directory,
+    clock,
+    'caller',
+    [...members, { name: 'c', deviceId: 'p11-c', orgs: [] }],
+    (w) =>
+      Effect.gen(function* () {
+        const a = w.device('a')
+        const account = w.issuer.account('p11-a')
+        const first = yield* a.rpc.caller
+        yield* require(
+          first.person === personOf(a) &&
+            JSON.stringify(first.organizations) === JSON.stringify([ACME]) &&
+            first.account.subject === 'p11-a',
+          JSON.stringify(first),
+        )
+        yield* w.memberships.grant(OTHER, account)
+        const both = (yield* a.rpc.caller).organizations
+        yield* w.memberships.revoke(ACME, account)
+        const after = (yield* a.rpc.caller).organizations
+        const none = yield* w.device('c').rpc.caller
+        yield* require(
+          JSON.stringify(both) === JSON.stringify([ACME, OTHER]) &&
+            JSON.stringify(after) === JSON.stringify([OTHER]) &&
+            none.person === null &&
+            none.organizations.length === 0,
+          JSON.stringify({ both, after, none }),
+        )
+        return { first: first.organizations, both, after, none: none.person }
+      }),
+  )
+
 export const runP11NodeChecks = (
   directory: string,
   clock: MutableClock,
@@ -527,6 +565,7 @@ export const runP11NodeChecks = (
       runCheck('P11', 'blobs per organization', 'blobsPerOrganization', blobsPerOrganization(directory, clock)),
       runCheck('P11', 'missing token', 'missingToken', missingToken(directory, clock)),
       runCheck('P11', 'sign-in needed keeps outbox', 'signInNeeded', signInNeeded(directory, clock)),
+      runCheck('P11', 'caller statement', 'callerStatement', callerStatement(directory, clock)),
     ],
     { concurrency: 1 },
   )
