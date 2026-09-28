@@ -43,10 +43,12 @@ import {
 // Without extension, so Metro picks `p11-platform.web.ts` on web.
 import {
   deleteP11Replica,
+  p11AuthorizationPrompt,
   p11ReplicaStore,
-  p11SignInPorts,
+  p11SignInVault,
   P11_SCOPES,
 } from './p11-platform'
+import { localStorageVault, P11_CONTROL, refusalsIgnored } from './p11-control.ts'
 import { currentPlatform } from './probe-report.ts'
 
 export const P11_SLOT = '__viviefsP11'
@@ -70,6 +72,8 @@ export type OutboxCounts = {
 
 export type P11Extra = {
   readonly run: string
+  /** The positive control this build carries, if any (`p11-control.ts`). */
+  readonly control: string | null
   readonly state: 'starting' | SignInState['_tag']
   readonly subject: string | null
   readonly person: string | null
@@ -122,6 +126,7 @@ const report = (extra: P11Extra, error: string | null = null): P11Report => ({
 export const startingP11 = (): P11Report =>
   report({
     run: RUN,
+    control: P11_CONTROL,
     state: 'starting',
     subject: null,
     person: null,
@@ -141,14 +146,26 @@ const protocol = RpcClient.layerProtocolHttp({ url: SERVER }).pipe(
   Layer.provide([FetchHttpClient.layer, RpcSerialization.layerNdjson]),
 )
 
+// The positive controls (`p11-control.ts`) replace one port each.
+const providerHttp =
+  P11_CONTROL === 'ignore-invalid-grant'
+    ? refusalsIgnored.pipe(Layer.provide(FetchHttpClient.layer))
+    : FetchHttpClient.layer
+
+const vault =
+  P11_CONTROL === 'persistent-web-vault'
+    ? localStorageVault(`viviefs.sign-in.${RUN}`)
+    : p11SignInVault(RUN)
+
 const session = oidcSignInSession({
   issuer: ISSUER,
   clientId: CLIENT_ID,
   scopes: P11_SCOPES,
 }).pipe(
   Layer.provide([
-    FetchHttpClient.layer,
-    p11SignInPorts(RUN),
+    providerHttp,
+    p11AuthorizationPrompt,
+    vault,
     callerStatementsLayer.pipe(Layer.provide(protocol)),
   ]),
 )
@@ -216,7 +233,8 @@ export const startP11Device = (publish: (report: P11Report) => void): P11Device 
     if (replica !== null && replica.key === key) return replica
     yield* closeReplica
     if (account === null || key === null) return null
-    const name = `${RUN}-${yield* replicaName(account)}`
+    const name =
+      P11_CONTROL === 'shared-replica' ? `${RUN}-shared` : `${RUN}-${yield* replicaName(account)}`
     const scope = yield* Scope.make()
     const context = yield* Layer.buildWithScope(replicaLayer(name), scope)
     replica = { key, name, scope, context }
@@ -256,6 +274,7 @@ export const startP11Device = (publish: (report: P11Report) => void): P11Device 
     const open = replica
     const extra: P11Extra = {
       run: RUN,
+      control: P11_CONTROL,
       state: state._tag,
       subject: state._tag === 'SignedOut' ? null : state.account.subject,
       person: state._tag === 'SignedOut' ? null : state.statement.person,
@@ -313,8 +332,9 @@ export const startP11Device = (publish: (report: P11Report) => void): P11Device 
           const person = state.statement.person
           if (person === null) return 'no person'
           const open = yield* followAccount
-          const client = yield* clientOf(open)
-          const store = Context.get(open!.context, LogStore)
+          if (open === null) return 'SignedOut'
+          const client = Context.get(open.context, SyncClient)
+          const store = Context.get(open.context, LogStore)
           written += 1
           const changeset = yield* renameList(
             { title: null },

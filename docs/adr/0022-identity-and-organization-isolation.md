@@ -7,7 +7,7 @@ Date: 2026-09-20. Amended 2026-09-27 by the P11 grilling; 2026-09-28 with how th
 Qualifying gate: P11
 
 Related: D18, D47. complyj ADR 0005 and 0009 as lesson sources.
-[P11 design review](../evidence/p11-design-review.md) (grilling record, Q1-Q20).
+[P11 design review](../evidence/p11-design-review.md) (grilling record, Q1-Q24).
 [ADR-0016](0016-commands-and-server-validation.md) (server validation),
 [ADR-0011](0011-log-store-pattern.md) (no server compaction),
 [ADR-0023](0023-data-at-rest-and-crypto-shredding.md) (erasure and the future hash chain).
@@ -189,4 +189,36 @@ accepted changeset names a verified person and a server acceptance time.
 
 ### Observed
 
-Not yet run. complyj qualified Keycloak, not with Expo.
+P11, 2026-09-28. Measurement run of the probe (no ledger entry yet),
+evidence: [2026-09-28-p11.md](../evidence/2026-09-28-p11.md). One token
+contract of nine checks passes on the fake issuer's verifier, on the OIDC
+verifier against a served fake, and on the OIDC verifier against Keycloak
+26.7.3 on Apple Container: `alg: none`, a foreign key, HS256 algorithm
+confusion, a changed payload, a foreign issuer (a second realm), a foreign
+audience (another client) and an expired token are all refused.
+
+On the authenticated protocol (12 Node checks) and over HTTP with
+Keycloak's tokens (4 checks), a member of `acme` is acked while the same
+token asking for `other` gets `MembershipMissing` on `Append`, `Pull`,
+`PutBlob` and `CompleteDeferred` (the claim's positive control). A
+non-member's lease, an envelope naming someone else or `server`, and a
+client-written membership or account datom are refused; revocation takes
+effect on the next call with a still-valid token and keeps the refused row;
+the server stamps `acceptedAt` and ignores a device's claim; blobs are per
+organization; an account never granted verifies but has no person and is
+refused everywhere.
+
+On the iOS simulator, the Android emulator and web, the evidence app signs
+in at Keycloak with PKCE, learns its person from the `Caller` statement,
+is acked in `acme` and refused in `other`; keeps the session across a
+restart on iOS and Android (secure storage) and forgets it on a web reload;
+moves to sign-in needed on `invalid_grant` with the outbox kept and syncs it
+after signing in again; opens one replica per provider account (bob sees
+none of alice's data; alice finds hers intact); and deletes a removed
+account's replica. Three lab-only defects in the evidence app each fail
+exactly their check on web: ignoring `invalid_grant`, one shared replica,
+and web tokens in `localStorage`.
+
+Not measured: physical devices, TLS, `EngineConfig.actor` from the
+statement, and the limitations above (stored history, device identity,
+lease authorization).

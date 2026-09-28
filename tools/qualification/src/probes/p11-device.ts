@@ -54,6 +54,51 @@ export const P11_DEVICE_CHECK_NAMES = [
   'removing the account deletes its replica',
 ] as const
 
+export type P11DeviceCheckName = (typeof P11_DEVICE_CHECK_NAMES)[number]
+
+/**
+ * The positive controls the evidence app can be built with
+ * (`apps/evidence-mobile/src/p11-control.ts`), each with the one device
+ * check it must fail. The checks before it must still pass, so the control
+ * shows that check failing for its own reason.
+ */
+export const P11_DEVICE_CONTROLS = {
+  'ignore-invalid-grant': 'sign-in needed keeps the outbox',
+  'shared-replica': 'local replica per provider account',
+  'persistent-web-vault': 'token storage',
+} as const satisfies Record<string, P11DeviceCheckName>
+
+export type P11DeviceControl = keyof typeof P11_DEVICE_CONTROLS
+
+/** Controls that only exist on some platforms. */
+const CONTROL_PLATFORMS: Partial<Record<P11DeviceControl, ReadonlyArray<P11Platform>>> = {
+  'persistent-web-vault': ['web'],
+}
+
+/**
+ * A control run is as expected when its first failing check is the one the
+ * control targets and every check before it passed.
+ */
+export const judgeControl = (
+  control: P11DeviceControl,
+  checks: ReadonlyArray<CheckResult>,
+): CheckResult => {
+  const target = P11_DEVICE_CONTROLS[control]
+  const firstFailure = checks.findIndex((check) => check.status !== 'PASS')
+  const failed = checks[firstFailure]
+  const ok =
+    failed !== undefined &&
+    failed.name === target &&
+    checks.slice(0, firstFailure).every((check) => check.status === 'PASS')
+  return {
+    name: `control ${control}`,
+    status: ok ? 'PASS' : 'FAIL',
+    detail: ok
+      ? `fails ${target}: ${failed.detail}`
+      : `expected ${target} to fail first; got ${failed === undefined ? 'no failure' : `${failed.name}: ${failed.detail}`}`,
+  }
+}
+
 type Counts = { pending: number; acked: number; rejected: number; waiting: number }
 
 /** The report `apps/evidence-mobile/src/p11-runtime.ts` publishes. */
@@ -65,6 +110,7 @@ export type P11DeviceReport = {
   error: string | null
   extra: {
     run: string
+    control: string | null
     state: 'starting' | 'SignedOut' | 'SignedIn' | 'SignInNeeded'
     subject: string | null
     person: string | null
@@ -143,6 +189,7 @@ export const runP11DeviceScenario = async (
   driver: P11Driver,
   lab: KeycloakLab,
   log: (line: string) => void = () => undefined,
+  control: P11DeviceControl | null = null,
 ): Promise<CheckResult[]> => {
   const alice = () => driver.signIn('alice', lab.password('alice'))
   const tap = (id: string) => () => driver.tap(id)
@@ -173,6 +220,10 @@ export const runP11DeviceScenario = async (
 
   await check('PKCE sign-in', async () => {
     const start = await waitReport(driver, () => true, 'app start')
+    require(
+      start.extra.control === control,
+      `the app carries control ${start.extra.control ?? 'none'}, expected ${control ?? 'none'}`,
+    )
     require(start.extra.state === 'SignedOut', `a fresh run starts signed out: ${summary(start)}`)
     const signedIn = await act(driver, alice, 'sign in alice')
     require(
@@ -467,12 +518,17 @@ const dismissDevClientOverlays = async (platform: 'ios' | 'android') => {
 }
 
 /** The app's build-time settings for one P11 run on one platform. */
-const appEnv = (platform: P11Platform, run: string): NodeJS.ProcessEnv => ({
+const appEnv = (
+  platform: P11Platform,
+  run: string,
+  control: P11DeviceControl | null,
+): NodeJS.ProcessEnv => ({
   EXPO_PUBLIC_GATE: 'P11',
   EXPO_PUBLIC_CRYPTO_POLYFILL: '1',
   // A fresh namespace per run: its own secure-storage key and replica files.
   EXPO_PUBLIC_P11_RUN: `${platform}${run}`,
-  EXPO_PUBLIC_P11_VARIANT: 'sign-in',
+  EXPO_PUBLIC_P11_VARIANT: control ?? 'sign-in',
+  EXPO_PUBLIC_P11_CONTROL: control ?? '',
 })
 
 /**
@@ -484,11 +540,19 @@ export const runP11OnPlatform = async (options: {
   readonly lab: P11Lab
   readonly artifacts: string
   readonly log?: (line: string) => void
+  /** Build the app with this positive control; the scenario then must fail. */
+  readonly control?: P11DeviceControl
 }): Promise<CheckResult[]> => {
   const { platform, lab, artifacts } = options
-  const log = options.log ?? ((line: string) => console.log(`P11 ${platform} ${line}`))
+  const control = options.control ?? null
+  const only = control === null ? undefined : CONTROL_PLATFORMS[control]
+  if (only !== undefined && !only.includes(platform)) {
+    throw new Error(`control ${control} exists only on ${only.join(', ')}`)
+  }
+  const label = control === null ? platform : `${platform} ${control}`
+  const log = options.log ?? ((line: string) => console.log(`P11 ${label} ${line}`))
   const run = randomBytes(3).toString('hex')
-  const env = appEnv(platform, run)
+  const env = appEnv(platform, run, control)
   await mkdir(artifacts, { recursive: true })
 
   if (platform === 'web') {
@@ -507,8 +571,8 @@ export const runP11OnPlatform = async (options: {
       })
       // The app's origin is its sign-in redirect; Keycloak allows `localhost`.
       await page.goto(WEB_ORIGIN, { waitUntil: 'load', timeout: 120_000 })
-      const checks = await runP11DeviceScenario(webDriver(page, WEB_ORIGIN), lab.keycloak, log)
-      await page.screenshot({ path: join(artifacts, 'web-final.png') })
+      const checks = await runP11DeviceScenario(webDriver(page, WEB_ORIGIN), lab.keycloak, log, control)
+      await page.screenshot({ path: join(artifacts, `${label.replace(' ', '-')}-final.png`) })
       return checks
     } finally {
       await browser.close()
@@ -525,7 +589,7 @@ export const runP11OnPlatform = async (options: {
     await agentDevice(['daemon', 'stop'], { cwd: QUAL, timeout: 30_000 })
   }
   try {
-    await startDeviceSession({ cwd: APP, artifacts, platform, env, gate: 'P11', variant: 'sign-in' })
+    await startDeviceSession({ cwd: APP, artifacts, platform, env, gate: 'P11', variant: control ?? 'sign-in' })
     if (platform === 'android') await lab.reverseAndroid()
     // agent-device acts within a session on the app.
     const openSession = async () => {
@@ -544,14 +608,14 @@ export const runP11OnPlatform = async (options: {
       appCwd: APP,
       qualificationCwd: QUAL,
       relaunchApp: async () => {
-        await relaunchOnDevice({ cwd: APP, artifacts, platform, variant: 'sign-in', env, gate: 'P11' })
+        await relaunchOnDevice({ cwd: APP, artifacts, platform, variant: control ?? 'sign-in', env, gate: 'P11' })
         if (platform === 'android') await lab.reverseAndroid()
         await openSession()
         await dismissDevClientOverlays(platform)
       },
     })
-    const checks = await runP11DeviceScenario(driver, lab.keycloak, log)
-    await agentDevice(['screenshot', join(artifacts, `${platform}-final.png`), '--platform', platform], {
+    const checks = await runP11DeviceScenario(driver, lab.keycloak, log, control)
+    await agentDevice(['screenshot', join(artifacts, `${label.replace(' ', '-')}-final.png`), '--platform', platform], {
       cwd: QUAL,
     })
     return checks
@@ -563,15 +627,35 @@ export const runP11OnPlatform = async (options: {
 
 // Run alone for one platform (no ledger entry):
 // `mise exec -- node --experimental-strip-types tools/qualification/src/probes/p11-device.ts web`
+// With `--control <name>` it builds the app with that positive control and
+// reports whether the control failed exactly its check.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const platforms = process.argv.slice(2) as P11Platform[]
+  const args = process.argv.slice(2)
+  const at = args.indexOf('--control')
+  const control = at >= 0 ? (args[at + 1] as P11DeviceControl) : undefined
+  if (control !== undefined && !(control in P11_DEVICE_CONTROLS)) {
+    throw new Error(`unknown control ${control}; one of ${Object.keys(P11_DEVICE_CONTROLS).join(', ')}`)
+  }
+  const platforms = args.filter((_, index) => at < 0 || (index !== at && index !== at + 1)) as P11Platform[]
   const artifacts = join(ROOT, '.artifacts/qualification/p11-device')
   const lab = await startP11Lab(artifacts)
   try {
     for (const platform of platforms.length > 0 ? platforms : (['web'] as const)) {
-      const checks = await runP11OnPlatform({ platform, lab, artifacts: join(artifacts, platform) })
-      await writeJson(artifacts, `checks-${platform}.json`, checks)
-      if (checks.some((check) => check.status !== 'PASS')) process.exitCode = 1
+      const name = control === undefined ? platform : `${platform}-${control}`
+      const checks = await runP11OnPlatform({
+        platform,
+        lab,
+        artifacts: join(artifacts, platform),
+        ...(control === undefined ? {} : { control }),
+      })
+      await writeJson(artifacts, `checks-${name}.json`, checks)
+      if (control === undefined) {
+        if (checks.some((check) => check.status !== 'PASS')) process.exitCode = 1
+        continue
+      }
+      const judged = judgeControl(control, checks)
+      console.log(`${judged.status} ${judged.name}: ${judged.detail}`)
+      if (judged.status !== 'PASS') process.exitCode = 1
     }
   } finally {
     await lab.stop()

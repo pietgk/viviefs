@@ -8,9 +8,7 @@
 import * as Option from 'effect/Option'
 import type { DurableSpan } from '@viviefs/telemetry'
 import { expectedSpanIds, type ProjectionRun } from '@viviefs/testing'
-
-const START = '<!-- span-review:start -->'
-const END = '<!-- span-review:end -->'
+import { spanReviewDrift as drift } from './span-review.ts'
 
 const nodeId = (name: string) => name.replaceAll(/[^A-Za-z0-9]/g, '_')
 
@@ -72,18 +70,5 @@ export const spanReview = (p: ProjectionRun): string => {
   ].join('\n')
 }
 
-export const recordedSpanReview = (markdown: string): string | undefined => {
-  const start = markdown.indexOf(START)
-  const end = markdown.indexOf(END)
-  if (start < 0 || end < 0 || end < start) return undefined
-  return markdown.slice(start + START.length, end).trim()
-}
-
-export const spanReviewDrift = (p: ProjectionRun, markdown: string): string | undefined => {
-  const recorded = recordedSpanReview(markdown)
-  const actual = spanReview(p).trim()
-  if (recorded === actual) return undefined
-  return recorded === undefined
-    ? `P10 span review markers missing. Insert this between ${START} and ${END}:\n${actual}`
-    : `P10 span review drifted from the probe:\n${actual}`
-}
+export const spanReviewDrift = (p: ProjectionRun, markdown: string): string | undefined =>
+  drift('P10', spanReview(p), markdown)

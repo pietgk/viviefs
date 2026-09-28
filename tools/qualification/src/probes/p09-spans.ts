@@ -1,11 +1,8 @@
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as Option from 'effect/Option'
 import type * as Tracer from 'effect/Tracer'
-
-const START = '<!-- span-review:start -->'
-const END = '<!-- span-review:end -->'
+import { checkNote as noteIn, spanReviewDrift as drift } from './span-review.ts'
 
 const keep = (name: string) =>
   name.startsWith('P09 ') ||
@@ -40,21 +37,7 @@ const checksSource = join(
 )
 const CHECKS = '../../tools/qualification/src/probes/p09-checks.ts'
 
-const checkNote = (fn: string): { readonly line: number; readonly text: string } => {
-  const lines = readFileSync(checksSource, 'utf8').split('\n')
-  const marker = lines.findIndex((line) => line.includes(`p09-check ${fn}`))
-  if (marker < 0) return { line: 1, text: `missing note for ${fn}` }
-  const body: Array<string> = []
-  for (let index = marker + 1; index < lines.length; index++) {
-    const line = lines[index] ?? ''
-    if (line.trim() === '*/') break
-    body.push(line.replace(/^\s*\*\s?/, ''))
-  }
-  return {
-    line: marker + 1,
-    text: body.join(' ').replaceAll(/\s+/g, ' ').trim(),
-  }
-}
+const checkNote = (fn: string) => noteIn(checksSource, 'p09-check', fn)
 const CLIENT = '../../libs/sync/client/src/client.ts'
 const SERVER = '../../libs/sync/server/src/server.ts'
 
@@ -184,21 +167,7 @@ export const spanReview = (spans: ReadonlyArray<Tracer.NativeSpan>): string => {
   ].join('\n')
 }
 
-export const recordedSpanReview = (markdown: string): string | undefined => {
-  const start = markdown.indexOf(START)
-  const end = markdown.indexOf(END)
-  if (start < 0 || end < 0 || end < start) return undefined
-  return markdown.slice(start + START.length, end).trim()
-}
-
 export const spanReviewDrift = (
   spans: ReadonlyArray<Tracer.NativeSpan>,
   markdown: string,
-): string | undefined => {
-  const recorded = recordedSpanReview(markdown)
-  const actual = spanReview(spans).trim()
-  if (recorded === actual) return undefined
-  return recorded === undefined
-    ? `P09 span review markers missing. Insert this between ${START} and ${END}:\n${actual}`
-    : `P09 span review drifted from the probe:\n${actual}`
-}
+): string | undefined => drift('P09', spanReview(spans), markdown)

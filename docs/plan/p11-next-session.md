@@ -1,11 +1,11 @@
-# Next session: finish P11 (probe, evidence note, closing run)
+# Next session: finish P11 (qualify, closing run)
 
 ## Prompt to start the session
 
 > Read `AGENTS.md`, then `docs/plan/p11-next-session.md` (this file), then
 > `docs/evidence/p11-design-review.md` (every P11 decision, Q1-Q24, the check
 > list, and section 9 on the device part), ADR-0022, and the Identity section
-> of `CONTEXT.md`. Continue P11 at step 7. Decisions Q1-Q24 are agreed; ask
+> of `CONTEXT.md`. Continue P11 at step 8. Decisions Q1-Q24 are agreed; ask
 > before deviating and record a deviation in the design review and ADR-0022.
 
 ## Where P11 stands (2026-09-28)
@@ -19,13 +19,13 @@
 | 4 `apps/evidence-server` over HTTP | done | `b608fa7c4` |
 | 5 Keycloak lab, token contract on Keycloak | done | `c47621ec9` |
 | 6 server part: `Caller` RPC | done | `0ff083119` |
-| 6 device part: sign-in on iOS, Android, web | done | this session's commit |
-| 7 `p11.ts` probe, evidence note, ADR-0022 Observed | **next** | |
-| 8 sequential P01-P11 run on one commit | open | |
+| 6 device part: sign-in on iOS, Android, web | done | `aaf55a4f3` |
+| 7 `p11.ts` probe, evidence note, ADR-0022 Observed | done | the step 7 commit |
+| 7 `pnpm qualify` P11 on the committed tree | see the ledger | |
+| 8 sequential P01-P11 run on one commit | **next** | |
 
 `pnpm verify` is green. Every gate in the ledger is stale (the fingerprint covers
-all libs), so step 8 re-runs P01-P10 as well. `p11.ts` still refuses to pass;
-keep it that way until step 7 is complete.
+all libs), so step 8 re-runs P01-P10 as well.
 
 ## What step 6 left ready
 
@@ -44,27 +44,34 @@ keep it that way until step 7 is complete.
 - `libs/testing/src/sign-in-session.test.ts`: 10 tests of the session on the
   served fake issuer (which now has token and revocation endpoints).
 
-## Step 7: what to build
+## Step 7: what was built
 
-`p11.ts` composes the sections that exist, each with a way to fail:
+`p11.ts` composes five sections, each able to fail: the token contract on the
+fake verifier, on the OIDC verifier against a served fake and against Keycloak;
+the 12 Node checks and their span review (`p11-spans.ts`, drift-checked against
+[`2026-09-28-p11.md`](../evidence/2026-09-28-p11.md) by the probe and by
+`p11.test.ts`); four checks over HTTP with Keycloak's tokens (`p11-http.ts`);
+the six device checks on iOS, Android and web; and three device controls on web.
 
-1. Token contract on the fake and on Keycloak (`runKeycloakTokenChecks`).
-2. The 12 Node checks (`runP11Node`).
-3. A Node check over HTTP with real Keycloak tokens: alice in `acme` acked,
-   `other` refused, bob never granted (the lab already runs the server).
-4. The device checks on iOS, Android and web (`runP11OnPlatform`), one lab for
-   all three.
+The controls are lab-only defects in the evidence app
+(`apps/evidence-mobile/src/p11-control.ts`, `EXPO_PUBLIC_P11_CONTROL`, shown on
+the screen): `ignore-invalid-grant`, `shared-replica`, `persistent-web-vault`.
+The probe requires each to fail exactly its check first. They run in every
+qualification (about 2 minutes), like P07's no-sweep control. Run one alone:
+`mise exec -- node --experimental-strip-types tools/qualification/src/probes/p11-device.ts web --control shared-replica`.
 
-Positive controls still to show for the device checks (the Node checks and the
-session tests have theirs): for example a session that ignores `invalid_grant`
-(check 10 must fail), a single shared replica name (check 11 must fail), web
-tokens in a persistent vault (token storage must fail). Run each control once,
-record the result in the evidence note, and keep the code path that makes it
-possible out of production code (a lab-only env switch in the evidence app, as
-P07 did with `EXPO_PUBLIC_P07_SWEEP`).
+A full measurement run took about 10 minutes and passed every section.
 
-Then the evidence note `docs/evidence/<date>-p11.md` with a span review like
-P09 and P10, ADR-0022 Observed, and only then `pnpm qualify` P11.
+## Step 8: the closing run
+
+1. `mise exec -- pnpm qualify P11` on the committed tree; record the ledger id in
+   the evidence note, set ADR-0022 to Qualified (and the ADR index), pin P11's
+   attribute names in `AGENTS.md` (`viviefs/membership/granted`,
+   `viviefs/account/person`, `viviefs/account/issuer`,
+   `viviefs/account/subject`), and move Identity out of the empty named slots
+   and the hypothesis table in `10-open-items-and-risks.md`.
+2. A sequential P01-P11 run on one committed tree (every gate is stale), with a
+   closure note like [2026-09-26-foundation-closure.md](../evidence/2026-09-26-foundation-closure.md).
 
 ## Facts learned in step 6 (check before blaming the code)
 

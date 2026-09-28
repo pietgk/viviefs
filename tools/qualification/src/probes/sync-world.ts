@@ -94,6 +94,11 @@ export type Device = {
   readonly client: SyncClient['Service']
   readonly store: LogStore['Service']
   readonly projector: Projector['Service']
+  /**
+   * The device's RPCs, for calls the probe makes itself. Each call is a
+   * `SyncRpc.<call>` span carrying `sync.device`, so a span review can draw
+   * it on the device's lifeline.
+   */
   readonly rpc: SyncRpc['Service']
   /** The device's own database, for reading its outbox. */
   readonly sql: SqlClient.SqlClient
@@ -159,6 +164,20 @@ export const envelopeFor = (
   acceptedAt: null,
 })
 
+const tracedRpc = (
+  device: string,
+  rpc: SyncRpc['Service'],
+): SyncRpc['Service'] => {
+  const span = (call: string) =>
+    Effect.withSpan(`SyncRpc.${call}`, { attributes: { 'sync.device': device } })
+  return SyncRpc.of({
+    append: (request) => rpc.append(request).pipe(span('append')),
+    pull: (request) => rpc.pull(request).pipe(span('pull')),
+    putBlob: (request) => rpc.putBlob(request).pipe(span('putBlob')),
+    caller: rpc.caller.pipe(span('caller')),
+  })
+}
+
 export const syncWorld = <A>(
   options: {
     readonly directory: string
@@ -219,7 +238,7 @@ export const syncWorld = <A>(
         client: Context.get(ctx, SyncClient),
         store: Context.get(ctx, LogStore),
         projector: Context.get(ctx, Projector),
-        rpc: Context.get(ctx, SyncRpc),
+        rpc: tracedRpc(spec.deviceId, Context.get(ctx, SyncRpc)),
         sql: Context.get(ctx, SqlClient.SqlClient),
         raw,
         context: ctx,

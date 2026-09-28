@@ -135,6 +135,15 @@ export default function P11App() {
       >
         {stateLabel[extra.state]}
       </Text>
+      {extra.control ? (
+        <Text
+          testID="p11-control"
+          accessibilityLabel={`positive control ${extra.control}`}
+          style={styles.control}
+        >
+          {`Positive control: ${extra.control}. This build is broken on purpose.`}
+        </Text>
+      ) : null}
 
       <View style={styles.card}>
         <Row id="subject" label="Account" value={extra.subject ?? '-'} />
@@ -328,5 +337,14 @@ const styles = StyleSheet.create({
   error: {
     color: '#c30',
     fontWeight: '700',
+  },
+  control: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#fdecdf',
+    color: '#a63d00',
+    fontWeight: '600',
   },
 })

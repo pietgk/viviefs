@@ -4,7 +4,7 @@
  */
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import { memorySignInVault } from '@viviefs/identity'
+import { memorySignInVault, type SignInVault } from '@viviefs/identity'
 import {
   completeWebSignIn,
   expoAuthorizationPrompt,
@@ -16,13 +16,12 @@ import {
 
 export const P11_SCOPES = ['openid'] as const
 
-export const p11SignInPorts = (_run: string) =>
-  Layer.mergeAll(
-    expoAuthorizationPrompt({
-      redirectUri: `${globalThis.location.origin}/auth`,
-    }),
-    memorySignInVault,
-  )
+export const p11AuthorizationPrompt = expoAuthorizationPrompt({
+  redirectUri: `${globalThis.location.origin}/auth`,
+})
+
+/** Web keeps no session across a reload, so the run needs no key of its own. */
+export const p11SignInVault = (): Layer.Layer<SignInVault> => memorySignInVault
 
 const opfsWorker = (name: string) =>
   new Worker(new URL('./p11-opfs-worker.ts', import.meta.url), {

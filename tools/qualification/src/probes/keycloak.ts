@@ -183,7 +183,7 @@ const passwordGrant = async (
   })
   const body = (await response.json()) as { access_token?: string; error?: string }
   if (!response.ok || !body.access_token) {
-    fail(`password grant for ${username} at ${clientId} failed: ${response.status} ${JSON.stringify(body)}`)
+    throw new Error(`password grant for ${username} at ${clientId} failed: ${response.status} ${JSON.stringify(body)}`)
   }
   return body.access_token as string
 }
@@ -273,7 +273,8 @@ export const startKeycloak = async (artifacts: string): Promise<KeycloakLab> => 
     if (Date.now() > deadline) {
       const logs = await container(['logs', CONTAINER], 15_000)
       await writeFile(join(artifacts, 'keycloak.log'), logs.stdout + logs.stderr)
-      fail(`Keycloak did not serve both realms within 180 s (log in ${artifacts}/keycloak.log)`)
+      await removeContainer()
+      throw new Error(`Keycloak did not serve both realms within 180 s (log in ${artifacts}/keycloak.log)`)
     }
     await sleep(1000)
   }
@@ -302,7 +303,7 @@ export const startKeycloak = async (artifacts: string): Promise<KeycloakLab> => 
           signal: AbortSignal.timeout(10_000),
         })
         if (!response.ok && response.status !== 404) {
-          fail(`Keycloak admin ${method} ${path} for ${user}: ${response.status} ${await response.text()}`)
+          throw new Error(`Keycloak admin ${method} ${path} for ${user}: ${response.status} ${await response.text()}`)
         }
       }
       // Offline sessions live under the client consent; online ones end at logout.

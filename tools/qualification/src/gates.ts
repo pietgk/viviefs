@@ -110,7 +110,7 @@ export const gateProbes: GateProbe[] = [
     gate: 'P11',
     path: 'tools/qualification/src/probes/p11.ts',
     args: [],
-    timeoutMs: 600_000,
+    timeoutMs: 3_600_000,
     stage: 'follow-on',
     summary:
       'Fake and OIDC Identity implementations; Keycloak PKCE; membership enforced on sync, lease and commands.',

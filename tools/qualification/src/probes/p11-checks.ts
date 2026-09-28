@@ -97,6 +97,21 @@ const titled = (device: Device, org: string, list: string, title: string) =>
     )
   })
 
+/** Completes the `approval` deferred of execution `one` over the raw RPC. */
+const approve = (device: Device, org: string) =>
+  device.raw
+    .CompleteDeferred({
+      org,
+      executionId: 'one',
+      deferredName: 'approval',
+      exit: encodeExit(Exit.succeed(true)),
+    })
+    .pipe(
+      Effect.withSpan('SyncRpc.completeDeferred', {
+        attributes: { 'sync.device': device.id },
+      }),
+    )
+
 const outboxStates = (device: Device) =>
   device.sql<{ cs: string; state: string; rejection: string | null }>`
     SELECT cs, state, rejection FROM outbox ORDER BY id
@@ -122,27 +137,13 @@ const crossOrganization = (directory: string, clock: MutableClock) =>
         putBlob: yield* outcome(
           a.rpc.putBlob({ org: OTHER, hash: yield* blobHash(text), text }),
         ),
-        completeDeferred: yield* outcome(
-          a.raw.CompleteDeferred({
-            org: OTHER,
-            executionId: 'one',
-            deferredName: 'approval',
-            exit: encodeExit(Exit.succeed(true)),
-          }),
-        ),
+        completeDeferred: yield* outcome(approve(a, OTHER)),
       }
       yield* require(
         Object.values(denied).every((tag) => tag === 'MembershipMissing'),
         JSON.stringify(denied),
       )
-      const allowed = yield* outcome(
-        b.raw.CompleteDeferred({
-          org: OTHER,
-          executionId: 'one',
-          deferredName: 'approval',
-          exit: encodeExit(Exit.succeed(true)),
-        }),
-      )
+      const allowed = yield* outcome(approve(b, OTHER))
       yield* require(allowed === 'ok', allowed)
       return { ...denied, sameOrganization: allowed }
     }),

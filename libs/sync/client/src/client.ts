@@ -543,6 +543,7 @@ const makeClient = Effect.gen(function* () {
         'rejected',
         decoded.envelope.device,
         decoded.envelope.command,
+        outcome.tag,
       )
       if (outcome.tag === 'MembershipMissing') {
         yield* markRevoked(org)
@@ -571,6 +572,7 @@ const outboxTransition = (
   state: string,
   device: string,
   command: string,
+  rejection?: string,
 ) =>
   Effect.void.pipe(
     Effect.withSpan('SyncClient.outbox', {
@@ -579,6 +581,7 @@ const outboxTransition = (
         'outbox.state': state,
         'sync.device': device,
         'sync.command': command,
+        ...(rejection === undefined ? {} : { 'outbox.rejection': rejection }),
       },
     }),
   )

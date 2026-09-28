@@ -3,7 +3,6 @@
  * refresh token (Q9), the app's scheme as the redirect, and one SQLite file
  * per local replica.
  */
-import * as Layer from 'effect/Layer'
 import { sqliteNativeLogStore, deleteSqliteNativeDatabase } from '@viviefs/store-sqlite-native'
 import {
   expoAuthorizationPrompt,
@@ -12,11 +11,12 @@ import {
 
 export const P11_SCOPES = ['openid', 'offline_access'] as const
 
-export const p11SignInPorts = (run: string) =>
-  Layer.mergeAll(
-    expoAuthorizationPrompt({ redirectUri: 'viviefs-evidence://auth' }),
-    secureStoreSignInVault(`viviefs.sign-in.${run}`),
-  )
+export const p11AuthorizationPrompt = expoAuthorizationPrompt({
+  redirectUri: 'viviefs-evidence://auth',
+})
+
+export const p11SignInVault = (run: string) =>
+  secureStoreSignInVault(`viviefs.sign-in.${run}`)
 
 export const p11ReplicaStore = (name: string, deviceId: string) =>
   sqliteNativeLogStore({ filename: `${name}.db`, deviceId })

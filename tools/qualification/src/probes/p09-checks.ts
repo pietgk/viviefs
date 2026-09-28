@@ -271,18 +271,12 @@ const duplicateAppend = (directory: string, clock: MutableClock) =>
       )
       yield* a.client.submit(changeset)
       yield* a.client.push(org)
-      const again = yield* a.rpc
-        .append({
-          org,
-          basis: changeset.basis,
-          envelope: changeset.envelope,
-          datoms: [...changeset.datoms],
-        })
-        .pipe(
-          Effect.withSpan('SyncRpc.append', {
-            attributes: { 'sync.device': a.id },
-          }),
-        )
+      const again = yield* a.rpc.append({
+        org,
+        basis: changeset.basis,
+        envelope: changeset.envelope,
+        datoms: [...changeset.datoms],
+      })
       yield* b.client.pull(org)
       const facts = yield* committed(b, orgId(org))
       const titles = facts.filter(

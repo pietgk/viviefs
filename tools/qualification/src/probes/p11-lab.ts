@@ -14,7 +14,7 @@ import { createWriteStream } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { fail, freeListenPort, sleep } from './dev-client.ts'
+import { freeListenPort, sleep } from './dev-client.ts'
 import { reverseAndroidPorts } from './devices.ts'
 import {
   ISSUER,
@@ -52,6 +52,7 @@ const serverListening = async () => {
   }
 }
 
+// Throws rather than exiting, so `startP11Lab` can stop Keycloak on the way out.
 const startServer = async (artifacts: string): Promise<ChildProcess> => {
   await freeListenPort(SERVER_PORT)
   const seed = join(artifacts, 'evidence-server-seed.json')
@@ -83,11 +84,11 @@ const startServer = async (artifacts: string): Promise<ChildProcess> => {
   const deadline = Date.now() + 60_000
   while (!(await serverListening())) {
     if (child.exitCode !== null) {
-      fail(`evidence server exited ${child.exitCode} (log in ${artifacts}/evidence-server.log)`)
+      throw new Error(`evidence server exited ${child.exitCode} (log in ${artifacts}/evidence-server.log)`)
     }
     if (Date.now() > deadline) {
       child.kill('SIGTERM')
-      fail(`evidence server did not listen on ${SERVER_PORT} within 60 s`)
+      throw new Error(`evidence server did not listen on ${SERVER_PORT} within 60 s`)
     }
     await sleep(500)
   }

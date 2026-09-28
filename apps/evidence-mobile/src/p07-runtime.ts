@@ -37,6 +37,7 @@ import {
   EngineSweep,
   noopCrashHook,
 } from '@viviefs/workflow-engine'
+import type { p07LogStore } from './p07-official.ts'
 import { currentPlatform } from './probe-report.ts'
 
 export const P07_SERVICE_NAME = 'viviefs-evidence-p07'
@@ -206,7 +207,7 @@ const completeApproval = (executionId: string) => {
 }
 
 export const runP07Session = (
-  openStore: Layer.Layer<LogStore, any, any>,
+  openStore: ReturnType<typeof p07LogStore>,
 ): Effect.Effect<void> => {
   const scenario = p07Scenario()
   const sweepEnabled = p07SweepEnabled()

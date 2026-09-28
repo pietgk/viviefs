@@ -298,6 +298,7 @@ const membershipsLayer: Layer.Layer<
       org: string,
       account: ProviderAccount,
     ) {
+      yield* Effect.annotateCurrentSpan('membership.org', org)
       return yield* writes.withPermits(1)(
         Effect.gen(function* () {
           const person = (yield* personOf(account)) ?? (yield* mintPerson(account))
@@ -313,6 +314,7 @@ const membershipsLayer: Layer.Layer<
       org: string,
       account: ProviderAccount,
     ) {
+      yield* Effect.annotateCurrentSpan('membership.org', org)
       yield* writes.withPermits(1)(
         Effect.gen(function* () {
           const person = yield* personOf(account)
