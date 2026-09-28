@@ -483,8 +483,22 @@ export const nativeDriver = (options: {
       const payload = evaluated.data as { threw?: boolean; value?: P11DeviceReport | null }
       return payload.threw ? undefined : (payload.value ?? undefined)
     },
+    // Right after the sign-in sheet closes, iOS can fail to match the app's
+    // accessibility tree for a few seconds ("Could not match active AX
+    // application"), and a press then finds nothing. Only that miss is retried,
+    // calmly; a control that is really absent still fails.
     tap: async (testId) => {
-      await device(['press', `id="${testId}"`])
+      const deadline = Date.now() + 60_000
+      for (;;) {
+        try {
+          await device(['press', `id="${testId}"`])
+          return
+        } catch (error) {
+          const missed = error instanceof StepFailed && error.message.includes('selector_not_found')
+          if (!missed || Date.now() > deadline) throw error
+          await sleep(5000)
+        }
+      }
     },
     signIn: async (user, password) => {
       await device(['press', 'id="p11-signIn"'])
