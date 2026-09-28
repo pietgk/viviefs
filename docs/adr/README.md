@@ -30,7 +30,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0019](0019-ui-state-ownership-and-query-atoms.md) | UI state ownership and live reads with query atoms | Qualified | P05, P08 |
 | [0020](0020-interaction-state-three-way-prototype.md) | Interaction state: outcome of the three-way prototype | Qualified | P08 |
 | [0021](0021-files-by-content-hash.md) | Files by content hash | Qualified | P09 |
-| [0022](0022-identity-and-organization-isolation.md) | Identity and organization isolation | Proposed, unverified | P11 |
+| [0022](0022-identity-and-organization-isolation.md) | Identity and organization isolation | Qualified | P11 |
 | [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P12, P13 |
 | [0024](0024-repository-structure.md) | Repository structure, tags, rules, generators | Proposed, unverified | verify (boundary lint) |
 | [0025](0025-ai-robust-guardrails.md) | AI-robust guardrails | Proposed, unverified | verify |

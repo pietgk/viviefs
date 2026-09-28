@@ -1,6 +1,6 @@
 # ADR-0022: Identity and organization isolation
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-20. Amended 2026-09-27 by the P11 grilling; 2026-09-28 with how the device signs in (step 6).
 
@@ -189,8 +189,8 @@ accepted changeset names a verified person and a server acceptance time.
 
 ### Observed
 
-P11, 2026-09-28. Measurement run of the probe (no ledger entry yet),
-evidence: [2026-09-28-p11.md](../evidence/2026-09-28-p11.md). One token
+P11, 2026-09-28. Ledger pass `2026-09-28T19-38-22.564Z-0f0ac08c` on a clean tree
+(`971ae6e2`), after a measurement run with the same result. Evidence: [2026-09-28-p11.md](../evidence/2026-09-28-p11.md). One token
 contract of nine checks passes on the fake issuer's verifier, on the OIDC
 verifier against a served fake, and on the OIDC verifier against Keycloak
 26.7.3 on Apple Container: `alg: none`, a foreign key, HS256 algorithm

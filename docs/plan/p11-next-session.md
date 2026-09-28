@@ -1,4 +1,4 @@
-# Next session: finish P11 (qualify, closing run)
+# Next session: close P11 (sequential P01-P11 run)
 
 ## Prompt to start the session
 
@@ -21,7 +21,7 @@
 | 6 server part: `Caller` RPC | done | `0ff083119` |
 | 6 device part: sign-in on iOS, Android, web | done | `aaf55a4f3` |
 | 7 `p11.ts` probe, evidence note, ADR-0022 Observed | done | the step 7 commit |
-| 7 `pnpm qualify` P11 on the committed tree | see the ledger | |
+| 7 `pnpm qualify` P11 on the committed tree | pass `2026-09-28T19-38-22.564Z-0f0ac08c` | `971ae6e28` |
 | 8 sequential P01-P11 run on one commit | **next** | |
 
 `pnpm verify` is green. Every gate in the ledger is stale (the fingerprint covers
@@ -64,14 +64,15 @@ A full measurement run took about 10 minutes and passed every section.
 
 ## Step 8: the closing run
 
-1. `mise exec -- pnpm qualify P11` on the committed tree; record the ledger id in
-   the evidence note, set ADR-0022 to Qualified (and the ADR index), pin P11's
-   attribute names in `AGENTS.md` (`viviefs/membership/granted`,
-   `viviefs/account/person`, `viviefs/account/issuer`,
-   `viviefs/account/subject`), and move Identity out of the empty named slots
-   and the hypothesis table in `10-open-items-and-risks.md`.
-2. A sequential P01-P11 run on one committed tree (every gate is stale), with a
-   closure note like [2026-09-26-foundation-closure.md](../evidence/2026-09-26-foundation-closure.md).
+P11 qualified on its own (`2026-09-28T19-38-22.564Z-0f0ac08c`); ADR-0022 is
+Qualified, its attribute names are pinned in `AGENTS.md`, and Identity left the
+empty named slots in `10-open-items-and-risks.md`.
+
+Still open: a sequential P01-P11 run on one committed tree (every other gate is
+stale, because the fingerprint covers every lib), with a closure note like
+[2026-09-26-foundation-closure.md](../evidence/2026-09-26-foundation-closure.md).
+It re-runs P02, P04 and P05 on web, which confirms nothing needed Metro's
+`Cross-Origin-Opener-Policy`.
 
 ## Facts learned in step 6 (check before blaming the code)
 

@@ -17,7 +17,7 @@ the named gate.
 
 **Named slot, empty** (create the project, ADR or gate id; do not invent the mechanism):
 
-- Identity: being filled by P11. The grilling (2026-09-27) is recorded in [p11-design-review.md](../../evidence/p11-design-review.md) and ADR-0022. Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
+- Identity was filled at P11 (2026-09-28): `TokenVerifier`, `SignInSession`, the fake issuer and membership in the log (ADR-0022, [p11-design-review.md](../../evidence/p11-design-review.md)). Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
 - Sampling of durable spans: the envelope records `sampled`; the trace projector does not honour it yet (P10). Decided with the production telemetry backend.
 - Quarantine of user content after a lost lease (D15). Direction agreed 2026-09-27: a human-conflict entry (D34) that names the stranded content, resolved by a command (attach to the execution, keep as standalone evidence, or discard). Mechanism and UX in its own grilling and gate after P11; not needed for P11.
 
@@ -44,7 +44,7 @@ the named gate.
 | A custom `WorkflowEngine` over datoms is 300-600 lines and behaves under the crash matrix | estimate | P06 (measured 2026-09-20: 646 lines in `engine.ts`; seven kill boundaries on sqlite-node and PGlite; memory engine failed durability; upload hash is computed before the activity, ADR-0012) |
 | `@effect/atom-react` and `Reactivity` are suitable for prefix/attribute invalidation from our projector | research/01 section 4 | P05, P08 (measured 2026-09-20/21: projector keys and capture-screen query atoms, ADR-0019) |
 | Traces derived from the log are lossless and stable across replays, in motel, Jaeger and otel-lgtm | D32, D45' | P10 (measured 2026-09-26 on sqlite-node and PGlite: one trace, entity-keyed ids, one span per attempt after a kill, retry linked, backlog exported after a disabled trace cursor; host only, ADR-0018) |
-| Keycloak PKCE flow from Expo on Apple Container, on iOS, Android and web | complyj qualified Keycloak, not with Expo | P11 |
+| Keycloak PKCE flow from Expo on Apple Container, on iOS, Android and web | complyj qualified Keycloak, not with Expo | P11 (measured 2026-09-28: Keycloak 26.7.3, PKCE S256 through `expo-auth-session` on the iOS simulator, the Android emulator and web, one issuer on every platform; simulator and emulator only, ADR-0022) |
 
 ## Closed in this pass
 

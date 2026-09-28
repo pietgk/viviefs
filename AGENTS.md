@@ -16,7 +16,9 @@ that link to guides, not a second copy of those guides (D30).
    freeze / named-slot / hypothesis. P05 pinned `viviefs/changeset/*` and
    `evidence/*` names; P06 pinned `viviefs/workflow/*`, `viviefs/activity/exit`,
    `viviefs/deferred/exit`, `viviefs/clock/wake-at` and `viviefs/lease/holder`;
-   P10 pinned `viviefs/activity/started`. Do not rename them (D44).
+   P10 pinned `viviefs/activity/started`; P11 pinned `viviefs/membership/granted`,
+   `viviefs/account/person`, `viviefs/account/issuer` and `viviefs/account/subject`.
+   Do not rename them (D44).
 5. [`docs/plan/bootstrap/06-qualification-gates.md`](docs/plan/bootstrap/06-qualification-gates.md) -
    ordered gates. No feature code before its gate passes. Probes and exemplars stay.
 6. [`repos/effect/LLMS.md`](repos/effect/LLMS.md) - before writing Effect code. Then
@@ -43,7 +45,7 @@ material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-t
 | TypeScript | dual pin in root `package.json` ([ADR-0028](docs/adr/0028-typescript-7-cli-with-typescript-6-api.md)): `tsc` is TypeScript 7 (`@typescript/native`); the `typescript` package name is TypeScript 6 (`@typescript/typescript6`) for Nx, ESLint and Vite. Do not install `typescript@7` under the `typescript` name. `tsc` is patched by `@effect/tsgo` ([ADR-0029](docs/adr/0029-effect-reference-and-language-service.md)). Editor tsserver stays on TypeScript 6 until Cursor Native Preview is usable. `verbatimModuleSyntax`, `exactOptionalPropertyTypes`, and `moduleDetection: "force"` are on ([ADR-0031](docs/adr/0031-typescript-strictness-flags.md)). Do not enable `rewriteRelativeImportExtensions` or `ignoreDeprecations`. |
 | Effect reference | `repos/effect` git subtree. Read-only. Prefer it over web search and over `node_modules`. |
 | Device driving | `@expo/agent-cli` in `apps/evidence-mobile`; `agent-device` in `tools/qualification` (both MIT) |
-| Lab runtime | Apple Container image digests, admitted per measured gap: [`tools/qualification/lab-images.json`](tools/qualification/lab-images.json) (Jaeger and otel-lgtm for P10). A probe refuses an image that is not pinned by digest. |
+| Lab runtime | Apple Container image digests, admitted per measured gap: [`tools/qualification/lab-images.json`](tools/qualification/lab-images.json) (Jaeger and otel-lgtm for P10, Keycloak for P11). A probe refuses an image that is not pinned by digest. |
 
 The evidence app is a development build (`expo-dev-client`), not Expo Go. P02
 needs native modules Expo Go cannot load. Ask `@expo/agent-cli status` first,
