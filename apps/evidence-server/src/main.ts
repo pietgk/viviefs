@@ -8,6 +8,8 @@
  * - `VIVIEFS_DATA_DIR`: PGlite data directory (in memory when unset).
  * - `VIVIEFS_SEED`: path to a JSON array of `{ org, account: { issuer,
  *   subject } }` memberships to grant at start.
+ * - `VIVIEFS_CORS_ORIGINS`: comma-separated browser origins allowed to call
+ *   `/rpc` (the web app, `http://localhost:8081` in the lab).
  */
 import { readFileSync } from 'node:fs'
 import * as NodeRuntime from '@effect/platform-node/NodeRuntime'
@@ -31,6 +33,9 @@ const program = Effect.gen(function* () {
   const port = yield* Config.Int('VIVIEFS_PORT').pipe(Config.withDefault(8787))
   const dataDir = yield* Config.option(Config.String('VIVIEFS_DATA_DIR'))
   const seedPath = yield* Config.option(Config.String('VIVIEFS_SEED'))
+  const corsOrigins = yield* Config.String('VIVIEFS_CORS_ORIGINS').pipe(
+    Config.withDefault(''),
+  )
   const seed = Option.isSome(seedPath)
     ? yield* Schema.decodeUnknownEffect(SeedFile)(
         readFileSync(seedPath.value, 'utf8'),
@@ -44,6 +49,10 @@ const program = Effect.gen(function* () {
       issuer,
       audience,
       seed,
+      corsOrigins: corsOrigins
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0),
       ...(Option.isSome(dataDir) ? { dataDir: dataDir.value } : {}),
     }),
   )

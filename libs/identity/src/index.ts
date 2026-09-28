@@ -5,7 +5,24 @@
  * only). The fake issuer lives in `@viviefs/testing/identity`.
  */
 export { Caller } from './caller.ts'
-export { SignInNeeded, SignInSession } from './sign-in-session.ts'
+export { CallerStatement } from './caller-statement.ts'
+export {
+  AuthorizationPrompt,
+  CallerStatements,
+  REFRESH_MARGIN_MS,
+  SignInVault,
+  memorySignInVault,
+  oidcSignInSession,
+} from './oidc-sign-in-session.ts'
+export type { AuthorizationCode } from './oidc-sign-in-session.ts'
+export {
+  IdentityProviderUnreachable,
+  SignInFailed,
+  SignInNeeded,
+  SignInSession,
+  SignInState,
+  StatementUnavailable,
+} from './sign-in-session.ts'
 export {
   ACCEPTED_ALGORITHMS,
   CLOCK_TOLERANCE_SECONDS,

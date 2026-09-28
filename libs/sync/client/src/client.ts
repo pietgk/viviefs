@@ -17,6 +17,8 @@ import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 import * as Headers from 'effect/unstable/http/Headers'
 import * as Reactivity from 'effect/unstable/reactivity/Reactivity'
+import * as RpcClient from 'effect/unstable/rpc/RpcClient'
+import type { RpcClientError } from 'effect/unstable/rpc/RpcClientError'
 import * as RpcMiddleware from 'effect/unstable/rpc/RpcMiddleware'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
 import type { SqlError } from 'effect/unstable/sql/SqlError'
@@ -34,7 +36,11 @@ import {
   type Catalog,
 } from '@viviefs/datom'
 import {
+  CallerStatements,
   SignInSession,
+  StatementUnavailable,
+  type CallerStatement,
+  type IdentityProviderUnreachable,
   type SignInNeeded,
   type TokenRejected,
 } from '@viviefs/identity'
@@ -42,12 +48,20 @@ import {
   BearerAuthentication,
   MembershipMissing,
   Rejection,
+  SyncRpcs,
   type AppendAck,
   type AppendRequest,
   type BlobHashMismatch,
-  type CallerStatement,
   type PullPage,
 } from '@viviefs/sync-protocol'
+
+const withBearer = <R extends { readonly headers: Headers.Headers }>(
+  request: R,
+  token: string,
+): R => ({
+  ...request,
+  headers: Headers.set(request.headers, 'authorization', `Bearer ${token}`),
+})
 
 /** Client half of bearer authentication: the current access token on every call. */
 export const bearerAuthenticationClient = RpcMiddleware.layerClient(
@@ -56,15 +70,24 @@ export const bearerAuthenticationClient = RpcMiddleware.layerClient(
     Effect.gen(function* () {
       const session = yield* SignInSession
       const token = yield* session.accessToken
-      return yield* next({
-        ...request,
-        headers: Headers.set(request.headers, 'authorization', `Bearer ${token}`),
-      })
+      return yield* next(withBearer(request, token))
     }),
 )
 
-/** The call never reached a handler: no valid token, or no sign-in. */
-export type Unauthenticated = TokenRejected | SignInNeeded
+/** Client half of bearer authentication with one given token. */
+const bearerTokenClient = (token: string) =>
+  RpcMiddleware.layerClient(BearerAuthentication, ({ request, next }) =>
+    next(withBearer(request, token)),
+  )
+
+/**
+ * The call never reached a handler: no valid token, no sign-in, or the
+ * identity provider did not answer a refresh.
+ */
+export type Unauthenticated =
+  | TokenRejected
+  | SignInNeeded
+  | IdentityProviderUnreachable
 
 const Payload = Schema.Struct({
   basis: Schema.Number,
@@ -93,23 +116,30 @@ export type PushResult = {
   readonly rebuilt: boolean
 }
 
+/**
+ * Failures that decide nothing about a changeset: the call was not
+ * authenticated, or it did not reach the server and back (`RpcClientError`,
+ * for example offline). The outbox stays as it is; retry later (Q10).
+ */
+export type NotDelivered = Unauthenticated | RpcClientError
+
 type RpcShape = {
   readonly Append: (
     request: AppendRequest,
-  ) => Effect.Effect<AppendAck, Rejection | Unauthenticated>
+  ) => Effect.Effect<AppendAck, Rejection | NotDelivered>
   readonly Pull: (request: {
     readonly org: string
     readonly cursor: number
-  }) => Stream.Stream<PullPage, MembershipMissing | Unauthenticated>
+  }) => Stream.Stream<PullPage, MembershipMissing | NotDelivered>
   readonly PutBlob: (request: {
     readonly org: string
     readonly hash: string
     readonly text: string
   }) => Effect.Effect<
     { readonly hash: string },
-    BlobHashMismatch | MembershipMissing | Unauthenticated
+    BlobHashMismatch | MembershipMissing | NotDelivered
   >
-  readonly Caller: () => Effect.Effect<CallerStatement, Unauthenticated>
+  readonly Caller: () => Effect.Effect<CallerStatement, NotDelivered>
 }
 
 export class SyncRpc extends Context.Service<
@@ -117,52 +147,96 @@ export class SyncRpc extends Context.Service<
   {
     readonly append: (
       request: AppendRequest,
-    ) => Effect.Effect<AppendAck, Rejection | Unauthenticated>
+    ) => Effect.Effect<AppendAck, Rejection | NotDelivered>
     readonly pull: (request: {
       readonly org: string
       readonly cursor: number
-    }) => Effect.Effect<PullPage, MembershipMissing | Unauthenticated>
+    }) => Effect.Effect<PullPage, MembershipMissing | NotDelivered>
     readonly putBlob: (request: {
       readonly org: string
       readonly hash: string
       readonly text: string
     }) => Effect.Effect<
       { readonly hash: string },
-      BlobHashMismatch | MembershipMissing | Unauthenticated
+      BlobHashMismatch | MembershipMissing | NotDelivered
     >
     /** The server's statement about the signed-in provider account (Q22). */
-    readonly caller: Effect.Effect<CallerStatement, Unauthenticated>
+    readonly caller: Effect.Effect<CallerStatement, NotDelivered>
   }
 >()('viviefs/sync/SyncRpc') {}
 
-export const syncRpcLayer = (client: RpcShape): Layer.Layer<SyncRpc> =>
-  Layer.succeed(
-    SyncRpc,
-    SyncRpc.of({
-      append: (request) =>
-        client.Append({
-          org: request.org,
-          basis: request.basis,
-          envelope: request.envelope,
-          datoms: [...request.datoms],
+const makeSyncRpc = (client: RpcShape) =>
+  SyncRpc.of({
+    append: (request) =>
+      client.Append({
+        org: request.org,
+        basis: request.basis,
+        envelope: request.envelope,
+        datoms: [...request.datoms],
+      }),
+    pull: (request) =>
+      Stream.runCollect(client.Pull(request)).pipe(
+        Effect.map((pages) => {
+          const page = pages[0]
+          return (
+            page ?? {
+              cursor: request.cursor,
+              datoms: [],
+              envelopes: [],
+            }
+          )
         }),
-      pull: (request) =>
-        Stream.runCollect(client.Pull(request)).pipe(
-          Effect.map((pages) => {
-            const page = pages[0]
-            return (
-              page ?? {
-                cursor: request.cursor,
-                datoms: [],
-                envelopes: [],
-              }
-            )
-          }),
+      ),
+    putBlob: (request) => client.PutBlob(request),
+    caller: Effect.suspend(() => client.Caller()),
+  })
+
+export const syncRpcLayer = (client: RpcShape): Layer.Layer<SyncRpc> =>
+  Layer.succeed(SyncRpc, makeSyncRpc(client))
+
+/**
+ * `SyncRpc` over an RPC protocol (on a device: HTTP), every call carrying
+ * the sign-in session's access token.
+ */
+export const syncRpcClientLayer: Layer.Layer<
+  SyncRpc,
+  never,
+  RpcClient.Protocol | SignInSession
+> = Layer.effect(SyncRpc, Effect.map(RpcClient.make(SyncRpcs), makeSyncRpc)).pipe(
+  Layer.provide(bearerAuthenticationClient),
+)
+
+/**
+ * The server's statement for one given access token, the port a sign-in
+ * session asks right after the identity provider issued that token (Q22).
+ * A short-lived client carries exactly that token, so the statement belongs
+ * to the sign-in that asked for it.
+ */
+export const callerStatementsLayer: Layer.Layer<
+  CallerStatements,
+  never,
+  RpcClient.Protocol
+> = Layer.effect(
+  CallerStatements,
+  Effect.gen(function* () {
+    const protocol = yield* RpcClient.Protocol
+    return CallerStatements.of({
+      fetch: (accessToken) =>
+        Effect.scoped(
+          Effect.flatMap(RpcClient.make(SyncRpcs), (client) => client.Caller()),
+        ).pipe(
+          Effect.provide(bearerTokenClient(accessToken)),
+          Effect.provideService(RpcClient.Protocol, protocol),
+          Effect.mapError(
+            (error) =>
+              new StatementUnavailable({
+                reason: `${error._tag}: ${error.message}`,
+              }),
+          ),
         ),
-      putBlob: (request) => client.PutBlob(request),
-      caller: Effect.suspend(() => client.Caller()),
-    }),
-  )
+    })
+  }),
+)
 
 export class SyncClient extends Context.Service<
   SyncClient,
@@ -177,20 +251,20 @@ export class SyncClient extends Context.Service<
       org: string,
     ) => Effect.Effect<
       PushResult,
-      FutureSkew | InvalidTx | SqlError | Rejection | Unauthenticated
+      FutureSkew | InvalidTx | SqlError | Rejection | NotDelivered
     >
     readonly pull: (
       org: string,
     ) => Effect.Effect<
       number,
-      FutureSkew | InvalidTx | SqlError | MembershipMissing | Unauthenticated
+      FutureSkew | InvalidTx | SqlError | MembershipMissing | NotDelivered
     >
     readonly upload: (
       org: string,
       text: string,
     ) => Effect.Effect<
       string,
-      BlobHashMismatch | MembershipMissing | Unauthenticated
+      BlobHashMismatch | MembershipMissing | NotDelivered
     >
   }
 >()('viviefs/sync/SyncClient') {}

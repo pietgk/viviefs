@@ -5,6 +5,8 @@ const gate = process.env.EXPO_PUBLIC_GATE ?? 'P01'
 
 const loadGateApp = async (): Promise<ComponentType> => {
   switch (gate) {
+    case 'P11':
+      return (await import('./p11-app.tsx')).default
     case 'P07':
       return (await import('./p07-app.tsx')).default
     case 'P05':

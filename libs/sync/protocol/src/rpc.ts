@@ -5,8 +5,9 @@ import * as RpcMiddleware from 'effect/unstable/rpc/RpcMiddleware'
 import { Datom, Envelope, StoredDatom } from '@viviefs/datom'
 import {
   Caller,
-  ProviderAccount,
-  SignInNeeded,
+  CallerStatement,
+  type IdentityProviderUnreachable,
+  type SignInNeeded,
   TokenRejected,
 } from '@viviefs/identity'
 
@@ -19,7 +20,10 @@ import {
  */
 export class BearerAuthentication extends RpcMiddleware.Service<
   BearerAuthentication,
-  { provides: Caller; clientError: SignInNeeded }
+  {
+    provides: Caller
+    clientError: SignInNeeded | IdentityProviderUnreachable
+  }
 >()('viviefs/sync/BearerAuthentication', {
   error: TokenRejected,
   requiredForClient: true,
@@ -161,20 +165,7 @@ export const CompleteDeferred = Rpc.make('CompleteDeferred', {
   error: MembershipMissing,
 })
 
-/**
- * The server's statement about the signed-in provider account (P11 Q22):
- * its person, or none, and the organizations that person may act in. A device
- * keeps it inside its sign-in session to label its writes; it never decides
- * who it is.
- */
-export const CallerStatement = Schema.Struct({
-  person: Schema.NullOr(Schema.String),
-  account: ProviderAccount,
-  roles: Schema.Array(Schema.String),
-  organizations: Schema.Array(Schema.String),
-})
-export type CallerStatement = typeof CallerStatement.Type
-
+/** The server's statement about the signed-in provider account (Q22). */
 export const CallerRpc = Rpc.make('Caller', { success: CallerStatement })
 
 /** Every RPC in the group is authenticated; a new one is by default. */

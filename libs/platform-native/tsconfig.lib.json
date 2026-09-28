@@ -16,6 +16,9 @@
   "references": [
     {
       "path": "../workflow-engine/tsconfig.lib.json"
+    },
+    {
+      "path": "../identity/tsconfig.lib.json"
     }
   ]
 }

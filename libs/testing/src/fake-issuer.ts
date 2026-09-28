@@ -9,10 +9,13 @@
 import * as Clock from 'effect/Clock'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
+import * as Stream from 'effect/Stream'
 import {
   SignInSession,
   TokenVerifier,
+  type IdentityProviderUnreachable,
   type ProviderAccount,
+  type SignInNeeded,
 } from '@viviefs/identity'
 import { makeTokenVerifier } from '@viviefs/identity/oidc'
 import {
@@ -92,12 +95,33 @@ export const makeFakeIssuer = Effect.fn('FakeIssuer.make')(function* (options: {
   return issuer
 })
 
+/**
+ * A sign-in session that only hands out access tokens, for tests of the
+ * server and the sync client. Anything else about the session is a defect:
+ * those tests never sign in or out.
+ */
+export const tokenSignInSession = (
+  accessToken: Effect.Effect<
+    string,
+    SignInNeeded | IdentityProviderUnreachable
+  >,
+): Layer.Layer<SignInSession> => {
+  const unused = Effect.die('tokenSignInSession only hands out access tokens')
+  return Layer.succeed(
+    SignInSession,
+    SignInSession.of({
+      state: unused,
+      changes: Stream.die('tokenSignInSession has no state'),
+      signIn: unused,
+      signOut: unused,
+      accessToken,
+      refreshStatement: unused,
+    }),
+  )
+}
+
 /** A signed-in session for `subject`: every call gets a fresh fake token. */
 export const fakeSignInSession = (
   fake: FakeIssuer,
   subject: string,
-): Layer.Layer<SignInSession> =>
-  Layer.succeed(
-    SignInSession,
-    SignInSession.of({ accessToken: fake.sign({ subject }) }),
-  )
+): Layer.Layer<SignInSession> => tokenSignInSession(fake.sign({ subject }))

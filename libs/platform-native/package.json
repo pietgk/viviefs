@@ -17,21 +17,34 @@
       "types": "./src/intl-polyfill.ts",
       "import": "./src/intl-polyfill.ts",
       "default": "./src/intl-polyfill.ts"
+    },
+    "./sign-in": {
+      "@viviefs/source": "./src/sign-in.ts",
+      "types": "./src/sign-in.ts",
+      "import": "./src/sign-in.ts",
+      "default": "./src/sign-in.ts"
     }
   },
   "peerDependencies": {
+    "expo-auth-session": "58.0.2",
     "expo-crypto": "58.0.1",
-    "expo-notifications": "58.0.3"
+    "expo-notifications": "58.0.3",
+    "expo-secure-store": "58.0.0",
+    "expo-web-browser": "58.0.0"
   },
   "dependencies": {
     "@formatjs/intl-datetimeformat": "7.8.0",
     "@formatjs/intl-getcanonicallocales": "3.2.12",
     "@formatjs/intl-locale": "5.3.11",
+    "@viviefs/identity": "workspace:*",
     "@viviefs/workflow-engine": "workspace:*",
     "effect": "4.0.0-rc.116"
   },
   "devDependencies": {
+    "expo-auth-session": "58.0.2",
     "expo-crypto": "58.0.1",
-    "expo-notifications": "58.0.3"
+    "expo-notifications": "58.0.3",
+    "expo-secure-store": "58.0.0",
+    "expo-web-browser": "58.0.0"
   }
 }

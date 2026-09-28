@@ -2,7 +2,7 @@
 
 Review before the gate runs. This page does not pass P11 and does not edit the ledger. It records the P11 grilling (2026-09-27), splits the claim into checks that can each fail, and lists the build steps.
 
-| Part | State on 2026-09-27 |
+| Part | State on 2026-09-28 |
 | --- | --- |
 | Grilling (Q1-Q20) | agreed |
 | Glossary and ADR-0022 amendment | written |
@@ -13,7 +13,7 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | HTTP server (step 4): `apps/evidence-server` composes the sync RPCs over HTTP (`/rpc`, NDJSON) on PGlite with an OIDC verifier and a membership seed; `main.ts` reads `VIVIEFS_*` | done: an HTTP round trip against a fake issuer served over HTTP passes (member append and streamed pull with `acceptedAt`; other org, never granted and missing token refused). It found an HLC ordering bug, fixed in `21b34d7e1` (ADR-0007) |
 | Keycloak lab (step 5): Keycloak 26.7.3 pinned by digest in `lab-images.json`; realms `viviefs` and `viviefs-other` generated per run with fresh passwords and pinned user ids; one issuer `http://localhost:28080` | done: the token contract passes all 9 checks against Keycloak (`p11-keycloak.ts`). Decoded tokens show each hostile token differs in exactly its claim; Keycloak omits `aud` without the audience mapper |
 | `Caller` RPC (step 6, server part): the server's statement about the signed-in provider account (person or none, account, roles, organizations); `SyncRpc.caller` on the device | done: Node check 12 `caller statement` passes and follows grants and revocations; ignoring revocations fails exactly that check |
-| Device sign-in (step 6, device part) | not started; handoff in [p11-next-session.md](../plan/p11-next-session.md) |
+| Device sign-in (step 6, device part): `oidcSignInSession` in `@viviefs/identity` (PKCE code exchange, refresh, revocation; ports for the prompt, the vault and the server's statement), Expo ports in `@viviefs/platform-native/sign-in`, `syncRpcClientLayer` and `replicaName` in `@viviefs/sync-client`, the P11 screen in the evidence app, the lab in `p11-lab.ts`, and one device scenario for iOS, Android and web in `p11-device.ts` | done: the six device checks (2, the device leg of 3, token storage, 10, 11, removing an account) pass on the iOS simulator, the Android emulator and web against Keycloak and the evidence server. 10 unit tests for the session run on a served fake issuer that now has a token endpoint; a test that lets trace context through fails. Notes in [section 9](#9-step-6-device-notes) |
 | Probe (`p11.ts`) and evidence note | not started |
 | Gate P11 | not run |
 
@@ -127,6 +127,13 @@ Checked against the repo's conventions: services are role nouns (`LogStore`, `Sy
 | `ActorMismatch` `{ actor, caller }` | error | The envelope's actor is not the caller's person |
 | `ServerOnlyAttribute` `{ attribute }` | error | A client changeset writes an attribute only the server may write |
 | `acceptedAt` | envelope field | Server wall-clock time of acceptance, integer milliseconds; set once |
+| `SignInState` | value | `SignedOut`, `SignedIn { account, statement }`, `SignInNeeded { account, statement, reason }` (added in step 6) |
+| `CallerStatement` | value | The server's statement from the `Caller` RPC (Q22); moved to `@viviefs/identity` in step 6 so the sign-in session can hold it |
+| `SignInFailed` `{ reason }` | error | A sign-in did not complete (cancelled, refused, or no statement from the server); the previous state stays |
+| `IdentityProviderUnreachable` `{ reason }` | error | The identity provider did not answer a refresh; nothing changed, retry (Q10) |
+| `StatementUnavailable` `{ reason }` | error | The server did not give its statement |
+| `AuthorizationPrompt`, `SignInVault`, `CallerStatements` | ports of `oidcSignInSession` | The login page (platform), where the session survives a restart (secure storage or memory), and the server's statement for one token |
+| `NotDelivered` | error union | `Unauthenticated` or `RpcClientError`: a sync call that decided nothing; the outbox stays |
 
 Two deliberate choices:
 
@@ -166,3 +173,18 @@ Each step ends with a commit and a green `pnpm verify`.
 - The ledger fingerprint covers every lib and app the probes use, so any P11 change marks P01-P10 stale. Step 8 re-runs them in one sequential run.
 - `libs/identity` and `apps/evidence-server` joined `inputsFingerprint()` in step 2.
 - The `journal.ts` comment fix waits for the first engine change. P11 is not expected to change the engine.
+
+## 9. Step 6 device notes
+
+Built 2026-09-28. Each point implements a decision above; none changes one.
+
+- **The device learns its account from the server** (Q22). `oidcSignInSession` never reads a token. After the code exchange it asks `Caller` with exactly the new access token (a short-lived RPC client bound to that token, so the statement belongs to this sign-in) and takes the provider account from the statement. The statement's issuer must be the configured one.
+- **The statement lives in the session state** (Q22). `SignedIn` and `SignInNeeded` carry it, it is stored with the refresh token, and `refreshStatement` replaces it; the evidence app calls it after `MembershipMissing` or `ActorMismatch`. Writes are labelled with its person; an account without a person cannot write.
+- **Sign-in needed keeps the account** (Q10). An OAuth error on refresh (`invalid_grant` and others) moves to `SignInNeeded` with the account and statement, so the replica stays open and its outbox fills. A provider that does not answer is `IdentityProviderUnreachable` and changes nothing.
+- **Every sign-in asks for the password** (`prompt=login`), and iOS uses an ephemeral authentication session: no cookies shared with Safari, and no consent alert (the Q6 risk did not arise). On Android the Custom Tab shares Chrome's cookies; on web the browser keeps Keycloak's session. Signing out revokes the refresh token, which in Keycloak ends that session, so the next person gets an empty login form (checked on web and Android by bob signing in after alice).
+- **Trace context does not go to the identity provider.** Requests to it carry no `traceparent` or `b3`: the provider is a third party, and on web its CORS refuses them. Calls to our own server keep them (the evidence server's CORS allows them).
+- **One local replica per provider account** (Q11): the database is named from a hash of `(iss, sub)`, 96 bits, which keeps web names under SQLite's 64-character path limit (`<name>.sqlite-journal`). Removing the account signs out, closes the replica and deletes its file (op-sqlite on iOS and Android, a deleting OPFS worker on web).
+- **Web** keeps tokens in memory (Q9): a reload signs out and signing in finds the same replica. The Metro dev server no longer sends `Cross-Origin-Opener-Policy`: any value severs the sign-in popup from the app on its way through Keycloak. Nothing needed cross-origin isolation; P02, P04 and P05 web re-run in step 8.
+- **Lab**: imported Keycloak users get the realm's default roles (`offline_access` was missing, so offline tokens were refused); `viviefs-mobile` access tokens live 30 s so a revoked session shows up within a run; a bootstrap admin revokes a user's sessions for check 10.
+- **Found on the way**: `@effect/sql-sqlite-wasm`'s client waits forever when the OPFS worker fails before it is ready. `@viviefs/store-sqlite-wasm` now bounds the open (30 s), checks the name length, and makes a worker failure raise. The iOS simulator can leave WebKit's GPU process hanging in the sign-in sheet after long use, so the device run reboots it; Chrome on the emulator switches web accessibility off after a quiet spell, so the lab starts it with renderer accessibility forced on and its first-run screens off.
+- **Not wired**: `EngineConfig.actor` from the statement. The P11 screen writes through `SyncClient` with the statement's person and does not run the workflow engine; the engine takes the person the same way when a consumer app runs both.

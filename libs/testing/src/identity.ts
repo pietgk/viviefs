@@ -7,6 +7,7 @@ export {
   FAKE_TOKEN_LIFETIME_MS,
   fakeSignInSession,
   makeFakeIssuer,
+  tokenSignInSession,
   type FakeIssuer,
 } from './fake-issuer.ts'
 export {

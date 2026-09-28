@@ -9,12 +9,16 @@ import * as RpcClient from 'effect/unstable/rpc/RpcClient'
 import * as RpcSerialization from 'effect/unstable/rpc/RpcSerialization'
 import { Attr, LogStore, liveClock } from '@viviefs/datom'
 import { renameList } from '@viviefs/evidence-model'
-import { SignInSession } from '@viviefs/identity'
+import type { SignInSession } from '@viviefs/identity'
 import { pgliteLogStore } from '@viviefs/store-postgres'
 import { bearerAuthenticationClient } from '@viviefs/sync-client'
 import { SyncRpcs } from '@viviefs/sync-protocol'
 import { Memberships } from '@viviefs/sync-server'
-import { fakeSignInSession, type FakeIssuer } from '@viviefs/testing/identity'
+import {
+  fakeSignInSession,
+  tokenSignInSession,
+  type FakeIssuer,
+} from '@viviefs/testing/identity'
 import { serveFakeIssuer } from '@viviefs/testing/node'
 import { RPC_PATH, evidenceServerLayer } from './server.ts'
 
@@ -121,10 +125,7 @@ describe('evidence server over HTTP', () => {
 
         const anonymous = yield* clientFor(
           url,
-          Layer.succeed(
-            SignInSession,
-            SignInSession.of({ accessToken: Effect.succeed('') }),
-          ),
+          tokenSignInSession(Effect.succeed('')),
         )
         const missing = yield* Effect.match(
           Stream.runCollect(anonymous.Pull({ org: 'acme', cursor: 0 })),
@@ -137,6 +138,48 @@ describe('evidence server over HTTP', () => {
           },
         )
         expect(missing).toBe('TokenRejected missing')
+      }),
+    60_000,
+  )
+
+  it.live(
+    'lets only the configured browser origins call /rpc',
+    () =>
+      Effect.gen(function* () {
+        const fake = yield* serveFakeIssuer({ audience: AUDIENCE })
+        const allowedOrigin = (corsOrigins: ReadonlyArray<string>) =>
+          Effect.gen(function* () {
+            const server = yield* Layer.build(
+              evidenceServerLayer({
+                host: '127.0.0.1',
+                port: 0,
+                issuer: fake.issuer,
+                audience: AUDIENCE,
+                seed: [],
+                corsOrigins,
+              }),
+            )
+            const address = Context.get(server, HttpServer.HttpServer).address
+            if (address._tag === 'UnixPathAddress') throw new Error('not TCP')
+            const response = yield* Effect.promise(() =>
+              fetch(`http://127.0.0.1:${address.port}${RPC_PATH}`, {
+                method: 'OPTIONS',
+                headers: {
+                  origin: 'http://localhost:8081',
+                  'access-control-request-method': 'POST',
+                  'access-control-request-headers': 'authorization,content-type',
+                },
+              }),
+            )
+            return {
+              origin: response.headers.get('access-control-allow-origin'),
+              headers: response.headers.get('access-control-allow-headers'),
+            }
+          }).pipe(Effect.scoped)
+        const allowed = yield* allowedOrigin(['http://localhost:8081'])
+        expect(allowed.origin).toBe('http://localhost:8081')
+        expect(allowed.headers).toContain('authorization')
+        expect((yield* allowedOrigin([])).origin).toBeNull()
       }),
     60_000,
   )

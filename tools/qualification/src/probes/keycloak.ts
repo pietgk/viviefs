@@ -17,6 +17,11 @@
  *
  * `viviefs-mobile` and `viviefs-probe` carry the audience mapper that puts
  * `viviefs-sync` in `aud`; without it Keycloak's `aud` is not our API.
+ *
+ * `viviefs-mobile` access tokens live `MOBILE_ACCESS_TOKEN_SECONDS`, so a
+ * device refreshes within a probe's patience and a revoked session shows up
+ * as sign-in needed (check 10). A bootstrap admin with a fresh password lets
+ * the probe revoke a user's sessions, as an administrator would.
  */
 import { randomBytes } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -41,7 +46,11 @@ export const MOBILE_REDIRECTS = [
   'http://localhost:8081/*',
 ] as const
 
+/** Short, so a device refreshes (and meets a revocation) within a probe run. */
+export const MOBILE_ACCESS_TOKEN_SECONDS = 30
+
 const CONTAINER = 'viviefs-p11-keycloak'
+const ADMIN = 'viviefs-admin'
 const PROBE_CLIENT = 'viviefs-probe'
 const OTHER_APP_CLIENT = 'viviefs-other-app'
 
@@ -63,6 +72,11 @@ export type KeycloakLab = {
   readonly foreignIssuerToken: () => Promise<string>
   /** A genuine `viviefs` token issued for another client, without our audience. */
   readonly foreignAudienceToken: () => Promise<string>
+  /**
+   * Ends every session of `user` at Keycloak, offline ones included: the
+   * next refresh answers `invalid_grant`.
+   */
+  readonly revokeSessions: (user: LabUser) => Promise<void>
   readonly stop: () => Promise<void>
 }
 
@@ -111,7 +125,10 @@ const realmFile = (
     lastName: 'Lab',
     enabled: true,
     emailVerified: true,
-    realmRoles: [...user.roles],
+    // An imported user gets only the roles listed. The realm's default roles
+    // are what a newly registered user gets; they carry `offline_access`,
+    // which a device needs for a refresh token that survives a restart (Q9).
+    realmRoles: [`default-roles-${realm}`, ...user.roles],
     credentials: [{ type: 'password', value: user.password, temporary: false }],
   })),
 })
@@ -180,6 +197,7 @@ export const startKeycloak = async (artifacts: string): Promise<KeycloakLab> => 
     alice: randomBytes(12).toString('base64url'),
     bob: randomBytes(12).toString('base64url'),
   }
+  const adminPassword = randomBytes(12).toString('base64url')
   const users = (Object.keys(LAB_USERS) as LabUser[]).map((username) => ({
     id: LAB_USERS[username].id,
     username,
@@ -200,7 +218,10 @@ export const startKeycloak = async (artifacts: string): Promise<KeycloakLab> => 
           directAccessGrantsEnabled: false,
           redirectUris: [...MOBILE_REDIRECTS],
           webOrigins: ['http://localhost:8081'],
-          attributes: { 'pkce.code.challenge.method': 'S256' },
+          attributes: {
+            'pkce.code.challenge.method': 'S256',
+            'access.token.lifespan': String(MOBILE_ACCESS_TOKEN_SECONDS),
+          },
           protocolMappers: [audienceMapper],
         },
         passwordClient(PROBE_CLIENT, true),
@@ -233,6 +254,10 @@ export const startKeycloak = async (artifacts: string): Promise<KeycloakLab> => 
     `KC_HOSTNAME=${KEYCLOAK_ORIGIN}`,
     '-e',
     'KC_HTTP_ENABLED=true',
+    '-e',
+    `KC_BOOTSTRAP_ADMIN_USERNAME=${ADMIN}`,
+    '-e',
+    `KC_BOOTSTRAP_ADMIN_PASSWORD=${adminPassword}`,
     '-v',
     `${importDir}:/opt/keycloak/data/import:ro`,
     '--memory',
@@ -262,6 +287,28 @@ export const startKeycloak = async (artifacts: string): Promise<KeycloakLab> => 
       passwordGrant(OTHER_ISSUER, PROBE_CLIENT, 'alice', passwords.alice),
     foreignAudienceToken: () =>
       passwordGrant(ISSUER, OTHER_APP_CLIENT, 'alice', passwords.alice),
+    revokeSessions: async (user) => {
+      const admin = await passwordGrant(
+        `${KEYCLOAK_ORIGIN}/realms/master`,
+        'admin-cli',
+        ADMIN,
+        adminPassword,
+      )
+      const base = `${KEYCLOAK_ORIGIN}/admin/realms/${REALM}/users/${LAB_USERS[user].id}`
+      const call = async (method: string, path: string) => {
+        const response = await fetch(`${base}${path}`, {
+          method,
+          headers: { authorization: `Bearer ${admin}` },
+          signal: AbortSignal.timeout(10_000),
+        })
+        if (!response.ok && response.status !== 404) {
+          fail(`Keycloak admin ${method} ${path} for ${user}: ${response.status} ${await response.text()}`)
+        }
+      }
+      // Offline sessions live under the client consent; online ones end at logout.
+      await call('DELETE', `/consents/${MOBILE_CLIENT}`)
+      await call('POST', '/logout')
+    },
     stop: async () => {
       const logs = await container(['logs', CONTAINER], 15_000)
       await writeFile(join(artifacts, 'keycloak.log'), logs.stdout + logs.stderr)

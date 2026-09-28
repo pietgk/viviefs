@@ -11,7 +11,6 @@ export {
   BlobHashMismatch,
   BasisRejected,
   CallerRpc,
-  CallerStatement,
   CompleteDeferred,
   FileMissing,
   MembershipMissing,

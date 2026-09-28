@@ -17,3 +17,7 @@ minimumReleaseAgeExclude:
 overrides:
   smol-toml: 1.8.0
   '@op-engineering/op-sqlite': 18.2.5
+  # One copy of each native Expo module: expo-auth-session's ranges would
+  # otherwise pull newer patch releases next to the ones expo 58 bundles.
+  expo-constants: 58.0.3
+  expo-linking: 58.0.3

@@ -7,7 +7,6 @@
  */
 import * as Clock from 'effect/Clock'
 import * as Effect from 'effect/Effect'
-import * as Layer from 'effect/Layer'
 import type * as Scope from 'effect/Scope'
 import * as Tracer from 'effect/Tracer'
 import { blobHash } from '@viviefs/blobs'
@@ -23,13 +22,14 @@ import {
   type DatomType,
 } from '@viviefs/datom'
 import { renameList } from '@viviefs/evidence-model'
-import { SignInNeeded, SignInSession } from '@viviefs/identity'
+import { SignInNeeded } from '@viviefs/identity'
 import type { Outgoing } from '@viviefs/sync-client'
 import {
   makeMutableClock,
   type CheckResult,
   type MutableClock,
 } from '@viviefs/testing'
+import { tokenSignInSession } from '@viviefs/testing/identity'
 import { withTempDirectory } from '@viviefs/testing/node'
 import { encodeExit, encodeLease } from '@viviefs/workflow-engine'
 import * as Exit from 'effect/Exit'
@@ -439,7 +439,7 @@ const blobsPerOrganization = (directory: string, clock: MutableClock) =>
   )
 
 const sessionWith = (accessToken: Effect.Effect<string, SignInNeeded>) => () =>
-  Layer.succeed(SignInSession, SignInSession.of({ accessToken }))
+  tokenSignInSession(accessToken)
 
 /**
  * p11-check missingToken

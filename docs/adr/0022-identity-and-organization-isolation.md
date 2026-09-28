@@ -2,7 +2,7 @@
 
 Status: Proposed, unverified
 
-Date: 2026-09-20. Amended 2026-09-27 by the P11 grilling.
+Date: 2026-09-20. Amended 2026-09-27 by the P11 grilling; 2026-09-28 with how the device signs in (step 6).
 
 Qualifying gate: P11
 
@@ -103,6 +103,22 @@ token in `expo-secure-store` with `offline_access` on iOS and Android; in
 memory on web. A failed refresh enters sign-in-needed and keeps the outbox.
 After `MembershipMissing` the org's local copy is read-only and its outbox rows
 become `rejected`.
+
+**How the device signs in** (amendment 2026-09-28, step 6). `oidcSignInSession`
+in `@viviefs/identity` is platform-free: the authorization code flow with
+PKCE (S256), refresh, and revocation of the refresh token at sign out, over
+three ports (the login page, where the session is kept, the server's
+statement). The Expo ports are `@viviefs/platform-native/sign-in`. The device
+reads no token: right after the code exchange it asks `Caller` with exactly
+the new access token and takes its provider account from that statement. The
+statement lives in the session state and is stored with it. Every sign-in
+asks for the password (`prompt=login`), and iOS uses an ephemeral
+authentication session, so the next person on a device never inherits the
+last one's provider session. A refresh the provider refuses is sign-in needed;
+one it does not answer is `IdentityProviderUnreachable` and changes nothing.
+Requests to the identity provider carry no trace context. A replica's
+database is named from a hash of `(iss, sub)`; removing the account from the
+device deletes it.
 
 ## Trade-offs
 

@@ -30,7 +30,7 @@ const isProbeReport = (
   )
 }
 
-const launchChrome = async () => {
+export const launchChrome = async () => {
   const { chromium } = await import('playwright')
   try {
     return await chromium.launch({ channel: 'chrome', headless: true })
@@ -39,7 +39,7 @@ const launchChrome = async () => {
   }
 }
 
-const startExpoWeb = (
+export const startExpoWeb = (
   cwd: string,
   env: NodeJS.ProcessEnv,
   logFile: string,

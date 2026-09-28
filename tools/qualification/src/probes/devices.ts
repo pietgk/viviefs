@@ -208,6 +208,36 @@ export const forceStopAndroidApp = async (
   }
 }
 
+/**
+ * Chrome as a lab browser on the emulator (P11 sign-in in a Custom Tab):
+ * no first-run screens, and web content always in the accessibility tree.
+ * Chrome otherwise switches web accessibility off after a quiet spell, and
+ * agent-device then sees the login page without its fields. Chrome reads
+ * this file only for a debug app, hence `set-debug-app`.
+ */
+export const prepareAndroidChrome = async (): Promise<void> => {
+  const env = androidEnv()
+  const adb = join(env.ANDROID_HOME as string, 'platform-tools/adb')
+  const flags = [
+    '--disable-fre',
+    '--no-first-run',
+    '--no-default-browser-check',
+    '--force-renderer-accessibility',
+    '--disable-features=AutoDisableAccessibility',
+  ].join(' ')
+  const steps: string[][] = [
+    ['shell', `echo '_ ${flags}' > /data/local/tmp/chrome-command-line`],
+    ['shell', 'am', 'set-debug-app', '--persistent', 'com.android.chrome'],
+    ['shell', 'am', 'force-stop', 'com.android.chrome'],
+  ]
+  for (const args of steps) {
+    const ran = await command(adb, args, { env, timeout: 15_000 })
+    if (ran.code !== 0) {
+      throw new Error(`adb ${args.join(' ')} failed: ${ran.stderr || ran.stdout}`)
+    }
+  }
+}
+
 export const expandAndroidNotifications = async (): Promise<void> => {
   const env = androidEnv()
   const androidHome = env.ANDROID_HOME as string
@@ -234,6 +264,17 @@ export const reverseAndroidPorts = async (ports: number[]): Promise<void> => {
       )
     }
   }
+}
+
+/**
+ * Shuts the simulator down and boots it again. A simulator that has run for
+ * long can leave WebKit's GPU process hanging in system sheets such as the
+ * sign-in sheet (seen in P11), while the app itself looks fine.
+ */
+export const rebootIosSimulator = async (): Promise<string> => {
+  const udid = await iosSimulatorUdid()
+  await command('xcrun', ['simctl', 'shutdown', udid], { timeout: 60_000 })
+  return iosSimulatorUdid()
 }
 
 export const iosSimulatorUdid = async (): Promise<string> => {

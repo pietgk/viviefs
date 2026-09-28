@@ -199,9 +199,10 @@ _Avoid_: session, API key
 
 **Sign-in session**:
 On one device, the tokens that prove a provider account recently authenticated
-at the identity provider, with their state: signed in, or sign-in needed.
-Signing out ends it. A device has at most one active. The only thing called a
-session.
+at the identity provider, with their state: signed in, or sign-in needed. It
+keeps the server's statement about that account (its person and
+organizations), fetched at every sign-in. Signing out ends it. A device has at
+most one active. The only thing called a session.
 _Avoid_: login state, identity
 
 **Device**:

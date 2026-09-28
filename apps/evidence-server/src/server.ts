@@ -38,6 +38,11 @@ export type EvidenceServerOptions = {
   /** PGlite data directory; in memory when absent. */
   readonly dataDir?: string
   readonly seed: ReadonlyArray<SeedGrant>
+  /**
+   * Browser origins allowed to call `/rpc` (the web app in the lab). Only
+   * the bearer token authenticates; no cookies, so no credentials mode.
+   */
+  readonly corsOrigins?: ReadonlyArray<string>
 }
 
 const seedLayer = (seed: ReadonlyArray<SeedGrant>) =>
@@ -69,7 +74,23 @@ export const evidenceServerLayer = (options: EvidenceServerOptions) => {
     group: SyncRpcs,
     path: RPC_PATH,
     protocol: 'http',
-  })
+  }).pipe(
+    Layer.provide(
+      options.corsOrigins === undefined || options.corsOrigins.length === 0
+        ? Layer.empty
+        : HttpRouter.cors({
+            allowedOrigins: options.corsOrigins,
+            allowedMethods: ['POST'],
+            // Trace context headers: device spans continue on the server (P10).
+            allowedHeaders: [
+              'authorization',
+              'content-type',
+              'traceparent',
+              'b3',
+            ],
+          }),
+    ),
+  )
   return HttpRouter.serve(rpc, { disableListenLog: true }).pipe(
     Layer.provideMerge(seedLayer(options.seed)),
     Layer.provideMerge(sync),

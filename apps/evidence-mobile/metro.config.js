@@ -38,7 +38,10 @@ config.server = {
       : middleware
     return (req, res, resume) => {
       res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
-      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+      // No Cross-Origin-Opener-Policy: any value severs a sign-in popup from
+      // the app on its way through the identity provider, so the redirect
+      // never returns (P11). The OPFS log store needs no cross-origin
+      // isolation.
       if (String(req.url ?? '').includes('.wasm')) {
         res.setHeader('Content-Type', 'application/wasm')
       }
