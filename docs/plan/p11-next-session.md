@@ -1,12 +1,13 @@
-# Next session: close P11 (sequential P01-P11 run)
+# P11 handover (closed 2026-09-28)
 
-## Prompt to start the session
+P11 is closed: the gate qualified on its own, and P01-P11 then passed in one
+sequential run on a clean tree (step 8). This page stays as the record of how
+P11 was built and what the lab taught; the facts below still apply to any
+device run.
 
-> Read `AGENTS.md`, then `docs/plan/p11-next-session.md` (this file), then
-> `docs/evidence/p11-design-review.md` (every P11 decision, Q1-Q24, the check
-> list, and section 9 on the device part), ADR-0022, and the Identity section
-> of `CONTEXT.md`. Continue P11 at step 8. Decisions Q1-Q24 are agreed; ask
-> before deviating and record a deviation in the design review and ADR-0022.
+Next, per [10-open-items-and-risks.md](bootstrap/10-open-items-and-risks.md):
+work order step 7 (docs site and teaching, which also decides the home of the
+`.lavish/` pages), before P12-P14.
 
 ## Where P11 stands (2026-09-28)
 
@@ -22,10 +23,10 @@
 | 6 device part: sign-in on iOS, Android, web | done | `aaf55a4f3` |
 | 7 `p11.ts` probe, evidence note, ADR-0022 Observed | done | the step 7 commit |
 | 7 `pnpm qualify` P11 on the committed tree | pass `2026-09-28T19-38-22.564Z-0f0ac08c` | `971ae6e28` |
-| 8 sequential P01-P11 run on one commit | **next** | |
+| 8 sequential P01-P11 run on one commit | pass `2026-09-28T22-40-46.395Z-cfafc842` | `46e9c22b6`, `ec775f86e`, `d592d67e0`, `4d192db41`, `59b74a9a2` |
 
-`pnpm verify` is green. Every gate in the ledger is stale (the fingerprint covers
-all libs), so step 8 re-runs P01-P10 as well.
+`pnpm verify` is green. Every gate from P01 to P11 passes in the ledger on
+`59b74a9a`.
 
 ## What step 6 left ready
 
@@ -64,18 +65,27 @@ A full measurement run took about 10 minutes and passed every section.
 
 ## Step 8: the closing run
 
-P11 qualified on its own (`2026-09-28T19-38-22.564Z-0f0ac08c`); ADR-0022 is
-Qualified, its attribute names are pinned in `AGENTS.md`, and Identity left the
-empty named slots in `10-open-items-and-risks.md`.
-
-Still open: a sequential P01-P11 run on one committed tree (every other gate is
-stale, because the fingerprint covers every lib), with a closure note like
-[2026-09-26-foundation-closure.md](../evidence/2026-09-26-foundation-closure.md).
-It re-runs P02, P04 and P05 on web, which confirms nothing needed Metro's
+`pnpm qualify --through P11` (added for this run; a plain run also runs
+P12-P14, which refuse by design) passed on `59b74a9a` in 35 minutes. Four
+earlier runs each failed on lab state that outlives a gate or on a harness
+timeout; each was fixed before the next run. Details and the fixes:
+[2026-09-28-p01-p11-closure.md](../evidence/2026-09-28-p01-p11-closure.md).
+P02, P04 and P05 passed on web, so nothing needed Metro's
 `Cross-Origin-Opener-Policy`.
 
-## Facts learned in step 6 (check before blaming the code)
+## Facts learned in steps 6 and 8 (check before blaming the code)
 
+- **Lab state outlives a gate** (step 8). The emulator, the simulator, the
+  agent-device daemon and the motel daemon run across gates and days. P07
+  leaves Android's notification shade open (sessions now close it); an
+  agent-device daemon started by an iOS call had no `adb` (every call now
+  carries the SDK); a motel started eight days earlier from `/tmp` answered
+  health but hung on ingest (a canary span now decides reuse).
+- **iOS accessibility after the sign-in sheet** (step 8): for a few seconds
+  agent-device's runner can log "Could not match active AX application", and a
+  press finds nothing. P11 taps retry only that miss.
+- **`agent-cli navigate`** waits up to 45 s twice and reopens the app once;
+  the harness gives it 240 s.
 - **iOS simulator**: after long use WebKit's GPU process can hang in the sign-in
   sheet ("A problem repeatedly occurred"). `runP11OnPlatform` reboots the
   simulator. A new development build also needs `ios/.xcode.env.local` to point
@@ -85,8 +95,9 @@ It re-runs P02, P04 and P05 on web, which confirms nothing needed Metro's
   `snapshot -i` every 5 s. Selectors: iOS by label (`role=textfield
   label="Username or email"`, `role=securetextfield label="Password"`), Android
   by Keycloak's HTML ids (`id="username"`, `id="password"`, `id="kc-login"`).
-- **agent-device daemon** keeps the PATH it started with: stop it (`agent-device
-  daemon stop`) before Android if it was started without the Android SDK.
+- **agent-device daemon** keeps the PATH it started with. Every harness call now
+  carries the Android SDK; a daemon started by hand without it still needs
+  `agent-device daemon stop` before Android.
 - **Chrome on the emulator**: first-run screens, and web accessibility switched
   off after a quiet spell. `prepareAndroidChrome()` in `devices.ts` sets test
   flags (debug app plus `/data/local/tmp/chrome-command-line`).
@@ -96,7 +107,7 @@ It re-runs P02, P04 and P05 on web, which confirms nothing needed Metro's
   URI must match Keycloak's). Keycloak's browser session survives a reload; with
   `prompt=login` it then asks only for the remembered user's password.
 - **Metro** no longer sends `Cross-Origin-Opener-Policy` (it severed the sign-in
-  popup). P02, P04 and P05 web re-run in step 8 and confirm nothing needed it.
+  popup). P02, P04 and P05 passed on web in step 8: nothing needed it.
 - **wa-sqlite path limit**: 64 characters including `-journal`; a longer OPFS
   database name used to hang the app silently (now bounded and reported).
 

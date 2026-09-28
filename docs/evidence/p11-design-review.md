@@ -16,6 +16,7 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | Device sign-in (step 6, device part): `oidcSignInSession` in `@viviefs/identity` (PKCE code exchange, refresh, revocation; ports for the prompt, the vault and the server's statement), Expo ports in `@viviefs/platform-native/sign-in`, `syncRpcClientLayer` and `replicaName` in `@viviefs/sync-client`, the P11 screen in the evidence app, the lab in `p11-lab.ts`, and one device scenario for iOS, Android and web in `p11-device.ts` | done: the six device checks (2, the device leg of 3, token storage, 10, 11, removing an account) pass on the iOS simulator, the Android emulator and web against Keycloak and the evidence server. 10 unit tests for the session run on a served fake issuer that now has a token endpoint; a test that lets trace context through fails. Notes in [section 9](#9-step-6-device-notes) |
 | Probe (`p11.ts`) and evidence note (step 7) | done: `p11.ts` composes the token contract (fake verifier, OIDC on a served fake, OIDC on Keycloak), the 12 Node checks with a span review in the [evidence note](2026-09-28-p11.md), 4 checks over HTTP with Keycloak's tokens, the six device checks on iOS, Android and web, and three device controls on web (`EXPO_PUBLIC_P11_CONTROL` in the evidence app) that each fail exactly their check. A measurement run passes every section |
 | Gate P11 | pass: ledger `2026-09-28T19-38-22.564Z-0f0ac08c` on a clean tree (`971ae6e2`); [evidence note](2026-09-28-p11.md) |
+| Sequential P01-P11 run (step 8) | pass: `pnpm qualify --through P11`, run `2026-09-28T22-40-46.395Z-cfafc842` on a clean tree (`59b74a9a`); every gate from P01 to P11 passes in the ledger. Four earlier runs each failed on the lab or the harness, fixed first; [closure note](2026-09-28-p01-p11-closure.md) |
 
 Teaching pages written during the grilling (committed under `.lavish/`; step 7 decides their long-term home):
 
@@ -170,7 +171,7 @@ Each step ends with a commit and a green `pnpm verify`.
 
 ## 8. Consequences for other gates
 
-- The ledger fingerprint covers every lib and app the probes use, so any P11 change marks P01-P10 stale. Step 8 re-runs them in one sequential run.
+- The ledger fingerprint covers every lib and app the probes use, so any P11 change marks P01-P10 stale. Step 8 re-ran them in one sequential run on 2026-09-28 ([closure note](2026-09-28-p01-p11-closure.md)).
 - `libs/identity` and `apps/evidence-server` joined `inputsFingerprint()` in step 2.
 - The `journal.ts` comment fix waits for the first engine change. P11 is not expected to change the engine.
 

@@ -57,6 +57,8 @@ the named gate.
 - **HLC future-skew bound and log-append volume**: P04 picked 5000 ms and 2000 datoms.
 - **Foundation closure**: one sequential P01-P10 run on `3bd24492`, 2026-09-26
   ([2026-09-26-foundation-closure.md](../../evidence/2026-09-26-foundation-closure.md)).
+- **P11 closure**: one sequential P01-P11 run on `59b74a9a`, 2026-09-28
+  ([2026-09-28-p01-p11-closure.md](../../evidence/2026-09-28-p01-p11-closure.md)).
 - **`journal.ts` legacy-shape comment**: names commit `a067a0d6f` instead of a date (fixed with the first engine change, P11 step 3a).
 - **Bundle size**: 10 MB per platform on the Hermes bundle (agreed 2026-09-27), gated by `verify` with a report
   of what changed since the recorded reference ([2026-09-27-bundle-size.md](../../evidence/2026-09-27-bundle-size.md)).
@@ -101,3 +103,5 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 | Full-org replica on device | Unbounded history and over-broad local reads | History consolidation and client data access are explicit later work, not silent P09 extras |
 | `@effect/sql-sqlite-wasm` waits forever when its OPFS worker fails before it is ready (found in P11) | A web app hangs instead of failing, for example on a database name over wa-sqlite's 64-character path limit | `@viviefs/store-sqlite-wasm` bounds the open to 30 s, checks the name length and makes a worker failure raise; report upstream |
 | Lab browsers drift: the iOS simulator's WebKit GPU process can hang in the sign-in sheet after long use; Chrome on the emulator shows first-run screens and switches web accessibility off after a quiet spell (found in P11) | Device sign-in cannot be driven, although the app is fine | The P11 device run reboots the simulator and starts Chrome with test flags (`prepareAndroidChrome`); failures name the surface instead of timing out silently |
+| Lab state outlives a gate: the emulator, the simulator, the agent-device daemon and the motel daemon run across gates and days (found in the P01-P11 run) | One gate's leftovers fail a later gate: a notification shade left open, a daemon without `adb`, a motel whose ingest hung while its health answered | Each gate checks what it relies on instead of trusting what is running: Android sessions close the shade, agent-device calls carry the SDK, motel must store a canary span ([closure note](../../evidence/2026-09-28-p01-p11-closure.md)) |
+| The dev-client probes print "Hermes inspector did not appear" on almost every launch (seen in both closure runs) | A probe step that depends on the inspector (`runtime:reload` after launch) silently never runs | Unexplained; the gates read their report through `runtime:eval` and pass. Find out whether SDK 58 dev builds list a debugger target at all before a probe relies on one |

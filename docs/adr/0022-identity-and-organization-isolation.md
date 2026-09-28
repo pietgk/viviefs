@@ -219,6 +219,11 @@ account's replica. Three lab-only defects in the evidence app each fail
 exactly their check on web: ignoring `invalid_grant`, one shared replica,
 and web tokens in `localStorage`.
 
+P01-P11 then passed in one sequential run on a clean tree (`59b74a9a`,
+run `2026-09-28T22-40-46.395Z-cfafc842`, [closure note](../evidence/2026-09-28-p01-p11-closure.md)),
+so P11's changes to the log, the protocol and the evidence app left every
+earlier gate passing, P02, P04 and P05 on web included.
+
 Not measured: physical devices, TLS, `EngineConfig.actor` from the
 statement, and the limitations above (stored history, device identity,
 lease authorization).
