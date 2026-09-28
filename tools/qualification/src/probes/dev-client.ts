@@ -163,9 +163,13 @@ export const openOnDevice = async (
   variant: string,
   env?: NodeJS.ProcessEnv,
 ) => {
+  // navigate bounds its own waits: the dev launcher link and the attach each
+  // get up to 45 s, and an app that does not attach is stopped and opened
+  // once more. Killing it sooner (60 s on 2026-09-28, P02 on Android) loses
+  // both that recovery and its report of why the app did not attach.
   const opened = await agentCliJson(
     ['navigate', '/', `--${platform}`, '--json'],
-    { cwd, env, timeout: 60_000 },
+    { cwd, env, timeout: 240_000 },
   )
   await writeJson(artifacts, `navigate-${platform}-${variant}.json`, opened.data)
   if (opened.code !== 0) {
