@@ -12,7 +12,8 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | P11 Node checks (step 3c): 11 checks in `p11-checks.ts` on a shared `sync-world.ts` (checks 3-9 and 12 above, plus `never granted`, `missing token` and a host-side `sign-in needed keeps outbox`) | done: all pass. Removing the membership check fails 5 of them, removing the actor check fails `actor`, keeping a client's `acceptedAt` fails `acceptance time` |
 | HTTP server (step 4): `apps/evidence-server` composes the sync RPCs over HTTP (`/rpc`, NDJSON) on PGlite with an OIDC verifier and a membership seed; `main.ts` reads `VIVIEFS_*` | done: an HTTP round trip against a fake issuer served over HTTP passes (member append and streamed pull with `acceptedAt`; other org, never granted and missing token refused). It found an HLC ordering bug, fixed in `21b34d7e1` (ADR-0007) |
 | Keycloak lab (step 5): Keycloak 26.7.3 pinned by digest in `lab-images.json`; realms `viviefs` and `viviefs-other` generated per run with fresh passwords and pinned user ids; one issuer `http://localhost:28080` | done: the token contract passes all 9 checks against Keycloak (`p11-keycloak.ts`). Decoded tokens show each hostile token differs in exactly its claim; Keycloak omits `aud` without the audience mapper |
-| Device sign-in | not started |
+| `Caller` RPC (step 6, server part): the server's statement about the signed-in provider account (person or none, account, roles, organizations); `SyncRpc.caller` on the device | done: Node check 12 `caller statement` passes and follows grants and revocations; ignoring revocations fails exactly that check |
+| Device sign-in (step 6, device part) | not started; handoff in [p11-next-session.md](../plan/p11-next-session.md) |
 | Probe (`p11.ts`) and evidence note | not started |
 | Gate P11 | not run |
 
