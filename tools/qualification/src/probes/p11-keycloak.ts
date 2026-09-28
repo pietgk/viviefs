@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
-import { oidcTokenVerifier } from '@viviefs/identity'
+import { oidcTokenVerifier } from '@viviefs/identity/oidc'
 import type { CheckResult } from '@viviefs/testing'
 import { runTokenVerifierChecks } from '@viviefs/testing/identity'
 import {

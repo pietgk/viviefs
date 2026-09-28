@@ -2,11 +2,8 @@ import { describe, expect, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
-import {
-  TokenRejected,
-  TokenVerifier,
-  oidcTokenVerifier,
-} from '@viviefs/identity'
+import { TokenRejected, TokenVerifier } from '@viviefs/identity'
+import { oidcTokenVerifier } from '@viviefs/identity/oidc'
 import { decodeJwt } from 'jose'
 import {
   TOKEN_CHECK_COUNT,

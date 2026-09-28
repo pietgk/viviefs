@@ -11,6 +11,12 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./oidc": {
+      "@viviefs/source": "./src/oidc.ts",
+      "types": "./src/oidc.ts",
+      "import": "./src/oidc.ts",
+      "default": "./src/oidc.ts"
     }
   },
   "dependencies": {

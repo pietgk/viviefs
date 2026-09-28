@@ -12,9 +12,9 @@ import * as Layer from 'effect/Layer'
 import {
   SignInSession,
   TokenVerifier,
-  makeTokenVerifier,
   type ProviderAccount,
 } from '@viviefs/identity'
+import { makeTokenVerifier } from '@viviefs/identity/oidc'
 import {
   SignJWT,
   createLocalJWKSet,
