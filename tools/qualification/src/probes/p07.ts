@@ -16,6 +16,7 @@ import {
 import {
   androidEnv,
   ensureAndroidEmulator,
+  collapseAndroidNotifications,
   expandAndroidNotifications,
   forceQuitApp,
   grantNotificationPermission,
@@ -158,34 +159,38 @@ const tapWakeNotification = async (
     await expandAndroidNotifications()
     await sleep(1000)
   }
-  const target =
-    platform === 'ios' ? 'com.apple.springboard' : APP_ID
-  const opened = await agentDevice(
-    ['open', target, '--platform', platform, '--json'],
-    { cwd: QUAL, env: extra, timeout: 60_000 },
-  )
-  await writeFile(
-    join(ARTIFACTS, `agent-device-open-${platform}-notification.log`),
-    opened.stdout + opened.stderr,
-  )
-  const waited = await agentDevice(
-    ['wait', 'text', 'P07 approval', '25000', '--json'],
-    { cwd: QUAL, env: extra, timeout: 40_000 },
-  )
-  await writeFile(
-    join(ARTIFACTS, `agent-device-wait-${platform}-notification.log`),
-    waited.stdout + waited.stderr,
-  )
-  const pressed = await agentDevice(
-    ['press', 'text="P07 approval"', '--settle', '--json'],
-    { cwd: QUAL, env: extra, timeout: 30_000 },
-  )
-  await writeFile(
-    join(ARTIFACTS, `agent-device-press-${platform}-notification.log`),
-    pressed.stdout + pressed.stderr,
-  )
-  await agentDevice(['close'], { cwd: QUAL, env: extra, timeout: 15_000 })
-  return pressed
+  try {
+    const target =
+      platform === 'ios' ? 'com.apple.springboard' : APP_ID
+    const opened = await agentDevice(
+      ['open', target, '--platform', platform, '--json'],
+      { cwd: QUAL, env: extra, timeout: 60_000 },
+    )
+    await writeFile(
+      join(ARTIFACTS, `agent-device-open-${platform}-notification.log`),
+      opened.stdout + opened.stderr,
+    )
+    const waited = await agentDevice(
+      ['wait', 'text', 'P07 approval', '25000', '--json'],
+      { cwd: QUAL, env: extra, timeout: 40_000 },
+    )
+    await writeFile(
+      join(ARTIFACTS, `agent-device-wait-${platform}-notification.log`),
+      waited.stdout + waited.stderr,
+    )
+    const pressed = await agentDevice(
+      ['press', 'text="P07 approval"', '--settle', '--json'],
+      { cwd: QUAL, env: extra, timeout: 30_000 },
+    )
+    await writeFile(
+      join(ARTIFACTS, `agent-device-press-${platform}-notification.log`),
+      pressed.stdout + pressed.stderr,
+    )
+    await agentDevice(['close'], { cwd: QUAL, env: extra, timeout: 15_000 })
+    return pressed
+  } finally {
+    if (platform === 'android') await collapseAndroidNotifications()
+  }
 }
 
 const requirePass = (checks: CheckResult[], label: string, expected: number) => {

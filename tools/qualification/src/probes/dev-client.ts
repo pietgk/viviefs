@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { command } from '../process.ts'
 import { agentCli, agentCliJson, agentDevice } from './agent-cli.ts'
 import {
+  collapseAndroidNotifications,
   forceStopAndroidApp,
   iosSimulatorUdid,
   reverseAndroidPorts,
@@ -616,6 +617,7 @@ export const startDeviceSession = async (options: {
   if (options.platform === 'android') {
     await reverseAndroidPorts([8081, 27686])
     await forceStopAndroidApp()
+    await collapseAndroidNotifications()
   } else {
     await terminateIosApp().catch(() => undefined)
   }
@@ -667,6 +669,7 @@ export const relaunchOnDevice = async (options: {
 }) => {
   if (options.platform === 'android') {
     await reverseAndroidPorts([8081, 27686])
+    await collapseAndroidNotifications()
   }
   await openOnDevice(
     options.cwd,

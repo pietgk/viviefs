@@ -1,4 +1,5 @@
 import { command, type CommandResult } from '../process.ts'
+import { androidSdkPath } from './devices.ts'
 
 export type AgentCliJson = {
   code: number
@@ -71,6 +72,12 @@ export const agentCliJson = async (
   }
 }
 
+/**
+ * The first agent-device call starts a daemon that keeps its PATH for later
+ * calls, whichever platform they drive. Every call therefore carries the
+ * Android SDK, so an iOS call that starts the daemon does not leave Android
+ * calls without `adb` (P07 on 2026-09-28).
+ */
 export const agentDevice = async (
   args: string[],
   options: {
@@ -78,13 +85,15 @@ export const agentDevice = async (
     env?: NodeJS.ProcessEnv | undefined
     timeout?: number | undefined
   },
-): Promise<CommandResult> =>
-  command('pnpm', ['exec', 'agent-device', ...args], {
+): Promise<CommandResult> => {
+  const env = { ...process.env, ...options.env }
+  return command('pnpm', ['exec', 'agent-device', ...args], {
     cwd: options.cwd,
     env: {
-      ...process.env,
-      ...options.env,
+      ...env,
+      PATH: androidSdkPath(env.PATH),
       CI: '1',
     },
     timeout: options.timeout ?? 60_000,
   })
+}

@@ -32,14 +32,21 @@ export const androidEnv = (androidHome = resolveAndroidHome()): NodeJS.ProcessEn
     ANDROID_HOME: androidHome,
     ANDROID_SDK_ROOT: androidHome,
     JAVA_HOME: javaHome,
-    PATH: [
-      join(androidHome, 'cmdline-tools/latest/bin'),
-      join(androidHome, 'platform-tools'),
-      join(androidHome, 'emulator'),
-      process.env.PATH ?? '',
-    ].join(':'),
+    PATH: androidSdkPath(process.env.PATH, androidHome),
   }
 }
+
+/** `path` with the Android SDK tools (adb, emulator, avdmanager) in front. */
+export const androidSdkPath = (
+  path: string | undefined,
+  androidHome = resolveAndroidHome(),
+): string =>
+  [
+    join(androidHome, 'cmdline-tools/latest/bin'),
+    join(androidHome, 'platform-tools'),
+    join(androidHome, 'emulator'),
+    path ?? '',
+  ].join(':')
 
 /** Put SDK tools on this process so later agent-cli calls find adb without an env bag. */
 export const applyAndroidEnv = (): NodeJS.ProcessEnv => {
@@ -238,15 +245,29 @@ export const prepareAndroidChrome = async (): Promise<void> => {
   }
 }
 
-export const expandAndroidNotifications = async (): Promise<void> => {
+const statusbar = async (action: 'expand-notifications' | 'collapse') => {
   const env = androidEnv()
   const androidHome = env.ANDROID_HOME as string
   const adb = join(androidHome, 'platform-tools/adb')
-  await command(adb, ['shell', 'cmd', 'statusbar', 'expand-notifications'], {
+  const ran = await command(adb, ['shell', 'cmd', 'statusbar', action], {
     env,
     timeout: 15_000,
   })
+  if (ran.code !== 0) {
+    throw new Error(`adb statusbar ${action} failed: ${ran.stderr || ran.stdout}`)
+  }
 }
+
+export const expandAndroidNotifications = (): Promise<void> =>
+  statusbar('expand-notifications')
+
+/**
+ * Closes the notification shade. The emulator outlives a gate, so a shade one
+ * gate leaves open covers the app in the next (P07's tap before P11 on
+ * 2026-09-28).
+ */
+export const collapseAndroidNotifications = (): Promise<void> =>
+  statusbar('collapse')
 
 export const reverseAndroidPorts = async (ports: number[]): Promise<void> => {
   const env = androidEnv()
