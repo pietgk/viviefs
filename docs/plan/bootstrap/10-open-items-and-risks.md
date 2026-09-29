@@ -59,6 +59,9 @@ the named gate.
   ([2026-09-26-foundation-closure.md](../../evidence/2026-09-26-foundation-closure.md)).
 - **P11 closure**: one sequential P01-P11 run on `59b74a9a`, 2026-09-28
   ([2026-09-28-p01-p11-closure.md](../../evidence/2026-09-28-p01-p11-closure.md)).
+- **"Hermes inspector did not appear"**: on RN 0.88 every debugger target is "React Native Bridgeless [C++
+  connection]", and the harness excluded that description, so it never saw one. It now counts this app's targets,
+  and the dead post-launch waits and `runtime:reload` are gone (2026-09-29, Housekeeping).
 - **`journal.ts` legacy-shape comment**: names commit `a067a0d6f` instead of a date (fixed with the first engine change, P11 step 3a).
 - **Bundle size**: 10 MB per platform on the Hermes bundle (agreed 2026-09-27), gated by `verify` with a report
   of what changed since the recorded reference ([2026-09-27-bundle-size.md](../../evidence/2026-09-27-bundle-size.md)).
@@ -107,7 +110,7 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 |---|---|---|
 | Effect v4 `unstable/*` modules (workflow, sql, rpc, http, reactivity, observability) change in minor releases | Breakage on upgrade | Exact version pin; upgrades as their own change with full verify and gate rerun (ledger goes stale on dependency change) |
 | Effect Workflow has no versioning API | In-flight executions break on code changes | Version by workflow name, stable activity names, old versions ship until drained, lint on activity-name changes |
-| Metro Migrator dynamic `import()` (Effect-TS/effect#6347) | Build failure when importing SQL modules | Babel stub plugin (research/rn-check/babel.config.js) until upstream fix; tracked |
+| Metro Migrator dynamic `import()` (Effect-TS/effect#6347, open; still in rc.116 and on `main` on 2026-09-29) | Build failure when importing SQL modules | Babel stub plugin (`apps/evidence-mobile/babel.config.js`) until upstream fix; comment drafted in [upstream-issues.md](../upstream-issues.md) |
 | Basis checks on long-lived changesets are subtle | Wrong conflict outcomes | Dedicated P05 cases, a lesson and an exercise |
 | Clock skew beyond HLC tolerance on long-offline devices | Wrong LWW winners | Server-side skew detection, flagged in trace; human-conflict policy for important attributes |
 | Scope size: many patterns at once | Slow progress | Gate order, delivery definition, one exemplar |
@@ -115,7 +118,6 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 | Single maintainer projects (motel, effect-machine) | Abandonment | Telemetry sink and interaction state are patterns behind contracts |
 | Android first-class qualification on an ungrilled emulator | P01/P02/P07 blocked on Android-only failures | Fail the gate honestly; do not skip Android to make iOS green |
 | Full-org replica on device | Unbounded history and over-broad local reads | History consolidation and client data access are explicit later work, not silent P09 extras |
-| `@effect/sql-sqlite-wasm` waits forever when its OPFS worker fails before it is ready (found in P11) | A web app hangs instead of failing, for example on a database name over wa-sqlite's 64-character path limit | `@viviefs/store-sqlite-wasm` bounds the open to 30 s, checks the name length and makes a worker failure raise; report upstream |
+| `@effect/sql-sqlite-wasm` waits forever when its OPFS worker fails before it is ready (found in P11) | A web app hangs instead of failing, for example on a database name over wa-sqlite's 64-character path limit | `@viviefs/store-sqlite-wasm` bounds the open to 30 s, checks the name length and makes a worker failure raise; issue drafted in [upstream-issues.md](../upstream-issues.md) |
 | Lab browsers drift: the iOS simulator's WebKit GPU process can hang in the sign-in sheet after long use; Chrome on the emulator shows first-run screens and switches web accessibility off after a quiet spell (found in P11) | Device sign-in cannot be driven, although the app is fine | The P11 device run reboots the simulator and starts Chrome with test flags (`prepareAndroidChrome`); failures name the surface instead of timing out silently |
 | Lab state outlives a gate: the emulator, the simulator, the agent-device daemon and the motel daemon run across gates and days (found in the P01-P11 run) | One gate's leftovers fail a later gate: a notification shade left open, a daemon without `adb`, a motel whose ingest hung while its health answered | Each gate checks what it relies on instead of trusting what is running: Android sessions close the shade, agent-device calls carry the SDK, motel must store a canary span ([closure note](../../evidence/2026-09-28-p01-p11-closure.md)) |
-| The dev-client probes print "Hermes inspector did not appear" on almost every launch (seen in both closure runs) | A probe step that depends on the inspector (`runtime:reload` after launch) silently never runs | Unexplained; the gates read their report through `runtime:eval` and pass. Find out whether SDK 58 dev builds list a debugger target at all before a probe relies on one |
