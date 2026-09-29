@@ -348,7 +348,19 @@ per sink. It is the log store's acknowledged cursor for the consumer
 ## Validation
 
 **Verify**:
-The staged gate proving the code keeps its contract. Done = green.
+The staged gate proving the code keeps its contract. Runs only checks that
+need nothing but the host, on every change, and changes no file. Done = green.
+
+**Qualify**:
+Establishing a claim about the stack by running gates and recording them in
+the ledger. Device and lab runs happen only here. Separated from verify by
+what a check needs and produces, not by speed.
+_Avoid_: slow tests, the heavy suite
+
+**Crash matrix**:
+The test that kills the engine at every boundary where a workflow's state is
+half-written, relaunches it on the same store, and checks that the run
+finishes with every external effect done at most once.
 
 **Gate**:
 A numbered check establishing one fact through a retained, rerunnable probe.

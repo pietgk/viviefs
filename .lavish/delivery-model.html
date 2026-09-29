@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How a pattern is delivered - the ViViEfs delivery model</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+  body { font-size: 16px; line-height: 1.6; }
+  .dm-section { scroll-margin-top: 1rem; }
+  .dm-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .dm-mermaid svg { margin: 0 auto; }
+  code.dm-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  td.dm-nowrap, th.dm-nowrap { white-space: nowrap; overflow-wrap: normal; }
+  .dm-table-wrap { overflow-x: auto; }
+  .dm-mode { border-top-width: 4px; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<!-- HERO -->
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Docs and teaching - grilling round 2</span>
+    <span class="badge badge-outline">2026-09-29</span>
+    <span class="badge badge-soft badge-info">For shared understanding, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">How a pattern is delivered</h1>
+  <p class="text-lg opacity-80">This page shows how everything we build fits together: patterns, ADRs, gates, evidence, the exemplar, guides, samples, exercises and lessons. It uses the terms from <code class="dm-inline">CONTEXT.md</code> and the agreed decisions (D28-D30, D46, D48', D57, ADR-0026 as amended today). It also marks where what we <b>built</b> has drifted from what we <b>designed</b>, so we can fix it at a planned time.</p>
+  <div class="alert alert-info alert-soft">
+    <div>
+      <div class="font-semibold">The whole model in five sentences</div>
+      <ol class="list-decimal ml-5 mt-1 space-y-1">
+        <li>A <b>pattern</b> is a reusable way of building something. Its <b>ADRs</b> record why it has this shape, and the claims it depends on.</li>
+        <li><b>Qualify</b> proves those claims: each <b>gate</b> runs a retained <b>probe</b> (with a positive control) and writes the <b>ledger</b>, and a dated <b>evidence note</b> records it. Then the ADR is <i>Qualified</i>.</li>
+        <li><b>Verify</b> keeps the <b>exemplar</b>, the code that uses the pattern, true to its contract on every change: types, lint, and tests at the lowest layer that owns each behaviour.</li>
+        <li><b>Teach</b> writes the pattern's <b>guide</b>: concepts, how-to, a review checklist, lessons that <i>cite</i> evidence, and exercises and samples that <code class="dm-inline">verify</code> checks. When you accept the guide, the ADRs are <i>Accepted</i>.</li>
+        <li>A pattern is <b>delivered</b> when all three hold and the exemplar and the guide link to each other.</li>
+      </ol>
+    </div>
+  </div>
+  <nav class="flex flex-wrap gap-2 text-sm">
+    <a class="btn btn-sm btn-ghost" href="#modes">1. Three questions</a>
+    <a class="btn btn-sm btn-ghost" href="#map">2. The map</a>
+    <a class="btn btn-sm btn-ghost" href="#lifecycle">3. Lifecycle</a>
+    <a class="btn btn-sm btn-ghost" href="#terms">4. Every piece</a>
+    <a class="btn btn-sm btn-ghost" href="#example">5. Log store example</a>
+    <a class="btn btn-sm btn-ghost" href="#checks">6. Where checks live</a>
+    <a class="btn btn-sm btn-ghost" href="#crash">7. Crash matrix</a>
+    <a class="btn btn-sm btn-ghost" href="#drift">8. Drift</a>
+    <a class="btn btn-sm btn-ghost" href="#webinterview">9. web-interview</a>
+    <a class="btn btn-sm btn-ghost" href="#weight">9b. Speed and weight</a>
+    <a class="btn btn-sm btn-ghost" href="#agents">10. Agents</a>
+    <a class="btn btn-sm btn-ghost" href="#open">11. Still open</a>
+  </nav>
+</header>
+
+<!-- 1 MODES -->
+<section id="modes" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">1. Three questions, three mechanisms</h2>
+  <p>Each question has its own tool, so a contract check never ends up in the ledger, and a claim about the stack never ends up in every pull request.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200 dm-mode border-success">
+      <div class="card-body">
+        <h3 class="card-title">Verify</h3>
+        <p class="font-semibold">Does the code keep its contract?</p>
+        <p class="text-sm opacity-80"><code class="dm-inline">pnpm verify</code>: <code class="dm-inline">static -&gt; unit -&gt; integration -&gt; ui -&gt; quality</code>. It runs on every change, in CI too. Done means green.</p>
+        <p class="text-sm"><b>Proves:</b> this code, at this commit.</p>
+      </div>
+    </div>
+    <div class="card bg-base-200 dm-mode border-warning">
+      <div class="card-body">
+        <h3 class="card-title">Qualify</h3>
+        <p class="font-semibold">Is this claim about the stack true?</p>
+        <p class="text-sm opacity-80"><code class="dm-inline">pnpm qualify</code>: gates P01-P15, probes on devices and labs, an append-only ledger, and one sequential full run.</p>
+        <p class="text-sm"><b>Proves:</b> a fact we depend on, until its inputs change (then it is stale).</p>
+      </div>
+    </div>
+    <div class="card bg-base-200 dm-mode border-info">
+      <div class="card-body">
+        <h3 class="card-title">Teach</h3>
+        <p class="font-semibold">Can a person or an agent learn it from what we wrote?</p>
+        <p class="text-sm opacity-80">Guides in <code class="dm-inline">apps/docs</code> (Starlight), samples and exercises checked by <code class="dm-inline">verify</code>, lessons citing evidence.</p>
+        <p class="text-sm"><b>Proves:</b> nothing new. It explains, and points at what Verify and Qualify proved.</p>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-warning alert-soft text-sm">
+    <span><b>The one rule that holds the model together:</b> claims come from gates, never from lessons. A lesson says "P05 showed X" and links the evidence. If a lesson is wrong, fix the lesson. If the claim is wrong, the gate fails.</span>
+  </div>
+</section>
+
+<!-- 2 MAP -->
+<section id="map" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">2. The map: what feeds what</h2>
+  <p>Read it from top to bottom: a decision becomes an ADR, the ADR's claims go through gates, the exemplar applies the pattern, and the guide ties it together for people and agents. The dashed arrows are links that <code class="dm-inline">verify</code> will check. Red nodes are new in Docs and teaching.</p>
+  <div class="dm-mermaid"><pre class="mermaid">
+flowchart TB
+  GR["Grilling&lt;br/&gt;decisions D1-D58"] --> ADR["ADR&lt;br/&gt;problem, design, trade-offs,&lt;br/&gt;claims, qualifying gate"]
+  ADR -- "claims" --> GATE
+  subgraph Q["Qualify"]
+    GATE["Gate Pnn&lt;br/&gt;one fact each"] --> PROBE["Probe + positive control&lt;br/&gt;tools/qualification"]
+    PROBE --> LEDGER[("Ledger&lt;br/&gt;machine-written")]
+    PROBE --> NOTE["Evidence note&lt;br/&gt;docs/evidence"]
+  end
+  subgraph V["Verify"]
+    EX["Exemplar&lt;br/&gt;libs, features, apps"] --> CHECKS["typecheck, lint, unit,&lt;br/&gt;integration, ui, quality"]
+  end
+  ADR -- "shapes" --> EX
+  subgraph T["Teach: the guide (apps/docs)"]
+    ENTRY["Guide entry page"] --> CON["Concepts"]
+    ENTRY --> HOW["How-to&lt;br/&gt;+ samples .ts"]
+    ENTRY --> REV["Review checklist"]
+    ENTRY --> LES["Lessons"]
+    ENTRY --> XT["Exercise track&lt;br/&gt;exercises/pattern"]
+  end
+  CON -. "why" .-> ADR
+  LES -. "cites" .-> NOTE
+  HOW -. "embeds" .-> EX
+  EX -. "metadata.guide" .-> ENTRY
+  HOW --> CHECKS
+  XT --> CHECKS
+  ENTRY ==> ACC{"Human accepts&lt;br/&gt;the guide"}
+  ACC ==> ADRA["ADRs Accepted"]
+  classDef newnode fill:#7f1d1d,stroke:#fca5a5,color:#fff
+  class ENTRY,CON,HOW,REV,LES,XT,ACC,ADRA newnode
+</pre></div>
+</section>
+
+<!-- 3 LIFECYCLE -->
+<section id="lifecycle" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">3. Lifecycle of an ADR, and when a pattern is delivered</h2>
+  <div class="dm-mermaid"><pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> Proposed: grilling decision recorded
+  Proposed --> Qualified: gate passes, evidence linked
+  Qualified --> Qualified: inputs change, gate re-runs
+  Qualified --> Accepted: human accepts the pattern's guide
+  Accepted --> Delivered: exemplar green + two-way links
+  Delivered --> [*]
+  note right of Proposed: "Proposed, unverified"
+  note right of Accepted: "Taught" is no longer a separate status (ADR-0026, 2026-09-29)
+</pre></div>
+  <div class="grid md:grid-cols-4 gap-3 text-sm">
+    <div class="stat bg-base-200 rounded-box"><div class="stat-title">Proposed</div><div class="stat-value text-2xl">5</div><div class="stat-desc">0001, 0002, 0023, 0026, 0027</div></div>
+    <div class="stat bg-base-200 rounded-box"><div class="stat-title">Qualified</div><div class="stat-value text-2xl">26</div><div class="stat-desc">3 only in part: 0013 (P15 open), 0024, 0025</div></div>
+    <div class="stat bg-base-200 rounded-box"><div class="stat-title">Accepted</div><div class="stat-value text-2xl">0</div><div class="stat-desc">no guide exists yet</div></div>
+    <div class="stat bg-base-200 rounded-box"><div class="stat-title">Delivered</div><div class="stat-value text-2xl">0</div><div class="stat-desc">the first one is the log store</div></div>
+  </div>
+</section>
+
+<!-- 4 TERMS -->
+<section id="terms" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">4. Every piece: what it is, where it lives, who writes it, what checks it</h2>
+  <div class="dm-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Piece</th><th>What it is</th><th class="dm-nowrap">Where</th><th>Written by</th><th>Checked by</th></tr></thead>
+    <tbody>
+      <tr><td class="font-semibold">Decision</td><td>An answer from a grilling</td><td class="dm-nowrap"><code class="dm-inline">docs/plan/bootstrap/02</code></td><td>you + agent</td><td>-</td></tr>
+      <tr><td class="font-semibold">ADR</td><td>The why of a decision, its claims, and its qualifying gate</td><td class="dm-nowrap"><code class="dm-inline">docs/adr</code></td><td>agent, you review</td><td>status only moves with evidence or acceptance</td></tr>
+      <tr><td class="font-semibold">Pattern</td><td>A reusable way of building; one or more ADRs</td><td>a guide, an exemplar</td><td>-</td><td>delivery definition</td></tr>
+      <tr><td class="font-semibold">Gate / probe</td><td>One fact, a rerunnable probe, a positive control</td><td class="dm-nowrap"><code class="dm-inline">tools/qualification</code></td><td>agent</td><td><code class="dm-inline">pnpm qualify</code></td></tr>
+      <tr><td class="font-semibold">Ledger</td><td>Append-only record of gate runs</td><td>file</td><td>machine only</td><td>fingerprints; stale on input change</td></tr>
+      <tr><td class="font-semibold">Evidence note</td><td>Dated, sanitized record of a run; from P09 on, with a span-tree review</td><td class="dm-nowrap"><code class="dm-inline">docs/evidence</code></td><td>agent</td><td>committed diagram equals the run (P09+)</td></tr>
+      <tr><td class="font-semibold">Exemplar</td><td>The evidence-collection stack using the pattern</td><td class="dm-nowrap"><code class="dm-inline">libs, features, apps</code></td><td>agent</td><td><code class="dm-inline">pnpm verify</code></td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">Guide</td><td>Everything needed to discuss, design, implement and review with the pattern</td><td class="dm-nowrap"><code class="dm-inline">apps/docs/.../guides/&lt;pattern&gt;/</code></td><td>agent, <b>you accept</b></td><td>template check, links (new)</td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">Guide template</td><td>The one shape every guide has</td><td>round 3</td><td>together</td><td>verify check (round 3)</td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">Concept page</td><td>The model and vocabulary; links ADRs as the why</td><td>in the guide</td><td>agent</td><td>links</td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">Sample</td><td>A real <code class="dm-inline">.ts</code> file embedded by region</td><td class="dm-nowrap"><code class="dm-inline">apps/docs/src/samples</code></td><td>agent</td><td>tsc 7 + Effect diagnostics, lint, Vitest</td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">Lesson</td><td>One key idea taught step by step; cites evidence</td><td>in the guide</td><td>agent</td><td>links to evidence resolve</td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">Exercise</td><td><code class="dm-inline">problem/</code> (must fail) + <code class="dm-inline">solution/</code> (must pass), one test</td><td class="dm-nowrap"><code class="dm-inline">exercises/&lt;pattern&gt;/</code></td><td>agent</td><td><code class="dm-inline">verify</code> unit stage</td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">API reference</td><td>Generated from TSDoc on exemplar exports</td><td>built, not committed</td><td>machine</td><td>site build</td></tr>
+      <tr class="bg-base-200"><td class="font-semibold">llms.txt</td><td>Generated index for outside agents</td><td>built</td><td>machine</td><td>site build</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="text-sm opacity-70">Shaded rows are new in Docs and teaching.</p>
+</section>
+
+<!-- 5 EXAMPLE -->
+<section id="example" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">5. One pattern end to end: the log store</h2>
+  <p>The same chain as the map, filled in for the first guide. The items marked "to write" are the work of Docs and teaching.</p>
+  <ul class="timeline timeline-vertical timeline-compact">
+    <li><div class="timeline-middle badge badge-success badge-xs"></div><div class="timeline-end timeline-box w-full"><b>Decisions</b> D31, D33', D37: one datom log, the HLC, a log store with swappable implementations under one conformance suite.</div><hr/></li>
+    <li><hr/><div class="timeline-middle badge badge-success badge-xs"></div><div class="timeline-end timeline-box w-full"><b>ADRs</b> 0006 One datom log, 0007 Hybrid logical clock, 0011 Log store pattern. All <i>Qualified</i>.</div><hr/></li>
+    <li><hr/><div class="timeline-middle badge badge-success badge-xs"></div><div class="timeline-end timeline-box w-full"><b>Gates</b> P04 (and P05 for 0011), evidence <code class="dm-inline">docs/evidence/2026-09-20-p04.md</code>, last passed in the P01-P11 run on <code class="dm-inline">54e724786</code>.</div><hr/></li>
+    <li><hr/><div class="timeline-middle badge badge-success badge-xs"></div><div class="timeline-end timeline-box w-full"><b>Exemplar</b> <code class="dm-inline">libs/datom</code> and the store adapters (sqlite-native, sqlite-node, sqlite-wasm, postgres). <code class="dm-inline">verify</code> runs the conformance suite against sqlite-node and Postgres in <i>integration</i>.</div><hr/></li>
+    <li><hr/><div class="timeline-middle badge badge-warning badge-xs"></div><div class="timeline-end timeline-box w-full"><b>Guide (to write)</b> entry page, concepts (datom, HLC, EAVT/AEVT, conformance), how-to ("add a store implementation"), review checklist, lessons ("HLC edge cases" citing P04), exercise track <code class="dm-inline">exercises/log-store</code>.</div><hr/></li>
+    <li><hr/><div class="timeline-middle badge badge-warning badge-xs"></div><div class="timeline-end timeline-box w-full"><b>Links (to write)</b> <code class="dm-inline">libs/datom</code> <code class="dm-inline">project.json</code> <code class="dm-inline">metadata.guide = "log-store"</code>, README and TSDoc link, checked by <code class="dm-inline">verify</code>.</div><hr/></li>
+    <li><hr/><div class="timeline-middle badge badge-ghost badge-xs"></div><div class="timeline-end timeline-box w-full"><b>You accept the guide</b> -&gt; 0006, 0007, 0011 <i>Accepted</i> -&gt; the log store is the first delivered pattern. The template is fixed for now, then durable workflow and identity test it.</div></li>
+  </ul>
+</section>
+
+<!-- 6 CHECKS -->
+<section id="checks" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">6. Where each kind of check lives today</h2>
+  <p>The kinds of check you named, set against the two tools. This table is the fact base for the drift list below. It comes from <code class="dm-inline">tools/verify/src/stages.ts</code>, the <code class="dm-inline">project.json</code> targets and <code class="dm-inline">tools/qualification</code>.</p>
+  <div class="dm-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Kind of check</th><th>In <code class="dm-inline">verify</code> (every change)</th><th>In <code class="dm-inline">qualify</code> (claims)</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="font-semibold">Types</td><td><i>static</i>: tsc 7 with <code class="dm-inline">@effect/tsgo</code> on every project; strict flags (ADR-0031)</td><td>-</td><td><span class="badge badge-success badge-sm">built</span></td></tr>
+      <tr><td class="font-semibold">Lint</td><td><i>static</i>: Nx boundary tags, determinism (no raw Promise, clock or ids in domain), no imports from <code class="dm-inline">repos/</code>; lint-scope; guardrail tests that can fail</td><td>-</td><td><span class="badge badge-success badge-sm">built</span> and growing</td></tr>
+      <tr><td class="font-semibold">Structure</td><td><i>static</i>: project references in sync, ownership declared, audit</td><td>-</td><td><span class="badge badge-success badge-sm">built</span></td></tr>
+      <tr><td class="font-semibold">Unit</td><td><i>unit</i>: Vitest in datom, workflow-engine, telemetry, testing, ui, evidence client, tools</td><td>-</td><td><span class="badge badge-success badge-sm">built</span></td></tr>
+      <tr><td class="font-semibold">Conformance (pattern with several implementations)</td><td><i>integration</i>: log store against sqlite-node and Postgres; evidence-server. <i>unit</i>: the P09, P10 and P11 host checks run in full through <code class="dm-inline">tools/qualification</code> tests. P04-P08 tests only pin names and counts.</td><td>P04, P05, P10 sinks, P11 identity: every implementation incl. device and lab</td><td><span class="badge badge-success badge-sm">built</span></td></tr>
+      <tr><td class="font-semibold">Crash matrix</td><td><i>unit</i> checks only the matrix's shape (<code class="dm-inline">p06.test.ts</code>: boundaries named)</td><td>P06 runs <code class="dm-inline">runCrashMatrix</code> on sqlite-node and PGlite</td><td><span class="badge badge-warning badge-sm">drift</span></td></tr>
+      <tr><td class="font-semibold">Component / a11y</td><td><i>ui</i>: Storybook play + a11y on <code class="dm-inline">features/evidence/client</code></td><td>P08</td><td><span class="badge badge-success badge-sm">built</span></td></tr>
+      <tr><td class="font-semibold">Web E2E</td><td><i>ui</i>: step <code class="dm-inline">e2e-web</code> exists, no project declares it</td><td>P11 web client runs in qualify</td><td><span class="badge badge-warning badge-sm">designed, empty</span></td></tr>
+      <tr><td class="font-semibold">Device E2E</td><td>-</td><td>P01, P02, P07, P11 on iOS and Android simulators</td><td><span class="badge badge-info badge-sm">as designed</span> (release gate has no release yet)</td></tr>
+      <tr><td class="font-semibold">Budgets</td><td><i>quality</i>: evidence-mobile build + JS bundle size</td><td>-</td><td><span class="badge badge-success badge-sm">built</span></td></tr>
+      <tr><td class="font-semibold">Coverage ratchet</td><td>-</td><td>-</td><td><span class="badge badge-error badge-sm">designed, not built</span></td></tr>
+      <tr><td class="font-semibold">Docs (new)</td><td>samples in <i>static</i>/<i>unit</i>; exercises in <i>unit</i>; site build, links, guide and template checks in <i>quality</i></td><td>-</td><td><span class="badge badge-ghost badge-sm">agreed today</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- CRASH MATRIX -->
+<section id="crash" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">7. The crash matrix, explained</h2>
+  <p>The workflow engine makes one promise (D2, D3, ADR-0012): <b>kill the app at any moment, start it again, and the workflow carries on where it was, with no side effect done twice and no step lost.</b> A normal test cannot show that, because it never kills anything. The crash matrix is the test that does.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">1. Kill at a boundary</h3>
+      <p class="text-sm">A workflow run has moments where its state is half-written, for example "the activity ran, but its result is not in the journal yet". Each such moment is a <b>boundary</b>. The engine calls a <code class="dm-inline">CrashHook</code> at every boundary (<code class="dm-inline">libs/workflow-engine/src/crash-hook.ts</code>). Normally it does nothing. Armed at one boundary, it stops the run there, and the test then drops all in-memory engine state, which is what a process kill does.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">2. Relaunch on the same store</h3>
+      <p class="text-sm">A fresh engine opens the <b>same</b> datom store, like the app starting again. It finds the run in the journal and replays: stored activity results are reused, not re-executed.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">3. Check the outcome</h3>
+      <p class="text-sm">The run finishes with the right result, and every external effect (counted by idempotency key) happened <b>at most once</b>. The "matrix" is every boundary times every store: sqlite-node and Postgres (PGlite) in P06. P07 adds the device column: a real force-quit on the iOS and Android simulators.</p>
+    </div></div>
+  </div>
+  <div class="dm-mermaid"><pre class="mermaid">
+flowchart LR
+  S(["start"]) --> K1{{"kill 1&lt;br/&gt;before activity"}} --> A["activity&lt;br/&gt;runs"]
+  A --> K2{{"kill 2&lt;br/&gt;during activity"}} --> K3{{"kill 3&lt;br/&gt;after activity,&lt;br/&gt;before journal"}} --> J[("journal:&lt;br/&gt;activity result")]
+  J --> K4{{"kill 4&lt;br/&gt;waiting for a&lt;br/&gt;human step"}} --> K5{{"kill 5&lt;br/&gt;during a&lt;br/&gt;durable clock"}} --> K6{{"kill 6&lt;br/&gt;during a&lt;br/&gt;lease handoff"}} --> K7{{"kill 7&lt;br/&gt;during a&lt;br/&gt;file upload"}} --> D(["done"])
+  classDef kill fill:#7f1d1d,stroke:#fca5a5,color:#fff
+  class K1,K2,K3,K4,K5,K6,K7 kill
+</pre></div>
+  <div class="dm-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Check</th><th>After the relaunch, this must hold</th></tr></thead>
+    <tbody>
+      <tr><td class="dm-nowrap">1. before activity</td><td>The activity runs once, and the result is correct.</td></tr>
+      <tr><td class="dm-nowrap">2. during activity</td><td>The activity runs again (it never finished), but its idempotency key keeps its external effect visible only once.</td></tr>
+      <tr><td class="dm-nowrap">3. after activity, before journal</td><td>The hardest case: the effect happened, but the engine does not know it. It re-runs, and the idempotency key makes the second run harmless.</td></tr>
+      <tr><td class="dm-nowrap">4. during a human step</td><td>The run comes back still waiting for the <code class="dm-inline">DurableDeferred</code>. Completing it after the relaunch finishes the run.</td></tr>
+      <tr><td class="dm-nowrap">5. during a durable clock</td><td>The <code class="dm-inline">wake-at</code> datom survived, and the clock fires after the relaunch.</td></tr>
+      <tr><td class="dm-nowrap">6. during a lease handoff</td><td>A killed handoff leaves the old device holding epoch 1. A finished handoff gives device B epoch 2, and the stale device's write is refused.</td></tr>
+      <tr><td class="dm-nowrap">7. during a file upload</td><td>The blob exists once (content hash plus idempotency key).</td></tr>
+      <tr><td class="dm-nowrap">typed failures survive a kill</td><td>A typed error from before the kill comes back as the same typed error after it, not as a decoding error.</td></tr>
+      <tr class="bg-base-200"><td class="dm-nowrap">positive control</td><td>The same matrix on Effect's <b>in-memory</b> engine must <b>fail</b> (activities re-run, and the run is gone after a kill). This proves the matrix can detect lost durability, so its passes mean something.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="alert alert-warning alert-soft text-sm"><span><b>Why it matters for Verify:</b> today the matrix (<code class="dm-inline">runCrashMatrix</code> in <code class="dm-inline">libs/testing</code>) runs only when P06 is qualified. A change that breaks resume passes <code class="dm-inline">pnpm verify</code> and is caught only at the next P06 run. <code class="dm-inline">libs/workflow-engine</code> even declares <code class="dm-inline">evidenceOwner: "crash-matrix"</code>, an owner that <code class="dm-inline">verify</code> never runs. D26 asks for more: <b>every workflow</b> (not only the engine's probe workflow) ships with its own crash-matrix test.</span></div>
+</section>
+
+<!-- 7 DRIFT -->
+<section id="drift" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">8. Drift between design and what we built</h2>
+  <p>This is what you asked me to check. Each item names the design source it drifts from. None of them is a failing check. They are places where the design promises more than the build enforces.</p>
+  <div class="space-y-3">
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">D1. The crash matrix is not a merge bar</h3>
+      <p class="text-sm">D20 calls the crash matrix "the engine's merge bar", and D26 says "every workflow ships with a crash-matrix test". Today it runs only in P06 (<code class="dm-inline">qualify</code>), so a change to the engine or a new workflow passes <code class="dm-inline">verify</code> without it. ADR-0025 already lists this rule as unverified. The <i>integration</i> stage's own description says "conformance suites and crash matrix", which is not true today.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">D2. There is no coverage ratchet</h3>
+      <p class="text-sm">05 and D48' describe a ratchet lockfile for coverage and budgets, where regressions fail and improvements need one command. Only the bundle-size baseline exists.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">D3. The web E2E smoke is an empty step</h3>
+      <p class="text-sm"><code class="dm-inline">e2e-web</code> is in the stage table, but no project has the target, so no Playwright journey runs. 05 also says "Web keeps Lighthouse budgets", and nothing measures them.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">D4. "Schema at every boundary" is not enforced</h3>
+      <p class="text-sm">D26 and ADR-0025 name it, and it is marked unverified. No lint rule or test fails when a boundary (for example an SQLite row or an HTTP body) is not decoded through Schema.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">D5. "Lowest owning layer" is declared, not checked</h3>
+      <p class="text-sm">The ownership check only confirms that each project declares an evidence owner. Nothing links a behaviour to the one layer that proves it. That is the gap your note points at: <b>patterns should shape which layer tests what</b>. A guide section "how this pattern is tested" would make it explicit for each pattern.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body py-4">
+      <h3 class="font-semibold">D6. The docs-only path rule does not exist yet</h3>
+      <p class="text-sm">05 says "done" for a docs-only diff is a path rule. There was nothing to route before <code class="dm-inline">apps/docs</code>. It becomes real now.</p>
+    </div></div>
+  </div>
+  <p class="text-sm opacity-80">In line with the design, and not drift: device E2E belongs in <code class="dm-inline">qualify</code> until there is a release; conformance runs cheap implementations in <code class="dm-inline">verify</code> and every implementation in <code class="dm-inline">qualify</code>; lint rules keep growing through <code class="dm-inline">guardrails.test.ts</code>.</p>
+</section>
+
+<!-- WEB-INTERVIEW -->
+<section id="webinterview" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">9. Coverage and test ownership: web-interview compared</h2>
+  <p>The bootstrap plan took three things from web-interview (<code class="dm-inline">09-sources-to-reuse.md</code>): the evidence ownership registry, the coverage lockfile and test-layer ownership. They are defined in its ADR 005 (layers), ADR 006 (how tests run) and ADR 010 (producer-owned coverage evidence). <b>Verdict: the design is still valid input, but the build drifted.</b> viviefs kept only a coarse, per-project declaration.</p>
+  <div class="dm-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Aspect</th><th>web-interview (built, Accepted)</th><th>viviefs today</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="font-semibold">Layer ownership</td><td>Unit owns pure logic and the fake server; Storybook owns component states, interaction and a11y; Playwright owns process boundaries. Layers do not permanently overlap.</td><td>A per-<b>project</b> <code class="dm-inline">evidenceOwner</code> (8 values). Declared only: nothing checks that the owner actually runs.</td><td><span class="badge badge-warning badge-sm">drift</span></td></tr>
+      <tr><td class="font-semibold">Owner vs reality</td><td>A registry validation fails for a missing, duplicate, stale or unknown entry, or one with no rationale.</td><td><code class="dm-inline">workflow-engine</code> says <i>crash-matrix</i>, which <code class="dm-inline">verify</code> never runs. 7 projects say <i>conformance</i> and have no test in their own project: sync client, server and protocol, identity, crypto-shred, sqlite-wasm, sqlite-native. Sync and identity are exercised in <code class="dm-inline">verify</code>, but through the P09 and P11 host checks in <code class="dm-inline">tools/qualification</code>, which the registry cannot express.</td><td><span class="badge badge-error badge-sm">drift</span></td></tr>
+      <tr><td class="font-semibold">Source accounting</td><td>Per <b>file</b>: every production source has exactly one treatment (<i>node-runtime</i>, <i>storybook-controller</i>, <i>rendered-ui</i>, <i>playwright-bootstrap</i>, <i>test-support</i>, <i>type-only</i>) with a written rationale. New source fails closed until classified.</td><td>None per file.</td><td><span class="badge badge-error badge-sm">not built</span></td></tr>
+      <tr><td class="font-semibold">Coverage lockfile</td><td>Exact per-file baseline per producer (Node Vitest, Storybook Chromium). The provider name and version are part of the evidence. A regression fails; an improvement fails until recorded with one command.</td><td>No coverage provider at all. Only the bundle-size baseline.</td><td><span class="badge badge-error badge-sm">not built</span></td></tr>
+      <tr><td class="font-semibold">Command model</td><td>watch (ambient), verify (the gate), improve (raise the contract: baseline, stricter lint or TypeScript)</td><td>verify, qualify</td><td><span class="badge badge-info badge-sm">differs</span></td></tr>
+      <tr><td class="font-semibold">Diagram integrity</td><td>A check that every Mermaid edge survives rendering</td><td>Not planned. It matters now: evidence notes and guides use Mermaid.</td><td><span class="badge badge-warning badge-sm">gap</span></td></tr>
+      <tr><td class="font-semibold">Production web</td><td>Lighthouse: three runs, five scores at 100, JS budgets</td><td>Designed (05), not built</td><td><span class="badge badge-warning badge-sm">drift</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="text-sm"><b>What needs adapting:</b> viviefs has evidence kinds that web-interview does not: <i>conformance</i> (one suite, several implementations), <i>crash-matrix</i>, and <i>probe host checks run in verify</i> (P09-P11). The treatment list has to name them, and a treatment must say which <code class="dm-inline">verify</code> step produces its evidence, so a declared owner that never runs fails.</p>
+</section>
+
+<!-- WEIGHT -->
+<section id="weight" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">9b. Speed and weight: what each part costs</h2>
+  <p>Measured on 2026-09-29 on this Mac: <code class="dm-inline">CI=true</code> (all projects), Nx cache skipped. The qualify times come from the ledger of the sequential P01-P11 run on <code class="dm-inline">54e724786</code>.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="dm-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th colspan="2">verify, about 2.5 min</th></tr></thead>
+      <tbody>
+        <tr><td>static (sync, typecheck, lint, scope, ownership, audit)</td><td class="dm-nowrap">23 s</td></tr>
+        <tr><td>unit (includes the full P09, P10, P11 host checks)</td><td class="dm-nowrap">10 s</td></tr>
+        <tr><td>integration (log store conformance on sqlite-node + Postgres, evidence-server)</td><td class="dm-nowrap">15-17 s</td></tr>
+        <tr><td>ui ("storybook" = Vitest + jsdom + axe; e2e-web empty)</td><td class="dm-nowrap">3 s</td></tr>
+        <tr><td>quality (build 34 s, bundle-size 45 s)</td><td class="dm-nowrap">79 s</td></tr>
+        <tr class="bg-base-200"><td>+ crash matrix (Q16), measured as P06</td><td class="dm-nowrap">+6 s</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="dm-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th colspan="2">qualify P01-P11, 30 min</th></tr></thead>
+      <tbody>
+        <tr><td>Device and lab gates: P01, P02, P03, P04, P05, P07, P11</td><td class="dm-nowrap">3, 3.5, 2, 2.5, 2, 7, 9 min</td></tr>
+        <tr><td>Host-only gates: P06, P08, P09, P10</td><td class="dm-nowrap">6 s, 7 s, 2 s, 22 s</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div class="alert alert-info alert-soft text-sm"><span><b>What the numbers say:</b> speed does not split verify from qualify. What splits them is <b>what a check needs</b> (only the host, or a device or lab container) and <b>what it produces</b> (a contract check, or a claim in the ledger). The heavy part is devices and labs, and that is already qualify. Crash matrix, coverage and component tests are host-only and fast, so they belong in verify. The P09-P11 host checks already work this way: the same probe function runs in verify as a check, and in qualify as a recorded claim.</span></div>
+</section>
+
+<!-- 8 AGENTS -->
+<section id="agents" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">10. Where agents plug in</h2>
+  <div class="dm-mermaid"><pre class="mermaid">
+flowchart LR
+  AG["AGENTS.md&lt;br/&gt;short map"] --> CTX["CONTEXT.md&lt;br/&gt;vocabulary"]
+  AG --> GI["Guide index&lt;br/&gt;(MDX in repo)"]
+  GI --> G1["Guide review checklist&lt;br/&gt;+ how-to"]
+  SK["Skills&lt;br/&gt;thin procedures"] -. "link to" .-> G1
+  PAT[".agents/patterns&lt;br/&gt;Effect itself"] --> REPO["repos/effect"]
+  LL["llms.txt&lt;br/&gt;outside agents"] --> GI
+</pre></div>
+  <p class="text-sm">There is one source (D30). A guide's review checklist is what an agent reads before it changes code that uses the pattern, and what a reviewer (human or agent) checks it against.</p>
+</section>
+
+<!-- 9 OPEN -->
+<section id="open" class="dm-section space-y-4">
+  <h2 class="text-2xl font-bold">11. What was decided</h2>
+  <p>The grilling that used this page ended on 2026-09-29. Its answers are D59-D74 in <code class="dm-inline">docs/plan/bootstrap/02-decision-log.md</code>, the ADR-0026 amendment, and the Schedule and drift table in <code class="dm-inline">10-open-items-and-risks.md</code>. Still open by design: what exactly a lesson is (settled on the log-store guide) and the list of evidence treatments (design review at the start of the Evidence ownership step).</p>
+</section>
+
+<footer class="text-sm opacity-60 pt-6 border-t border-base-300">Sources: ADR-0026 (amended 2026-09-29), 05-verify-qualify-teach.md, 02-decision-log.md (D20, D26, D28-D30, D46, D48', D57), CONTEXT.md, tools/verify/src/stages.ts, tools/qualification/src/gates.ts, project.json targets.</footer>
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) { paint.clearRect(0,0,1,1); paint.fillStyle="#000"; paint.fillStyle=color; paint.fillRect(0,0,1,1); return paint.getImageData(0,0,1,1).data; }
+  function compositeRgba(f, b) {
+    const fa = f[3]/255, ba = b[3]/255, a = fa + ba*(1-fa);
+    if (a === 0) return [0,0,0,0];
+    return [(f[0]*fa + b[0]*ba*(1-fa))/a, (f[1]*fa + b[1]*ba*(1-fa))/a, (f[2]*fa + b[2]*ba*(1-fa))/a, a*255];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rb = toRgba(getComputedStyle(root).backgroundColor);
+    const bb = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0,0,0,0];
+    const [r,g,b,a] = compositeRgba(bb, rb);
+    if (a > 0) return (0.2126*r + 0.7152*g + 0.0722*b)/255 < 0.5;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied, rendering = false, queued = false;
+  function queueRender() { queued = true; if (rendering) return; void render(); }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "strict" });
+        for (const { el, src } of diagrams) { el.removeAttribute("data-processed"); el.textContent = src; }
+        try { await mermaid.run({ nodes: diagrams.map((d) => d.el) }); } catch (e) { console.error("Mermaid render failed:", e); return; }
+        applied = theme;
+      }
+    } finally { rendering = false; if (queued) queueRender(); }
+  }
+  if (document.readyState === "complete") queueRender(); else window.addEventListener("load", queueRender, { once: true });
+  const obs = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) if (el) obs.observe(el, { attributes: true, attributeFilter: ["data-theme","class","style"] });
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>

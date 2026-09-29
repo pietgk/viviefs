@@ -2,14 +2,14 @@
 
 ## Freeze, named-slot, hypothesis
 
-A scaffolding session treats these differently. Grilling decisions D1-D58 remain accepted intent, unverified until
+A scaffolding session treats these differently. Grilling decisions D1-D74 remain accepted intent, unverified until
 the named gate.
 
 **Freeze** (scaffold as specified; ask before changing):
 
 - Repo kinds, tags, "apps provide Layers" (D52-D57), including: a feature must not import an adapter.
 - Verify - Qualify - Teach, the five verify stages as an elaboration of D48', JS bundle-size budget.
-- P01-P15 registered; P01-P10 foundation; P11-P15 follow-on.
+- P01-P17 registered; P01-P10 foundation; P11-P17 follow-on.
 - iOS, Android and web first-class; P01, P02 and P07 fail if the Android emulator fails.
 - Full-store sync per organization, one cursor, Effect RPC.
 - Apache-2.0 and licence checks on new dependencies.
@@ -19,17 +19,17 @@ the named gate.
 
 - Identity was filled at P11 (2026-09-28): `TokenVerifier`, `SignInSession`, the fake issuer and membership in the log (ADR-0022, [p11-design-review.md](../../evidence/p11-design-review.md)). Log stores were filled at P04. Sync and the in-memory blob store were filled at P09 (ADR-0017, ADR-0021). Telemetry was filled at P10: the trace projector and the `TraceSink` contract (ADR-0018).
 - Sampling of durable spans: the envelope records `sampled`; the trace projector does not honour it yet (P10). Decided with the production telemetry backend.
-- Quarantine of user content after a lost lease (D15). Direction agreed 2026-09-27: a human-conflict entry (D34) that names the stranded content, resolved by a command (attach to the execution, keep as standalone evidence, or discard). Mechanism and UX in its own grilling and gate, P12 (registered 2026-09-29).
+- Quarantine of user content after a lost lease (D15). Direction agreed 2026-09-27: a human-conflict entry (D34) that names the stranded content, resolved by a command (attach to the execution, keep as standalone evidence, or discard). Mechanism and UX in its own grilling and gate, P14 (registered 2026-09-29 as P12, renumbered the same day).
 
 **Hypothesis until gate** (must not constrain other work):
 
-- SQLCipher and crypto-shredding (P13, P14).
+- SQLCipher and crypto-shredding (P15, P16).
 - Effect Cluster (D39).
 - Prefix subscriptions / partial sync.
 - History consolidation and client-side data access on a full-org replica (follow-ons to the first sync).
-- React Native Storybook.
+- UI on every platform (P12): one React Native component tree, stories in Chromium and on the simulators (D72).
+- Links and routing (P13): one URL, one screen and state on every platform (D73).
 - Cold start, crash-resume and sync round-trip budgets (listed, not gated).
-- Docs site generator (Starlight assumed).
 
 ## Unverified claims (each owned by a gate)
 
@@ -53,7 +53,10 @@ the named gate.
 - **DuckDB `SqlClient`**: Effect v4 has no DuckDB driver (research/01 section 3). Analytics writes Parquet or
   DuckLake files that DuckDB reads, which is what D37 already says.
 - **Interaction state library**: IntentComposer in `@typeonce/effect-machine` (P08 review 2026-09-22,
-  ADR-0020). XState v5.33.2 and Effect + Atom remain retained probes; XState JSON viz is a later option.
+  ADR-0020). XState v5.33.2 and Effect + Atom remain retained probes; XState JSON viz is a later option. Its view
+  renders DOM only and is rewritten under P12 (D72).
+- **Docs site generator**: Starlight on Astro 7, samples embedded from the exemplar and checked by `tsc` 7, no
+  Twoslash for now (D59-D61, 2026-09-29).
 - **HLC future-skew bound and log-append volume**: P04 picked 5000 ms and 2000 datoms.
 - **Foundation closure**: one sequential P01-P10 run on `3bd24492`, 2026-09-26
   ([2026-09-26-foundation-closure.md](../../evidence/2026-09-26-foundation-closure.md)).
@@ -70,17 +73,37 @@ the named gate.
 
 ## Schedule
 
-Agreed 2026-09-29. Names follow [06-qualification-gates.md](06-qualification-gates.md#names-for-gates-steps-and-other-work):
-gates in run order, steps as `Pnn.k`, other work by name.
+Agreed 2026-09-29; the Docs and teaching part was refined the same day in its grilling (D74). Names follow
+[06-qualification-gates.md](06-qualification-gates.md#names-for-gates-steps-and-other-work): gates in run order, steps
+as `Pnn.k`, other work by name.
 
 | Order | Work | What |
 | --- | --- | --- |
 | 1 | Housekeeping (done 2026-09-29; P01-P11 passed in one sequential run on `54e724786`) | Qualify ADR-0024, 0025 and 0028-0031 against `verify` with checks that can fail; explain "Hermes inspector did not appear"; clear the Effect language-service suggestions; draft upstream issues (not filed); renumber gates; amend ADR-0026 (acceptance on the guide); one handover; a sequential P01-P11 run |
-| 2 | Docs and teaching | `apps/docs` skeleton (confirm Starlight), type-checked samples, `llms.txt`, `exercises/` layout, a home for the `.lavish/` pages. Then the pattern guide template, drafted on the log store and tried on durable workflow and identity, each guide accepted by a human (ADR-0026). The other qualified patterns follow on the template |
-| 3 | P12 Quarantine after a lost lease | Grilling, design review, gate |
-| 4 | P13 Encrypted store, P14 Crypto-shredding, P15 Browser engine leader | In that order |
+| 2 | Docs and teaching | In this order (D74): **Recording** the grilling (D59-D74); **Skills** update, after an include/adapt list is reviewed (D69); **Docs skeleton**: `apps/docs` with the `.lavish/` move, Mermaid integrity and the docs-only rule (D59-D61, D68); **Evidence ownership**: treatments, coverage lockfile, crash matrix in `verify` and Schema at every boundary, after a design review of the treatment list, closed by one sequential run (D70, D71); **Log-store guide**, which settles the guide template (D62-D67); **App shell**, below; **Durable workflow guide**; **Identity guide**; then the other guides (D65) |
+| 2, App shell | P12 UI on every platform, P13 Links and routing | One grilling for both, design review, gates; closed by one sequential run. P08 re-runs on the rewritten IntentComposer view (D72, D73) |
+| 3 | P14 Quarantine after a lost lease | Grilling, design review, gate |
+| 4 | P15 Encrypted store, P16 Crypto-shredding, P17 Browser engine leader | In that order |
 | Any time | Expo SDK 58 stable (expected October 2026) | Repin as its own change, then a sequential P01-P11 run |
+| Any time | Storybook 11 stable | Repin from `11.0.0-alpha.1` as its own change, then the P12 run |
 | Before the first consumer app | Identity, keys and trust; one physical-device run; product apps as app pairs (D55); the trace projector on devices | As recorded under Deferred decisions |
+
+Almost every step changes the gates' inputs (the lockfile, the workspace, `libs/`). A guide's own gates run on the
+commit that records its acceptance (D63); the sequential runs above close batches of changes.
+
+## Drift between design and build (found 2026-09-29)
+
+Found in the Docs and teaching grilling; each has a decision and a place in the Schedule.
+
+| Drift | Design source | Fixed in |
+| --- | --- | --- |
+| The crash matrix runs only in P06; `verify` checks its shape, and `libs/workflow-engine` declares an owner `verify` never runs | D20, D26, ADR-0025 | Evidence ownership (D71) |
+| No coverage lockfile; evidence owners are declared per project and not checked against what runs | D48', 05, web-interview ADR 005, 006, 010 | Evidence ownership (D71) |
+| "Schema at every boundary" is not enforced | D26, ADR-0025 | Evidence ownership (D71) |
+| The `ui` stage's `storybook` step is Vitest with jsdom; no story runs in a browser or on a device; IntentComposer renders DOM only | D41, ADR-0019, ADR-0020 | App shell, P12 (D72) |
+| `e2e-web` has no project; no Lighthouse budgets | 05 | App shell, P13 (D73) |
+| No docs-only path rule; no Mermaid integrity check | 05 | Docs skeleton (D61) |
+| The `integration` stage's description names a crash matrix it does not run | `tools/verify` | Evidence ownership, when the matrix moves there |
 
 ## Deferred decisions
 
@@ -90,16 +113,15 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 |---|---|---|---|
 | Production hosting, deployment topology, production telemetry backend | Where the server runs; which backend replaces the local lab sinks; TLS; how the web app keeps its sign-in session (P11 keeps it in memory) | The first consumer app leaves the lab | Decide then, together with sampling of durable spans |
 | Engine scale-out (Effect Cluster), multi-runner server | Server-side workflows on more than one runner | A real server-side workflow load or an availability need | Keep; the server never runs device workflows (D14) |
-| Product apps into viviefs as app pairs (D55) | Whether BirVana, ERP and GRC live here | Before the first consumer app | Decide after P11-P15 |
-| Encryption at rest per consumer app (D50) | Which apps turn on SQLCipher | At the start of an app that holds sensitive data | Per app, once P13 has qualified SQLCipher |
-| Docs site generator (Starlight assumed; Twoslash or equivalent for sample checks) | Docs and teaching (D28, D29) | At the start of Docs and teaching | Confirm Starlight there; see [Schedule](#schedule) |
-| Quarantine after a lost lease (D15) | User content stranded when a device loses its lease | P12's grilling, after Docs and teaching | Human-conflict entry (D34) resolved by a command; gate P12. P09 already rejects the stale journal write before it enters the device log; user content stays in the log |
+| Product apps into viviefs as app pairs (D55) | Whether BirVana, ERP and GRC live here | Before the first consumer app | Decide after P11-P17 |
+| Encryption at rest per consumer app (D50) | Which apps turn on SQLCipher | At the start of an app that holds sensitive data | Per app, once P15 has qualified SQLCipher |
+| Quarantine after a lost lease (D15) | User content stranded when a device loses its lease | P14's grilling, after Docs and teaching | Human-conflict entry (D34) resolved by a command; gate P14. P09 already rejects the stale journal write before it enters the device log; user content stays in the log |
 | Partial sync (prefix subscriptions), history consolidation, client-side data access on a full-org replica | Devices hold the whole organization's log | When roles restrict data within an organization, or a replica grows too large | Raised in the P11 grilling (2026-09-27): roles are carried, not enforced, so nothing is brought forward. Server isolation (D18) stays authoritative |
-| React Native Storybook | Stories for native-only components | The first native-only component | Keep |
+| UI on every platform (D72) | IntentComposer renders DOM only; no story runs in a browser or on a device | App shell step of Docs and teaching, with P13 | One React Native component tree; stories in Chromium in `verify` and on the simulators in P12 |
 | Physical devices, and a visible local-notification tap that completes a deferred | Everything so far ran on simulators; P07 completed the deferred from JavaScript, the banner tap was not observed (ADR-0013) | Before the first consumer app | One real-phone run on iOS and Android covering both |
-| Identity, keys and trust (merges tamper-evidence of stored history and signed changesets, Q15) | Stored history is trusted, not provable; `actor` is a server-checked label, not a signature; `envelope.device` is not authenticated; who may take over a lease is unspecified | Before the first consumer app that makes audit claims, as one research and grilling step, together with P14 | Research inputs: vivief (per-device keypairs, device links as datoms, transport identity kept apart from authorization, Holochain considered), Holochain from primary sources. Candidate direction: hash chain with device-held checkpoints, device keys linked to a person, signed changesets. Until then the server log is never compacted, and crypto-shredding hashes stored ciphertext (P11 grilling Q15, Q23, Q24). Explainer: [identity, keys and trust](../../../.lavish/identity-keys-and-trust.html) |
+| Identity, keys and trust (merges tamper-evidence of stored history and signed changesets, Q15) | Stored history is trusted, not provable; `actor` is a server-checked label, not a signature; `envelope.device` is not authenticated; who may take over a lease is unspecified | Before the first consumer app that makes audit claims, as one research and grilling step, together with P16 | Research inputs: vivief (per-device keypairs, device links as datoms, transport identity kept apart from authorization, Holochain considered), Holochain from primary sources. Candidate direction: hash chain with device-held checkpoints, device keys linked to a person, signed changesets. Until then the server log is never compacted, and crypto-shredding hashes stored ciphertext (P11 grilling Q15, Q23, Q24). Explainer: [identity, keys and trust](../../../.lavish/identity-keys-and-trust.html) |
 | Roles in use, invitations, self-service membership | P11 enforces membership only; the operator grants and revokes | The first consumer app that needs a role | Roles are already carried in the caller; the first enforced role comes with its consumer |
-| Local deletion after a revoked membership | P11 keeps the organization's copy read-only on the device | With P14 | Deletion is a courtesy, not security; decide it with erasure |
+| Local deletion after a revoked membership | P11 keeps the organization's copy read-only on the device | With P16 | Deletion is a courtesy, not security; decide it with erasure |
 | Identity provider migration | Moving people to a new identity provider | When a consumer changes provider | Relinking is one datom on the server's account entity (ADR-0022); tooling then |
 | Datom `op` as `TEXT` (`assert` / `retract`) or a boolean | Storage cost next to `e`, `a`, `v`; a change re-runs P04-P09 | When a storage or performance budget exists | Keep (deferred 2026-09-22) |
 | The trace projector on iOS, Android and web | P10 ran it on the host; P03 measured OTLP from Hermes | When the evidence app or a consumer app runs the projector | Not in P11 (P11 grilling). Wire it with the first consumer app, and extend a device run to check it |
@@ -115,6 +137,8 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 | Clock skew beyond HLC tolerance on long-offline devices | Wrong LWW winners | Server-side skew detection, flagged in trace; human-conflict policy for important attributes |
 | Scope size: many patterns at once | Slow progress | Gate order, delivery definition, one exemplar |
 | Expo SDK 58 is beta | Instability | Pin beta, move to stable when released (expected October 2026) |
+| Storybook `11.0.0-alpha.1` pinned for Vitest 5 (D72); `@storybook/react-native` needs Reanimated 4.5.1 and friends, unproven on Expo 58 / RN 0.88 | Stories break on upgrade, or do not run on device | Exact pin, all Storybook packages on one version; P12 qualifies it on iOS, Android and Chromium; stable as its own change |
+| Evidence owners declared but not run (found 2026-09-29) | A green `verify` that proves less than it claims | Per-file treatments that name the producing `verify` step (D71) |
 | Single maintainer projects (motel, effect-machine) | Abandonment | Telemetry sink and interaction state are patterns behind contracts |
 | Android first-class qualification on an ungrilled emulator | P01/P02/P07 blocked on Android-only failures | Fail the gate honestly; do not skip Android to make iOS green |
 | Full-org replica on device | Unbounded history and over-broad local reads | History consolidation and client data access are explicit later work, not silent P09 extras |

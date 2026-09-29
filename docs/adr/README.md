@@ -21,7 +21,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0010](0010-entity-ids-and-defining-attributes.md) | Entity ids, defining attributes and strict-composition prefixes | Qualified | P05 |
 | [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Qualified | P04, P05 |
 | [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Qualified | P06 |
-| [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Qualified (P07); P15 unverified | P07, P15 |
+| [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Qualified (P07); P17 unverified | P07, P17 |
 | [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Qualified | P09 |
 | [0015](0015-deferreds-vs-machines.md) | Human steps as deferreds; workflows own progress | Qualified | P06, P09 |
 | [0016](0016-commands-and-server-validation.md) | Commands, server validation and rejection | Qualified | P09 |
@@ -31,7 +31,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0020](0020-interaction-state-three-way-prototype.md) | Interaction state: outcome of the three-way prototype | Qualified | P08 |
 | [0021](0021-files-by-content-hash.md) | Files by content hash | Qualified | P09 |
 | [0022](0022-identity-and-organization-isolation.md) | Identity and organization isolation | Qualified | P11 |
-| [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P13, P14 |
+| [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P15, P16 |
 | [0024](0024-repository-structure.md) | Repository structure, tags, rules, generators | Qualified (boundaries, ownership, lint scope); generators unverified | verify (boundary lint) |
 | [0025](0025-ai-robust-guardrails.md) | AI-robust guardrails | Qualified (lint rules); crash-matrix rule unverified | verify |
 | [0026](0026-verify-qualify-teach.md) | Verify - Qualify - Teach | Proposed, unverified | none (process) |

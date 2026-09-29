@@ -3,11 +3,13 @@
 Status: Proposed, unverified
 
 Date: 2026-09-20. Amended 2026-09-29: a pattern is accepted on its guide.
+Amended again 2026-09-29 (Docs and teaching grilling): verify and qualify are
+separated by what a check needs, not by speed; acceptance needs current gates.
 
 Qualifying gate: none (process). The pattern is the process; later ADRs are
 qualified under it.
 
-Related: D28-D30, D46, D48'.
+Related: D28-D30, D46, D48', D59-D74.
 [Verify - Qualify - Teach](../plan/bootstrap/05-verify-qualify-teach.md),
 [Gates](../plan/bootstrap/06-qualification-gates.md). Principles adapted from
 complyj ADR 0006.
@@ -37,7 +39,7 @@ is green verify, with a mechanical path rule for docs-only diffs.
 probes, positive controls, fingerprinted append-only ledger, sequential full
 run. Gate table is code. Unknown gate ids fail. The ledger is a plain file,
 not datoms. P01-P10 are the foundation stage (D46's six themes split so each
-fact can fail independently). P11-P15 are follow-on, not foundation closure.
+fact can fail independently). P11-P17 are follow-on, not foundation closure.
 A stage closes only with one sequential full run on unchanged committed
 inputs.
 
@@ -65,6 +67,22 @@ already written are brought up to date in the same change, so every guide
 keeps one shape. Lessons still cite gate evidence and never become the source
 of a claim.
 
+**What separates verify from qualify** (amendment 2026-09-29, Docs and
+teaching, D70). Not speed: the crash matrix takes 6 s, a device gate
+minutes. Verify runs every check that needs only the host (Node, jsdom or a
+headless browser, in-process SQLite or PGlite; no container, no device),
+checks the code's contract on every change, and changes no file. Qualify
+establishes a claim and records it in the ledger; device and lab legs run
+only there. A probe's host part is one function both call: verify runs it as
+a check, qualify records it as the claim. There is no third mode. `pnpm
+verify baseline` is the one command that writes the lockfile. Time is
+reported, not gated.
+
+**Acceptance needs current gates** (D63). Before a guide is recorded as
+accepted, its gates run and pass on that commit, and the commit names the
+ledger run. `verify` checks that guide and ADR statuses agree; it does not
+read the ledger.
+
 ## Trade-offs
 
 Two entry points (verify vs qualify) instead of one "CI" script. That keeps
@@ -91,3 +109,10 @@ Verify and Qualify are in use: `pnpm verify` gates every change, and
 `pnpm qualify` recorded P01-P11 in the ledger, closed by one sequential run on
 2026-09-28 ([closure note](../evidence/2026-09-28-p01-p11-closure.md)). Teach
 has not started: no guide exists, so no pattern is delivered yet.
+
+2026-09-29, Docs and teaching grilling. Three places where the build does less
+than this ADR and D48' say, recorded as decisions with a place in the
+Schedule: evidence owners are declared per project but not checked against
+what runs, and there is no coverage lockfile (D71); the crash matrix runs only
+in P06, not in verify (D71); the `ui` stage's `storybook` step is Vitest with
+jsdom, and no story runs in a real browser or on a device (D72).

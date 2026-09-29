@@ -5,8 +5,8 @@ Order matters; later gates depend on earlier ones. `P` = platform/pattern gate (
 
 D46 named six foundation **themes**: platform, log store, engine + crash matrix, UI prototype, sync, trace
 projection. P01-P10 are those themes split so each fact can fail independently (platform → P01-P03, log store →
-P04-P05, engine → P06-P07). P11-P15 are follow-on (identity, quarantine after a lost lease, encrypted store,
-crypto-shredding, browser leader), not foundation closure.
+P04-P05, engine → P06-P07). P11-P17 are follow-on (identity, UI on every platform, links and routing, quarantine
+after a lost lease, encrypted store, crypto-shredding, browser leader), not foundation closure.
 
 iOS, Android and web are first-class. P01, P02 and P07 fail if the Android emulator fails.
 
@@ -23,12 +23,14 @@ iOS, Android and web are first-class. P01, P02 and P07 fail if the Android emula
 | **P09** Sync | Datom replication with server authority works offline and across devices | Outbox up, one full-organization cursor stream down, Effect RPC append-and-acknowledge, server validation, typed rejection with rebuild and reapply, unknown attribute upgrade error, lease fencing across two devices, deferred completion from the server, a changeset that references a file waits until that file exists on the server | A stale-lease journal write is rejected while the current holder's write is accepted | D13-D15, D36, D40, D43, D44 |
 | **P10** Trace projection | The trace derived from the log is lossless and stable across replays | Crash-and-resume run produces one trace with deterministic span ids, no duplicate spans on replay, attempts linked; the same smoke test passes against motel, Jaeger and otel-lgtm | Disabling the trace cursor loses nothing: re-enabling exports the backlog | D32, D45' |
 | **P11** Identity | Fake and OIDC implementations satisfy one identity contract | Keycloak on Apple Container with PKCE from the iOS simulator, the Android emulator and web; membership enforced on sync, lease and commands. Checks split in [p11-design-review.md](../../evidence/p11-design-review.md) | Cross-organization access denied while same-organization access allowed | D18, D47 |
-| **P12** Quarantine after a lost lease | User content stranded by a lost lease is never dropped and is resolved by a human | Set by its grilling and design review. Direction agreed 2026-09-27: a human-conflict entry (D34) names the stranded content, and a command resolves it (attach to the execution, keep as standalone evidence, or discard) | Set by its grilling | D15, D34 |
-| **P13** Encrypted store | SQLCipher store passes the log store conformance suite | P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore | Wrong key cannot open the database | D50 |
-| **P14** Crypto-shredding | Erased subjects are unreadable everywhere | After key destruction, personal attributes are unreadable on every replica, projection and export; the log stays intact and syncable | Non-erased subject stays readable | D51 |
-| **P15** Browser engine leader | Only one tab runs the engine | Two tabs, one engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two engines are detected running | D25 |
+| **P12** UI on every platform | One React Native component tree renders and passes its stories on iOS, Android and web | Set by its grilling (the app-shell step, with P13). Direction agreed 2026-09-29: components in React Native primitives, web through react-native-web; stories run in Chromium in `verify` (`@storybook/react-native-web-vite` + `@storybook/addon-vitest`) and on the iOS simulator and Android emulator in this gate (`@storybook/react-native`, driven by agent-device through the accessibility tree); IntentComposer is rewritten on it and P08 re-runs | Set by its grilling, for example a story without an accessibility label fails in both places | D41, D54 |
+| **P13** Links and routing | One URL opens the same screen and state on every platform | Set by its grilling (the app-shell step, with P12). Includes the first web E2E journey (Playwright) and the Lighthouse budgets on the served web build | Set by its grilling | - |
+| **P14** Quarantine after a lost lease | User content stranded by a lost lease is never dropped and is resolved by a human | Set by its grilling and design review. Direction agreed 2026-09-27: a human-conflict entry (D34) names the stranded content, and a command resolves it (attach to the execution, keep as standalone evidence, or discard) | Set by its grilling | D15, D34 |
+| **P15** Encrypted store | SQLCipher store passes the log store conformance suite | P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore | Wrong key cannot open the database | D50 |
+| **P16** Crypto-shredding | Erased subjects are unreadable everywhere | After key destruction, personal attributes are unreadable on every replica, projection and export; the log stays intact and syncable | Non-erased subject stays readable | D51 |
+| **P17** Browser engine leader | Only one tab runs the engine | Two tabs, one engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two engines are detected running | D25 |
 
-Closure of the foundation stage: one sequential full run of P01-P10 on an unchanged committed tree. P11-P15 close
+Closure of the foundation stage: one sequential full run of P01-P10 on an unchanged committed tree. P11-P17 close
 before the first consumer app relies on them. P11 closed on 2026-09-28 with one sequential run of P01-P11
 ([2026-09-28-p01-p11-closure.md](../../evidence/2026-09-28-p01-p11-closure.md)).
 
@@ -42,12 +44,15 @@ Agreed 2026-09-29, so that a step, a gate and a milestone never share a name.
 - **Work that is not a gate has a name, not a number**: Housekeeping, Docs and teaching. The scaffolding work order in
   [00-next-session.md](00-next-session.md) keeps its numbers as history only.
 
-Renumbered 2026-09-29, when quarantine after a lost lease became a gate that runs before the others. Notes dated
-earlier use the old numbers:
+Renumbered twice on 2026-09-29. First, when quarantine after a lost lease became a gate that runs before the
+others. Then, in the Docs and teaching grilling, when UI on every platform and links and routing became gates that
+run before quarantine. Notes use the numbers of their date:
 
-| Gate | Before 2026-09-29 |
-| --- | --- |
-| P12 Quarantine after a lost lease | not a gate |
-| P13 Encrypted store | P12 |
-| P14 Crypto-shredding | P13 |
-| P15 Browser engine leader | P14 |
+| Gate | Earlier on 2026-09-29 | Before 2026-09-29 |
+| --- | --- | --- |
+| P12 UI on every platform | not a gate | not a gate |
+| P13 Links and routing | not a gate | not a gate |
+| P14 Quarantine after a lost lease | P12 | not a gate |
+| P15 Encrypted store | P13 | P12 |
+| P16 Crypto-shredding | P14 | P13 |
+| P17 Browser engine leader | P15 | P14 |

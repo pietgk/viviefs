@@ -1,10 +1,10 @@
 # ADR-0013: Device durability
 
-Status: Qualified (P07 native resume). P15 (browser leader) unverified
+Status: Qualified (P07 native resume). P17 (browser leader) unverified
 
 Date: 2026-09-20
 
-Qualifying gate: P07, P15
+Qualifying gate: P07, P17
 
 Related: D3, D24, D25. [ADR 0012](0012-datom-backed-workflow-engine.md).
 
@@ -43,9 +43,9 @@ notification tap completes a deferred; the trace shows crash and resume.
 Positive control: without the engine sweep on launch, the workflow does not
 resume. P07 fails if the Android emulator fails.
 
-P15: two tabs, one engine; killing the leader promotes the other, which
+P17: two tabs, one engine; killing the leader promotes the other, which
 resumes; followers render and forward. Positive control: without the lock, two
-engines are detected. P15 is follow-on, not foundation closure.
+engines are detected. P17 is follow-on, not foundation closure.
 
 ## Outcome
 
@@ -65,5 +65,5 @@ platforms. Completing the `approval` deferred after relaunch finished
 daemon had no session; Android saw the Expo developer menu); `simctl` /
 `adb force-stop` did. A SpringBoard/shade tap on "P07 approval" was not
 observed; the deferred completed via last-notification-response or a host
-`runtime:eval` of the in-app complete hook. P15 not run. Evidence:
+`runtime:eval` of the in-app complete hook. P17 not run. Evidence:
 [2026-09-21-p07.md](../evidence/2026-09-21-p07.md).

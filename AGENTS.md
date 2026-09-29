@@ -10,7 +10,7 @@ that link to guides, not a second copy of those guides (D30).
 2. [`docs/adr/README.md`](docs/adr/README.md) - decisions. Status `Proposed, unverified`
    until the named gate qualifies them.
 3. [`docs/plan/bootstrap/README.md`](docs/plan/bootstrap/README.md) - complete design
-   context (D1-D58). Treat grilling decisions as accepted intent, unverified until
+   context (D1-D74). Treat grilling decisions as accepted intent, unverified until
    the named gate. Ask before deviating; record a deviation as an ADR amendment.
 4. [`docs/plan/bootstrap/10-open-items-and-risks.md`](docs/plan/bootstrap/10-open-items-and-risks.md) -
    freeze / named-slot / hypothesis, and the Schedule. P05 pinned `viviefs/changeset/*` and

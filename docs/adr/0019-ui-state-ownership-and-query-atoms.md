@@ -72,3 +72,12 @@ Human review of the encodings (2026-09-22) copies IntentComposer in
 effect-machine; query atoms stay Atom. Evidence:
 [2026-09-21-p08.md](../evidence/2026-09-21-p08.md),
 [p08-comparison.md](../evidence/p08-comparison.md).
+
+2026-09-29, Docs and teaching grilling (D72). Drift: the Design's "Storybook
+stories ... scoped to web and shared components" and "React Native Storybook
+is an open item" rested on a wrong premise. In an Expo app every component is
+a native component that also renders on web. No story runs in a real browser
+or on a device: the `ui` stage's `storybook` step is Vitest with jsdom and
+axe-core. Fixed by gate P12 (UI on every platform): one React Native
+component tree, stories in Chromium in `verify` and on the simulators in
+`qualify`. This ADR's Design is amended when P12 qualifies.

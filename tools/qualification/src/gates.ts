@@ -122,7 +122,7 @@ export const gateProbes: GateProbe[] = [
     timeoutMs: 600_000,
     stage: 'follow-on',
     summary:
-      'User content stranded by a lost lease becomes a human-conflict entry that a command resolves.',
+      'One React Native component tree renders and passes its stories on iOS, Android and web.',
   },
   {
     gate: 'P13',
@@ -131,7 +131,7 @@ export const gateProbes: GateProbe[] = [
     timeoutMs: 600_000,
     stage: 'follow-on',
     summary:
-      'SQLCipher store passes the log store conformance suite with keys in Keychain/Keystore.',
+      'One URL opens the same screen and state on iOS, Android and web.',
   },
   {
     gate: 'P14',
@@ -140,11 +140,29 @@ export const gateProbes: GateProbe[] = [
     timeoutMs: 600_000,
     stage: 'follow-on',
     summary:
-      'After key destruction, personal attributes are unreadable on every replica and projection.',
+      'User content stranded by a lost lease becomes a human-conflict entry that a command resolves.',
   },
   {
     gate: 'P15',
     path: 'tools/qualification/src/probes/p15.ts',
+    args: [],
+    timeoutMs: 600_000,
+    stage: 'follow-on',
+    summary:
+      'SQLCipher store passes the log store conformance suite with keys in Keychain/Keystore.',
+  },
+  {
+    gate: 'P16',
+    path: 'tools/qualification/src/probes/p16.ts',
+    args: [],
+    timeoutMs: 600_000,
+    stage: 'follow-on',
+    summary:
+      'After key destruction, personal attributes are unreadable on every replica and projection.',
+  },
+  {
+    gate: 'P17',
+    path: 'tools/qualification/src/probes/p17.ts',
     args: [],
     timeoutMs: 600_000,
     stage: 'follow-on',

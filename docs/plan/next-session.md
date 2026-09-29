@@ -1,90 +1,83 @@
-# Next session: Docs and teaching
+# Next session: Docs and teaching, from the Skills step
 
 ## Prompt to start the session
 
-> Read `AGENTS.md`, then `docs/plan/next-session.md` (this file), then
-> `docs/plan/bootstrap/05-verify-qualify-teach.md` (Teach), ADR-0026 (amended
-> 2026-09-29: a pattern is accepted on its guide), D28, D29 and D57 in
-> `docs/plan/bootstrap/02-decision-log.md`, and the Schedule in
-> `docs/plan/bootstrap/10-open-items-and-risks.md`. Start Docs and teaching.
-> Begin with a grilling on the docs site and the guide template before writing
-> either; ask before deviating from an agreed decision and record a deviation
-> as an ADR amendment.
+> Read `AGENTS.md`, then `docs/plan/next-session.md` (this file), then the
+> "Docs and teaching (2026-09-29)" section of
+> `docs/plan/bootstrap/02-decision-log.md` (D59-D74), the Schedule and the
+> drift table in `docs/plan/bootstrap/10-open-items-and-risks.md`, and
+> ADR-0026. Continue Docs and teaching with the Skills step: bring me the
+> include/adapt list before anything lands. Ask before deviating from an
+> agreed decision and record a deviation as an ADR amendment.
 
 ## Where things stand (2026-09-29)
 
-- **P01-P11 pass** in one sequential run on a clean tree on `54e724786`
-  (run `2026-09-29T09-10-12.066Z-24c082ff`, 30 minutes). P11 is
-  closed ([closure note](../evidence/2026-09-28-p01-p11-closure.md)).
-- **Housekeeping is done** (this session):
+- **P01-P11 pass** in one sequential run on `54e724786`. This commit renumbers
+  the follow-on gates and touches `tools/qualification` and `libs/`, so every
+  gate is stale from here on. That is expected: almost every step ahead changes
+  gate inputs, and the Schedule closes them in batches.
+- **The Docs and teaching grilling is done** and recorded as D59-D74. The
+  overview used in it, with the drift audit, the crash-matrix explainer, the
+  web-interview comparison and the measured costs, is
+  [`.lavish/delivery-model.html`](../../.lavish/delivery-model.html). It becomes
+  the site's first page in the Docs skeleton step (D68).
+- **No ADR is Accepted, no pattern is delivered.**
 
-| Item | Commit |
+## The grilling in one table
+
+| Topic | Decision |
 | --- | --- |
-| Gates numbered in run order: P12 Quarantine after a lost lease, P13 Encrypted store, P14 Crypto-shredding, P15 Browser engine leader; naming rule (gates in run order, steps as `Pnn.k`, other work by name) in [06-qualification-gates.md](bootstrap/06-qualification-gates.md#names-for-gates-steps-and-other-work) | `6a15d385d` |
-| ADR-0026 amended: accepted on the guide; `Taught` merged into `Accepted`; Guide and Guide template in `CONTEXT.md`; the agreed Schedule in the open items | `6a15d385d` |
-| ADR-0024, 0025, 0028-0031 qualified with checks that can fail ([`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts)); lint now refuses imports from `repos/`, and id generation and clock reads in domain code | `1a8e6d342` |
-| "Hermes inspector did not appear" explained and removed (RN 0.88 describes every target as `[C++ connection]`) | `9130cd858` |
-| Effect language-service suggestions cleared | `66cd9e13c` |
-| Android launch race fixed: the other platform's app is stopped by id before navigate, so navigate never mistakes it for this launch (it failed P01 and P02 on Android intermittently); agent-cli calls now carry the Android SDK, without which that stop never worked from an iOS leg | `22915810f`, `54e724786` |
-| Upstream issues drafted, not filed: [upstream-issues.md](upstream-issues.md) (the user posts them) | `81ba23d83` |
-| This handover; the older handovers point here | the commit that adds this file |
+| Docs site | Starlight on Astro 7, MDX; ADRs and evidence rendered in place; API reference for exemplar projects only; `llms.txt`; links, Mermaid integrity, docs-only rule in `verify`; not deployed yet (D59-D61) |
+| Samples | Regions embedded from the exemplar's own source; teaching snippets in `apps/docs/src/samples/`; `tsc` 7 with `@effect/tsgo`; no Twoslash for now (D60) |
+| Guide | `guides/<pattern>/`: `index`, `concepts`, `how-to`, `testing`, `review`, `lessons/`, `try-it`; the template is a skeleton guide that a `verify` check derives its rules from (D62) |
+| Acceptance | Frontmatter status; one commit marks the guide and its ADRs Accepted after its gates pass on that commit; `verify` checks the statuses agree (D63) |
+| Agents | Read the MDX sources; one Guides line in `AGENTS.md`; skills only for real procedures (D64) |
+| Inventory | Log store, durable workflow, identity first; three non-pattern guides accept 0003-0005, 0024-0031 and 0026 (D65) |
+| Exercises | `exercises/<pattern>/NN.MM-name/{problem,solution}`; solution passes, problem fails; generator with the second track (D66) |
+| Exemplar link | `metadata.guide` plus README and TSDoc, checked both ways (D67) |
+| `.lavish/` | Moves to `docs/research/` (D68) |
+| Skills | Matt Pocock skills updated and extended after an include/adapt review (D69) |
+| Verify vs Qualify | Split by what a check needs and produces, not speed; `pnpm verify baseline`; time reported, not gated (D70, ADR-0026 amended) |
+| Evidence ownership | web-interview's per-file treatments and coverage lockfile, adapted; crash matrix into `verify`; Schema at every boundary (D71) |
+| UI on every platform | One React Native component tree; stories in Chromium (`verify`) and on the simulators (P12); Storybook 11 alpha pinned (D72) |
+| Links and routing | New pattern and gate P13, with the first Playwright journey and Lighthouse budgets (D73) |
+| Order and gates | Schedule below; P12 and P13 new, quarantine, encrypted store, crypto-shredding and browser leader move to P14-P17 (D74) |
 
-## Decisions for Docs and teaching (agreed 2026-09-29)
+## Next steps (the Schedule, Docs and teaching part)
 
-- **Scope**: the `apps/docs` skeleton (confirm Starlight; check its licence),
-  type-checked samples in `verify`, generated `llms.txt`, the `exercises/`
-  layout (the `scaffold-exercises` skill; D57: one Nx project per track,
-  `kind:tool`), and a long-term home for the `.lavish/` pages. Then the guides.
-- **A guide** is what people and agents use to discuss, design, implement and
-  review work with a pattern. A pattern is **accepted** when the user accepts
-  its guide (ADR-0026). There is no separate `Taught` status.
-- **One guide template**, iterated: drafted together with the log-store guide,
-  then tried on durable workflow and identity, which differ from it on
-  purpose. When a guide shows the template is wrong, the template changes and
-  the guides already written change with it. Later patterns start from the
-  template.
-- **Acceptance per pattern**, as each guide is reviewed. No ADR is Accepted
-  yet.
-
-## Open questions for the grilling
-
-- What a guide contains, and in what order, so that it serves all four uses.
-  D29 requires a concept page, an exercise (stub, failing test, reference
-  solution passing in `verify`) and a link from the exemplar; lessons cite gate
-  evidence and never become the source of a claim.
-- Which patterns exist, and which ADRs each guide covers. A starting inventory
-  from the qualified ADRs:
-
-| Pattern | ADRs | Gates | Exemplar |
-| --- | --- | --- | --- |
-| Log store (first, shapes the template) | 0006, 0007, 0011 | P04 | `libs/datom`, the store adapters |
-| Changesets and projections | 0008, 0009, 0010 | P05 | `libs/datom` |
-| Durable workflow (second) | 0012, 0015 | P06 | `libs/workflow-engine` |
-| Device durability | 0013 | P07 | `apps/evidence-mobile` |
-| Interaction state and live reads | 0019, 0020 | P05, P08 | `features/evidence/client` |
-| Sync | 0014, 0016, 0017, 0021 | P09 | `libs/sync/*` |
-| Tracing and telemetry sinks | 0018 | P03, P10 | `libs/telemetry` |
-| Identity (third) | 0022 | P11 | `libs/identity`, `libs/testing` |
-
-- Where the guide template lives, and how a template change reaches the
-  guides already written (one check in `verify`?).
-- Starlight or not; Twoslash or an equivalent for type-checked samples.
-- The `.lavish/` pages (P11 teaching pages and the communication-architecture
-  research): which become guide material, which stay research.
-- `@viviefs/generators` is an empty slot until Docs and teaching (ADR-0024's
-  generators are unverified). Is an `exercise` generator needed now?
-
-## After Docs and teaching
-
-P12 Quarantine after a lost lease (grilling, design review, gate), then P13,
-P14 and P15. Expo SDK 58 stable (expected October 2026) is its own change with
-a sequential P01-P11 run whenever it lands.
+1. **Skills** (D69). Compare `skills-lock.json` with `mattpocock/skills`
+   (`d81f3a18` on 2026-09-29; 37 skills). Read each engineering and
+   productivity skill and `scaffold-exercises` against D30 and `CONTEXT.md`.
+   Bring an include/adapt list (overlaps: `teach` with Teach, `grill-with-docs`
+   with grilling and domain-modeling, `code-review` with a user-level skill,
+   `setup-matt-pocock-skills` expects an issue tracker). Nothing lands before
+   the review. Skills are not gate inputs.
+2. **Docs skeleton** (D59-D61, D68): `apps/docs` on Starlight, samples,
+   loaders, `llms.txt`, link and Mermaid checks, the docs-only rule, the
+   `.lavish/` move to `docs/research/` with links updated.
+3. **Evidence ownership** (D70, D71): a design review of the treatment list
+   first; then treatments, coverage lockfile, `pnpm verify baseline`, the
+   engine crash matrix in `integration`, Schema at every boundary; one
+   sequential P01-P11 run closes it.
+4. **Log-store guide**, which settles the template and what a lesson is.
+5. **App shell**: one grilling for P12 and P13, then both gates, then one
+   sequential run.
+6. **Durable workflow guide**, then **identity guide**, then the rest.
 
 ## Working notes
 
 - Run Node through mise: `mise exec -- pnpm verify`; `mise exec -- pnpm
   qualify --through P11` for a sequential run on a committed tree.
+- Measured 2026-09-29 (all projects, Nx cache skipped): `verify` about 2.5
+  minutes (static 23 s, unit 10 s, integration 17 s, ui 3 s, quality 79 s).
+  Qualify P01-P11 30 minutes, almost all devices and labs; P06 takes 6 s.
+- The ledger's input fingerprint includes the lockfile, workspace, `nx.json`,
+  `tsconfig*.json`, `eslint.config.js`, `tools/qualification` and most of
+  `libs/`, `apps/evidence-*` and `features/evidence/*` (Markdown excluded).
+- Facts for the app shell: `@storybook/addon-vitest` supports Vitest 5 only
+  from `11.0.0-alpha.1`; `@storybook/react-native` 10.6 needs Reanimated 4.5.1,
+  gesture-handler, bottom-sheet and safe-area-context 5.8.
 - Lab facts for any device run are in [p11-next-session.md](p11-next-session.md)
   (steps P11.6 and P11.8).
-- A change under `tools/qualification`, `libs/` or `apps/` makes every gate
-  stale; batch such changes and end with one sequential run.
+- `chrome-devtools-axi eval` failed in this session with "pageId: expected
+  number", so the overview's Mermaid rendering was not checked in a browser.

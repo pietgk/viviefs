@@ -5,7 +5,7 @@ Adapted from complyj `tools/qualification`. The gate table is code
 `gate-ledger.json` by hand.
 
 P01-P10 are the foundation stage (D46's six themes split so each fact can fail
-independently). P11-P15 are follow-on, not foundation closure. iOS, Android and
+independently). P11-P17 are follow-on, not foundation closure. iOS, Android and
 web are first-class: P01, P02 and P07 fail if the Android emulator fails.
 
 Probes are retained. P01 is implemented (Expo SDK 58 development client, crypto
@@ -34,7 +34,7 @@ parked; motel `p07.park` / `p07.resume`; `expo-notifications` 58.0.3).
 P08 is implemented (IntentComposer three ways: effect-machine is the copy
 target, XState v5 + `fromPromise` and Effect + Atom stay retained probes;
 generated mermaid checked by unit test; broken Confirm positive control).
-P12-P15 that have not been implemented refuse to pass; there is no
+P12-P17 that have not been implemented refuse to pass; there is no
 passing placeholder.
 
 ## Run
@@ -44,7 +44,7 @@ pnpm ledger                 # Cumulative state.
 pnpm qualify --gate P01     # One probe
 pnpm qualify --foundation   # P01-P10 in order, on a committed tree
 pnpm qualify --through P11  # P01-P11 in order, on a committed tree
-pnpm qualify                # P01-P15 in order
+pnpm qualify                # P01-P17 in order
 ```
 
 `pnpm verify` does not run qualification. GitHub Actions runs `verify` only.

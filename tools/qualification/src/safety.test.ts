@@ -9,7 +9,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
 describe('qualification harness safety', () => {
   it('never presents an unimplemented gate as a passing check', async () => {
-    for (const unimplemented of ['P00', 'P16', 'Q01', 'P99']) {
+    for (const unimplemented of ['P00', 'P18', 'Q01', 'P99']) {
       const result = await command(
         process.execPath,
         [
@@ -28,7 +28,7 @@ describe('qualification harness safety', () => {
 
   it('backs every gate in the table with a probe that exists', async () => {
     expect(implementedGates).toEqual(
-      Array.from({ length: 15 }, (_, i) => `P${String(i + 1).padStart(2, '0')}`),
+      Array.from({ length: 17 }, (_, i) => `P${String(i + 1).padStart(2, '0')}`),
     )
     expect(foundationGates).toEqual(
       Array.from({ length: 10 }, (_, i) => `P${String(i + 1).padStart(2, '0')}`),

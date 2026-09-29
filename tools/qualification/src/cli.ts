@@ -244,7 +244,7 @@ const printLedger = Effect.fnUntraced(function* () {
     yield* Console.log(`${row.gate}  ${row.status.padEnd(8)}  ${row.detail}`)
   }
   yield* Console.log(
-    '\nCumulative state only. Foundation closure requires one sequential full run of P01-P10. P11-P15 are follow-on.',
+    '\nCumulative state only. Foundation closure requires one sequential full run of P01-P10. P11-P17 are follow-on.',
   )
 })
 

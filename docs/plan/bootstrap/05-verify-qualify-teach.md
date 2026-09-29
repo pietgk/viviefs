@@ -10,6 +10,11 @@ teaching.
 | **Qualify** | Is this claim about the stack or a pattern true? | Numbered gates with retained probes, positive controls, fingerprinted append-only ledger, sequential full run | Before depending on a claim, and whenever its inputs change |
 | **Teach** | Can a human or an LLM learn it from what we wrote? | Concept page, exercise whose solution passes in `verify`, lesson citing gate evidence | Before a pattern counts as delivered |
 
+What separates Verify from Qualify is what a check needs and what it produces, not its speed (D70, ADR-0026 amended
+2026-09-29). Verify runs every check that needs only the host and changes no file. Qualify records claims in the
+ledger and runs the device and lab legs. A probe's host part is one function both call. There is no third mode;
+`pnpm verify baseline` is the one command that writes the lockfile.
+
 ## Delivery definition
 
 A pattern is delivered when:
@@ -68,11 +73,14 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
 
 ## Teach
 
-- **Docs site** (`apps/docs`) in the effect.website shape: concept pages (durability, services and ports, workflows vs
-  machines, datoms, changesets, HLC), guides ("add a workflow", "add an activity", "add a screen"), ADRs as the why,
-  generated API reference from TSDoc, generated llms.txt. Every sample is type-checked in `verify`.
+- **Docs site** (`apps/docs`, Starlight, D59-D61) in the effect.website shape: concept pages (durability, services
+  and ports, workflows vs machines, datoms, changesets, HLC), guides ("add a workflow", "add an activity", "add a
+  screen"), ADRs as the why, generated API reference from TSDoc, generated llms.txt. Every sample is type-checked in
+  `verify`.
+- **Guides** (D62-D65): one per pattern in `guides/<pattern>/`, in the one guide template; a pattern is accepted on
+  its guide.
 - **Exercises** (`exercises/`, effect.institute spirit): a stub, a failing test, a reference solution that passes in
-  `verify`. Standard layout via the scaffold-exercises skill.
+  `verify`. Layout and checks in D66.
 - **Lessons** cite gate evidence and never become the source of a claim (complyj rule).
 - **One source**: docs pages are canonical; AGENTS.md is a short map; skills are thin procedures linking to guides.
 - Key lessons to plan early: the determinism rule, the basis check in changesets, HLC edge cases, "can it ever move?
