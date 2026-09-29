@@ -104,15 +104,14 @@ export const waitForMetro = async (
   )
 }
 
-const isJsRuntimeTarget = (entry: unknown): boolean => {
-  if (!entry || typeof entry !== 'object') return false
-  const description =
-    'description' in entry ? String(entry.description ?? '') : ''
-  return (
-    Boolean('webSocketDebuggerUrl' in entry && entry.webSocketDebuggerUrl) &&
-    !description.includes('C++ connection')
-  )
-}
+// On RN 0.88 every target is "React Native Bridgeless [C++ connection]";
+// excluding that description (as this did until 2026-09-29) counted none, so
+// "the app is attached" was never seen.
+const isAppTarget = (entry: unknown): boolean =>
+  Boolean(entry) &&
+  typeof entry === 'object' &&
+  Boolean((entry as { webSocketDebuggerUrl?: unknown }).webSocketDebuggerUrl) &&
+  (entry as { appId?: unknown }).appId === APP_ID
 
 export const debuggerTargetCount = async (port = 8081): Promise<number> => {
   const origin = await metroOrigin(port)
@@ -124,7 +123,7 @@ export const debuggerTargetCount = async (port = 8081): Promise<number> => {
     if (!response.ok) return 0
     const listed = (await response.json()) as unknown
     if (!Array.isArray(listed)) return 0
-    return listed.filter(isJsRuntimeTarget).length
+    return listed.filter(isAppTarget).length
   } catch {
     return 0
   }
@@ -432,6 +431,7 @@ export const runDeviceVariant = async (options: {
       await terminateIosApp()
     }
 
+    // navigate confirms the app attached to Metro, or fails.
     await openOnDevice(
       options.cwd,
       options.artifacts,
@@ -439,42 +439,6 @@ export const runDeviceVariant = async (options: {
       options.variant,
       options.env,
     )
-    const inspectorWait = options.platform === 'android' ? 20_000 : 12_000
-    const inspectorUp = await waitForHermesInspector(
-      inspectorWait,
-      `${options.gate} ${options.platform} ${options.variant}`,
-    )
-    // Reloading a disconnected Android app force-stops it; only reload when
-    // Hermes is already on /json/list so agent-cli uses the command socket.
-    if (inspectorUp || (await debuggerTargetCount()) > 0) {
-      const reloaded = await agentCliJson(
-        ['runtime:reload', `--${options.platform}`, '--json'],
-        { cwd: options.cwd, env: options.env, timeout: 60_000 },
-      )
-      await writeJson(
-        options.artifacts,
-        `reload-${options.platform}-${options.variant}.json`,
-        reloaded.data,
-      )
-      const appsConnected =
-        typeof reloaded.data === 'object' &&
-        reloaded.data !== null &&
-        'appsConnected' in reloaded.data
-          ? Number((reloaded.data as { appsConnected?: number }).appsConnected)
-          : 0
-      if (!Number.isFinite(appsConnected) || appsConnected < 1) {
-        await waitForHermesInspector(
-          inspectorWait,
-          `${options.gate} ${options.platform} ${options.variant} after reload`,
-        )
-      }
-    } else {
-      await writeJson(
-        options.artifacts,
-        `reload-${options.platform}-${options.variant}.json`,
-        { skipped: true, reason: 'no Hermes inspector yet' },
-      )
-    }
 
     const report = await waitForHermesReport({
       cwd: options.cwd,
@@ -626,6 +590,7 @@ export const startDeviceSession = async (options: {
     await terminateIosApp().catch(() => undefined)
   }
 
+  // navigate confirms the app attached to Metro, or fails.
   await openOnDevice(
     options.cwd,
     options.artifacts,
@@ -633,34 +598,6 @@ export const startDeviceSession = async (options: {
     options.variant,
     options.env,
   )
-  const inspectorWait = options.platform === 'android' ? 20_000 : 20_000
-  const inspectorUp = await waitForHermesInspector(
-    inspectorWait,
-    `${options.gate} ${options.platform} ${options.variant}`,
-  )
-  if (inspectorUp || (await debuggerTargetCount()) > 0) {
-    const reloaded = await agentCliJson(
-      ['runtime:reload', `--${options.platform}`, '--json'],
-      { cwd: options.cwd, env: options.env, timeout: 60_000 },
-    )
-    await writeJson(
-      options.artifacts,
-      `reload-${options.platform}-${options.variant}.json`,
-      reloaded.data,
-    )
-    const appsConnected =
-      typeof reloaded.data === 'object' &&
-      reloaded.data !== null &&
-      'appsConnected' in reloaded.data
-        ? Number((reloaded.data as { appsConnected?: number }).appsConnected)
-        : 0
-    if (!Number.isFinite(appsConnected) || appsConnected < 1) {
-      await waitForHermesInspector(
-        inspectorWait,
-        `${options.gate} ${options.platform} ${options.variant} after reload`,
-      )
-    }
-  }
 }
 
 export const relaunchOnDevice = async (options: {
@@ -681,11 +618,6 @@ export const relaunchOnDevice = async (options: {
     options.platform,
     options.variant,
     options.env,
-  )
-  const inspectorWait = options.platform === 'android' ? 20_000 : 12_000
-  await waitForHermesInspector(
-    inspectorWait,
-    `${options.gate} ${options.platform} ${options.variant} relaunch`,
   )
 }
 
