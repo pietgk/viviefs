@@ -113,6 +113,36 @@ const isAppTarget = (entry: unknown): boolean =>
   Boolean((entry as { webSocketDebuggerUrl?: unknown }).webSocketDebuggerUrl) &&
   (entry as { appId?: unknown }).appId === APP_ID
 
+/**
+ * Stops this app on the other platform, by app id. navigate opens the bare
+ * app link, without the dev server's address, when it sees a development
+ * build already attached; the app on the other platform looks like that
+ * build, and a cold Android launch then sits on the dev launcher's home
+ * screen (P01 and P02 on Android, 2026-09-28/29). Stopping by app id does not
+ * depend on the dev server knowing the app yet.
+ */
+const stopOtherPlatformApp = async (
+  cwd: string,
+  platform: 'ios' | 'android',
+): Promise<void> => {
+  const other = platform === 'ios' ? 'android' : 'ios'
+  await agentCli(['runtime:stop', `--${other}`, '--app-id', APP_ID, '--json'], {
+    cwd,
+    timeout: 30_000,
+  })
+}
+
+/** Called after the app is stopped on both platforms, before navigate. */
+const waitForNoAttachedApp = async (): Promise<void> => {
+  const deadline = Date.now() + 15_000
+  while ((await debuggerTargetCount()) > 0) {
+    if (Date.now() > deadline) {
+      fail('a stopped app is still attached to Metro; navigate would skip the dev launcher')
+    }
+    await sleep(1000)
+  }
+}
+
 export const debuggerTargetCount = async (port = 8081): Promise<number> => {
   const origin = await metroOrigin(port)
   if (!origin) return 0
@@ -415,11 +445,7 @@ export const runDeviceVariant = async (options: {
       await waitForMetro(1_200_000, `${options.platform} ${options.variant}`)
     }
 
-    const other = options.platform === 'ios' ? 'android' : 'ios'
-    await agentCli(['runtime:stop', `--${other}`, '--json'], {
-      cwd: options.cwd,
-      timeout: 30_000,
-    })
+    await stopOtherPlatformApp(options.cwd, options.platform)
 
     // Stop a running app on both platforms so the deep link starts a fresh
     // runtime that loads the current bundle. Metro runs in CI mode without
@@ -431,6 +457,7 @@ export const runDeviceVariant = async (options: {
       await terminateIosApp()
     }
 
+    await waitForNoAttachedApp()
     // navigate confirms the app attached to Metro, or fails.
     await openOnDevice(
       options.cwd,
@@ -576,11 +603,7 @@ export const startDeviceSession = async (options: {
     await waitForMetro(1_200_000, `${options.platform} ${options.variant}`)
   }
 
-  const other = options.platform === 'ios' ? 'android' : 'ios'
-  await agentCli(['runtime:stop', `--${other}`, '--json'], {
-    cwd: options.cwd,
-    timeout: 30_000,
-  })
+  await stopOtherPlatformApp(options.cwd, options.platform)
 
   if (options.platform === 'android') {
     await reverseAndroidPorts([8081, 27686])
@@ -590,6 +613,7 @@ export const startDeviceSession = async (options: {
     await terminateIosApp().catch(() => undefined)
   }
 
+  await waitForNoAttachedApp()
   // navigate confirms the app attached to Metro, or fails.
   await openOnDevice(
     options.cwd,
