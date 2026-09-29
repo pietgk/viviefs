@@ -1,5 +1,10 @@
 # Next session: scaffold ViViEfs
 
+> **History.** This was the scaffolding session's prompt and work order (2026-09-19). Its steps are done or
+> renamed: gates follow [06-qualification-gates.md](06-qualification-gates.md), and other work is named in the
+> Schedule of [10-open-items-and-risks.md](10-open-items-and-risks.md). The current handover is
+> [next-session.md](../next-session.md).
+
 ## Prompt to start the session
 
 > Read `docs/plan/bootstrap/README.md` and every file it links, in order, including `research/`. This is the

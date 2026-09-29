@@ -5,9 +5,9 @@ sequential run on a clean tree (step 8). This page stays as the record of how
 P11 was built and what the lab taught; the facts below still apply to any
 device run.
 
-Next, per [10-open-items-and-risks.md](bootstrap/10-open-items-and-risks.md):
-work order step 7 (docs site and teaching, which also decides the home of the
-`.lavish/` pages), before P12-P14.
+Next: Docs and teaching, then P12-P15. The current handover is
+[next-session.md](next-session.md). Step numbers below are P11's build steps
+(P11.1-P11.8 in today's naming).
 
 ## Where P11 stands (2026-09-28)
 

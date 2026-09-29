@@ -13,22 +13,25 @@ that link to guides, not a second copy of those guides (D30).
    context (D1-D58). Treat grilling decisions as accepted intent, unverified until
    the named gate. Ask before deviating; record a deviation as an ADR amendment.
 4. [`docs/plan/bootstrap/10-open-items-and-risks.md`](docs/plan/bootstrap/10-open-items-and-risks.md) -
-   freeze / named-slot / hypothesis. P05 pinned `viviefs/changeset/*` and
+   freeze / named-slot / hypothesis, and the Schedule. P05 pinned `viviefs/changeset/*` and
    `evidence/*` names; P06 pinned `viviefs/workflow/*`, `viviefs/activity/exit`,
    `viviefs/deferred/exit`, `viviefs/clock/wake-at` and `viviefs/lease/holder`;
    P10 pinned `viviefs/activity/started`; P11 pinned `viviefs/membership/granted`,
    `viviefs/account/person`, `viviefs/account/issuer` and `viviefs/account/subject`.
    Do not rename them (D44).
 5. [`docs/plan/bootstrap/06-qualification-gates.md`](docs/plan/bootstrap/06-qualification-gates.md) -
-   ordered gates. No feature code before its gate passes. Probes and exemplars stay.
+   ordered gates and how gates, steps and other work are named. No feature code
+   before its gate passes. Probes and exemplars stay.
 6. [`repos/effect/LLMS.md`](repos/effect/LLMS.md) - before writing Effect code. Then
    [`.agents/patterns/`](.agents/patterns/).
 
+The current handover is [`docs/plan/next-session.md`](docs/plan/next-session.md).
+
 ## Delivery
 
-A pattern is delivered only with an accepted ADR linking evidence, a green exemplar,
-a concept page, an exercise, a lesson, and a link from the exemplar to that teaching
-material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-teach.md).
+A pattern is delivered only with qualification evidence, a green exemplar, and an
+accepted guide (ADR-0026): a concept page, an exercise, a lesson, and a link from the
+exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-teach.md).
 
 - **Verify**: `pnpm verify` (staged `static -> unit -> integration -> ui -> quality`).
   Done = green. Never loosen a gate to make it pass.

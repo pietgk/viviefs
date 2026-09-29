@@ -75,7 +75,7 @@ gates in run order, steps as `Pnn.k`, other work by name.
 
 | Order | Work | What |
 | --- | --- | --- |
-| 1 | Housekeeping | Qualify ADR-0024, 0025 and 0028-0031 against `verify` with checks that can fail; explain "Hermes inspector did not appear"; clear the Effect language-service suggestions; draft upstream issues (not filed); renumber gates; amend ADR-0026 (acceptance on the guide); one handover; a sequential P01-P11 run |
+| 1 | Housekeeping (done 2026-09-29; P01-P11 passed in one sequential run on `54e724786`) | Qualify ADR-0024, 0025 and 0028-0031 against `verify` with checks that can fail; explain "Hermes inspector did not appear"; clear the Effect language-service suggestions; draft upstream issues (not filed); renumber gates; amend ADR-0026 (acceptance on the guide); one handover; a sequential P01-P11 run |
 | 2 | Docs and teaching | `apps/docs` skeleton (confirm Starlight), type-checked samples, `llms.txt`, `exercises/` layout, a home for the `.lavish/` pages. Then the pattern guide template, drafted on the log store and tried on durable workflow and identity, each guide accepted by a human (ADR-0026). The other qualified patterns follow on the template |
 | 3 | P12 Quarantine after a lost lease | Grilling, design review, gate |
 | 4 | P13 Encrypted store, P14 Crypto-shredding, P15 Browser engine leader | In that order |
