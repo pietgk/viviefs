@@ -17,7 +17,7 @@ describe('P09 sync', () => {
     'replicates datoms with server authority',
     () =>
       runUnscoped(
-        runP09().pipe(
+        runP09.pipe(
           Effect.map(({ checks, spans }) => {
             expect(checks).toHaveLength(P09_CHECK_COUNT)
             const failed = checks.filter((check) => check.status !== 'PASS')

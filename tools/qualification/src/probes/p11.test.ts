@@ -17,7 +17,7 @@ describe('P11 identity on Node', () => {
     'enforces membership, actor and server-only data on the authenticated protocol',
     () =>
       runUnscoped(
-        runP11Node().pipe(
+        runP11Node.pipe(
           Effect.map(({ checks, spans }) => {
             expect(checks).toHaveLength(P11_NODE_CHECK_COUNT)
             const failed = checks.filter((check) => check.status !== 'PASS')

@@ -576,7 +576,8 @@ export type P11NodeRun = {
   readonly spans: ReadonlyArray<Tracer.NativeSpan>
 }
 
-export const runP11Node = (): Effect.Effect<P11NodeRun, unknown> => {
+// Suspended so each run collects its own spans.
+export const runP11Node: Effect.Effect<P11NodeRun, unknown> = Effect.suspend(() => {
   const spans: Array<Tracer.NativeSpan> = []
   const tracer = Tracer.make({
     span(options) {
@@ -595,4 +596,4 @@ export const runP11Node = (): Effect.Effect<P11NodeRun, unknown> => {
     Effect.provideService(Tracer.Tracer, tracer),
     Effect.map((checks) => ({ checks, spans })),
   )
-}
+})

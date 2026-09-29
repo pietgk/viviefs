@@ -12,7 +12,7 @@ const EVIDENCE = join(ROOT, 'docs/evidence/2026-09-22-p09.md')
 
 const run = async () => {
   await mkdir(ARTIFACTS, { recursive: true })
-  const { checks, spans } = await Effect.runPromise(runP09())
+  const { checks, spans } = await Effect.runPromise(runP09)
   if (checks.length !== P09_CHECK_COUNT) {
     fail(`P09: expected ${P09_CHECK_COUNT} checks, got ${checks.length}`)
   }

@@ -112,7 +112,7 @@ const run = async () => {
   requirePass(tokens.fake, 'token contract on the fake verifier', TOKEN_CHECK_COUNT)
   requirePass(tokens.oidc, 'token contract on the OIDC verifier against a served fake', TOKEN_CHECK_COUNT)
 
-  const node = await Effect.runPromise(runP11Node())
+  const node = await Effect.runPromise(runP11Node)
   await writeJson(ARTIFACTS, 'node.json', node.checks)
   requirePass(node.checks, 'Node checks', P11_NODE_CHECK_COUNT)
   const drift = spanReviewDrift(node.spans, await readFile(EVIDENCE, 'utf8'))

@@ -685,7 +685,8 @@ export type P09Run = {
   readonly spans: ReadonlyArray<Tracer.NativeSpan>
 }
 
-export const runP09 = (): Effect.Effect<P09Run, unknown> => {
+// Suspended so each run collects its own spans.
+export const runP09: Effect.Effect<P09Run, unknown> = Effect.suspend(() => {
   const spans: Array<Tracer.NativeSpan> = []
   const tracer = Tracer.make({
     span(options) {
@@ -704,4 +705,4 @@ export const runP09 = (): Effect.Effect<P09Run, unknown> => {
     Effect.provideService(Tracer.Tracer, tracer),
     Effect.map((checks) => ({ checks, spans })),
   )
-}
+})
