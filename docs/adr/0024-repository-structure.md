@@ -1,6 +1,6 @@
 # ADR-0024: Repository structure
 
-Status: Proposed, unverified
+Status: Qualified (boundaries, ownership, lint scope). Generators unverified
 
 Date: 2026-09-20
 
@@ -59,4 +59,16 @@ Illegal imports fail lint. Apps compose Layers. Public API is `exports`.
 
 ### Observed
 
-Not yet run until the Nx skeleton lands and verify exists.
+2026-09-29, in `verify`'s unit stage ([`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts)). Module boundaries refuse a lib
+importing an app, a client feature importing an adapter, universal core code
+importing a server adapter, and core code importing the testing lib (where
+the fake issuer lives); core importing core passes. The ownership check fails
+a workspace package without a `project.json` and a project without a `kind:`
+tag or evidence owner, and passes a classified one. The lint-scope check fails
+a source file no configuration covers. Each runs on a throwaway repository
+with the defect, next to one without it. `pnpm verify` is green on the repo
+(25 projects classified).
+
+Not verified: the generators (`@viviefs/generators` is an empty slot until
+Docs and teaching), and that a feature missing a Layer fails to compile (no
+feature composes Layers yet).

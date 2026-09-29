@@ -19,6 +19,20 @@ export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
+      // ADR-0029: repos/ holds read-only reference subtrees; code imports
+      // effect and @effect/* from pnpm.
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '(^|/)repos/',
+              message:
+                'ADR-0029: repos/ is reference only. Import effect and @effect/* from pnpm.',
+            },
+          ],
+        },
+      ],
       '@nx/enforce-module-boundaries': [
         'error',
         {
@@ -132,6 +146,9 @@ export default [
       '**/*.spec.ts',
       // D12/P08: XState fromPromise is the mandated Effect-to-Promise seam.
       'features/evidence/client/src/intent-composer/xstate.ts',
+      // D26: the live clock and entropy Layers are the ports' only readers of
+      // time and randomness; everything else takes them as services.
+      'libs/datom/src/clock-live.ts',
     ],
     rules: {
       'no-restricted-syntax': [
@@ -162,6 +179,18 @@ export default [
             'CallExpression[callee.object.name="Date"][callee.property.name="now"]',
           message:
             'D26: Date.now is forbidden outside activities. Capture time inside an Activity.',
+        },
+        {
+          selector:
+            'CallExpression[callee.property.name=/^(nowUnsafe|now)$/][callee.object.name=/^(DateTime|performance)$/]',
+          message:
+            'D26: reading the clock is forbidden outside activities. Use Clock, or the HlcClock service.',
+        },
+        {
+          selector:
+            'CallExpression[callee.property.name=/^(randomUUID|getRandomValues)$/]',
+          message:
+            'D26: id generation is forbidden outside activities. Mint ids inside an Activity, or use the HlcEntropy service.',
         },
       ],
       'no-restricted-globals': [

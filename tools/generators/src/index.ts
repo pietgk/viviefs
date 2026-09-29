@@ -1,5 +1,5 @@
 /**
  * Named slot for `@viviefs/generators`.
- * Named slot until the teaching skeleton step.
+ * Named slot until Docs and teaching.
  */
 export {}

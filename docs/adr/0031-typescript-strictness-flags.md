@@ -1,6 +1,6 @@
 # ADR-0031: TypeScript strictness flags from Effect, evaluated
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-21
 
@@ -68,3 +68,7 @@ off.
 changes. `exactOptionalPropertyTypes` failed until verify row `note`,
 notification `clockName`, and PGlite `dataDir` omitted absent keys, and
 qualification spawn option bags accepted `| undefined`.
+
+2026-09-29: now a check that can fail, in `verify`'s unit stage ([`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts)): the
+three flags must be on in `tsconfig.base.json`, and
+`rewriteRelativeImportExtensions` and `ignoreDeprecations` must be absent.

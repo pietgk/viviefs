@@ -1,6 +1,6 @@
 # ADR-0025: AI-robust guardrails
 
-Status: Proposed, unverified
+Status: Qualified (lint rules). Crash-matrix rule and Schema at every boundary unverified
 
 Date: 2026-09-20
 
@@ -53,4 +53,17 @@ matrix cannot be delivered.
 
 ### Observed
 
-Not yet run.
+2026-09-29, in `verify`'s unit stage ([`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts) and
+[`d26-tests.test.ts`](../../tools/verify/src/d26-tests.test.ts)). In domain
+and workflow code (`features/`, `libs/datom`, `libs/workflow-engine`) lint
+refuses `async` functions and arrows, `try`, `Promise`, `Date.now()`,
+`Math.random()`, and, added that day, `DateTime.nowUnsafe()`,
+`performance.now()`, `randomUUID()` and `getRandomValues()`; the same work
+written with Effect passes. The live clock and entropy Layers moved to
+`libs/datom/src/clock-live.ts`, the one exempt file, so the rest of the HLC
+code stays under the rule. In tests, `Date.now()` and `Math.random()` are
+refused and `async` is allowed.
+
+Not verified: "every workflow ships with a crash-matrix test" has no
+mechanical check (the one engine has P06's matrix); Schema at every boundary
+is a convention, not a rule.

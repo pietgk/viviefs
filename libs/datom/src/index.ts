@@ -13,14 +13,8 @@ export {
   receiveHlc,
 } from './hlc.ts'
 export type { BootSession, Hlc, ReceiveResult, Tx } from './hlc.ts'
-export {
-  cryptoEntropy,
-  deviceLayer,
-  HlcClock,
-  HlcDevice,
-  HlcEntropy,
-  liveClock,
-} from './clock.ts'
+export { deviceLayer, HlcClock, HlcDevice, HlcEntropy } from './clock.ts'
+export { cryptoEntropy, liveClock } from './clock-live.ts'
 export {
   Datom,
   Envelope,

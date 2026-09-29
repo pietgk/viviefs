@@ -1,6 +1,6 @@
 # ADR-0028: TypeScript 7 CLI with TypeScript 6 API
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-21
 
@@ -65,3 +65,8 @@ the TypeScript 6 API. Verify is green.
 `require('typescript').readConfigFile` is a function. `mise exec -- pnpm verify`
 was GREEN (12 checks: sync, typecheck, lint, lint-scope, ownership, audit,
 unit, integration; ui/quality targets skipped as undeclared).
+
+2026-09-29: now a check that can fail, in `verify`'s unit stage ([`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts)): `tsc`
+must report 7.x patched by `@effect/tsgo`, `tsc6` must report 6.x, and the
+`typescript` package must be 6.x with `readConfigFile` a function. All pass
+(`7.0.2+effect-tsgo.0.45.0`, `6.0.3`).

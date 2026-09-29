@@ -1,6 +1,6 @@
 # ADR-0029: Effect reference subtree and language service
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-21
 
@@ -73,3 +73,8 @@ was GREEN (12 checks). Effect `error` and `warning` diagnostics failed
 typecheck until `Effect.fn` parameters, `return yield* Effect.never`, and a
 tagged rollback error were fixed; remaining Effect messages are suggestions
 and do not fail `tsc`.
+
+2026-09-29: "importing from `repos/` is forbidden" had no rule. Lint now
+refuses it (`no-restricted-imports`, message citing this ADR), shown firing
+in [`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts); no existing file imported from `repos/`. The same test checks that
+`tsc` is the `@effect/tsgo` build.

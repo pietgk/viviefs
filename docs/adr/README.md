@@ -32,14 +32,14 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0021](0021-files-by-content-hash.md) | Files by content hash | Qualified | P09 |
 | [0022](0022-identity-and-organization-isolation.md) | Identity and organization isolation | Qualified | P11 |
 | [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P13, P14 |
-| [0024](0024-repository-structure.md) | Repository structure, tags, rules, generators | Proposed, unverified | verify (boundary lint) |
-| [0025](0025-ai-robust-guardrails.md) | AI-robust guardrails | Proposed, unverified | verify |
+| [0024](0024-repository-structure.md) | Repository structure, tags, rules, generators | Qualified (boundaries, ownership, lint scope); generators unverified | verify (boundary lint) |
+| [0025](0025-ai-robust-guardrails.md) | AI-robust guardrails | Qualified (lint rules); crash-matrix rule unverified | verify |
 | [0026](0026-verify-qualify-teach.md) | Verify - Qualify - Teach | Proposed, unverified | none (process) |
 | [0027](0027-developer-experience-planes.md) | Developer experience planes | Proposed, unverified | none (process) |
-| [0028](0028-typescript-7-cli-with-typescript-6-api.md) | TypeScript 7 CLI with TypeScript 6 API | Proposed, unverified | verify |
-| [0029](0029-effect-reference-and-language-service.md) | Effect reference subtree and language service | Proposed, unverified | verify |
-| [0030](0030-verify-qualify-clis-as-effect-cli.md) | Verify and qualify CLIs as Effect CLI | Proposed, unverified | verify |
-| [0031](0031-typescript-strictness-flags.md) | TypeScript strictness flags from Effect, evaluated | Proposed, unverified | verify |
+| [0028](0028-typescript-7-cli-with-typescript-6-api.md) | TypeScript 7 CLI with TypeScript 6 API | Qualified | verify |
+| [0029](0029-effect-reference-and-language-service.md) | Effect reference subtree and language service | Qualified | verify |
+| [0030](0030-verify-qualify-clis-as-effect-cli.md) | Verify and qualify CLIs as Effect CLI | Qualified | verify |
+| [0031](0031-typescript-strictness-flags.md) | TypeScript strictness flags from Effect, evaluated | Qualified | verify |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. **Accepted** is a human status given on the pattern's

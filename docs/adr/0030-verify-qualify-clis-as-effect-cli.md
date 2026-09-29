@@ -1,6 +1,6 @@
 # ADR-0030: Verify and qualify CLIs as Effect CLI
 
-Status: Proposed, unverified
+Status: Qualified
 
 Date: 2026-09-21
 
@@ -62,3 +62,8 @@ tests lock `pnpm verify help`, unknown-selector exit 2, qualify usage,
 `--gate` unimplemented, `--foundation` as a recognized flag, and ledger
 printing. Effect CLI parse errors name the bad flag; they no longer use the
 hand-rolled "Unknown or incomplete argument" string.
+
+2026-09-28: `pnpm qualify --through Pnn` added, with characterization tests
+(an unimplemented gate refused, `--through` with another selector refused).
+The CLIs ran the P01-P11 closure
+([closure note](../evidence/2026-09-28-p01-p11-closure.md)).
