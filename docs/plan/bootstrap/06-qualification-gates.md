@@ -5,8 +5,8 @@ Order matters; later gates depend on earlier ones. `P` = platform/pattern gate (
 
 D46 named six foundation **themes**: platform, log store, engine + crash matrix, UI prototype, sync, trace
 projection. P01-P10 are those themes split so each fact can fail independently (platform → P01-P03, log store →
-P04-P05, engine → P06-P07). P11-P14 are follow-on (identity, encrypted store, crypto-shredding, browser leader), not
-foundation closure.
+P04-P05, engine → P06-P07). P11-P15 are follow-on (identity, quarantine after a lost lease, encrypted store,
+crypto-shredding, browser leader), not foundation closure.
 
 iOS, Android and web are first-class. P01, P02 and P07 fail if the Android emulator fails.
 
@@ -23,9 +23,31 @@ iOS, Android and web are first-class. P01, P02 and P07 fail if the Android emula
 | **P09** Sync | Datom replication with server authority works offline and across devices | Outbox up, one full-organization cursor stream down, Effect RPC append-and-acknowledge, server validation, typed rejection with rebuild and reapply, unknown attribute upgrade error, lease fencing across two devices, deferred completion from the server, a changeset that references a file waits until that file exists on the server | A stale-lease journal write is rejected while the current holder's write is accepted | D13-D15, D36, D40, D43, D44 |
 | **P10** Trace projection | The trace derived from the log is lossless and stable across replays | Crash-and-resume run produces one trace with deterministic span ids, no duplicate spans on replay, attempts linked; the same smoke test passes against motel, Jaeger and otel-lgtm | Disabling the trace cursor loses nothing: re-enabling exports the backlog | D32, D45' |
 | **P11** Identity | Fake and OIDC implementations satisfy one identity contract | Keycloak on Apple Container with PKCE from the iOS simulator, the Android emulator and web; membership enforced on sync, lease and commands. Checks split in [p11-design-review.md](../../evidence/p11-design-review.md) | Cross-organization access denied while same-organization access allowed | D18, D47 |
-| **P12** Encrypted store | SQLCipher store passes the log store conformance suite | P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore | Wrong key cannot open the database | D50 |
-| **P13** Crypto-shredding | Erased subjects are unreadable everywhere | After key destruction, personal attributes are unreadable on every replica, projection and export; the log stays intact and syncable | Non-erased subject stays readable | D51 |
-| **P14** Browser engine leader | Only one tab runs the engine | Two tabs, one engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two engines are detected running | D25 |
+| **P12** Quarantine after a lost lease | User content stranded by a lost lease is never dropped and is resolved by a human | Set by its grilling and design review. Direction agreed 2026-09-27: a human-conflict entry (D34) names the stranded content, and a command resolves it (attach to the execution, keep as standalone evidence, or discard) | Set by its grilling | D15, D34 |
+| **P13** Encrypted store | SQLCipher store passes the log store conformance suite | P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore | Wrong key cannot open the database | D50 |
+| **P14** Crypto-shredding | Erased subjects are unreadable everywhere | After key destruction, personal attributes are unreadable on every replica, projection and export; the log stays intact and syncable | Non-erased subject stays readable | D51 |
+| **P15** Browser engine leader | Only one tab runs the engine | Two tabs, one engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two engines are detected running | D25 |
 
-Closure of the foundation stage: one sequential full run of P01-P10 on an unchanged committed tree. P11-P14 close
-before the first consumer app relies on them.
+Closure of the foundation stage: one sequential full run of P01-P10 on an unchanged committed tree. P11-P15 close
+before the first consumer app relies on them. P11 closed on 2026-09-28 with one sequential run of P01-P11
+([2026-09-28-p01-p11-closure.md](../../evidence/2026-09-28-p01-p11-closure.md)).
+
+## Names for gates, steps and other work
+
+Agreed 2026-09-29, so that a step, a gate and a milestone never share a name.
+
+- **Gates are numbered in the order they run.** A new gate that runs before registered ones takes its place and the
+  later ones move up. Only gates without a ledger entry may move.
+- **A step belongs to a gate** and is written `Pnn.k`: P11.7 is step 7 of P11's build steps. "Step 7" alone is not used.
+- **Work that is not a gate has a name, not a number**: Housekeeping, Docs and teaching. The scaffolding work order in
+  [00-next-session.md](00-next-session.md) keeps its numbers as history only.
+
+Renumbered 2026-09-29, when quarantine after a lost lease became a gate that runs before the others. Notes dated
+earlier use the old numbers:
+
+| Gate | Before 2026-09-29 |
+| --- | --- |
+| P12 Quarantine after a lost lease | not a gate |
+| P13 Encrypted store | P12 |
+| P14 Crypto-shredding | P13 |
+| P15 Browser engine leader | P14 |

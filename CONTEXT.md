@@ -16,8 +16,18 @@ to vivief.
 **Pattern**:
 A reusable architectural solution with one contract and possibly several
 implementations (log store, telemetry sink, identity, encrypted store). Delivered
-only when accepted with evidence, green in its exemplar, and taught.
+only when qualified with evidence, green in its exemplar, and its guide accepted.
 _Avoid_: framework, template
+
+**Guide**:
+A pattern's teaching material, written for discussing, designing, implementing
+and reviewing work that uses the pattern. A pattern is accepted on its guide.
+_Avoid_: tutorial, docs page
+
+**Guide template**:
+The one shape every guide follows. It changes when a guide shows it is wrong,
+and the guides already written change with it.
+_Avoid_: pattern template
 
 **Implementation**:
 One concrete Layer satisfying a pattern's contract, qualified by running the

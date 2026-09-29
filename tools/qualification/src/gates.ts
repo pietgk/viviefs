@@ -122,7 +122,7 @@ export const gateProbes: GateProbe[] = [
     timeoutMs: 600_000,
     stage: 'follow-on',
     summary:
-      'SQLCipher store passes the log store conformance suite with keys in Keychain/Keystore.',
+      'User content stranded by a lost lease becomes a human-conflict entry that a command resolves.',
   },
   {
     gate: 'P13',
@@ -131,11 +131,20 @@ export const gateProbes: GateProbe[] = [
     timeoutMs: 600_000,
     stage: 'follow-on',
     summary:
-      'After key destruction, personal attributes are unreadable on every replica and projection.',
+      'SQLCipher store passes the log store conformance suite with keys in Keychain/Keystore.',
   },
   {
     gate: 'P14',
     path: 'tools/qualification/src/probes/p14.ts',
+    args: [],
+    timeoutMs: 600_000,
+    stage: 'follow-on',
+    summary:
+      'After key destruction, personal attributes are unreadable on every replica and projection.',
+  },
+  {
+    gate: 'P15',
+    path: 'tools/qualification/src/probes/p15.ts',
     args: [],
     timeoutMs: 600_000,
     stage: 'follow-on',

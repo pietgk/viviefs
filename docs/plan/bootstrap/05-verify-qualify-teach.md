@@ -16,11 +16,12 @@ A pattern is delivered when:
 
 1. its ADR is **accepted** and links **qualification** evidence,
 2. its exemplar passes **verify**,
-3. it has a concept page, an exercise and a lesson (**taught**),
+3. it has a guide: concept page, exercise and lesson in the guide template (**accepted** on that guide),
 4. the exemplar links to that teaching material (D29).
 
-ADR status lifecycle: `proposed, unverified` -> `qualified` (gate evidence linked) -> `accepted` -> `taught`.
-"Qualified" does not mean "admitted" (complyj ADR 0013).
+ADR status lifecycle: `proposed, unverified` -> `qualified` (gate evidence linked) -> `accepted`. Acceptance is given
+on the pattern's guide, the teaching material in one guide template, so "taught" is part of it (ADR-0026, amended
+2026-09-29). "Qualified" does not mean "admitted" (complyj ADR 0013).
 
 ## Verify
 

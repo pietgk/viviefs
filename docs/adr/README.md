@@ -21,7 +21,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0010](0010-entity-ids-and-defining-attributes.md) | Entity ids, defining attributes and strict-composition prefixes | Qualified | P05 |
 | [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Qualified | P04, P05 |
 | [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Qualified | P06 |
-| [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Qualified (P07); P14 unverified | P07, P14 |
+| [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Qualified (P07); P15 unverified | P07, P15 |
 | [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Qualified | P09 |
 | [0015](0015-deferreds-vs-machines.md) | Human steps as deferreds; workflows own progress | Qualified | P06, P09 |
 | [0016](0016-commands-and-server-validation.md) | Commands, server validation and rejection | Qualified | P09 |
@@ -31,7 +31,7 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0020](0020-interaction-state-three-way-prototype.md) | Interaction state: outcome of the three-way prototype | Qualified | P08 |
 | [0021](0021-files-by-content-hash.md) | Files by content hash | Qualified | P09 |
 | [0022](0022-identity-and-organization-isolation.md) | Identity and organization isolation | Qualified | P11 |
-| [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P12, P13 |
+| [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P13, P14 |
 | [0024](0024-repository-structure.md) | Repository structure, tags, rules, generators | Proposed, unverified | verify (boundary lint) |
 | [0025](0025-ai-robust-guardrails.md) | AI-robust guardrails | Proposed, unverified | verify |
 | [0026](0026-verify-qualify-teach.md) | Verify - Qualify - Teach | Proposed, unverified | none (process) |
@@ -42,8 +42,9 @@ gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
 | [0031](0031-typescript-strictness-flags.md) | TypeScript strictness flags from Effect, evaluated | Proposed, unverified | verify |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
-moves it to **Qualified**. Acceptance is a separate human status. **Taught**
-requires a concept page, exercise and lesson (ADR 0026).
+moves it to **Qualified**. **Accepted** is a human status given on the pattern's
+guide (concept, design, implementation and review in one template), not on the
+decision alone (ADR 0026, amended 2026-09-29).
 
 ## Conventions
 
@@ -53,7 +54,7 @@ requires a concept page, exercise and lesson (ADR 0026).
   authoritative. They override any ADR format supplied by an installed agent skill.
 - Record expected vs observed outcome separately. Observed stays empty until
   evidence exists. Never mark a gate passed from prose.
-- Use statuses Proposed (unverified), Qualified, Accepted, Taught, Rejected,
+- Use statuses Proposed (unverified), Qualified, Accepted, Rejected,
   Deprecated, and Superseded. Link a superseding ADR in both directions.
 - Accepted records preserve historical rationale. A changed decision gets a new
   ADR. Correcting a typo or adding a clearly dated evidence link does not require

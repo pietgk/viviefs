@@ -6,7 +6,7 @@ Date: YYYY-MM-DD
 
 Qualifying gate: Pnn / verify / none. Named so a later session can tell what evidence
 would change this status. Status lifecycle: `Proposed, unverified` -> `Qualified`
-(gate evidence linked) -> `Accepted` -> `Taught`. Qualified does not mean admitted.
+(gate evidence linked) -> `Accepted` (on the pattern's guide, ADR-0026). Qualified does not mean admitted.
 
 Related: links to relevant ADRs, plan sections, and superseding/superseded records.
 

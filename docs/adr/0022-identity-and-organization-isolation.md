@@ -163,7 +163,7 @@ Stated limitation: stored history is trusted, not provable, against an
 operator or database administrator. Tamper-evidence (hash chain with
 device-held checkpoints; signed changesets only if a consumer needs proof
 against the operator) is decided before the first consumer app that makes
-audit claims, together with P13. Until then the server log is never compacted.
+audit claims, together with P14. Until then the server log is never compacted.
 
 The lab runs plain HTTP. TLS is decided with production hosting.
 

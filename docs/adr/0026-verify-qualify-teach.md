@@ -2,7 +2,7 @@
 
 Status: Proposed, unverified
 
-Date: 2026-09-20
+Date: 2026-09-20. Amended 2026-09-29: a pattern is accepted on its guide.
 
 Qualifying gate: none (process). The pattern is the process; later ADRs are
 qualified under it.
@@ -37,7 +37,7 @@ is green verify, with a mechanical path rule for docs-only diffs.
 probes, positive controls, fingerprinted append-only ledger, sequential full
 run. Gate table is code. Unknown gate ids fail. The ledger is a plain file,
 not datoms. P01-P10 are the foundation stage (D46's six themes split so each
-fact can fail independently). P11-P14 are follow-on, not foundation closure.
+fact can fail independently). P11-P15 are follow-on, not foundation closure.
 A stage closes only with one sequential full run on unchanged committed
 inputs.
 
@@ -48,6 +48,22 @@ canonical, `AGENTS.md` a map, skills thin procedures.
 
 Delivery: accepted ADR with evidence, green exemplar, concept page, exercise,
 lesson, and a link from the exemplar to that teaching material.
+
+**Acceptance is on the guide** (amendment 2026-09-29). A pattern's teaching
+material is its guide: what people and agents use to discuss, design,
+implement and review work that uses the pattern. Accepting only the decision
+before the guide exists reviews the wrong thing, so the lifecycle is
+`Proposed, unverified` -> `Qualified` (gate evidence linked) -> `Accepted`
+(a human accepted the pattern's guide). `Taught` is no longer a separate
+status; it is part of acceptance.
+
+Every guide follows one guide template. Its shape is found in Docs and
+teaching: drafted on the log store (P04, P05), then tried on durable workflow
+(P06, P07) and identity (P11), which differ from it on purpose. When a later
+guide shows the template is wrong, the template changes and the guides
+already written are brought up to date in the same change, so every guide
+keeps one shape. Lessons still cite gate evidence and never become the source
+of a claim.
 
 ## Trade-offs
 
@@ -67,8 +83,11 @@ retries in CI.
 ### Expected
 
 `pnpm verify` is done. `pnpm qualify` records evidence. A pattern is not
-delivered until it is taught.
+delivered until its guide is accepted.
 
 ### Observed
 
-Not yet run. Harness lands in later scaffolding steps.
+Verify and Qualify are in use: `pnpm verify` gates every change, and
+`pnpm qualify` recorded P01-P11 in the ledger, closed by one sequential run on
+2026-09-28 ([closure note](../evidence/2026-09-28-p01-p11-closure.md)). Teach
+has not started: no guide exists, so no pattern is delivered yet.

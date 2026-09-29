@@ -27,7 +27,7 @@ Required sections: Problem, Design, Trade-offs, Failure-handling, Outcome
 gate that will qualify it.
 
 Status lifecycle: `Proposed, unverified` -> `Qualified` (gate evidence linked) ->
-`Accepted` -> `Taught`. Qualified does not mean admitted. Preserve accepted
+`Accepted` (on the pattern's guide, ADR-0026). Qualified does not mean admitted. Preserve accepted
 rationale; use a superseding ADR when a decision changes.
 
 Create ADRs for consequential architectural decisions. Routine implementation

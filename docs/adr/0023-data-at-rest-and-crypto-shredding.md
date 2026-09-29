@@ -4,7 +4,7 @@ Status: Proposed, unverified
 
 Date: 2026-09-20
 
-Qualifying gate: P12, P13
+Qualifying gate: P13, P14
 
 Related: D50, D51. [ADR 0011](0011-log-store-pattern.md).
 
@@ -35,7 +35,7 @@ Design inputs from the P11 grilling (2026-09-27,
 - Local deletion of an organization's copy after a revoked membership is
   decided here.
 
-P12 and P13 are follow-on, not foundation closure.
+P13 and P14 are follow-on, not foundation closure.
 
 ## Trade-offs
 
@@ -45,10 +45,10 @@ consumer apps that do not need it are not forced.
 
 ## Failure-handling
 
-P12: P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore.
+P13: P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore.
 Positive control: wrong key cannot open the database.
 
-P13: after key destruction, personal attributes are unreadable on every
+P14: after key destruction, personal attributes are unreadable on every
 replica, projection and export; the log stays intact and syncable. Positive
 control: a non-erased subject stays readable.
 
