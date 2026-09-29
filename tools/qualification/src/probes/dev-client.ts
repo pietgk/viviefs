@@ -124,20 +124,26 @@ const isAppTarget = (entry: unknown): boolean =>
 const stopOtherPlatformApp = async (
   cwd: string,
   platform: 'ios' | 'android',
-): Promise<void> => {
+): Promise<string> => {
   const other = platform === 'ios' ? 'android' : 'ios'
-  await agentCli(['runtime:stop', `--${other}`, '--app-id', APP_ID, '--json'], {
-    cwd,
-    timeout: 30_000,
-  })
+  const stopped = await agentCli(
+    ['runtime:stop', `--${other}`, '--app-id', APP_ID, '--json'],
+    { cwd, timeout: 30_000 },
+  )
+  return `runtime:stop --${other} exited ${stopped.code}: ${(stopped.stdout || stopped.stderr).slice(0, 400)}`
 }
 
-/** Called after the app is stopped on both platforms, before navigate. */
-const waitForNoAttachedApp = async (): Promise<void> => {
+/**
+ * Called after the app is stopped on both platforms, before navigate. A
+ * failed stop (no device, for example) is fine as long as nothing is attached.
+ */
+const waitForNoAttachedApp = async (stopReport: string): Promise<void> => {
   const deadline = Date.now() + 15_000
   while ((await debuggerTargetCount()) > 0) {
     if (Date.now() > deadline) {
-      fail('a stopped app is still attached to Metro; navigate would skip the dev launcher')
+      fail(
+        `a stopped app is still attached to Metro; navigate would skip the dev launcher. ${stopReport}`,
+      )
     }
     await sleep(1000)
   }
@@ -445,7 +451,7 @@ export const runDeviceVariant = async (options: {
       await waitForMetro(1_200_000, `${options.platform} ${options.variant}`)
     }
 
-    await stopOtherPlatformApp(options.cwd, options.platform)
+    const otherStopped = await stopOtherPlatformApp(options.cwd, options.platform)
 
     // Stop a running app on both platforms so the deep link starts a fresh
     // runtime that loads the current bundle. Metro runs in CI mode without
@@ -457,7 +463,7 @@ export const runDeviceVariant = async (options: {
       await terminateIosApp()
     }
 
-    await waitForNoAttachedApp()
+    await waitForNoAttachedApp(otherStopped)
     // navigate confirms the app attached to Metro, or fails.
     await openOnDevice(
       options.cwd,
@@ -603,7 +609,7 @@ export const startDeviceSession = async (options: {
     await waitForMetro(1_200_000, `${options.platform} ${options.variant}`)
   }
 
-  await stopOtherPlatformApp(options.cwd, options.platform)
+  const otherStopped = await stopOtherPlatformApp(options.cwd, options.platform)
 
   if (options.platform === 'android') {
     await reverseAndroidPorts([8081, 27686])
@@ -613,7 +619,7 @@ export const startDeviceSession = async (options: {
     await terminateIosApp().catch(() => undefined)
   }
 
-  await waitForNoAttachedApp()
+  await waitForNoAttachedApp(otherStopped)
   // navigate confirms the app attached to Metro, or fails.
   await openOnDevice(
     options.cwd,

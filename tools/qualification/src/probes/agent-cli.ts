@@ -23,6 +23,9 @@ export const parseJsonObject = (stdout: string): unknown => {
   }
 }
 
+// Like agentDevice below: every call carries the Android SDK, so an Android
+// command from an iOS leg finds adb (runtime:stop --android failed with
+// ADB_NOT_RUNNABLE until 2026-09-29).
 export const agentCli = async (
   args: string[],
   options: {
@@ -36,6 +39,7 @@ export const agentCli = async (
     env: {
       ...process.env,
       ...options.env,
+      PATH: androidSdkPath({ ...process.env, ...options.env }.PATH),
       CI: '1',
       EXPO_NO_TELEMETRY: '1',
       LANG: 'en_US.UTF-8',
