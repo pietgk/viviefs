@@ -1,12 +1,12 @@
 # ViViEfs agent map
 
 This file is a map. Canonical content lives in the linked docs. Use the terms in
-`CONTEXT.md`; do not drift to the synonyms it rejects. Skills are thin procedures
+`GLOSSARY.md`; do not drift to the synonyms it rejects. Skills are thin procedures
 that link to guides, not a second copy of those guides (D30).
 
 ## Read before working
 
-1. [`CONTEXT.md`](CONTEXT.md) - vocabulary.
+1. [`GLOSSARY.md`](GLOSSARY.md) - vocabulary.
 2. [`docs/adr/README.md`](docs/adr/README.md) - decisions. Status `Proposed, unverified`
    until the named gate qualifies them.
 3. [`docs/plan/bootstrap/README.md`](docs/plan/bootstrap/README.md) - complete design
@@ -43,7 +43,7 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
 
 | Plane | Source of truth |
 | --- | --- |
-| Agent context | this file, `.agents/skills/`, `.agents/patterns/`, `skills-lock.json` |
+| Agent context | this file, `.agents/skills/`, `.agents/patterns/`, `skills-lock.json`, `docs/agents/` |
 | Host toolchain | `mise.toml` (Node, pnpm, bun) |
 | TypeScript | dual pin in root `package.json` ([ADR-0028](docs/adr/0028-typescript-7-cli-with-typescript-6-api.md)): `tsc` is TypeScript 7 (`@typescript/native`); the `typescript` package name is TypeScript 6 (`@typescript/typescript6`) for Nx, ESLint and Vite. Do not install `typescript@7` under the `typescript` name. `tsc` is patched by `@effect/tsgo` ([ADR-0029](docs/adr/0029-effect-reference-and-language-service.md)). Editor tsserver stays on TypeScript 6 until Cursor Native Preview is usable. `verbatimModuleSyntax`, `exactOptionalPropertyTypes`, and `moduleDetection: "force"` are on ([ADR-0031](docs/adr/0031-typescript-strictness-flags.md)). Do not enable `rewriteRelativeImportExtensions` or `ignoreDeprecations`. |
 | Effect reference | `repos/effect` git subtree. Read-only. Prefer it over web search and over `node_modules`. |
@@ -57,14 +57,60 @@ then `dev --ios|--android --dev-client`. Read Hermes with `runtime:eval` /
 `agent-device` (CLI-first, `testID` + `accessibilityLabel`). Do not scrape Metro
 logs or click simulator coordinates to decide what the app is doing.
 
-Vendored skills (MIT): `grilling`, `tdd`, `domain-modeling`, `codebase-design`,
-`writing-for-agents`, `scaffold-exercises` from `mattpocock/skills` (copied from
-complyj; pin recorded in `skills-lock.json`); `motel-debug` from
-`kitlangton/motel@31186212365f705ba539c4befbf34a9b9e4bbcfe`. The repo copy wins
-on a name collision with a user-level skill or plugin.
+Vendored skills (MIT): every engineering and productivity skill from
+`mattpocock/skills` (27, D69) and `motel-debug` from `kitlangton/motel`.
+`skills-lock.json` pins each to an upstream commit (`ref`) with a whole-folder
+hash. They are byte-identical to upstream: never edit them; adapt on the repo
+side (`docs/agents/`, this file). `scaffold-exercises` is repo-owned, a fork
+adapted to D66, and not in the lock.
 
-Claude Code loads the same tree through `.claude/skills/` symlinks. Cursor and
-Codex read `.agents/skills/` natively.
+To move to a newer upstream commit, read the upstream changelog since the
+pinned `ref`, review changed or new skills against D30 and `GLOSSARY.md` with
+the human, then re-add them at the new commit (the CLI replaces each folder,
+the `.claude/skills/` symlink and the lock entry):
+
+```sh
+DISABLE_TELEMETRY=1 mise exec -- npx -y skills@1.7.0 add "mattpocock/skills#<commit>" \
+  --skill <name> <name> ... -a claude-code codex cursor -y
+```
+
+`skills experimental_install` restores the tree from the lock. `pnpm verify
+skills` fails when a vendored skill differs from its lock entry, a symlink is
+missing, or a skill is neither locked nor listed in `REPO_OWNED_SKILLS`
+(`tools/verify/src/skills-tree.ts`).
+
+Codex and Cursor read `.agents/skills/`; Claude Code reads the `.claude/skills/`
+symlinks. Model-invoked skills fire on their own. User-invoked ones fire only
+when typed: `/name` in Claude Code and Cursor, `$name` in Codex. The repo copy
+wins on a name collision, so `code-review` here replaces Claude Code's built-in
+`/code-review`.
+
+## Agent skills
+
+### Issue tracker
+
+Specs and tickets are committed Markdown under `docs/plan/<effort>/`. See
+[`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
+
+### Triage labels
+
+The five default roles. See [`docs/agents/triage-labels.md`](docs/agents/triage-labels.md).
+
+### Domain docs
+
+Single context: `GLOSSARY.md`, `docs/adr/`, the decision log. See
+[`docs/agents/domain.md`](docs/agents/domain.md).
+
+### Coding standards
+
+For `code-review` and `retro`: the working agreements below, the ADRs and
+`.agents/patterns/`; each guide's `review` page once guides exist (D62). A
+mechanical rule becomes a `verify` check, not prose.
+
+### Teach
+
+`teach` runs in its own workspace outside this repo. Guides, lessons and
+exercises here live in the docs site (D30, D62).
 
 ## Vendored repositories
 

@@ -87,6 +87,19 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'skills',
+        blurb: 'vendored skills match skills-lock.json and load in every agent',
+        invocations: [
+          {
+            command: 'node',
+            args: [
+              '--experimental-strip-types',
+              'tools/verify/src/check-skills.ts',
+            ],
+          },
+        ],
+      },
+      {
         name: 'audit',
         blurb: 'high and critical advisories',
         invocations: [

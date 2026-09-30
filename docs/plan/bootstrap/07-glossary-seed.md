@@ -1,6 +1,6 @@
-# Glossary seed for CONTEXT.md
+# Glossary seed for GLOSSARY.md
 
-Seed vocabulary for `CONTEXT.md`. It defines terms only; scope lives in the plan and decisions in the ADRs.
+Seed vocabulary for `GLOSSARY.md` (named `CONTEXT.md` until 2026-09-29). It defines terms only; scope lives in the plan and decisions in the ADRs.
 Format follows complyj and BirVana: bold term, definition, `_Avoid_` list.
 
 ## Architecture

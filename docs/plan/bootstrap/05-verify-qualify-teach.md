@@ -32,7 +32,7 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
 
 - One command, `pnpm verify`, staged: `static -> unit -> integration -> ui -> quality`. These stage names are an
   elaboration of D48' (staged, fail-fast), not a grilling decision.
-  - static: typecheck (incl. docs samples), lint (boundaries, determinism rules), lint-scope, ownership registry
+  - static: typecheck (incl. docs samples), lint (boundaries, determinism rules), lint-scope, ownership registry, skill tree against `skills-lock.json` (ADR-0027)
     check, audit.
   - unit: Vitest + `@effect/vitest` (domain, commands, engine unit, exercise solutions).
   - integration: conformance suites against SQLite and Postgres, crash matrix (engine level).

@@ -1,106 +1,49 @@
 ---
 name: scaffold-exercises
-description: Create exercise directory structures with sections, problems, solutions, and explainers that pass linting. Use when user wants to scaffold exercises, create exercise stubs, or set up a new course section.
+description: Create or renumber a pattern's exercise track under exercises/<pattern>/, with a problem/ and a solution/ folder per exercise. Use when the user wants to scaffold exercises, add an exercise to a guide, or renumber a track.
 ---
 
 # Scaffold Exercises
 
-Create exercise directory structures that pass `pnpm ai-hero-cli internal lint`, then commit with `git commit`.
+Repo-owned fork of `mattpocock/skills` `scaffold-exercises` (MIT), adapted to
+D66 in [the decision log](../../../docs/plan/bootstrap/02-decision-log.md). An
+**exercise** is a stub, a failing test and a reference solution that passes in
+`verify` (`GLOSSARY.md`). The concept it practises lives in the guide's
+`concepts` page, never in the exercise.
 
-## Directory naming
-
-- **Sections**: `XX-section-name/` inside `exercises/` (e.g., `01-retrieval-skill-building`)
-- **Exercises**: `XX.YY-exercise-name/` inside a section (e.g., `01.03-retrieval-with-bm25`)
-- Section number = `XX`, exercise number = `XX.YY`
-- Names are dash-case (lowercase, hyphens)
-
-## Exercise variants
-
-Each exercise needs at least one of these subfolders:
-
-- `problem/` - student workspace with TODOs
-- `solution/` - reference implementation
-- `explainer/` - conceptual material, no TODOs
-
-When stubbing, default to `explainer/` unless the plan specifies otherwise.
-
-## Required files
-
-Each subfolder (`problem/`, `solution/`, `explainer/`) needs a `readme.md` that:
-
-- Is **not empty** (must have real content, even a single title line works)
-- Has no broken links
-
-When stubbing, create a minimal readme with a title and a description:
-
-```md
-# Exercise Title
-
-Description here
-```
-
-If the subfolder has code, it also needs a `main.ts` (>1 line). But for stubs, a readme-only exercise is fine.
-
-## Workflow
-
-1. **Parse the plan** - extract section names, exercise names, and variant types
-2. **Create directories** - `mkdir -p` for each path
-3. **Create stub readmes** - one `readme.md` per variant folder with a title
-4. **Run lint** - `pnpm ai-hero-cli internal lint` to validate
-5. **Fix any errors** - iterate until lint passes
-
-## Lint rules summary
-
-The linter (`pnpm ai-hero-cli internal lint`) checks:
-
-- Each exercise has subfolders (`problem/`, `solution/`, `explainer/`)
-- At least one of `problem/`, `explainer/`, or `explainer.1/` exists
-- `readme.md` exists and is non-empty in the primary subfolder
-- No `.gitkeep` files
-- No `speaker-notes.md` files
-- No broken links in readmes
-- No `pnpm run exercise` commands in readmes
-- `main.ts` required per subfolder unless it's readme-only
-
-## Moving/renaming exercises
-
-When renumbering or moving exercises:
-
-1. Use `git mv` (not `mv`) to rename directories - preserves git history
-2. Update the numeric prefix to maintain order
-3. Re-run lint after moves
-
-Example:
-
-```bash
-git mv exercises/01-retrieval/01.03-embeddings exercises/01-retrieval/01.04-embeddings
-```
-
-## Example: stubbing from a plan
-
-Given a plan like:
+## Layout
 
 ```
-Section 05: Memory Skill Building
-- 05.01 Introduction to Memory
-- 05.02 Short-term Memory (explainer + problem + solution)
-- 05.03 Long-term Memory
+exercises/<pattern>/
+└── NN.MM-name/
+    ├── problem/    # the stub the learner completes
+    └── solution/   # the reference solution
 ```
 
-Create:
+- `<pattern>` is the guide's folder name (`guides/<pattern>/`).
+- `NN` is the section, `MM` the exercise within it; names are dash-case.
+- One Nx project per track, tagged `kind:tool` (D57).
+- No `explainer/` folder, no `.gitkeep`, no `readme.md` that restates the guide.
 
-```bash
-mkdir -p exercises/05-memory-skill-building/05.01-introduction-to-memory/explainer
-mkdir -p exercises/05-memory-skill-building/05.02-short-term-memory/{explainer,problem,solution}
-mkdir -p exercises/05-memory-skill-building/05.03-long-term-memory/explainer
-```
+## The test is the positive control
 
-Then create readme stubs:
+Each exercise has one test that runs against both folders. The solution must
+pass. The problem must fail, with the assertion the exercise expects. A problem
+that already passes teaches nothing, so write the test first and watch both
+verdicts before moving on.
 
-```
-exercises/05-memory-skill-building/05.01-introduction-to-memory/explainer/readme.md -> "# Introduction to Memory"
-exercises/05-memory-skill-building/05.02-short-term-memory/explainer/readme.md -> "# Short-term Memory"
-exercises/05-memory-skill-building/05.02-short-term-memory/problem/readme.md -> "# Short-term Memory"
-exercises/05-memory-skill-building/05.02-short-term-memory/solution/readme.md -> "# Short-term Memory"
-exercises/05-memory-skill-building/05.03-long-term-memory/explainer/readme.md -> "# Long-term Memory"
-```
+## Steps
+
+1. Read the pattern's guide (`concepts`, `how-to`) and its exercise list.
+2. Create the folders for each planned exercise.
+3. Write the test, then the solution until it passes, then cut the solution
+   back to the problem stub until the test fails with the expected assertion.
+4. Run `pnpm verify`.
+
+To renumber, `git mv` the folder so history follows it, then run `pnpm verify`.
+
+## Not built yet
+
+The layout check in `verify` comes with the log-store track, and the `exercise`
+generator in `@viviefs/generators` with the durable workflow track (D66). When
+either lands, replace the matching step above with it.

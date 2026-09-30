@@ -68,7 +68,7 @@ IntentComposer into the engine.
 A **datom** is its own transaction. A **changeset** is atomic visibility of
 several datoms. A **command** is `(readModel, intent) -> changeset or
 DomainError`. An **intent** is the user's requested change, input to a
-command. Not a datom. ([CONTEXT.md](../../CONTEXT.md))
+command. Not a datom. ([GLOSSARY.md](../../GLOSSARY.md))
 
 IntentComposer holds a *candidate* until submitting produces an intent for a
 command. Cancel drops the candidate. A kill drops the candidate. There is no

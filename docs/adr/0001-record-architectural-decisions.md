@@ -2,7 +2,8 @@
 
 Status: Proposed, unverified
 
-Date: 2026-09-20
+Date: 2026-09-20. Amended 2026-09-29 (Skills step of Docs and teaching): the
+glossary is `GLOSSARY.md`.
 
 Qualifying gate: none (process). This ADR is the template and lifecycle; later ADRs
 are qualified by the gates they name.
@@ -32,7 +33,14 @@ rationale; use a superseding ADR when a decision changes.
 
 Create ADRs for consequential architectural decisions. Routine implementation
 details do not require one. A fresh session reads the plan, relevant ADRs, and
-`CONTEXT.md` before working.
+`GLOSSARY.md` before working.
+
+**The glossary is `GLOSSARY.md`** (amendment 2026-09-29, Skills step, D69). It
+was `CONTEXT.md` (D27). `mattpocock/skills` renamed its domain-doc convention to
+`GLOSSARY.md` in v1.3, and eleven of its skills read only that name. Renaming the
+file once lets the vendored skills land unpatched (ADR-0027), instead of patching
+them on every update. Dated records (the decision log, the first bootstrap
+handover, `.lavish/` pages) keep the old name.
 
 ## Trade-offs
 

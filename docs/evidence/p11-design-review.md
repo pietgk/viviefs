@@ -109,7 +109,7 @@ Grilling 2026-09-27. Each answer is the agreed recommendation unless noted.
 
 ## 4. Names
 
-Checked against the repo's conventions: services are role nouns (`LogStore`, `SyncClient`, `TraceSink`), errors name a thing and its condition (`FileMissing`, `OrgMismatch`, `ManifestRejected`). Glossary entries are in [CONTEXT.md](../../CONTEXT.md).
+Checked against the repo's conventions: services are role nouns (`LogStore`, `SyncClient`, `TraceSink`), errors name a thing and its condition (`FileMissing`, `OrgMismatch`, `ManifestRejected`). Glossary entries are in [GLOSSARY.md](../../GLOSSARY.md).
 
 | Name | Kind | Meaning |
 | --- | --- | --- |

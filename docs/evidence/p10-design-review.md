@@ -249,7 +249,7 @@ Fix, committed separately: the store owns the PGlite instance and runs `SELECT 1
 
 ## 10. Pattern names (agreed 2026-09-26)
 
-These recur across P04-P10. They go into [`CONTEXT.md`](../../CONTEXT.md), and code comments use the same words.
+These recur across P04-P10. They go into [`GLOSSARY.md`](../../GLOSSARY.md), and code comments use the same words.
 
 | Name | Definition | Where it appears |
 | --- | --- | --- |

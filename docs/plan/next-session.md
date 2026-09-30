@@ -1,4 +1,4 @@
-# Next session: Docs and teaching, from the Skills step
+# Next session: Docs and teaching, from the Docs skeleton step
 
 ## Prompt to start the session
 
@@ -6,9 +6,9 @@
 > "Docs and teaching (2026-09-29)" section of
 > `docs/plan/bootstrap/02-decision-log.md` (D59-D74), the Schedule and the
 > drift table in `docs/plan/bootstrap/10-open-items-and-risks.md`, and
-> ADR-0026. Continue Docs and teaching with the Skills step: bring me the
-> include/adapt list before anything lands. Ask before deviating from an
-> agreed decision and record a deviation as an ADR amendment.
+> ADR-0026. Continue Docs and teaching with the Docs skeleton step. Ask
+> before deviating from an agreed decision and record a deviation as an ADR
+> amendment.
 
 ## Where things stand (2026-09-29)
 
@@ -21,6 +21,17 @@
   web-interview comparison and the measured costs, is
   [`.lavish/delivery-model.html`](../../.lavish/delivery-model.html). It becomes
   the site's first page in the Docs skeleton step (D68).
+- **The Skills step is done** (D69). Every engineering and productivity skill
+  of `mattpocock/skills` is vendored at `d81f3a18`, byte-identical and pinned
+  by `ref` in `skills-lock.json`; adaptations live in `docs/agents/` and
+  `AGENTS.md` ([ADR-0027](../adr/0027-developer-experience-planes.md)
+  amendment). The glossary is now `GLOSSARY.md`
+  ([ADR-0001](../adr/0001-record-architectural-decisions.md) amendment).
+  Specs and tickets go to `docs/plan/<effort>/`. `scaffold-exercises` is a
+  repo-owned fork (D66). Codex and Cursor load the tree from `.agents/skills/`
+  (checked). The repo's `code-review` replaces Claude Code's built-in
+  `/code-review` in this repo. `verify`'s `skills` step keeps the tree equal
+  to the lock. Skills are not gate inputs.
 - **No ADR is Accepted, no pattern is delivered.**
 
 ## The grilling in one table
@@ -45,24 +56,20 @@
 
 ## Next steps (the Schedule, Docs and teaching part)
 
-1. **Skills** (D69). Compare `skills-lock.json` with `mattpocock/skills`
-   (`d81f3a18` on 2026-09-29; 37 skills). Read each engineering and
-   productivity skill and `scaffold-exercises` against D30 and `CONTEXT.md`.
-   Bring an include/adapt list (overlaps: `teach` with Teach, `grill-with-docs`
-   with grilling and domain-modeling, `code-review` with a user-level skill,
-   `setup-matt-pocock-skills` expects an issue tracker). Nothing lands before
-   the review. Skills are not gate inputs.
-2. **Docs skeleton** (D59-D61, D68): `apps/docs` on Starlight, samples,
+1. **Docs skeleton** (D59-D61, D68): `apps/docs` on Starlight, samples,
    loaders, `llms.txt`, link and Mermaid checks, the docs-only rule, the
-   `.lavish/` move to `docs/research/` with links updated.
-3. **Evidence ownership** (D70, D71): a design review of the treatment list
+   `.lavish/` move to `docs/research/` with links updated. `docs/research/`
+   is also where the `research` skill writes.
+2. **Evidence ownership** (D70, D71): a design review of the treatment list
    first; then treatments, coverage lockfile, `pnpm verify baseline`, the
    engine crash matrix in `integration`, Schema at every boundary; one
    sequential P01-P11 run closes it.
-4. **Log-store guide**, which settles the template and what a lesson is.
-5. **App shell**: one grilling for P12 and P13, then both gates, then one
+3. **Log-store guide**, which settles the template and what a lesson is.
+   `teach`'s pedagogy (retrieval practice, one tangible win per lesson, a
+   primary source per lesson) is input; its workspace layout is not.
+4. **App shell**: one grilling for P12 and P13, then both gates, then one
    sequential run.
-6. **Durable workflow guide**, then **identity guide**, then the rest.
+5. **Durable workflow guide**, then **identity guide**, then the rest.
 
 ## Working notes
 

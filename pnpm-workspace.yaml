@@ -16,6 +16,8 @@ minimumReleaseAgeExclude:
 
 overrides:
   smol-toml: 1.8.0
+  # GHSA-6j4f-fj2g-mc7p and GHSA-qhr7-859c-m2p7 (high): nx's minimatch resolved 5.0.9.
+  'brace-expansion@5': 5.0.12
   '@op-engineering/op-sqlite': 18.2.5
   # One copy of each native Expo module: expo-auth-session's ranges would
   # otherwise pull newer patch releases next to the ones expo 58 bundles.

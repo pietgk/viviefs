@@ -29,7 +29,7 @@ concepts used here.
 | 4 | [04-repo-structure.md](04-repo-structure.md) | apps / features / libs / tools, Nx tags and rules, generators |
 | 5 | [05-verify-qualify-teach.md](05-verify-qualify-teach.md) | The validation, qualification and teaching pattern |
 | 6 | [06-qualification-gates.md](06-qualification-gates.md) | The ordered gates (spikes) with pass conditions |
-| 7 | [07-glossary-seed.md](07-glossary-seed.md) | Seed for `CONTEXT.md` |
+| 7 | [07-glossary-seed.md](07-glossary-seed.md) | Seed for `GLOSSARY.md` |
 | 8 | [08-adr-backlog.md](08-adr-backlog.md) | The ADRs to write, with their source decisions |
 | 9 | [09-sources-to-reuse.md](09-sources-to-reuse.md) | What to copy or learn from complyj, web-interview, BirVana, vivief |
 | 10 | [10-open-items-and-risks.md](10-open-items-and-risks.md) | Unverified claims, deferred decisions, freeze vs hypothesis, known risks |

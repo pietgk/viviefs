@@ -3,7 +3,7 @@
 ADRs preserve why consequential choices were made. The
 [bootstrap plan](../plan/bootstrap/README.md) describes the stack; grilling
 decisions D1-D58 are accepted as design intent and unverified until the named
-gate. [CONTEXT.md](../../CONTEXT.md) defines terms.
+gate. [GLOSSARY.md](../../GLOSSARY.md) defines terms.
 
 ## Index
 

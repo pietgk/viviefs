@@ -13,7 +13,7 @@ record the origin in the commit message.
 | DX planes | `docs/adr/0012-developer-experience-as-architecture.md` | ADR 0027 |
 | Apple Container runtime | `docs/adr/0007-local-container-runtime.md`, `0010-runtime-placement-policy.md` | Postgres, Keycloak, Jaeger, otel-lgtm locally |
 | Teaching from evidence | `docs/teaching/L01..L07` (esp. L06 qualification as a practice) | Lesson format |
-| Glossary style | `CONTEXT.md` | Format for `CONTEXT.md` |
+| Glossary style | `GLOSSARY.md` | Format for `GLOSSARY.md` (was `CONTEXT.md`) |
 | Tenant isolation lessons | `docs/adr/0005-tenant-isolation-and-audit-evidence.md` | D18 |
 | Skills mechanism | `.agents/skills/`, `skills-lock.json` | D49 |
 | Sanitized evidence records | `docs/implementation/` | Same role as viviefs `docs/evidence/` (clearer name; not a path copy) |
