@@ -7,6 +7,7 @@ export type Op = typeof Op.Type
 export const asTx = (value: string): TxBrand | null =>
   isTx(value) ? value : null
 
+// #region datom
 export const Datom = Schema.Struct({
   e: Schema.String,
   a: Schema.String,
@@ -16,6 +17,7 @@ export const Datom = Schema.Struct({
   cs: Schema.String,
 })
 export type Datom = typeof Datom.Type
+// #endregion datom
 
 export const StoredDatom = Schema.Struct({
   seq: Schema.Number,

@@ -35,6 +35,7 @@ it('selects a mix of stages and steps from the executed table', () => {
     selector: 'not-a-stage',
   })
   expect(selectStages([])._tag).toBe('All')
+  expect(selectStages(['all'])._tag).toBe('All')
 })
 
 it.effect('wires @effect/vitest as the unit runner', () =>

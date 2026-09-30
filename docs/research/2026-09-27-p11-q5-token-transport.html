@@ -43,12 +43,12 @@
       <div class="font-semibold">Names on this page predate the naming pass (Q20). The code uses:</div>
       <ul class="list-disc ml-5 text-sm mt-1">
         <li><code class="q5-inline">Principal</code> is now <code class="q5-inline">Caller</code> (person, provider account, roles)</li>
-        <li><code class="q5-inline">AuthMiddleware</code> / <code class="q5-inline">Authenticated</code> is now <code class="q5-inline">BearerAuthentication</code> (<a class="link" href="../libs/sync/protocol/src/rpc.ts">rpc.ts</a>)</li>
-        <li><code class="q5-inline">Authenticator</code> is now <code class="q5-inline">TokenVerifier</code>, returning a <code class="q5-inline">ProviderAccount</code> (<a class="link" href="../libs/identity/src/token-verifier.ts">token-verifier.ts</a>)</li>
+        <li><code class="q5-inline">AuthMiddleware</code> / <code class="q5-inline">Authenticated</code> is now <code class="q5-inline">BearerAuthentication</code> (<a class="link" href="../../libs/sync/protocol/src/rpc.ts">rpc.ts</a>)</li>
+        <li><code class="q5-inline">Authenticator</code> is now <code class="q5-inline">TokenVerifier</code>, returning a <code class="q5-inline">ProviderAccount</code> (<a class="link" href="../../libs/identity/src/token-verifier.ts">token-verifier.ts</a>)</li>
         <li>The device-side <code class="q5-inline">Identity</code> is now <code class="q5-inline">SignInSession</code></li>
         <li><code class="q5-inline">Unauthenticated</code> is now <code class="q5-inline">TokenRejected</code>; <code class="q5-inline">NotMember</code> is now <code class="q5-inline">MembershipMissing</code></li>
       </ul>
-      <div class="text-sm mt-1">The code sketches below show the shape; the linked files are the truth. See <a class="link" href="../docs/evidence/p11-design-review.md">the P11 design review</a> for every decision.</div>
+      <div class="text-sm mt-1">The code sketches below show the shape; the linked files are the truth. See <a class="link" href="../evidence/p11-design-review.md">the P11 design review</a> for every decision.</div>
     </div>
   </div>
 
@@ -89,7 +89,7 @@
       <div class="card-body">
         <h3 class="card-title">Today <span class="badge badge-error badge-soft">trusts the client</span></h3>
         <ul class="list-disc ml-5 space-y-1 text-sm">
-          <li>Transport: <code class="q5-inline">RpcTest.makeClient(SyncRpcs)</code>, in-process (<a class="link" href="../tools/qualification/src/probes/p09-checks.ts">p09-checks.ts:175</a>).</li>
+          <li>Transport: <code class="q5-inline">RpcTest.makeClient(SyncRpcs)</code>, in-process (<a class="link" href="../../tools/qualification/src/probes/p09-checks.ts">p09-checks.ts:175</a>).</li>
           <li>Who is calling? <b>Unknown.</b> Nothing on the wire says.</li>
           <li><code class="q5-inline">{ org: "acme", ... }</code> is believed. The server only checks that entity ids start with <code class="q5-inline">Oacme/</code>, and that is a consistency check, not an access check.</li>
           <li><code class="q5-inline">envelope.actor</code> is whatever the client wrote.</li>
@@ -323,7 +323,7 @@ sequenceDiagram
     </div></div>
     <div class="card bg-base-200"><div class="card-body p-5">
       <h3 class="font-semibold">Why does the handler still check membership?</h3>
-      <p class="text-sm">The middleware answers <em>who</em>. Only the handler knows <em>what</em> is being asked: which org, which execution's lease, which actor on the envelope. Authorization needs that context, so it lives next to the other server-side validation in <a class="link" href="../libs/sync/server/src/server.ts">server.ts</a>.</p>
+      <p class="text-sm">The middleware answers <em>who</em>. Only the handler knows <em>what</em> is being asked: which org, which execution's lease, which actor on the envelope. Authorization needs that context, so it lives next to the other server-side validation in <a class="link" href="../../libs/sync/server/src/server.ts">server.ts</a>.</p>
     </div></div>
   </div>
 </section>

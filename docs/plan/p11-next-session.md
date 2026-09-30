@@ -123,7 +123,7 @@ P02, P04 and P05 passed on web, so nothing needed Metro's
   qualify` writes the ledger.
 - Teaching pages for P11 are in `.lavish/` (committed): Q5 token transport, log
   tampering, identity keys and trust. Work order step 7 (docs site) decides their
-  long-term home.
+  long-term home (they moved to `docs/research/`, D68).
 - Deferred and recorded: identity, keys and trust step (Q15 merged, Q23, Q24);
   trace projector on devices with the first consumer app (Q13);
   `EngineConfig.actor` from the statement when a consumer app runs the engine

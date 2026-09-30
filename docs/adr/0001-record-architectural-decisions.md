@@ -40,7 +40,7 @@ was `CONTEXT.md` (D27). `mattpocock/skills` renamed its domain-doc convention to
 `GLOSSARY.md` in v1.3, and eleven of its skills read only that name. Renaming the
 file once lets the vendored skills land unpatched (ADR-0027), instead of patching
 them on every update. Dated records (the decision log, the first bootstrap
-handover, `.lavish/` pages) keep the old name.
+handover, the research records in `docs/research/`) keep the old name.
 
 ## Trade-offs
 

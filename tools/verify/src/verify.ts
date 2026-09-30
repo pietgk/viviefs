@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { NodeRuntime, NodeServices } from '@effect/platform-node'
 import { Clock, Effect, Runtime, Schema } from 'effect'
 import { Argument, Command } from 'effect/unstable/cli'
+import { DOCS_ONLY_STEPS, changedPaths, isDocsOnly } from './docs-only.ts'
 import {
   ROOT,
   STAGES,
@@ -234,8 +235,25 @@ const runStages = Effect.fnUntraced(function* (stages: Stage[]) {
   }
 })
 
+/**
+ * Without a selector, a docs-only change runs only the steps that check
+ * prose (`docs-only.ts`). CI always runs every stage.
+ */
+const applyDocsOnlyRule = Effect.fnUntraced(function* (
+  names: ReadonlyArray<string>,
+) {
+  if (names.length > 0 || process.env.CI) return selectStages(names)
+  const paths = changedPaths(ROOT)
+  if (!isDocsOnly(paths)) return selectStages(names)
+  yield* writeOut(
+    `  Docs-only change (${paths.length} ${paths.length === 1 ? 'path' : 'paths'}): ` +
+      `running ${DOCS_ONLY_STEPS.join(' and ')}. \`pnpm verify all\` runs every stage.\n\n`,
+  )
+  return selectStages(DOCS_ONLY_STEPS)
+})
+
 const selectors = Argument.String('selector').pipe(
-  Argument.withDescription('stage or step name'),
+  Argument.withDescription('stage or step name, or all'),
   Argument.variadic(),
 )
 
@@ -248,7 +266,7 @@ export const verify = Command.make(
       return
     }
     yield* assertNodeVersion()
-    const selected = selectStages(names)
+    const selected = yield* applyDocsOnlyRule(names)
     if (selected._tag === 'Unknown') {
       yield* writeErr(
         `Unknown stage or step: ${selected.selector}\nTry: pnpm verify help\n`,

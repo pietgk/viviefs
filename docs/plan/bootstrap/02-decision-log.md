@@ -94,8 +94,8 @@ intent, unverified until the named gate passes.
 ## Docs and teaching (2026-09-29)
 
 Decisions from the Docs and teaching grilling (2026-09-29), numbered on from the bootstrap session. Background,
-measurements and the drift audit: [How a pattern is delivered](../../../.lavish/delivery-model.html) (moves to
-`docs/research/` with the other `.lavish/` pages, D68).
+measurements and the drift audit: [How a pattern is delivered](../../research/2026-09-29-delivery-model.html) (moved
+to `docs/research/` with the other `.lavish/` pages, D68).
 
 | # | Decision | Why |
 |---|---|---|

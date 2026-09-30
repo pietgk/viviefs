@@ -1,4 +1,4 @@
-# Next session: Docs and teaching, from the Docs skeleton step
+# Next session: Docs and teaching, from the Evidence ownership step
 
 ## Prompt to start the session
 
@@ -6,21 +6,50 @@
 > "Docs and teaching (2026-09-29)" section of
 > `docs/plan/bootstrap/02-decision-log.md` (D59-D74), the Schedule and the
 > drift table in `docs/plan/bootstrap/10-open-items-and-risks.md`, and
-> ADR-0026. Continue Docs and teaching with the Docs skeleton step. Ask
+> ADR-0026. Continue Docs and teaching with the Evidence ownership step. Ask
 > before deviating from an agreed decision and record a deviation as an ADR
 > amendment.
 
-## Where things stand (2026-09-29)
+## Where things stand (2026-09-30)
 
-- **P01-P11 pass** in one sequential run on `54e724786`. This commit renumbers
-  the follow-on gates and touches `tools/qualification` and `libs/`, so every
-  gate is stale from here on. That is expected: almost every step ahead changes
+- **The Docs skeleton step is done** (D59-D61, D68). `apps/docs` is a
+  Starlight 0.42 site on Astro 7.3. It renders `GLOSSARY.md`, the ADRs, the
+  evidence notes and the research records in place through one content
+  loader (`apps/docs/src/lib/repo-docs-loader.ts`), with ADR status badges in
+  the sidebar. Relative file links in any rendered Markdown become site or
+  GitHub links, and a link to a missing file fails the build
+  (`repo-links.ts`); `starlight-links-validator` checks site paths and
+  anchors. `<Sample path region>` embeds a `// #region` from source and fails
+  on a missing region; the first page embeds `datom` from
+  `libs/datom/src/schema.ts`. `llms.txt` is generated. The first page is "How
+  a pattern is delivered", rewritten from the grilling overview. `verify`
+  gained `docs` (the site build) and `diagrams` (Mermaid edge integrity,
+  adapted from web-interview) in `quality`, and the docs-only rule
+  (`tools/verify/src/docs-only.ts`). The `.lavish/` pages moved to
+  `docs/research/` with dated names; `.lavish/` is gitignored scratch.
+- **For the human to confirm** (choices made in the Docs skeleton step, not
+  grilling decisions): the glossary is rendered under Reference (D61's sidebar
+  does not list it); `site` is `http://localhost:4321` until deployment is
+  decided (`starlight-llms-txt` needs one); the API reference and the guide
+  template come with the log-store guide, because no guide names an exemplar
+  yet; `docs/evidence/**` is not docs-only, because the P03 and P09-P11 probe
+  tests read evidence notes, and a `verify` test fails if a test names any
+  other docs-only file; `astro.config.ts` and `content.config.ts` are not
+  checked by `tsc` (the Starlight plugins ship TypeScript sources that do not
+  compile under this repo's settings), the build checks them; Mermaid renders
+  in the browser (`astro-mermaid`), so `diagrams` checks the source, as in
+  web-interview. Astro pulls in `sharp`, whose macOS binary bundles libvips
+  under LGPL-3.0; it runs at build time only and is never shipped.
+
+- **P01-P11 pass** in one sequential run on `54e724786`. The commit after it
+  renumbered the follow-on gates and touched `tools/qualification` and
+  `libs/`, so every gate is stale from there on. That is expected: almost every step ahead changes
   gate inputs, and the Schedule closes them in batches.
 - **The Docs and teaching grilling is done** and recorded as D59-D74. The
   overview used in it, with the drift audit, the crash-matrix explainer, the
-  web-interview comparison and the measured costs, is
-  [`.lavish/delivery-model.html`](../../.lavish/delivery-model.html). It becomes
-  the site's first page in the Docs skeleton step (D68).
+  web-interview comparison and the measured costs, is the research record
+  [2026-09-29-delivery-model.html](../research/2026-09-29-delivery-model.html);
+  its lasting parts are the site's first page (D68).
 - **The Skills step is done** (D69). Every engineering and productivity skill
   of `mattpocock/skills` is vendored at `d81f3a18`, byte-identical and pinned
   by `ref` in `skills-lock.json`; adaptations live in `docs/agents/` and
@@ -56,10 +85,7 @@
 
 ## Next steps (the Schedule, Docs and teaching part)
 
-1. **Docs skeleton** (D59-D61, D68): `apps/docs` on Starlight, samples,
-   loaders, `llms.txt`, link and Mermaid checks, the docs-only rule, the
-   `.lavish/` move to `docs/research/` with links updated. `docs/research/`
-   is also where the `research` skill writes.
+1. **Docs skeleton**: done 2026-09-30 (above).
 2. **Evidence ownership** (D70, D71): a design review of the treatment list
    first; then treatments, coverage lockfile, `pnpm verify baseline`, the
    engine crash matrix in `integration`, Schema at every boundary; one
@@ -86,5 +112,14 @@
   gesture-handler, bottom-sheet and safe-area-context 5.8.
 - Lab facts for any device run are in [p11-next-session.md](p11-next-session.md)
   (steps P11.6 and P11.8).
-- `chrome-devtools-axi eval` failed in this session with "pageId: expected
-  number", so the overview's Mermaid rendering was not checked in a browser.
+- `chrome-devtools-axi` still fails with "pageId: expected number" (2026-09-30).
+  Headless Chrome screenshots work: `"/Applications/Google
+  Chrome.app/Contents/MacOS/Google Chrome" --headless=new --window-size=1440,2600
+  --virtual-time-budget=8000 --screenshot=/tmp/page.png <url>`. Its minimum
+  window width is 500 px, so a narrower shot looks clipped.
+- Docs site: `pnpm exec nx run docs:build`, then `pnpm exec astro preview` in
+  `apps/docs` (Astro 7 runs it as a daemon: `astro preview stop`), or
+  `pnpm exec nx run docs:serve`. Astro 7's Markdown processor is Sätteri, not
+  remark: plugins are `mdastPlugins` / `hastPlugins` (`satteri`). Repository
+  pages are not under `src/content/docs`, so Starlight's `autogenerate`
+  cannot list them; `repo-pages.ts` builds those sidebar groups.

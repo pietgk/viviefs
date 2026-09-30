@@ -8,7 +8,47 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "type-only",
-    "rationale": "Docs site; type-checked samples"
+    "evidenceOwner": "unit",
+    "rationale": "Docs site; samples, link rewriting and repository pages tested in Node; the site build checks links"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production", "{workspaceRoot}/docs/**/*", "{workspaceRoot}/libs/**/*"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "apps/docs"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/*.md",
+        "{workspaceRoot}/docs/**/*",
+        "{workspaceRoot}/apps/**/*",
+        "{workspaceRoot}/features/**/*",
+        "{workspaceRoot}/libs/**/*",
+        "{workspaceRoot}/tools/**/*"
+      ],
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "pnpm exec astro build",
+        "cwd": "apps/docs",
+        "env": { "ASTRO_TELEMETRY_DISABLED": "1" }
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "pnpm exec astro dev",
+        "cwd": "apps/docs",
+        "env": { "ASTRO_TELEMETRY_DISABLED": "1" }
+      }
+    }
   }
 }

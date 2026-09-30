@@ -17,3 +17,9 @@ apps/evidence-mobile/ios/
 apps/evidence-mobile/android/
 apps/evidence-mobile/dist/
 apps/evidence-mobile/expo-env.d.ts
+
+# Astro
+apps/docs/.astro/
+
+# Scratch pages for Lavish review sessions (D68); research records live in docs/research/
+.lavish/

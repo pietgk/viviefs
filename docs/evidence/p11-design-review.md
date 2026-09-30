@@ -18,10 +18,10 @@ Review before the gate runs. This page does not pass P11 and does not edit the l
 | Gate P11 | pass: ledger `2026-09-28T19-38-22.564Z-0f0ac08c` on a clean tree (`971ae6e2`); [evidence note](2026-09-28-p11.md) |
 | Sequential P01-P11 run (step 8) | pass: `pnpm qualify --through P11`, run `2026-09-28T22-40-46.395Z-cfafc842` on a clean tree (`59b74a9a`); every gate from P01 to P11 passes in the ledger. Four earlier runs each failed on the lab or the harness, fixed first; [closure note](2026-09-28-p01-p11-closure.md) |
 
-Teaching pages written during the grilling (committed under `.lavish/`; step 7 decides their long-term home):
+Teaching pages written during the grilling (committed under `.lavish/`; moved to `docs/research/` as dated research records in the Docs skeleton step, D68):
 
-- [How a request proves who sent it](../../.lavish/p11-q5-token-transport.html) (Q5)
-- [Who can tamper with the datom log, and what stops them](../../.lavish/p11-log-tampering.html) (Q14, Q15)
+- [How a request proves who sent it](../research/2026-09-27-p11-q5-token-transport.html) (Q5)
+- [Who can tamper with the datom log, and what stops them](../research/2026-09-27-p11-log-tampering.html) (Q14, Q15)
 
 ## 1. The claim
 
@@ -105,7 +105,7 @@ Grilling 2026-09-27. Each answer is the agreed recommendation unless noted.
 | Q21 | The account-to-person mapping: a `people` table or the log | The log (2026-09-27, raised after step 2). A table would be the first domain fact outside the log: no history, outside the audit trail and a future hash chain. Account entity `A{sha256(iss, sub)}` under a server-only root; persons are minted only by `grantMembership`; account datoms travel in their own changeset. ADR-0006 now states "domain truth lives only in the log". |
 | Q22 | How a device labels its writes with the right person | Reframed 2026-09-28: a device does not know who it is; it keeps a copy of the server's statement. One authenticated RPC, `Caller`, returns what the server knows about the signed-in provider account: its person (or none) and its memberships. The device keeps it inside the sign-in session, fetches it again at every sign-in, and treats it as stale when the server refuses. |
 | Q23 | Device identity and lease authorization | Recorded as known limitations in ADR-0022, not fixed in P11: `envelope.device` is chosen by the device and not authenticated, and any member may take over any execution's lease in its organization (by design for failover; who may is unspecified). Decided in the identity, keys and trust step. |
-| Q24 | When to design identity properly | One step, "Identity, keys and trust", merging Q15 (tamper-evidence, signed changesets) with device keys, person key sets, recovery, revocation, lease authorization and whether P2P is a goal. Before the first consumer app that makes audit claims. Inputs: vivief's P2P and identity work, Holochain from primary sources. Explainer: [identity, keys and trust](../../.lavish/identity-keys-and-trust.html). |
+| Q24 | When to design identity properly | One step, "Identity, keys and trust", merging Q15 (tamper-evidence, signed changesets) with device keys, person key sets, recovery, revocation, lease authorization and whether P2P is a goal. Before the first consumer app that makes audit claims. Inputs: vivief's P2P and identity work, Holochain from primary sources. Explainer: [identity, keys and trust](../research/2026-09-28-identity-keys-and-trust.html). |
 
 ## 4. Names
 

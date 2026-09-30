@@ -1,5 +1,6 @@
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DOCS_ONLY_PATHS, DOCS_ONLY_STEPS } from './docs-only.ts'
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
@@ -152,7 +153,7 @@ export const STAGES: Stage[] = [
   },
   {
     name: 'quality',
-    blurb: 'a production bundle is measured',
+    blurb: 'production builds are measured and the docs site is built',
     steps: [
       {
         name: 'build',
@@ -163,6 +164,29 @@ export const STAGES: Stage[] = [
         name: 'bundle-size',
         blurb: 'gated JS bundle size (baseline recorded at P01)',
         invocations: [nxTarget('bundle-size')],
+      },
+      {
+        name: 'docs',
+        blurb: 'docs site build: repository pages, samples, links and anchors',
+        invocations: [
+          {
+            command: 'pnpm',
+            args: ['exec', 'nx', 'run', 'docs:build'],
+          },
+        ],
+      },
+      {
+        name: 'diagrams',
+        blurb: 'every Mermaid edge in Markdown and MDX survives rendering',
+        invocations: [
+          {
+            command: 'node',
+            args: [
+              '--experimental-strip-types',
+              'tools/verify/src/check-diagrams.ts',
+            ],
+          },
+        ],
       },
     ],
   },
@@ -179,7 +203,9 @@ export type SelectedStages =
   | { readonly _tag: 'Unknown'; readonly selector: string }
 
 export const selectStages = (selectors: ReadonlyArray<string>): SelectedStages => {
-  if (selectors.length === 0) return { _tag: 'All', stages: STAGES }
+  if (selectors.length === 0 || selectors.includes('all')) {
+    return { _tag: 'All', stages: STAGES }
+  }
   const wanted = new Set<string>()
   for (const selector of selectors) {
     const stage = findStage(selector)
@@ -227,6 +253,11 @@ export const formatHelp = (invoke = 'pnpm verify'): string => {
   lines.push(`  ${invoke} help              this text, generated from the stage table`)
   lines.push(`  ${invoke} static            one stage`)
   lines.push(`  ${invoke} lint unit         any mix of stages and steps`)
+  lines.push(`  ${invoke} all               every stage, even for a docs-only change`)
+  lines.push('')
+  lines.push(`  Docs-only rule: without a selector, a change that touches only`)
+  lines.push(`  ${DOCS_ONLY_PATHS.map(({ label }) => label).join(', ')}`)
+  lines.push(`  runs ${DOCS_ONLY_STEPS.join(' and ')}. CI always runs every stage.`)
   lines.push('')
   return lines.join('\n')
 }

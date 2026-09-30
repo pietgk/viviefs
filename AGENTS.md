@@ -34,10 +34,16 @@ accepted guide (ADR-0026): a concept page, an exercise, a lesson, and a link fro
 exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-teach.md).
 
 - **Verify**: `pnpm verify` (staged `static -> unit -> integration -> ui -> quality`).
-  Done = green. Never loosen a gate to make it pass.
+  Done = green. Never loosen a gate to make it pass. A change that touches only
+  prose runs the docs steps (the docs-only rule in `tools/verify/src/docs-only.ts`);
+  `pnpm verify all` runs everything.
 - **Qualify**: `pnpm qualify`. Ledger is machine-written; never hand-edit it.
 - **Teach**: docs pages are canonical. Lessons cite evidence; they never become the
   source of a claim.
+- **Guides**: [`apps/docs/src/content/docs/guides/`](apps/docs/src/content/docs/guides/index.mdx).
+  Read the MDX sources; browse with `pnpm exec nx run docs:serve` (D64).
+- **Research**: dated records in [`docs/research/`](docs/research/README.md), where the
+  `research` skill writes. Never the source of a guide's claim (D68).
 
 ## Toolchain (D49)
 

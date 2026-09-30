@@ -116,3 +116,12 @@ Schedule: evidence owners are declared per project but not checked against
 what runs, and there is no coverage lockfile (D71); the crash matrix runs only
 in P06, not in verify (D71); the `ui` stage's `storybook` step is Vitest with
 jsdom, and no story runs in a real browser or on a device (D72).
+
+2026-09-30, Docs skeleton. The docs site (`apps/docs`, Starlight) renders the
+ADRs and evidence notes in place. `verify` builds it in `quality`: a link to a
+missing file, site page or anchor fails the build, and so does a sample that
+names a missing region. The `diagrams` step fails when a Mermaid edge would
+not survive rendering. The docs-only path rule is code
+(`tools/verify/src/docs-only.ts`): without a selector, a change that touches
+only prose runs `docs` and `diagrams`; CI runs every stage. No guide exists
+yet.

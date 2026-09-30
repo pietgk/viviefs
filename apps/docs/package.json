@@ -3,13 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "Apache-2.0",
   "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "@viviefs/source": "./src/index.ts",
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
-    }
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@astrojs/markdown-satteri": "0.4.2",
+    "@astrojs/starlight": "0.42.4",
+    "astro": "7.3.5",
+    "astro-mermaid": "2.1.0",
+    "mermaid": "11.17.2",
+    "satteri": "0.10.5",
+    "starlight-links-validator": "0.26.0",
+    "starlight-llms-txt": "0.12.0"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-rc.116",
+    "@types/mdast": "4.0.4",
+    "effect": "4.0.0-rc.116",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
   }
 }

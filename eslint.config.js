@@ -10,6 +10,7 @@ export default [
       '**/out-tsc',
       '**/coverage',
       '**/.nx',
+      '**/.astro',
       '**/node_modules',
       '.agents/**',
       'repos/**',

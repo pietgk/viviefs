@@ -1,0 +1,19 @@
+---
+/**
+ * A code sample read from source at build time (D60): a whole file, or one
+ * `// #region` of it. A missing file or region fails the build.
+ */
+import { Code } from '@astrojs/starlight/components'
+import { readSample } from '../lib/regions.ts'
+
+interface Props {
+  /** Repository-relative path, for example `libs/datom/src/schema.ts`. */
+  path: string
+  region?: string
+}
+
+const { path, region } = Astro.props
+const sample = readSample(path, region)
+---
+
+<Code code={sample.code} lang={sample.lang} title={sample.path} />
