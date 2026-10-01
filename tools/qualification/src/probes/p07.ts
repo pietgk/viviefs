@@ -5,14 +5,14 @@ import { fileURLToPath } from 'node:url'
 import { randomBytes } from 'node:crypto'
 import * as Effect from 'effect/Effect'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
+import { makeMutableClock } from '@viviefs/datom/suites'
+import type { CheckResult } from '@viviefs/testing'
 import {
-  makeMutableClock,
   P07_DEVICE_CHECK_NAMES,
   P07_HOST_CHECK_COUNT,
   P07_PARKED_ATTR,
   runLaunchSweepChecks,
-  type CheckResult,
-} from '@viviefs/testing'
+} from '@viviefs/workflow-engine/suites'
 import {
   androidEnv,
   ensureAndroidEmulator,

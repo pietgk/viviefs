@@ -52,6 +52,8 @@ describe('isDocsOnly', () => {
     })
       .split('\n')
       .filter((path) => /\.test\.tsx?$/.test(path) && !path.startsWith('repos/'))
+      // A tracked test deleted in the working tree names nothing any more.
+      .filter((path) => existsSync(join(ROOT, path)))
     const PATH_LITERAL = /['"`](?:[./]*\/)?((?:docs|apps\/docs\/src\/content)\/[\w./-]+|[\w-]+\.md)['"`]/g
     const named = tests.flatMap((test) => {
       const source = readFileSync(join(ROOT, test), 'utf8')

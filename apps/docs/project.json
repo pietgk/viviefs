@@ -8,7 +8,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "unit",
     "rationale": "Docs site; samples, link rewriting and repository pages tested in Node; the site build checks links"
   },
   "targets": {

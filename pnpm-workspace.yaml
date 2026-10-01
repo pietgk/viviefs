@@ -18,6 +18,9 @@ overrides:
   smol-toml: 1.8.0
   # GHSA-6j4f-fj2g-mc7p and GHSA-qhr7-859c-m2p7 (high): nx's minimatch resolved 5.0.9.
   'brace-expansion@5': 5.0.12
+  # GHSA-3pq3-5fj3-cg6v, GHSA-542g-h47m-68v8 and three more (high, found 2026-09-30):
+  # nx 23.2.1, the latest stable, pins axios 1.18.1; patched from 1.20.0.
+  'axios@1': 1.20.0
   '@op-engineering/op-sqlite': 18.2.5
   # One copy of each native Expo module: expo-auth-session's ranges would
   # otherwise pull newer patch releases next to the ones expo 58 bundles.

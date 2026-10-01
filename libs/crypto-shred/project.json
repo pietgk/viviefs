@@ -9,7 +9,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
     "rationale": "per-subject keys for personal attributes"
   }
 }

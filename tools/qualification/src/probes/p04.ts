@@ -9,12 +9,8 @@ import {
 } from '@viviefs/datom'
 import { pgliteLogStore } from '@viviefs/store-postgres'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
-import {
-  makeMutableClock,
-  P04_CHECK_COUNT,
-  runLogStoreChecks,
-  type CheckResult,
-} from '@viviefs/testing'
+import { makeMutableClock, P04_CHECK_COUNT, runLogStoreChecks } from '@viviefs/datom/suites'
+import type { CheckResult } from '@viviefs/testing'
 import { androidEnv, ensureAndroidEmulator, reverseAndroidPorts } from './devices.ts'
 import {
   assertAllPass,

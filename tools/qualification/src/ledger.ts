@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { readFile, writeFile, rename } from 'node:fs/promises'
+import { join } from 'node:path'
 import { checked, command } from './process.ts'
 
 const ledgerPath = 'tools/qualification/gate-ledger.json'
@@ -28,9 +29,13 @@ const emptyLedger: Ledger = {
   entries: [],
 }
 
-async function readLedger(): Promise<Ledger> {
+/**
+ * Every function takes the repository root, the process's working directory
+ * by default, so tests run the ledger against a scratch repository in-process.
+ */
+async function readLedger(root: string): Promise<Ledger> {
   try {
-    return JSON.parse(await readFile(ledgerPath, 'utf8')) as Ledger
+    return JSON.parse(await readFile(join(root, ledgerPath), 'utf8')) as Ledger
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
     return emptyLedger
@@ -48,9 +53,10 @@ async function hashFile(path: string): Promise<string> {
   }
 }
 
-async function revision() {
-  const head = await command('git', ['rev-parse', 'HEAD'], { timeout: 15_000 })
+async function revision(root: string) {
+  const head = await command('git', ['rev-parse', 'HEAD'], { cwd: root, timeout: 15_000 })
   const status = await command('git', ['status', '--porcelain'], {
+    cwd: root,
     timeout: 30_000,
   })
   const changed = status.stdout
@@ -64,7 +70,7 @@ async function revision() {
   }
 }
 
-export async function inputsFingerprint(): Promise<string> {
+export async function inputsFingerprint(root = process.cwd()): Promise<string> {
   const files = await checked('git', [
     'ls-files',
     '--cached',
@@ -99,7 +105,7 @@ export async function inputsFingerprint(): Promise<string> {
     'tsconfig.base.json',
     'eslint.config.js',
     '.npmrc',
-  ])
+  ], { cwd: root })
   const paths = [...new Set(files.split('\0').filter(Boolean))]
     .filter(
       (path) =>
@@ -112,15 +118,15 @@ export async function inputsFingerprint(): Promise<string> {
     throw new Error('No qualification inputs found in the repository')
   const hash = createHash('sha256')
   for (const path of paths)
-    hash.update(JSON.stringify([path, await hashFile(path)]) + '\n')
+    hash.update(JSON.stringify([path, await hashFile(join(root, path))]) + '\n')
   return hash.digest('hex')
 }
 
-export async function beginGate(probe: string) {
+export async function beginGate(probe: string, root = process.cwd()) {
   return {
-    ...(await revision()),
-    probeSha256: await hashFile(probe),
-    inputsSha256: await inputsFingerprint(),
+    ...(await revision(root)),
+    probeSha256: await hashFile(join(root, probe)),
+    inputsSha256: await inputsFingerprint(root),
   }
 }
 
@@ -131,11 +137,11 @@ export async function recordGate(entry: {
   exitCode: number
   probe: string
   started: Awaited<ReturnType<typeof beginGate>>
-}): Promise<LedgerEntry> {
-  const ledger = await readLedger()
-  const finished = await revision()
+}, root = process.cwd()): Promise<LedgerEntry> {
+  const ledger = await readLedger(root)
+  const finished = await revision(root)
   const inputsChangedDuringRun =
-    entry.started.inputsSha256 !== (await inputsFingerprint()) ||
+    entry.started.inputsSha256 !== (await inputsFingerprint(root)) ||
     entry.started.commit !== finished.commit
   const recorded: LedgerEntry = {
     gate: entry.gate,
@@ -153,11 +159,11 @@ export async function recordGate(entry: {
   ledger.note = emptyLedger.note
   ledger.entries.push(recorded)
   await writeFile(
-    `${ledgerPath}.tmp`,
+    join(root, `${ledgerPath}.tmp`),
     JSON.stringify(ledger, null, 2) + '\n',
     'utf8',
   )
-  await rename(`${ledgerPath}.tmp`, ledgerPath)
+  await rename(join(root, `${ledgerPath}.tmp`), join(root, ledgerPath))
   return recorded
 }
 
@@ -167,10 +173,13 @@ export interface GateState {
   detail: string
 }
 
-export async function ledgerState(gates: string[]): Promise<GateState[]> {
-  const ledger = await readLedger()
+export async function ledgerState(
+  gates: string[],
+  root = process.cwd(),
+): Promise<GateState[]> {
+  const ledger = await readLedger(root)
   const state: GateState[] = []
-  const current = await inputsFingerprint()
+  const current = await inputsFingerprint(root)
   for (const gate of gates) {
     const last = [...ledger.entries]
       .reverse()

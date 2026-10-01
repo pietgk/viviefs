@@ -8,7 +8,6 @@
     "platform:server"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
     "rationale": "Node composition root: authenticated sync RPCs over HTTP. The HTTP round trip runs in test-integration; P11 qualifies it."
   },
   "targets": {
@@ -20,7 +19,7 @@
         "^production"
       ],
       "options": {
-        "command": "pnpm exec vitest run",
+        "command": "pnpm exec vitest run --config vitest.integration.config.ts",
         "cwd": "apps/evidence-server"
       }
     }

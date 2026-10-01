@@ -9,7 +9,6 @@
     "platform:client"
   ],
   "metadata": {
-    "evidenceOwner": "storybook",
     "rationale": "Evidence screens, query atoms and stories"
   },
   "targets": {
@@ -27,7 +26,7 @@
       "cache": true,
       "inputs": ["default", "^production"],
       "options": {
-        "command": "pnpm exec vitest run src/intent-composer/IntentComposerScreen.stories.test.tsx",
+        "command": "pnpm exec vitest run --config vitest.storybook.config.ts",
         "cwd": "features/evidence/client"
       }
     }

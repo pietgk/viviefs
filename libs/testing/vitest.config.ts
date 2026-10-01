@@ -1,13 +1,3 @@
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { defineConfig } from 'vitest/config'
+import { projectTestConfig } from './src/vitest.ts'
 
-const root = dirname(fileURLToPath(import.meta.url))
-
-export default defineConfig({
-  root,
-  test: {
-    include: ['src/**/*.test.ts'],
-    environment: 'node',
-  },
-})
+export default projectTestConfig(import.meta.url, 'unit')

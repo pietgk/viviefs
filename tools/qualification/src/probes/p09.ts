@@ -2,7 +2,7 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as Effect from 'effect/Effect'
-import { P09_CHECK_COUNT, runP09 } from './p09-checks.ts'
+import { P09_CHECK_COUNT, runSyncProtocolChecks } from './p09-checks.ts'
 import { spanReviewDrift } from './p09-spans.ts'
 import { fail, writeJson } from './dev-client.ts'
 
@@ -12,7 +12,7 @@ const EVIDENCE = join(ROOT, 'docs/evidence/2026-09-22-p09.md')
 
 const run = async () => {
   await mkdir(ARTIFACTS, { recursive: true })
-  const { checks, spans } = await Effect.runPromise(runP09)
+  const { checks, spans } = await Effect.runPromise(runSyncProtocolChecks)
   if (checks.length !== P09_CHECK_COUNT) {
     fail(`P09: expected ${P09_CHECK_COUNT} checks, got ${checks.length}`)
   }

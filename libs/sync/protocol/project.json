@@ -9,7 +9,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
     "rationale": "Effect RPC sync contract shared by client and server"
   }
 }

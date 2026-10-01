@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { CHANGESET_TTL_MS } from '@viviefs/datom'
-import { P05_CHECK_COUNT, P05_CHECK_NAMES } from '@viviefs/testing'
+import { P05_CHECK_COUNT, P05_CHECK_NAMES } from '@viviefs/datom/suites'
 
 describe('P05 changeset picks', () => {
   it('pins a 24 hour open-changeset TTL', () => {

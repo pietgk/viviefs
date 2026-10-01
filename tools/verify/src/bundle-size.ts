@@ -1,8 +1,9 @@
 /**
  * verify quality / bundle-size. Gates each platform's shipped Hermes bundle
  * on the budget in `<app>/bundle-budget.json` and reports why it changed:
- * size against the recorded reference, and the packages whose share of the
- * minified JS grew or shrank most.
+ * size against the reference `pnpm verify baseline` recorded in the evidence
+ * lockfile (D77), and the packages whose share of the minified JS grew or
+ * shrank most.
  *
  * Inputs, exported by the app's `build` and `bundle-size` targets:
  *   .artifacts/verify/<app>/<platform>/**\/*.hbc          (shipped bundle)
@@ -10,24 +11,13 @@
  *
  * Usage: node --experimental-strip-types tools/verify/src/bundle-size.ts <app>
  */
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bytesPerPackage, bytesPerSource, type SourceMap } from './bundle-report.ts'
+import { LOCKFILE, type BundleReference, type Lockfile } from './lockfile.ts'
 
-type Reference = {
-  readonly label: string
-  readonly commit: string
-  readonly recordedAt: string
-  readonly hbcBytes: number
-  readonly jsBytes: number | null
-  readonly packages: Readonly<Record<string, number>>
-}
-
-type Budget = {
-  readonly budgetBytes: number
-  readonly references: Readonly<Record<string, Reference>>
-}
+type Budget = { readonly budgetBytes: number }
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
@@ -62,6 +52,8 @@ export type PlatformReport = {
   readonly overBudget: boolean
   readonly reference: { readonly label: string; readonly hbcBytes: number; readonly delta: number }
   readonly jsBytes: number | null
+  /** Every package's share of the minified JS: what baseline records. */
+  readonly packages: Readonly<Record<string, number>>
   readonly topPackages: ReadonlyArray<{ readonly name: string; readonly bytes: number }>
   readonly changes: ReadonlyArray<{ readonly name: string; readonly from: number; readonly to: number }>
 }
@@ -70,9 +62,9 @@ export const reportPlatform = (
   platform: string,
   hbcBytes: number,
   js: { readonly code: string; readonly map: SourceMap } | undefined,
-  budget: Budget,
+  budgetBytes: number,
+  reference: BundleReference | undefined,
 ): PlatformReport => {
-  const reference = budget.references[platform]
   const shares = js ? bytesPerPackage(bytesPerSource(js.code, js.map)) : []
   const now = new Map(shares.map((share) => [share.name, share.bytes]))
   const before = new Map(Object.entries(reference?.packages ?? {}))
@@ -84,14 +76,15 @@ export const reportPlatform = (
   return {
     platform,
     hbcBytes,
-    budgetBytes: budget.budgetBytes,
-    overBudget: hbcBytes > budget.budgetBytes,
+    budgetBytes,
+    overBudget: hbcBytes > budgetBytes,
     reference: {
-      label: reference ? `${reference.label} (${reference.commit}, ${reference.recordedAt})` : 'none recorded',
+      label: reference ? `baseline of ${reference.recordedAt}` : 'no baseline recorded',
       hbcBytes: reference?.hbcBytes ?? 0,
       delta: hbcBytes - (reference?.hbcBytes ?? 0),
     },
     jsBytes: js ? Buffer.byteLength(js.code) : null,
+    packages: Object.fromEntries(shares.map((share) => [share.name, share.bytes])),
     topPackages: shares.slice(0, 8),
     changes,
   }
@@ -126,6 +119,10 @@ const main = () => {
   const app = process.argv[2]
   if (!app) throw new Error('usage: bundle-size.ts <app directory, e.g. apps/evidence-mobile>')
   const budget = JSON.parse(readFileSync(join(ROOT, app, 'bundle-budget.json'), 'utf8')) as Budget
+  const lockfilePath = join(ROOT, LOCKFILE)
+  const references = existsSync(lockfilePath)
+    ? (JSON.parse(readFileSync(lockfilePath, 'utf8')) as Lockfile).bundle[app]
+    : undefined
   const name = app.split('/').at(-1) ?? app
   const out = join(ROOT, '.artifacts/verify', name)
   const reports: PlatformReport[] = []
@@ -139,7 +136,7 @@ const main = () => {
           map: JSON.parse(readFileSync(`${jsFile}.map`, 'utf8')) as SourceMap,
         }
       : undefined
-    const report = reportPlatform(platform, statSync(hbc).size, js, budget)
+    const report = reportPlatform(platform, statSync(hbc).size, js, budget.budgetBytes, references?.[platform])
     reports.push(report)
     console.log(formatReport(report))
   }

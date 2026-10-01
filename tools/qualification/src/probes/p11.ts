@@ -20,16 +20,16 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 import { oidcTokenVerifier } from '@viviefs/identity/oidc'
-import type { CheckResult } from '@viviefs/testing'
 import {
   TOKEN_CHECK_COUNT,
   makeFakeIssuer,
   runTokenVerifierChecks,
   type FakeIssuer,
-} from '@viviefs/testing/identity'
-import { serveFakeIssuer } from '@viviefs/testing/node'
+} from '@viviefs/identity/suites'
+import { serveFakeIssuer } from '@viviefs/identity/suites/node'
+import type { CheckResult } from '@viviefs/testing'
 import { writeJson } from './dev-client.ts'
-import { P11_NODE_CHECK_COUNT, runP11Node } from './p11-checks.ts'
+import { P11_NODE_CHECK_COUNT, runMembershipChecks } from './p11-checks.ts'
 import {
   judgeControl,
   P11_DEVICE_CHECK_NAMES,
@@ -112,7 +112,7 @@ const run = async () => {
   requirePass(tokens.fake, 'token contract on the fake verifier', TOKEN_CHECK_COUNT)
   requirePass(tokens.oidc, 'token contract on the OIDC verifier against a served fake', TOKEN_CHECK_COUNT)
 
-  const node = await Effect.runPromise(runP11Node)
+  const node = await Effect.runPromise(runMembershipChecks)
   await writeJson(ARTIFACTS, 'node.json', node.checks)
   requirePass(node.checks, 'Node checks', P11_NODE_CHECK_COUNT)
   const drift = spanReviewDrift(node.spans, await readFile(EVIDENCE, 'utf8'))

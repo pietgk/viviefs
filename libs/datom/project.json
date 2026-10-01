@@ -9,7 +9,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "unit",
     "rationale": "pure datom and HLC logic"
   },
   "targets": {

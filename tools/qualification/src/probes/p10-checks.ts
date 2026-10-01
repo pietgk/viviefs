@@ -17,14 +17,14 @@ import {
   otlpTraceSink,
   traceProjectorLayer,
 } from '@viviefs/telemetry'
+import type { MutableClock } from '@viviefs/datom/suites'
+import { expectedSpanIds } from '@viviefs/telemetry/suites'
+import type { CheckResult } from '@viviefs/testing'
 import {
-  expectedSpanIds,
   runTraceScenario,
-  type CheckResult,
-  type MutableClock,
   type StoreFactory,
   type TraceScenario,
-} from '@viviefs/testing'
+} from '@viviefs/workflow-engine/suites'
 import { spanIdFor, traceIdFor } from '@viviefs/workflow-engine'
 import { P10_SINKS, waitForSpanIds, type P10Sink, type SinkSpan } from './p10-sinks.ts'
 

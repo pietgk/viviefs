@@ -39,12 +39,9 @@ import {
   SyncAuthority,
   syncServerLayer,
 } from '@viviefs/sync-server'
-import type { CheckResult, MutableClock } from '@viviefs/testing'
-import {
-  fakeSignInSession,
-  makeFakeIssuer,
-  type FakeIssuer,
-} from '@viviefs/testing/identity'
+import type { MutableClock } from '@viviefs/datom/suites'
+import { fakeSignInSession, makeFakeIssuer, type FakeIssuer } from '@viviefs/identity/suites'
+import type { CheckResult } from '@viviefs/testing'
 
 export const catalog: Catalog = { types: [...evidenceCatalog.types] }
 

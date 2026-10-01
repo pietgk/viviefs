@@ -1,10 +1,6 @@
 import * as Effect from 'effect/Effect'
-import {
-  makeMutableClock,
-  P04_CHECK_COUNT,
-  runLogStoreChecks,
-  type CheckResult,
-} from '@viviefs/testing'
+import { makeMutableClock, P04_CHECK_COUNT, runLogStoreChecks } from '@viviefs/datom/suites'
+import type { CheckResult } from '@viviefs/testing'
 import { currentPlatform } from './probe-report.ts'
 
 export type P04RuntimeState = {

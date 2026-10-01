@@ -20,7 +20,8 @@ it('looks up stages and steps from the same table', () => {
   expect(findStage('static')?.steps.map((step) => step.name)).toContain(
     'lint-scope',
   )
-  expect(findStep('ownership')?.blurb).toMatch(/evidence owner/)
+  expect(findStep('ownership')?.blurb).toMatch(/file treatment/)
+  expect(findStage('quality')?.steps.map((step) => step.name)).toContain('evidence')
   expect(findStage('not-a-stage')).toBeUndefined()
   expect(findStep('not-a-step')).toBeUndefined()
 })

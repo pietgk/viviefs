@@ -10,6 +10,7 @@
  */
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 import * as Exit from 'effect/Exit'
 import * as Layer from 'effect/Layer'
 import * as ManagedRuntime from 'effect/ManagedRuntime'
@@ -26,6 +27,8 @@ import {
   liveClock,
   LogStore,
   orgId,
+  rowsOf,
+  SqlNumber,
 } from '@viviefs/datom'
 import { renameList } from '@viviefs/evidence-model'
 import {
@@ -50,6 +53,12 @@ import {
 } from './p11-platform'
 import { localStorageVault, P11_CONTROL, refusalsIgnored } from './p11-control.ts'
 import { currentPlatform } from './probe-report.ts'
+
+const OutboxCountRow = Schema.Struct({
+  org: Schema.String,
+  state: Schema.String,
+  n: SqlNumber,
+})
 
 export const P11_SLOT = '__viviefsP11'
 export const P11_ORGS = ['acme', 'other'] as const
@@ -244,9 +253,9 @@ export const startP11Device = (publish: (report: P11Report) => void): P11Device 
   const outboxCounts = (open: Replica) =>
     Effect.gen(function* () {
       const sql = Context.get(open.context, SqlClient.SqlClient)
-      const rows = yield* sql<{ org: string; state: string; n: unknown }>`
+      const rows = yield* sql`
         SELECT org, state, COUNT(*) AS n FROM outbox GROUP BY org, state
-      `
+      `.pipe(rowsOf(OutboxCountRow))
       const counts = (org: P11Org): OutboxCounts => {
         const of = (state: string) =>
           Number(rows.find((row) => row.org === org && row.state === state)?.n ?? 0)

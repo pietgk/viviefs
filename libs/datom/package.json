@@ -11,9 +11,16 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./suites": {
+      "@viviefs/source": "./src/suites/index.ts",
+      "types": "./src/suites/index.ts",
+      "import": "./src/suites/index.ts",
+      "default": "./src/suites/index.ts"
     }
   },
   "dependencies": {
+    "@viviefs/testing": "workspace:*",
     "effect": "4.0.0-rc.116"
   },
   "devDependencies": {

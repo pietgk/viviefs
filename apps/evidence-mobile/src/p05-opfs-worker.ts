@@ -4,9 +4,9 @@
 import './p02-opfs-import-meta.ts'
 import * as OpfsWorker from '@effect/sql-sqlite-wasm/OpfsWorker'
 import * as Effect from 'effect/Effect'
+import { workerPort } from '@viviefs/store-sqlite-wasm'
 
-const port = self as unknown as MessagePort &
-  EventTarget & { close: () => void }
+const port = workerPort()
 
 Effect.runFork(
   OpfsWorker.run({

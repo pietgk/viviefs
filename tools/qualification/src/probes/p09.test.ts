@@ -3,9 +3,9 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
-import { P09_CHECK_COUNT, runP09 } from './p09-checks.ts'
+import { P09_CHECK_COUNT, runSyncProtocolChecks } from './p09-checks.ts'
 import { spanReviewDrift } from './p09-spans.ts'
-import { runUnscoped } from '@viviefs/testing'
+import { runsSuite, runUnscoped } from '@viviefs/testing'
 
 const EVIDENCE = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -17,7 +17,7 @@ describe('P09 sync', () => {
     'replicates datoms with server authority',
     () =>
       runUnscoped(
-        runP09.pipe(
+        runSyncProtocolChecks.pipe(
           Effect.map(({ checks, spans }) => {
             expect(checks).toHaveLength(P09_CHECK_COUNT)
             const failed = checks.filter((check) => check.status !== 'PASS')
@@ -27,6 +27,6 @@ describe('P09 sync', () => {
           }),
         ),
       ),
-    60_000,
+    runsSuite('sync/protocol', 60_000),
   )
 })

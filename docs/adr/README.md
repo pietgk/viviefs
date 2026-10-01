@@ -33,7 +33,7 @@ gate. [GLOSSARY.md](../../GLOSSARY.md) defines terms.
 | [0022](0022-identity-and-organization-isolation.md) | Identity and organization isolation | Qualified | P11 |
 | [0023](0023-data-at-rest-and-crypto-shredding.md) | Data at rest and crypto-shredding | Proposed, unverified | P15, P16 |
 | [0024](0024-repository-structure.md) | Repository structure, tags, rules, generators | Qualified (boundaries, ownership, lint scope); generators unverified | verify (boundary lint) |
-| [0025](0025-ai-robust-guardrails.md) | AI-robust guardrails | Qualified (lint rules); crash-matrix rule unverified | verify |
+| [0025](0025-ai-robust-guardrails.md) | AI-robust guardrails | Qualified (lint rules, Schema at every boundary); per-workflow crash-matrix rule unverified | verify |
 | [0026](0026-verify-qualify-teach.md) | Verify - Qualify - Teach | Proposed, unverified | none (process) |
 | [0027](0027-developer-experience-planes.md) | Developer experience planes | Proposed, unverified | none (process) |
 | [0028](0028-typescript-7-cli-with-typescript-6-api.md) | TypeScript 7 CLI with TypeScript 6 API | Qualified | verify |

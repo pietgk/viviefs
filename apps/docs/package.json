@@ -20,6 +20,7 @@
   "devDependencies": {
     "@effect/vitest": "4.0.0-rc.116",
     "@types/mdast": "4.0.4",
+    "@viviefs/testing": "workspace:*",
     "effect": "4.0.0-rc.116",
     "vite": "8.3.0",
     "vitest": "5.0.1"

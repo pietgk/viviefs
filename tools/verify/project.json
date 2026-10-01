@@ -7,7 +7,6 @@
     "kind:tool"
   ],
     "metadata": {
-      "evidenceOwner": "unit",
       "rationale": "staged verify gate"
     },
     "targets": {

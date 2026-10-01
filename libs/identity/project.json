@@ -9,7 +9,17 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
     "rationale": "Identity service: fake, Keycloak/OIDC"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "libs/identity"
+      }
+    }
   }
 }

@@ -1,6 +1,10 @@
 import { describe, expect, it } from '@effect/vitest'
 import { Attr } from '@viviefs/datom'
-import { P06_CHECK_COUNT, P06_CHECK_NAMES, P06_DATOM_CHECK_COUNT } from '@viviefs/testing'
+import {
+  P06_CHECK_COUNT,
+  P06_CHECK_NAMES,
+  P06_DATOM_CHECK_COUNT,
+} from '@viviefs/workflow-engine/suites'
 
 describe('P06 engine crash matrix picks', () => {
   it('pins journal attribute names', () => {

@@ -9,7 +9,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
     "rationale": "OTLP config and trace projector"
   },
   "targets": {
@@ -22,6 +21,15 @@
       ],
       "options": {
         "command": "pnpm exec vitest run",
+        "cwd": "libs/telemetry"
+      }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run --config vitest.integration.config.ts",
         "cwd": "libs/telemetry"
       }
     }

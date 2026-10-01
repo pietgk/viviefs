@@ -5,11 +5,13 @@ Status: Proposed, unverified
 Date: 2026-09-20. Amended 2026-09-29: a pattern is accepted on its guide.
 Amended again 2026-09-29 (Docs and teaching grilling): verify and qualify are
 separated by what a check needs, not by speed; acceptance needs current gates.
+Amended 2026-09-30 (Evidence ownership design review): per-file treatments and
+suites replace the per-project evidence owner.
 
 Qualifying gate: none (process). The pattern is the process; later ADRs are
 qualified under it.
 
-Related: D28-D30, D46, D48', D59-D74.
+Related: D28-D30, D46, D48', D59-D80.
 [Verify - Qualify - Teach](../plan/bootstrap/05-verify-qualify-teach.md),
 [Gates](../plan/bootstrap/06-qualification-gates.md). Principles adapted from
 complyj ADR 0006.
@@ -78,6 +80,17 @@ a check, qualify records it as the claim. There is no third mode. `pnpm
 verify baseline` is the one command that writes the lockfile. Time is
 reported, not gated.
 
+**Evidence is owned per file** (amendment 2026-09-30, Evidence ownership
+design review, D75-D79). The per-project evidence owner becomes a registry of
+every production file, each with one **file treatment** (the verify step that
+produces its evidence and the verdict applied) and a written rationale. Which
+contract was checked is a separate axis: a **suite** checks one aspect of one
+pattern's contract (`<pattern>/<aspect>`), and a registry entry names the
+suites run against the file. This refines D71, which listed conformance,
+crash matrix and probe host checks among the treatments. Exact coverage is
+judged only against the file's owning producer and recorded in the evidence
+lockfile, written by `pnpm verify baseline` alone.
+
 **Acceptance needs current gates** (D63). Before a guide is recorded as
 accepted, its gates run and pass on that commit, and the commit names the
 ledger run. `verify` checks that guide and ADR statuses agree; it does not
@@ -116,6 +129,17 @@ Schedule: evidence owners are declared per project but not checked against
 what runs, and there is no coverage lockfile (D71); the crash matrix runs only
 in P06, not in verify (D71); the `ui` stage's `storybook` step is Vitest with
 jsdom, and no story runs in a real browser or on a device (D72).
+
+2026-10-01, Evidence ownership (D75-D80). Every production file has one file
+treatment in the registry (226 files), checked by `ownership` in `static`. The
+coverage producers `unit`, `integration` and `storybook` are one root Vitest
+run each, with Istanbul coverage limited to the files they own; `evidence` in
+`quality` fails when an owned tuple differs from `evidence-baseline.json`,
+when a named suite or a declared suite has no passing test, when stories or a
+process entry's test did not pass, or when the registry or the coverage
+provider changed. `pnpm verify baseline` ran each producer three times with
+identical tuples before writing the lockfile. A deliberately uncovered
+function in `libs/datom` fails `evidence`, naming the file and both tuples.
 
 2026-09-30, Docs skeleton. The docs site (`apps/docs`, Starlight) renders the
 ADRs and evidence notes in place. `verify` builds it in `quality`: a link to a

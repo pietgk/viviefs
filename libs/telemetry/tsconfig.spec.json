@@ -7,6 +7,6 @@
     "types": ["node"],
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.test.ts", "src/**/*.ts", "vitest.config.ts"],
+  "include": ["src/**/*.test.ts", "src/**/*.ts", "vitest*.config.ts"],
   "references": [{ "path": "./tsconfig.lib.json" }]
 }

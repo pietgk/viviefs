@@ -12,26 +12,21 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./identity": {
-      "@viviefs/source": "./src/identity.ts",
-      "types": "./src/identity.ts",
-      "import": "./src/identity.ts",
-      "default": "./src/identity.ts"
-    },
     "./node": {
       "@viviefs/source": "./src/node.ts",
       "types": "./src/node.ts",
       "import": "./src/node.ts",
       "default": "./src/node.ts"
+    },
+    "./vitest": {
+      "@viviefs/source": "./src/vitest.ts",
+      "types": "./src/vitest.ts",
+      "import": "./src/vitest.ts",
+      "default": "./src/vitest.ts"
     }
   },
   "dependencies": {
-    "@viviefs/datom": "workspace:*",
-    "@viviefs/identity": "workspace:*",
-    "@viviefs/telemetry": "workspace:*",
-    "@viviefs/workflow-engine": "workspace:*",
-    "effect": "4.0.0-rc.116",
-    "jose": "6.2.12"
+    "effect": "4.0.0-rc.116"
   },
   "devDependencies": {
     "@effect/vitest": "4.0.0-rc.116",

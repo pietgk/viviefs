@@ -1,8 +1,10 @@
 /**
  * Datom-backed WorkflowEngine (D10, D39), the P06 crash-matrix harness,
  * the P07 launch sweep / wake-scheduler ports, and the P10 durable span
- * identity. First exemplars: `libs/testing/src/crash-matrix.ts`,
- * `libs/testing/src/launch-sweep.ts` and `libs/telemetry/src/projector.ts`.
+ * identity. Its suites (D80) are `@viviefs/workflow-engine/suites`:
+ * `src/suites/crash-matrix.ts`, `src/suites/launch-sweep.ts` and
+ * `src/suites/trace-scenario.ts`, run on each store by the
+ * `*.integration.test.ts` files here.
  */
 export { EngineConfig, engineConfigLayer } from './config.ts'
 export {

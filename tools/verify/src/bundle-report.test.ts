@@ -46,24 +46,20 @@ describe('bundle attribution', () => {
 })
 
 describe('bundle-size gate', () => {
-  const budget = {
-    budgetBytes: 1000,
-    references: {
-      ios: { label: 'ref', commit: 'abc', recordedAt: '2026-09-27', hbcBytes: 600, jsBytes: 8, packages: { 'a.js': 8 } },
-    },
-  }
+  const reference = { recordedAt: '2026-09-27', hbcBytes: 600, jsBytes: 8, packages: { 'a.js': 8 } }
   const js = { code: 'aaaa\nbbb', map: { sources: ['a.js', 'b.js'], mappings: 'AAAA,ECAA;AAAA' } }
 
   it('passes under the budget and reports the change against the reference', () => {
-    const report = reportPlatform('ios', 900, js, budget)
+    const report = reportPlatform('ios', 900, js, 1000, reference)
     expect(report.overBudget).toBe(false)
     expect(report.reference.delta).toBe(300)
     expect(report.changes).toEqual([])
-    expect(formatReport(report)).toContain('vs ref (abc, 2026-09-27)')
+    expect(formatReport(report)).toContain('vs baseline of 2026-09-27')
+    expect(report.packages).toEqual({ 'a.js': 2, 'b.js': 6 })
   })
 
   it('fails over the budget', () => {
-    const report = reportPlatform('ios', 1001, js, budget)
+    const report = reportPlatform('ios', 1001, js, 1000, reference)
     expect(report.overBudget).toBe(true)
     expect(formatReport(report)).toContain('OVER BUDGET')
   })

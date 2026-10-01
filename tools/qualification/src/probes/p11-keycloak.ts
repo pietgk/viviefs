@@ -14,8 +14,8 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 import { oidcTokenVerifier } from '@viviefs/identity/oidc'
+import { runTokenVerifierChecks } from '@viviefs/identity/suites'
 import type { CheckResult } from '@viviefs/testing'
-import { runTokenVerifierChecks } from '@viviefs/testing/identity'
 import {
   AUDIENCE,
   LAB_USERS,

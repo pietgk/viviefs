@@ -9,7 +9,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "crash-matrix",
     "rationale": "datom-backed WorkflowEngine"
   },
   "targets": {
@@ -19,6 +18,15 @@
       "inputs": ["default", "^production"],
       "options": {
         "command": "pnpm exec vitest run",
+        "cwd": "libs/workflow-engine"
+      }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run --config vitest.integration.config.ts",
         "cwd": "libs/workflow-engine"
       }
     }

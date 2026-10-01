@@ -1,6 +1,7 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
+import * as Schema from 'effect/Schema'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
 import type { SqlError } from 'effect/unstable/sql/SqlError'
 import { HlcClock, HlcDevice, HlcEntropy } from './clock.ts'
@@ -16,6 +17,7 @@ import {
   type Tx,
 } from './hlc.ts'
 import { migrateLogStore } from './migrate.ts'
+import { DatomRow, SqlNumber, rowsOf } from './rows.ts'
 import {
   FutureSkew,
   InvalidTx,
@@ -77,18 +79,37 @@ type PersistedHlc = {
 
 const asSeq = (value: unknown): number => Number(value)
 
+const HlcStateRow = Schema.Struct({
+  last_pt: SqlNumber,
+  last_c: SqlNumber,
+  last_tx: Schema.String,
+  offset_ms: SqlNumber,
+})
+
+const SeqRow = Schema.Struct({ seq: SqlNumber })
+
+const ChangesetRow = Schema.Struct({
+  cs: Schema.String,
+  actor: Schema.String,
+  device: Schema.String,
+  lease_epoch: Schema.NullOr(SqlNumber),
+  trace_id: Schema.String,
+  span_id: Schema.String,
+  sampled: SqlNumber,
+  command: Schema.String,
+  accepted_at: Schema.NullOr(SqlNumber),
+})
+
+const DeviceRow = Schema.Struct({ device: Schema.String })
+
+const HorizonRow = Schema.Struct({ horizon: Schema.NullOr(SqlNumber) })
+
+const ChangesRow = Schema.Struct({ n: SqlNumber })
+
 const escapeLike = (value: string): string =>
   value.replace(/!/g, '!!').replace(/%/g, '!%').replace(/_/g, '!_')
 
-const readStored = (row: {
-  seq: unknown
-  e: string
-  a: string
-  v: string
-  tx: string
-  op: 'assert' | 'retract'
-  cs: string
-}): StoredDatom => ({
+const readStored = (row: typeof DatomRow.Type): StoredDatom => ({
   seq: asSeq(row.seq),
   e: row.e,
   a: row.a,
@@ -111,12 +132,9 @@ export const layer = Layer.effect(
 
     const load = (): Effect.Effect<PersistedHlc, SqlError> =>
       Effect.gen(function* () {
-        const rows = yield* sql<{
-          last_pt: unknown
-          last_c: unknown
-          last_tx: string
-          offset_ms: unknown
-        }>`SELECT last_pt, last_c, last_tx, offset_ms FROM hlc_state WHERE id = 1`
+        const rows = yield* sql`SELECT last_pt, last_c, last_tx, offset_ms FROM hlc_state WHERE id = 1`.pipe(
+          rowsOf(HlcStateRow),
+        )
         const row = rows[0]
         if (!row) return { last: null, offsetMs: 0 }
         const tx = row.last_tx as Tx
@@ -230,7 +248,7 @@ export const layer = Layer.effect(
           let inserted = 0
           let duplicates = 0
           for (const datom of datoms) {
-            const rows = yield* sql<{ seq: unknown }>`
+            const rows = yield* sql`
               INSERT INTO datoms (e, a, v, tx, op, cs)
               VALUES (
                 ${datom.e},
@@ -242,7 +260,7 @@ export const layer = Layer.effect(
               )
               ON CONFLICT (tx) DO NOTHING
               RETURNING seq
-            `
+            `.pipe(rowsOf(SeqRow))
             if (rows.length === 0) duplicates += 1
             else inserted += 1
           }
@@ -252,22 +270,12 @@ export const layer = Layer.effect(
     })
 
     const envelope = Effect.fn('LogStore.envelope')(function* (cs: string) {
-      const rows = yield* sql<{
-        cs: string
-        actor: string
-        device: string
-        lease_epoch: unknown
-        trace_id: string
-        span_id: string
-        sampled: unknown
-        command: string
-        accepted_at: unknown
-      }>`
+      const rows = yield* sql`
         SELECT cs, actor, device, lease_epoch, trace_id, span_id, sampled, command,
           accepted_at
         FROM changesets
         WHERE cs = ${cs}
-      `
+      `.pipe(rowsOf(ChangesetRow))
       const row = rows[0]
       if (!row) return null
       return {
@@ -287,21 +295,13 @@ export const layer = Layer.effect(
       cursor: Cursor,
       limit?: number,
     ) {
-      const rows = yield* sql<{
-        seq: unknown
-        e: string
-        a: string
-        v: string
-        tx: string
-        op: 'assert' | 'retract'
-        cs: string
-      }>`
+      const rows = yield* sql`
         SELECT seq, e, a, v, tx, op, cs
         FROM datoms
         WHERE seq > ${cursor}
         ORDER BY seq
         ${limit === undefined ? sql`` : sql`LIMIT ${limit}`}
-      `
+      `.pipe(rowsOf(DatomRow))
       return rows.map(readStored)
     })
 
@@ -309,20 +309,12 @@ export const layer = Layer.effect(
       prefix: string,
     ) {
       const pattern = `${escapeLike(prefix)}%`
-      const rows = yield* sql<{
-        seq: unknown
-        e: string
-        a: string
-        v: string
-        tx: string
-        op: 'assert' | 'retract'
-        cs: string
-      }>`
+      const rows = yield* sql`
         SELECT seq, e, a, v, tx, op, cs
         FROM datoms
         WHERE e LIKE ${pattern} ESCAPE '!'
         ORDER BY e, a, tx
-      `
+      `.pipe(rowsOf(DatomRow))
       return rows.map(readStored)
     })
 
@@ -340,24 +332,24 @@ export const layer = Layer.effect(
     const acknowledged = Effect.fn('LogStore.acknowledged')(function* (
       consumer: string,
     ) {
-      const rows = yield* sql<{ seq: unknown }>`
+      const rows = yield* sql`
         SELECT seq FROM device_cursors WHERE device = ${consumer}
-      `
+      `.pipe(rowsOf(SeqRow))
       const value = rows[0]?.seq
       return value == null ? null : asSeq(value)
     })
 
     const holder = Effect.gen(function* () {
-      const rows = yield* sql<{ device: string }>`
+      const rows = yield* sql`
         SELECT device FROM device_cursors ORDER BY seq ASC, device ASC LIMIT 1
-      `
+      `.pipe(rowsOf(DeviceRow))
       return rows[0]?.device ?? null
     })
 
     const horizon = Effect.fn('LogStore.horizon')(function* () {
-      const rows = yield* sql<{ horizon: unknown }>`
+      const rows = yield* sql`
         SELECT MIN(seq) AS horizon FROM device_cursors
-      `
+      `.pipe(rowsOf(HorizonRow))
       const value = rows[0]?.horizon
       return value == null ? 0 : asSeq(value)
     })
@@ -370,20 +362,20 @@ export const layer = Layer.effect(
         sqlite: () =>
           Effect.gen(function* () {
             yield* sql`DELETE FROM datoms WHERE seq <= ${at}`
-            const rows = yield* sql<{ n: unknown }>`SELECT changes() AS n`
+            const rows = yield* sql`SELECT changes() AS n`.pipe(rowsOf(ChangesRow))
             return asSeq(rows[0]?.n ?? 0)
           }),
         pg: () =>
           Effect.gen(function* () {
-            const rows = yield* sql<{ seq: unknown }>`
+            const rows = yield* sql`
               DELETE FROM datoms WHERE seq <= ${at} RETURNING seq
-            `
+            `.pipe(rowsOf(SeqRow))
             return rows.length
           }),
         orElse: () =>
           Effect.gen(function* () {
             yield* sql`DELETE FROM datoms WHERE seq <= ${at}`
-            const rows = yield* sql<{ n: unknown }>`SELECT changes() AS n`
+            const rows = yield* sql`SELECT changes() AS n`.pipe(rowsOf(ChangesRow))
             return asSeq(rows[0]?.n ?? 0)
           }),
       })

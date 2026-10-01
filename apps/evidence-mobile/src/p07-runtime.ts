@@ -30,7 +30,8 @@ import {
   type DeferredNotificationData,
 } from '@viviefs/platform-native'
 import { otlpJsonLayer } from '@viviefs/telemetry'
-import { LAB_PERSON, P07_PARKED_ATTR, type CheckResult } from '@viviefs/testing'
+import type { CheckResult } from '@viviefs/testing'
+import { LAB_PERSON, P07_PARKED_ATTR } from '@viviefs/workflow-engine/suites'
 import {
   engineConfigLayer,
   engineLayer,

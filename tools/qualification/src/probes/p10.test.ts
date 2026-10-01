@@ -4,12 +4,9 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
-import {
-  judgeTraceProjection,
-  makeMutableClock,
-  runTraceProjection,
-  runUnscoped,
-} from '@viviefs/testing'
+import { makeMutableClock } from '@viviefs/datom/suites'
+import { judgeTraceProjection, runTraceProjection } from '@viviefs/telemetry/suites'
+import { runUnscoped } from '@viviefs/testing'
 import { withTempDirectory } from '@viviefs/testing/node'
 import { spanReviewDrift } from './p10-review.ts'
 

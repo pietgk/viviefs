@@ -26,6 +26,7 @@ const algorithmName = (algorithm: DigestAlgorithm): string => {
   return algorithm.name
 }
 
+// eslint-disable-next-line no-restricted-syntax -- D79 exception: Hermes has no `crypto`; the declared global describes Node and the DOM, not the runtime this patches.
 const cryptoRoot = globalThis as unknown as {
   crypto?: Partial<CryptoShim>
 }

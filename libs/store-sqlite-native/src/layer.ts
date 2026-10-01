@@ -30,6 +30,7 @@ export class DatabaseNotDeleted extends Schema.TaggedError<DatabaseNotDeleted>()
 // op-sqlite 18.2.5's declarations re-export without file extensions, which
 // `nodenext` resolution cannot follow, so its named exports look empty to
 // TypeScript. The runtime module has them; name the one this file needs.
+// eslint-disable-next-line no-restricted-syntax -- D79 exception: op-sqlite's published declarations cannot be resolved (above); this names the one runtime export used.
 const { open } = OpSqlite as unknown as {
   readonly open: (options: { readonly name: string }) => {
     readonly delete: () => void

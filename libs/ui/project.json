@@ -9,7 +9,6 @@
     "platform:client"
   ],
   "metadata": {
-    "evidenceOwner": "storybook",
     "rationale": "design-system components"
   },
   "targets": {

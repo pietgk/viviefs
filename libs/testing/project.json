@@ -9,8 +9,7 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
-    "rationale": "fakes, conformance suites, crash-matrix harness"
+    "rationale": "generic test helpers and the suite catalogue (D80)"
   },
   "targets": {
     "test": {

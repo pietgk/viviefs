@@ -1,6 +1,12 @@
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
 import type { SqlError } from 'effect/unstable/sql/SqlError'
+import { rowsOf } from './rows.ts'
+
+const NameRow = Schema.Struct({
+  name: Schema.String,
+})
 
 const migrateSqlite = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
@@ -27,7 +33,7 @@ const migrateSqlite = Effect.gen(function* () {
     command TEXT NOT NULL,
     accepted_at INTEGER
   )`
-  const columns = yield* sql<{ name: string }>`PRAGMA table_info(changesets)`
+  const columns = yield* sql`PRAGMA table_info(changesets)`.pipe(rowsOf(NameRow))
   if (!columns.some((column) => column.name === 'accepted_at')) {
     yield* sql`ALTER TABLE changesets ADD COLUMN accepted_at INTEGER`
   }

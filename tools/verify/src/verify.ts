@@ -1,11 +1,20 @@
-import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { appendFile, readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { execFileSync, spawn } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
+import { appendFile, readFile, writeFile } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { NodeRuntime, NodeServices } from '@effect/platform-node'
 import { Clock, Effect, Runtime, Schema } from 'effect'
 import { Argument, Command } from 'effect/unstable/cli'
+import { SUITES } from '@viviefs/testing'
+import { BASELINE_RUNS, bundleReferences, composeLockfile, unstableTuples } from './baseline.ts'
+import type { PlatformReport } from './bundle-size.ts'
+import { coverageProvider, loadRuns } from './evidence-artifacts.ts'
+import { REGISTRY } from './evidence-registry.ts'
+import { judgeEvidence } from './evidence.ts'
+import { owningProducer } from './file-treatments.ts'
+import { LOCKFILE, registryDigest, stableJson, type Lockfile } from './lockfile.ts'
 import { DOCS_ONLY_STEPS, changedPaths, isDocsOnly } from './docs-only.ts'
 import {
   ROOT,
@@ -252,6 +261,109 @@ const applyDocsOnlyRule = Effect.fnUntraced(function* (
   return selectStages(DOCS_ONLY_STEPS)
 })
 
+class BaselineRefused extends Schema.TaggedError<BaselineRefused>()('BaselineRefused', {
+  reason: Schema.String,
+}) {
+  override readonly [Runtime.errorExitCode] = 1
+  override readonly [Runtime.errorReported] = false
+}
+
+/** Each verify run has an id, so the evidence step judges only this run's producers. */
+const startRun = (prefix: string) =>
+  Effect.sync(() => {
+    process.env.VIVIEFS_VERIFY_RUN = `${prefix}-${randomUUID()}`
+    return process.env.VIVIEFS_VERIFY_RUN
+  })
+
+const refuse = (reason: string) =>
+  Effect.gen(function* () {
+    yield* writeErr(`\n  Baseline not written: ${reason}\n`)
+    return yield* new BaselineRefused({ reason })
+  })
+
+const runSteps = Effect.fnUntraced(function* (names: ReadonlyArray<string>) {
+  for (const name of names) {
+    const step = findStep(name)
+    if (!step) return yield* refuse(`no verify step ${name}`)
+    const row = yield* runStep(step)
+    yield* writeOut(`${formatRow(row)}\n`)
+    if (row.status === FAIL) {
+      yield* writeOut(row.output)
+      return yield* refuse(`${name} failed`)
+    }
+  }
+})
+
+const bundleApps = () =>
+  STAGES.flatMap((stage) => stage.steps).some(({ name }) => name === 'bundle-size')
+    ? execFileSync('git', ['ls-files', '*project.json'], { cwd: ROOT, encoding: 'utf8' })
+        .split('\n')
+        .filter((path) => path !== '' && !/^(?:repos|vendor|\.agents)\//.test(path))
+        .filter((path) => {
+          const targets = (JSON.parse(readFileSync(join(ROOT, path), 'utf8')) as { targets?: object }).targets
+          return targets !== undefined && 'bundle-size' in targets
+        })
+        .map((path) => path.replace(/\/project\.json$/, ''))
+    : []
+
+/**
+ * `pnpm verify baseline` (D70, D77): runs the coverage producers three times,
+ * refuses when evidence does not hold or a tuple varies, measures the bundles,
+ * and writes the evidence lockfile. Never part of done.
+ */
+const runBaseline = Effect.fnUntraced(function* () {
+  const digest = registryDigest(REGISTRY)
+  const producers = [...new Set(REGISTRY.map(owningProducer).filter((producer) => producer !== undefined))]
+  const attempts = []
+  for (let attempt = 1; attempt <= BASELINE_RUNS; attempt++) {
+    const run = yield* startRun('baseline')
+    yield* writeOut(`\n  Baseline run ${attempt} of ${BASELINE_RUNS}\n`)
+    yield* runSteps(['unit', 'integration', 'storybook'])
+    const { issues, tuples } = judgeEvidence({
+      registry: REGISTRY,
+      digest,
+      suites: SUITES,
+      runs: loadRuns(run),
+      lockfile: undefined,
+    })
+    const blocking = issues.filter((issue) => !issue.startsWith('No evidence lockfile'))
+    if (blocking.length > 0) {
+      return yield* refuse(`evidence does not hold:\n${blocking.map((issue) => `    ${issue}`).join('\n')}`)
+    }
+    attempts.push(tuples)
+  }
+  const unstable = unstableTuples(attempts)
+  if (unstable.length > 0) {
+    return yield* refuse(
+      `coverage differs between runs, a flaky test to fix first:\n${unstable.map((line) => `    ${line}`).join('\n')}`,
+    )
+  }
+  yield* writeOut('\n  Bundles\n')
+  yield* runSteps(['build', 'bundle-size'])
+  const today = new Date(yield* Clock.currentTimeMillis).toISOString().slice(0, 10)
+  const bundle: Record<string, Lockfile['bundle'][string]> = {}
+  for (const app of bundleApps()) {
+    const name = app.split('/').at(-1) ?? app
+    const reports = JSON.parse(
+      readFileSync(join(ROOT, '.artifacts/verify', name, 'bundle-report.json'), 'utf8'),
+    ) as ReadonlyArray<PlatformReport>
+    bundle[app] = bundleReferences(reports, today)
+  }
+  const provider = coverageProvider()
+  const lockfile = composeLockfile({
+    digest,
+    providers: Object.fromEntries(producers.map((producer) => [producer, provider])),
+    tuples: attempts[0] ?? {},
+    bundle,
+  })
+  yield* Effect.promise(() => writeFile(join(ROOT, LOCKFILE), stableJson(lockfile)))
+  const files = Object.values(lockfile.coverage).reduce((sum, owned) => sum + Object.keys(owned ?? {}).length, 0)
+  yield* writeOut(
+    `\n  Wrote ${LOCKFILE}: ${files} exact tuples, the same in ${BASELINE_RUNS} runs; bundles of ${Object.keys(bundle).join(', ')}.\n` +
+      '  Review the diff before committing it.\n',
+  )
+})
+
 const selectors = Argument.String('selector').pipe(
   Argument.withDescription('stage or step name, or all'),
   Argument.variadic(),
@@ -266,6 +378,14 @@ export const verify = Command.make(
       return
     }
     yield* assertNodeVersion()
+    if (names.includes('baseline')) {
+      if (names.length > 1) {
+        yield* writeErr('`pnpm verify baseline` takes no other selector.\n')
+        return yield* new UnknownSelectorError({ selector: names.join(' ') })
+      }
+      return yield* runBaseline()
+    }
+    yield* startRun('verify')
     const selected = yield* applyDocsOnlyRule(names)
     if (selected._tag === 'Unknown') {
       yield* writeErr(

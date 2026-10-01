@@ -14,12 +14,8 @@ import { pgliteLogStore } from '@viviefs/store-postgres'
 import { bearerAuthenticationClient } from '@viviefs/sync-client'
 import { SyncRpcs } from '@viviefs/sync-protocol'
 import { Memberships } from '@viviefs/sync-server'
-import {
-  fakeSignInSession,
-  tokenSignInSession,
-  type FakeIssuer,
-} from '@viviefs/testing/identity'
-import { serveFakeIssuer } from '@viviefs/testing/node'
+import { fakeSignInSession, tokenSignInSession, type FakeIssuer } from '@viviefs/identity/suites'
+import { serveFakeIssuer } from '@viviefs/identity/suites/node'
 import { RPC_PATH, evidenceServerLayer } from './server.ts'
 
 const AUDIENCE = 'viviefs-sync'

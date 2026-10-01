@@ -31,6 +31,16 @@ const nxTarget = (target: string): Invocation => ({
 })
 
 /**
+ * One Vitest run from the workspace root per coverage producer (D77), over the
+ * projects that declare its target; see `producers.ts`.
+ */
+const coverageProducer = (producer: 'unit' | 'integration' | 'storybook'): Invocation => ({
+  command: 'pnpm',
+  args: ['exec', 'vitest', 'run', '--config', 'tools/verify/vitest.producer.config.ts'],
+  env: { VIVIEFS_COVERAGE_PRODUCER: producer },
+})
+
+/**
  * The five stages of `verify`, in the order a failure invalidates what follows.
  *
  * Fail fast BETWEEN stages; collect every failure WITHIN a stage.
@@ -76,7 +86,7 @@ export const STAGES: Stage[] = [
       },
       {
         name: 'ownership',
-        blurb: 'every project.json declares tags and an evidence owner',
+        blurb: 'every project is tagged; every production file has one file treatment',
         invocations: [
           {
             command: 'node',
@@ -119,19 +129,19 @@ export const STAGES: Stage[] = [
     steps: [
       {
         name: 'unit',
-        blurb: 'unit tests on projects that declare a test target',
-        invocations: [nxTarget('test')],
+        blurb: 'unit tests of every project with a test target, with coverage',
+        invocations: [coverageProducer('unit')],
       },
     ],
   },
   {
     name: 'integration',
-    blurb: 'conformance suites and crash matrix',
+    blurb: 'suites and tests that need a real store or server',
     steps: [
       {
         name: 'integration',
-    blurb: 'conformance suite against sqlite-node and postgres',
-        invocations: [nxTarget('test-integration')],
+        blurb: 'log-store, changesets, engine and projection suites on sqlite-node and PGlite, with coverage',
+        invocations: [coverageProducer('integration')],
       },
     ],
   },
@@ -141,8 +151,8 @@ export const STAGES: Stage[] = [
     steps: [
       {
         name: 'storybook',
-        blurb: 'web and shared component stories (P08 capture screen)',
-        invocations: [nxTarget('test-storybook')],
+        blurb: 'component stories, jsdom until P12 (P08 capture screen), with coverage',
+        invocations: [coverageProducer('storybook')],
       },
       {
         name: 'e2e-web',
@@ -162,7 +172,7 @@ export const STAGES: Stage[] = [
       },
       {
         name: 'bundle-size',
-        blurb: 'gated JS bundle size (baseline recorded at P01)',
+        blurb: 'gated JS bundle size, compared with the reference verify baseline recorded',
         invocations: [nxTarget('bundle-size')],
       },
       {
@@ -184,6 +194,19 @@ export const STAGES: Stage[] = [
             args: [
               '--experimental-strip-types',
               'tools/verify/src/check-diagrams.ts',
+            ],
+          },
+        ],
+      },
+      {
+        name: 'evidence',
+        blurb: 'coverage, suites and stories of this run hold against the registry and the lockfile',
+        invocations: [
+          {
+            command: 'node',
+            args: [
+              '--experimental-strip-types',
+              'tools/verify/src/check-evidence.ts',
             ],
           },
         ],
@@ -254,6 +277,7 @@ export const formatHelp = (invoke = 'pnpm verify'): string => {
   lines.push(`  ${invoke} static            one stage`)
   lines.push(`  ${invoke} lint unit         any mix of stages and steps`)
   lines.push(`  ${invoke} all               every stage, even for a docs-only change`)
+  lines.push(`  ${invoke} baseline          records the evidence lockfile; never part of done`)
   lines.push('')
   lines.push(`  Docs-only rule: without a selector, a change that touches only`)
   lines.push(`  ${DOCS_ONLY_PATHS.map(({ label }) => label).join(', ')}`)

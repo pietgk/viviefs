@@ -9,7 +9,6 @@
     "platform:client"
   ],
   "metadata": {
-    "evidenceOwner": "e2e-native",
     "rationale": "Expo polyfills, notifications, background task adapters"
   }
 }

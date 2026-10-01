@@ -15,8 +15,10 @@
   "dependencies": {
     "@effect/platform-node": "4.0.0-rc.116",
     "@effect/vitest": "4.0.0-rc.116",
+    "@viviefs/testing": "workspace:*",
     "effect": "4.0.0-rc.116",
-    "eslint": "10.11.0"
+    "eslint": "10.11.0",
+    "typescript": "npm:@typescript/typescript6@6.0.2"
   },
   "devDependencies": {
     "vite": "8.3.0",

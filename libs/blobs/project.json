@@ -9,7 +9,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "unit",
     "rationale": "content-hash file store; P09 waits on the manifest"
   }
 }

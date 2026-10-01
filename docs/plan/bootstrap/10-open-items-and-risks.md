@@ -2,7 +2,7 @@
 
 ## Freeze, named-slot, hypothesis
 
-A scaffolding session treats these differently. Grilling decisions D1-D74 remain accepted intent, unverified until
+A scaffolding session treats these differently. Grilling decisions D1-D80 remain accepted intent, unverified until
 the named gate.
 
 **Freeze** (scaffold as specified; ask before changing):
@@ -80,7 +80,7 @@ as `Pnn.k`, other work by name.
 | Order | Work | What |
 | --- | --- | --- |
 | 1 | Housekeeping (done 2026-09-29; P01-P11 passed in one sequential run on `54e724786`) | Qualify ADR-0024, 0025 and 0028-0031 against `verify` with checks that can fail; explain "Hermes inspector did not appear"; clear the Effect language-service suggestions; draft upstream issues (not filed); renumber gates; amend ADR-0026 (acceptance on the guide); one handover; a sequential P01-P11 run |
-| 2 | Docs and teaching | In this order (D74): **Recording** the grilling (D59-D74); **Skills** update, after an include/adapt list is reviewed (D69; done 2026-09-29, ADR-0001 and ADR-0027 amended); **Docs skeleton**: `apps/docs` with the `.lavish/` move, Mermaid integrity and the docs-only rule (D59-D61, D68; done 2026-09-30); **Evidence ownership**: treatments, coverage lockfile, crash matrix in `verify` and Schema at every boundary, after a design review of the treatment list, closed by one sequential run (D70, D71); **Log-store guide**, which settles the guide template (D62-D67); **App shell**, below; **Durable workflow guide**; **Identity guide**; then the other guides (D65) |
+| 2 | Docs and teaching | In this order (D74): **Recording** the grilling (D59-D74); **Skills** update, after an include/adapt list is reviewed (D69; done 2026-09-29, ADR-0001 and ADR-0027 amended); **Docs skeleton**: `apps/docs` with the `.lavish/` move, Mermaid integrity and the docs-only rule (D59-D61, D68; done 2026-09-30); **Evidence ownership**: file treatments, coverage lockfile, engine suites in `verify` and Schema at every boundary (D70, D71; design review 2026-09-30, D75-D80; built 2026-10-01, `verify` green), closed by one sequential run (pending); **Log-store guide**, which settles the guide template (D62-D67); **App shell**, below; **Durable workflow guide**; **Identity guide**; then the other guides (D65) |
 | 2, App shell | P12 UI on every platform, P13 Links and routing | One grilling for both, design review, gates; closed by one sequential run. P08 re-runs on the rewritten IntentComposer view (D72, D73) |
 | 3 | P14 Quarantine after a lost lease | Grilling, design review, gate |
 | 4 | P15 Encrypted store, P16 Crypto-shredding, P17 Browser engine leader | In that order |
@@ -97,13 +97,13 @@ Found in the Docs and teaching grilling; each has a decision and a place in the 
 
 | Drift | Design source | Fixed in |
 | --- | --- | --- |
-| The crash matrix runs only in P06; `verify` checks its shape, and `libs/workflow-engine` declares an owner `verify` never runs | D20, D26, ADR-0025 | Evidence ownership (D71) |
-| No coverage lockfile; evidence owners are declared per project and not checked against what runs | D48', 05, web-interview ADR 005, 006, 010 | Evidence ownership (D71) |
-| "Schema at every boundary" is not enforced | D26, ADR-0025 | Evidence ownership (D71) |
+| The crash matrix has no owner in `verify`: it runs through the store projects' integration tests (since 2026-09-20; the drift first read "only in P06"), its memory-engine positive control runs only in P06, and `libs/workflow-engine` declares an owner nothing checks | D20, D26, ADR-0025 | Evidence ownership (D71, D78, D80); fixed 2026-10-01: `libs/workflow-engine` runs the engine suites with the positive control, and `evidence` fails when they did not pass |
+| No coverage lockfile; evidence owners are declared per project and not checked against what runs | D48', 05, web-interview ADR 005, 006, 010 | Evidence ownership (D71, D75-D77); fixed 2026-10-01: the registry and `evidence-baseline.json`, checked by `ownership` and `evidence` |
+| "Schema at every boundary" is not enforced | D26, ADR-0025 | Evidence ownership (D71, D79); fixed 2026-10-01: a lint rule with a positive control; SQL rows decode through `rowsOf` |
 | The `ui` stage's `storybook` step is Vitest with jsdom; no story runs in a browser or on a device; IntentComposer renders DOM only | D41, ADR-0019, ADR-0020 | App shell, P12 (D72) |
 | `e2e-web` has no project; no Lighthouse budgets | 05 | App shell, P13 (D73) |
 | No docs-only path rule; no Mermaid integrity check | 05 | Docs skeleton (D61); fixed 2026-09-30: `verify`'s `docs` and `diagrams` steps and `tools/verify/src/docs-only.ts` |
-| The `integration` stage's description names a crash matrix it does not run | `tools/verify` | Evidence ownership, when the matrix moves there |
+| The `integration` stage's description names a crash matrix it does not run | `tools/verify` | Evidence ownership; fixed 2026-10-01: the stage names what it runs |
 
 ## Deferred decisions
 
@@ -138,7 +138,7 @@ Each item says when it is decided and what is recommended. Agreed 2026-09-27.
 | Scope size: many patterns at once | Slow progress | Gate order, delivery definition, one exemplar |
 | Expo SDK 58 is beta | Instability | Pin beta, move to stable when released (expected October 2026) |
 | Storybook `11.0.0-alpha.1` pinned for Vitest 5 (D72); `@storybook/react-native` needs Reanimated 4.5.1 and friends, unproven on Expo 58 / RN 0.88 | Stories break on upgrade, or do not run on device | Exact pin, all Storybook packages on one version; P12 qualifies it on iOS, Android and Chromium; stable as its own change |
-| Evidence owners declared but not run (found 2026-09-29) | A green `verify` that proves less than it claims | Per-file treatments that name the producing `verify` step (D71) |
+| Evidence owners declared but not run (found 2026-09-29) | A green `verify` that proves less than it claims | Per-file treatments that name the producing `verify` step (D71, D76); since 2026-10-01 `evidence` fails an owned file no test reaches and a suite no test runs |
 | Single maintainer projects (motel, effect-machine) | Abandonment | Telemetry sink and interaction state are patterns behind contracts |
 | Android first-class qualification on an ungrilled emulator | P01/P02/P07 blocked on Android-only failures | Fail the gate honestly; do not skip Android to make iOS green |
 | Full-org replica on device | Unbounded history and over-broad local reads | History consolidation and client data access are explicit later work, not silent P09 extras |

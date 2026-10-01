@@ -4,7 +4,7 @@ import {
   P07_DEVICE_CHECK_COUNT,
   P07_HOST_CHECK_COUNT,
   P07_PARKED_ATTR,
-} from '@viviefs/testing'
+} from '@viviefs/workflow-engine/suites'
 
 describe('P07 device resume picks', () => {
   it('pins the probe parked attribute', () => {

@@ -6,12 +6,8 @@ import * as Effect from 'effect/Effect'
 import { CHANGESET_TTL_MS } from '@viviefs/datom'
 import { pgliteLogStore } from '@viviefs/store-postgres'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
-import {
-  makeMutableClock,
-  P05_CHECK_COUNT,
-  runChangesetChecks,
-  type CheckResult,
-} from '@viviefs/testing'
+import { makeMutableClock, P05_CHECK_COUNT, runChangesetChecks } from '@viviefs/datom/suites'
+import type { CheckResult } from '@viviefs/testing'
 import { androidEnv, ensureAndroidEmulator, reverseAndroidPorts } from './devices.ts'
 import {
   assertAllPass,

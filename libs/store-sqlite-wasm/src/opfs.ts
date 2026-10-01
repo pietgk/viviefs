@@ -40,10 +40,19 @@ const deleteInWorker = async (dbName: string) => {
   await vfs.close()
 }
 
+/** A dedicated worker's global scope, as the port OpfsWorker talks through. */
+export type WorkerPort = MessagePort & EventTarget & { close: () => void }
+
+/**
+ * The worker's own global scope as a port. Call it only inside a worker.
+ */
+export const workerPort = (): WorkerPort =>
+  // eslint-disable-next-line no-restricted-syntax -- D79 exception: inside a worker `self` is a DedicatedWorkerGlobalScope, but this project compiles against the DOM lib, which types `self` as Window.
+  self as unknown as WorkerPort
+
 /** The body of an OPFS worker. Call it once from the worker module. */
 export const runOpfsWorker = (): void => {
-  const port = self as unknown as MessagePort &
-    EventTarget & { close: () => void }
+  const port = workerPort()
   const name = self.name
   if (name.startsWith(DELETE)) {
     void deleteInWorker(name.slice(DELETE.length)).then(

@@ -10,7 +10,7 @@ that link to guides, not a second copy of those guides (D30).
 2. [`docs/adr/README.md`](docs/adr/README.md) - decisions. Status `Proposed, unverified`
    until the named gate qualifies them.
 3. [`docs/plan/bootstrap/README.md`](docs/plan/bootstrap/README.md) - complete design
-   context (D1-D74). Treat grilling decisions as accepted intent, unverified until
+   context (D1-D80). Treat grilling decisions as accepted intent, unverified until
    the named gate. Ask before deviating; record a deviation as an ADR amendment.
 4. [`docs/plan/bootstrap/10-open-items-and-risks.md`](docs/plan/bootstrap/10-open-items-and-risks.md) -
    freeze / named-slot / hypothesis, and the Schedule. P05 pinned `viviefs/changeset/*` and
@@ -36,7 +36,11 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
 - **Verify**: `pnpm verify` (staged `static -> unit -> integration -> ui -> quality`).
   Done = green. Never loosen a gate to make it pass. A change that touches only
   prose runs the docs steps (the docs-only rule in `tools/verify/src/docs-only.ts`);
-  `pnpm verify all` runs everything.
+  `pnpm verify all` runs everything. Every production file has one file treatment in
+  `tools/verify/src/evidence-registry.ts`; classify a new file there. `pnpm verify
+  baseline` is the one command that writes `evidence-baseline.json`; run it only to
+  record a reviewed coverage change, never to make `verify` pass. Where each kind of
+  test lives: [04-repo-structure](docs/plan/bootstrap/04-repo-structure.md#where-tests-live-d80).
 - **Qualify**: `pnpm qualify`. Ledger is machine-written; never hand-edit it.
 - **Teach**: docs pages are canonical. Lessons cite evidence; they never become the
   source of a claim.

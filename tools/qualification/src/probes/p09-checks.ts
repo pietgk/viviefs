@@ -26,11 +26,8 @@ import {
 } from '@viviefs/datom'
 import { renameList, sealItem } from '@viviefs/evidence-model'
 import type { Outgoing } from '@viviefs/sync-client'
-import {
-  makeMutableClock,
-  type CheckResult,
-  type MutableClock,
-} from '@viviefs/testing'
+import { makeMutableClock, type MutableClock } from '@viviefs/datom/suites'
+import type { CheckResult } from '@viviefs/testing'
 import { withTempDirectory } from '@viviefs/testing/node'
 import {
   CrashHook,
@@ -632,7 +629,7 @@ const fileManifest = (directory: string, clock: MutableClock) =>
     }),
   )
 
-export const runP09Checks = (
+export const syncProtocolChecks = (
   directory: string,
   clock: MutableClock,
 ): Effect.Effect<CheckResult[], never, Scope.Scope> => {
@@ -686,7 +683,7 @@ export type P09Run = {
 }
 
 // Suspended so each run collects its own spans.
-export const runP09: Effect.Effect<P09Run, unknown> = Effect.suspend(() => {
+export const runSyncProtocolChecks: Effect.Effect<P09Run, unknown> = Effect.suspend(() => {
   const spans: Array<Tracer.NativeSpan> = []
   const tracer = Tracer.make({
     span(options) {
@@ -699,7 +696,7 @@ export const runP09: Effect.Effect<P09Run, unknown> = Effect.suspend(() => {
     Effect.gen(function* () {
       const directory = yield* withTempDirectory('viviefs-p09-')
       const clock = makeMutableClock(1_700_000_000_000)
-      return yield* runP09Checks(directory, clock)
+      return yield* syncProtocolChecks(directory, clock)
     }),
   ).pipe(
     Effect.provideService(Tracer.Tracer, tracer),

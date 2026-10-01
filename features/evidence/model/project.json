@@ -9,7 +9,6 @@
     "platform:universal"
   ],
   "metadata": {
-    "evidenceOwner": "unit",
     "rationale": "Evidence Schema, ids, commands and workflow definitions"
   }
 }

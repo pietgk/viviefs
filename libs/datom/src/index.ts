@@ -33,6 +33,7 @@ export type {
   StoredDatom as StoredDatomType,
 } from './schema.ts'
 export { LogStore, layer as logStoreLayer } from './log-store.ts'
+export { DatomRow, SqlNumber, rowsOf } from './rows.ts'
 export { migrateLogStore } from './migrate.ts'
 export {
   Attr,

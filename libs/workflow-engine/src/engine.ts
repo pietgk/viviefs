@@ -701,7 +701,7 @@ export const engineLayer: Layer.Layer<
           yield* fireClock(workflow, exec, clock)
         }),
         ),
-    } as unknown as WorkflowEngine.Encoded)
+    } satisfies WorkflowEngine.Encoded)
 
     const pending = () =>
       Effect.gen(function* () {

@@ -13,18 +13,5 @@
     "src/**/*.test.ts",
     "src/**/*.spec.ts"
   ],
-  "references": [
-    {
-      "path": "../workflow-engine/tsconfig.lib.json"
-    },
-    {
-      "path": "../telemetry/tsconfig.lib.json"
-    },
-    {
-      "path": "../identity/tsconfig.lib.json"
-    },
-    {
-      "path": "../datom/tsconfig.lib.json"
-    }
-  ]
+  "references": []
 }

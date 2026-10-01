@@ -9,7 +9,6 @@
     "platform:client"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
     "rationale": "log store on sqlite-wasm (OPFS)"
   }
 }

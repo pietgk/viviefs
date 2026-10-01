@@ -50,10 +50,16 @@ describe('ADR-0024: module boundaries', () => {
     ).not.toEqual([])
   })
 
-  it('refuses core code that imports the testing lib (the fake issuer lives there)', async () => {
+  it('refuses core code that imports the testing lib', async () => {
     expect(
       await boundary('libs/identity/src/guardrail.ts', "import '@viviefs/testing'\n"),
     ).not.toEqual([])
+  })
+
+  it('lets a suite import the testing lib (D80)', async () => {
+    expect(
+      await boundary('libs/datom/src/suites/guardrail.ts', "import '@viviefs/testing'\n"),
+    ).toEqual([])
   })
 
   it('allows core code to import core code', async () => {
@@ -91,53 +97,6 @@ const runCheck = (script: string, cwd: string) => {
     return { ok: false, output: `${failed.stdout ?? ''}${failed.stderr ?? ''}` }
   }
 }
-
-const classified = JSON.stringify({
-  name: 'thing',
-  tags: ['kind:lib'],
-  metadata: { evidenceOwner: 'unit', rationale: 'A classified project.' },
-})
-
-describe('ADR-0024: ownership registry', () => {
-  it('fails a workspace package without a project.json', () => {
-    inScratchRepo(
-      {
-        'libs/thing/package.json': '{}',
-        'libs/thing/project.json': classified,
-        'libs/stray/package.json': '{}',
-      },
-      (dir) => {
-        const result = runCheck('check-ownership.ts', dir)
-        expect(result.ok).toBe(false)
-        expect(result.output).toContain('libs/stray/package.json has no sibling project.json')
-      },
-    )
-  })
-
-  it('fails a project without a kind tag or evidence owner', () => {
-    inScratchRepo(
-      {
-        'libs/thing/package.json': '{}',
-        'libs/thing/project.json': JSON.stringify({ name: 'thing', tags: ['layer:core'] }),
-      },
-      (dir) => {
-        const result = runCheck('check-ownership.ts', dir)
-        expect(result.ok).toBe(false)
-        expect(result.output).toContain('has no kind: tag')
-        expect(result.output).toContain('missing metadata.evidenceOwner')
-      },
-    )
-  })
-
-  it('passes when every project is classified', () => {
-    inScratchRepo(
-      { 'libs/thing/package.json': '{}', 'libs/thing/project.json': classified },
-      (dir) => {
-        expect(runCheck('check-ownership.ts', dir).ok).toBe(true)
-      },
-    )
-  })
-})
 
 describe('ADR-0024: lint scope', () => {
   const config = "export default [{ files: ['**/*.ts'] }, { ignores: ['hidden/**'] }]\n"
@@ -239,5 +198,60 @@ describe('ADR-0031: TypeScript strictness flags', () => {
   it('keeps the rewrite and deprecation-ignore flags off', () => {
     expect(options).not.toHaveProperty('rewriteRelativeImportExtensions')
     expect(options).not.toHaveProperty('ignoreDeprecations')
+  })
+})
+
+describe('D80: test-support stays out of production code', () => {
+  const testSupport = async (filePath: string, code: string) =>
+    (await ruleMessages('no-restricted-imports', filePath, code)).filter((message) =>
+      message.includes('D80:'),
+    )
+
+  it('refuses a suites entry or the testing lib in production code', async () => {
+    expect(
+      await testSupport('features/evidence/client/src/guardrail.ts', "import '@viviefs/identity/suites'\n"),
+    ).not.toEqual([])
+    expect(
+      await testSupport('libs/sync/client/src/guardrail.ts', "import '@viviefs/datom/suites'\n"),
+    ).not.toEqual([])
+    expect(
+      await testSupport('libs/datom/src/guardrail.ts', "import '@viviefs/testing/node'\n"),
+    ).not.toEqual([])
+  })
+
+  it('allows them in tests, suites and the evidence apps', async () => {
+    expect(
+      await testSupport('libs/store-sqlite-node/src/guardrail.integration.test.ts', "import '@viviefs/datom/suites'\n"),
+    ).toEqual([])
+    expect(
+      await testSupport('libs/telemetry/src/suites/guardrail.ts', "import '@viviefs/workflow-engine/suites'\n"),
+    ).toEqual([])
+    expect(
+      await testSupport('apps/evidence-mobile/src/guardrail.ts', "import '@viviefs/datom/suites'\n"),
+    ).toEqual([])
+  })
+})
+
+describe('D79: Schema at every boundary', () => {
+  const d79 = async (filePath: string, code: string) =>
+    (await lint(filePath, code)).map((message) => message.message).filter((message) => message.includes('D79:'))
+
+  it.each([
+    ['a sql<T> row type', 'const rows = sql<{ seq: number }>`SELECT seq FROM datoms`\n'],
+    ['JSON.parse', 'export const value = JSON.parse(text)\n'],
+    ['a response body read with .json()', 'export const body = response.json()\n'],
+    ['a double cast', 'export const port = self as unknown as MessagePort\n'],
+  ])('refuses %s in production code', async (_name, code) => {
+    expect(await d79('libs/sync/server/src/guardrail.ts', code)).not.toEqual([])
+  })
+
+  it('passes rows decoded by a Schema, a single cast, and the same code in tests', async () => {
+    expect(
+      await d79(
+        'libs/sync/server/src/guardrail.ts',
+        'const rows = sql`SELECT seq FROM datoms`.pipe(rowsOf(SeqRow))\nexport const x = value as Thing\n',
+      ),
+    ).toEqual([])
+    expect(await d79('libs/sync/server/src/guardrail.test.ts', 'export const value = JSON.parse(text)\n')).toEqual([])
   })
 })

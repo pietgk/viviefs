@@ -13,7 +13,7 @@ Do not install `@effect/vitest@beta`.
 | `it.effect()` | Effect body that is fine under TestClock | [`libs/datom/src/manifest.test.ts`](../../libs/datom/src/manifest.test.ts), TestClock in [`tools/verify/src/stages.test.ts`](../../tools/verify/src/stages.test.ts) |
 | `it.live()` | Effect body that uses `Effect.timeout` / `Effect.sleep` / real wall time | [`libs/store-sqlite-node/src/log-store.integration.test.ts`](../../libs/store-sqlite-node/src/log-store.integration.test.ts) |
 
-`it.effect` installs TestClock. Conformance and crash-matrix checks wrap work in `Effect.timeout` (and some `Effect.sleep`). Those never elapse under TestClock unless the clock is advanced. Use `it.live` for sqlite-node store suites. PGlite suites stay on `it()` plus `Effect.runPromise`: `it.live`'s test `Scope` plus an Nx-launched vitest worker busy-loops inside PGlite WASM.
+`it.effect` installs TestClock. Conformance and crash-matrix checks wrap work in `Effect.timeout` (and some `Effect.sleep`). Those never elapse under TestClock unless the clock is advanced. Use `it.live` for sqlite-node store suites. PGlite suites run through `runUnscoped` inside `it.live`: a suite that inherits `it.live`'s test `Scope` busy-loops inside PGlite WASM in an Nx-launched vitest worker.
 
 HLC wall time is `makeMutableClock` / `HlcClock`, not Effect TestClock. Do not rewire HLC onto TestClock. Scoped temp dirs: [`withTempDirectory`](../../libs/testing/src/temp-directory.ts). Workflow-engine harnesses under `it.live` must run through [`runUnscoped`](../../libs/testing/src/run-unscoped.ts) so they do not inherit the test `Scope`.
 

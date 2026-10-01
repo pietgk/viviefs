@@ -1,6 +1,6 @@
 # ADR-0025: AI-robust guardrails
 
-Status: Qualified (lint rules). Crash-matrix rule and Schema at every boundary unverified
+Status: Qualified (lint rules, Schema at every boundary). The per-workflow crash-matrix rule unverified
 
 Date: 2026-09-20
 
@@ -67,3 +67,20 @@ refused and `async` is allowed.
 Not verified: "every workflow ships with a crash-matrix test" has no
 mechanical check (the one engine has P06's matrix); Schema at every boundary
 is a convention, not a rule.
+
+2026-10-01, Evidence ownership (D78, D79). Schema at every boundary is a lint
+rule ([`eslint.config.js`](../../eslint.config.js), D79): in production code
+under `apps/`, `libs/` and `features/`, a `sql<T>` row type, `JSON.parse`, a
+response's `.json()` and `as unknown as` fail, each shown failing and its
+Schema form passing in [`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts).
+The 38 `sql<T>` sites decode through row Schemas (`rowsOf` in `libs/datom`);
+a row that does not decode fails as the store's `SqlError`. Three double casts
+remain as reasoned exceptions (platform globals and op-sqlite's unresolvable
+typings); the engine's became `satisfies`.
+
+Correction to the line above: the engine's crash matrix has run in `verify`
+since 2026-09-20, through the store projects' integration tests. It now runs
+in `libs/workflow-engine` itself, on sqlite-node and PGlite, with the
+memory-engine positive control that only P06 ran before, and `verify`'s
+evidence step fails when it did not pass. What stays unverified is the
+per-workflow harness (D26), designed with the durable workflow guide.

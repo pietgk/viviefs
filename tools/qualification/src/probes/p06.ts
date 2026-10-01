@@ -5,14 +5,14 @@ import { fileURLToPath } from 'node:url'
 import * as Effect from 'effect/Effect'
 import { pgliteLogStore } from '@viviefs/store-postgres'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
+import { makeMutableClock } from '@viviefs/datom/suites'
+import type { CheckResult } from '@viviefs/testing'
 import {
-  makeMutableClock,
   P06_CHECK_COUNT,
   P06_DATOM_CHECK_COUNT,
   runCrashMatrix,
   runMemoryDurabilityControl,
-  type CheckResult,
-} from '@viviefs/testing'
+} from '@viviefs/workflow-engine/suites'
 import { fail, writeJson } from './dev-client.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')

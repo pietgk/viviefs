@@ -1,5 +1,6 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 import * as Layer from 'effect/Layer'
 import * as Reactivity from 'effect/unstable/reactivity/Reactivity'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
@@ -29,6 +30,41 @@ import {
   visibleFacts,
   type StoredFact,
 } from './visibility.ts'
+import { DatomRow, SqlNumber, rowsOf } from './rows.ts'
+
+const ActorRow = Schema.Struct({
+  actor: Schema.String,
+})
+const ChangesetStatusRow = Schema.Struct({
+  cs: Schema.String,
+  status: Schema.String,
+  commit_tx: Schema.NullOr(Schema.String),
+  basis: Schema.NullOr(SqlNumber),
+  actor: Schema.String,
+})
+const ConflictRow = Schema.Struct({
+  e: Schema.String,
+  a: Schema.String,
+  payload: Schema.String,
+  tx: Schema.String,
+  cs: Schema.String,
+})
+const CsRow = Schema.Struct({
+  cs: Schema.String,
+})
+const FactRow = Schema.Struct({
+  e: Schema.String,
+  a: Schema.String,
+  v: Schema.String,
+  op: Schema.String,
+  cs: Schema.String,
+  commit_tx: Schema.String,
+  member_tx: Schema.String,
+  commit_seq: SqlNumber,
+})
+const SeqRow = Schema.Struct({
+  seq: SqlNumber,
+})
 
 export type ChangesetStatusName =
   | 'open'
@@ -196,9 +232,9 @@ const makeProjector = (catalog: Catalog) =>
     let lastKeys: ReactivityKeys = []
 
     const loadCursor = Effect.fn(function* () {
-      const rows = yield* sql<{ seq: unknown }>`
+      const rows = yield* sql`
         SELECT seq FROM projection_cursor WHERE id = 1
-      `
+      `.pipe(rowsOf(SeqRow))
       return rows[0] ? asSeq(rows[0].seq) : 0
     })
 
@@ -209,49 +245,25 @@ const makeProjector = (catalog: Catalog) =>
       `
 
     const loadAllFacts = Effect.fn(function* () {
-      const rows = yield* sql<{
-        e: string
-        a: string
-        v: string
-        op: string
-        cs: string
-        commit_tx: string
-        member_tx: string
-        commit_seq: unknown
-      }>`
+      const rows = yield* sql`
         SELECT e, a, v, op, cs, commit_tx, member_tx, commit_seq
         FROM projected_facts
-      `
+      `.pipe(rowsOf(FactRow))
       return rows.map(readFact)
     })
 
     const loadFactsFor = (entity: string, attribute: string) =>
       Effect.gen(function* () {
-        const rows = yield* sql<{
-          e: string
-          a: string
-          v: string
-          op: string
-          cs: string
-          commit_tx: string
-          member_tx: string
-          commit_seq: unknown
-        }>`
+        const rows = yield* sql`
           SELECT e, a, v, op, cs, commit_tx, member_tx, commit_seq
           FROM projected_facts
           WHERE e = ${entity} AND a = ${attribute}
-        `
+        `.pipe(rowsOf(FactRow))
         return rows.map(readFact)
       })
 
     const loadStatuses = Effect.fn(function* () {
-      const rows = yield* sql<{
-        cs: string
-        status: string
-        commit_tx: string | null
-        basis: unknown
-        actor: string
-      }>`SELECT cs, status, commit_tx, basis, actor FROM changeset_status`
+      const rows = yield* sql`SELECT cs, status, commit_tx, basis, actor FROM changeset_status`.pipe(rowsOf(ChangesetStatusRow))
       return rows.map(
         (row): StatusRow => ({
           cs: row.cs,
@@ -264,24 +276,18 @@ const makeProjector = (catalog: Catalog) =>
     })
 
     const loadOpen = Effect.fn(function* () {
-      const rows = yield* sql<{ cs: string }>`
+      const rows = yield* sql`
         SELECT cs FROM changeset_status WHERE status = 'open'
-      `
+      `.pipe(rowsOf(CsRow))
       return rows.map((row) => row.cs)
     })
 
     const loadStatus = (cs: string) =>
       Effect.gen(function* () {
-        const rows = yield* sql<{
-          cs: string
-          status: string
-          commit_tx: string | null
-          basis: unknown
-          actor: string
-        }>`
+        const rows = yield* sql`
           SELECT cs, status, commit_tx, basis, actor
           FROM changeset_status WHERE cs = ${cs}
-        `
+        `.pipe(rowsOf(ChangesetStatusRow))
         const row = rows[0]
         if (!row) return null
         return {
@@ -312,25 +318,17 @@ const makeProjector = (catalog: Catalog) =>
 
     const loadEnvelopeActor = (cs: string) =>
       Effect.gen(function* () {
-        const rows = yield* sql<{ actor: string }>`
+        const rows = yield* sql`
           SELECT actor FROM changesets WHERE cs = ${cs}
-        `
+        `.pipe(rowsOf(ActorRow))
         return rows[0]?.actor ?? 'unknown'
       })
 
     const loadDatomsForCs = (cs: string) =>
       Effect.gen(function* () {
-        const rows = yield* sql<{
-          seq: unknown
-          e: string
-          a: string
-          v: string
-          tx: string
-          op: string
-          cs: string
-        }>`
+        const rows = yield* sql`
           SELECT seq, e, a, v, tx, op, cs FROM datoms WHERE cs = ${cs} ORDER BY tx
-        `
+        `.pipe(rowsOf(DatomRow))
         return rows.map(
           (row): StoredDatom => ({
             seq: asSeq(row.seq),
@@ -345,13 +343,7 @@ const makeProjector = (catalog: Catalog) =>
       })
 
     const loadConflicts = Effect.fn(function* () {
-      const rows = yield* sql<{
-        e: string
-        a: string
-        payload: string
-        tx: string
-        cs: string
-      }>`SELECT e, a, payload, tx, cs FROM projection_conflicts`
+      const rows = yield* sql`SELECT e, a, payload, tx, cs FROM projection_conflicts`.pipe(rowsOf(ConflictRow))
       return rows
     })
 

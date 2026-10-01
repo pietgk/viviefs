@@ -2,7 +2,9 @@
  * Identity pattern (ADR-0022). The server verifies access tokens and knows
  * the caller; the device's sign-in session supplies them. The root carries no
  * crypto library; the `jose` verifier is `@viviefs/identity/oidc` (server
- * only). The fake issuer lives in `@viviefs/testing/identity`.
+ * only). The fake issuer and the `identity/token-verifier` suite are
+ * `@viviefs/identity/suites` (D80); only tests, suites, `tools/` and the
+ * evidence apps may import them.
  */
 export { Caller } from './caller.ts'
 export { CallerStatement } from './caller-statement.ts'

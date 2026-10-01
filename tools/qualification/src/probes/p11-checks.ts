@@ -24,12 +24,9 @@ import {
 import { renameList } from '@viviefs/evidence-model'
 import { SignInNeeded } from '@viviefs/identity'
 import type { Outgoing } from '@viviefs/sync-client'
-import {
-  makeMutableClock,
-  type CheckResult,
-  type MutableClock,
-} from '@viviefs/testing'
-import { tokenSignInSession } from '@viviefs/testing/identity'
+import { makeMutableClock, type MutableClock } from '@viviefs/datom/suites'
+import { tokenSignInSession } from '@viviefs/identity/suites'
+import type { CheckResult } from '@viviefs/testing'
 import { withTempDirectory } from '@viviefs/testing/node'
 import { encodeExit, encodeLease } from '@viviefs/workflow-engine'
 import * as Exit from 'effect/Exit'
@@ -549,7 +546,7 @@ const callerStatement = (directory: string, clock: MutableClock) =>
       }),
   )
 
-export const runP11NodeChecks = (
+export const membershipChecks = (
   directory: string,
   clock: MutableClock,
 ): Effect.Effect<CheckResult[], never, Scope.Scope> =>
@@ -577,7 +574,7 @@ export type P11NodeRun = {
 }
 
 // Suspended so each run collects its own spans.
-export const runP11Node: Effect.Effect<P11NodeRun, unknown> = Effect.suspend(() => {
+export const runMembershipChecks: Effect.Effect<P11NodeRun, unknown> = Effect.suspend(() => {
   const spans: Array<Tracer.NativeSpan> = []
   const tracer = Tracer.make({
     span(options) {
@@ -590,7 +587,7 @@ export const runP11Node: Effect.Effect<P11NodeRun, unknown> = Effect.suspend(() 
     Effect.gen(function* () {
       const directory = yield* withTempDirectory('viviefs-p11-')
       const clock = makeMutableClock(1_700_000_000_000)
-      return yield* runP11NodeChecks(directory, clock)
+      return yield* membershipChecks(directory, clock)
     }),
   ).pipe(
     Effect.provideService(Tracer.Tracer, tracer),

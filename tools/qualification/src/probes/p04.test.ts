@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { APPEND_VOLUME, FUTURE_SKEW_MS } from '@viviefs/datom'
-import { P04_CHECK_COUNT, P04_CHECK_NAMES } from '@viviefs/testing'
+import { P04_CHECK_COUNT, P04_CHECK_NAMES } from '@viviefs/datom/suites'
 
 describe('P04 log store picks', () => {
   it('pins a 5 second future-skew bound and a 2000-datom volume', () => {

@@ -75,20 +75,37 @@ encryption) is one line in one app.
 - Native vs web inside client adapters: Metro platform extensions (`.native.ts`, `.web.ts`), no extra tag.
 - A lint-scope meta check fails if any tracked source file escapes lint (from web-interview).
 
-## Ownership registry
+## Ownership
 
-Every `project.json` declares its tags and its evidence owner (D48'):
+Every `project.json` declares its tags; an untagged project fails `verify`:
 
 ```json
 {
   "tags": ["kind:lib", "layer:core", "platform:universal"],
-  "metadata": { "evidenceOwner": "unit", "rationale": "pure datom and HLC logic" }
+  "metadata": { "rationale": "pure datom and HLC logic" }
 }
 ```
 
-Evidence owners: `unit` (Vitest), `conformance` (pattern suites), `crash-matrix`, `storybook` (play + a11y),
-`e2e-native` (Maestro via agent-device), `e2e-web` (Playwright), `qualification` (gate probes), `type-only`.
-An unclassified project fails `verify`.
+Evidence is owned per file, not per project (D75, D76, amended 2026-09-30): the registry
+(`tools/verify/src/evidence-registry.ts`) gives every production file one file treatment and a rationale, and
+`verify`'s `ownership` step fails on an unclassified file. The per-project `evidenceOwner` is gone.
+
+## Where tests live (D80)
+
+| Kind | Where | File name |
+| --- | --- | --- |
+| Unit test | next to the code it covers | `src/x.test.ts` |
+| Integration test | next to the code, when proving it needs a real store or server | `src/x.integration.test.ts` |
+| Story | next to the component | `X.stories.test.tsx` (jsdom until P12) |
+| Suite | in the lib that owns the contract it checks, exported as `@viviefs/<lib>/suites` | `src/suites/<aspect>.ts` |
+| Suite run | in the project of the implementation under test, tagged with the suite id | `src/<pattern>-<aspect>.integration.test.ts` |
+| Test helper | generic: `libs/testing` (no `@viviefs` dependency); one contract's: that lib's `src/suites/` | |
+| Probe, device journey | `tools/qualification/src/probes/` | `pNN*.ts` |
+| Web journey | the app's `e2e/` folder (from P13) | `e2e/x.spec.ts` |
+| Exercise test | with the exercise (D66) | `exercises/<pattern>/NN.MM-name/` |
+
+The file name decides which coverage producer runs a test (`@viviefs/testing/vitest`). Only tests, suites, Vitest
+configs, `tools/` and the evidence apps may import a `suites` entry or `@viviefs/testing` (lint).
 
 ## Nx setup (D56)
 

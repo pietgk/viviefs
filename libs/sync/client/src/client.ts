@@ -33,6 +33,8 @@ import {
   LogStore,
   Projector,
   projectorLayer,
+  rowsOf,
+  SqlNumber,
   type Catalog,
 } from '@viviefs/datom'
 import {
@@ -54,6 +56,18 @@ import {
   type BlobHashMismatch,
   type PullPage,
 } from '@viviefs/sync-protocol'
+
+const CursorRow = Schema.Struct({
+  cursor: SqlNumber,
+})
+const OrgRow = Schema.Struct({
+  org: Schema.String,
+})
+const OutboxRow = Schema.Struct({
+  cs: Schema.String,
+  state: Schema.String,
+  payload: Schema.String,
+})
 
 const withBearer = <R extends { readonly headers: Headers.Headers }>(
   request: R,
@@ -327,9 +341,9 @@ const makeClient = Effect.gen(function* () {
 
   const readCursor = (org: string) =>
     Effect.gen(function* () {
-      const rows = yield* sql<{ cursor: unknown }>`
+      const rows = yield* sql`
         SELECT cursor FROM sync_cursor WHERE org = ${org}
-      `
+      `.pipe(rowsOf(CursorRow))
       return rows[0] ? Number(rows[0].cursor) : 0
     })
 
@@ -343,7 +357,7 @@ const makeClient = Effect.gen(function* () {
   // device's person is no longer a member of the organization.
   const isRevoked = (org: string) =>
     Effect.map(
-      sql<{ org: string }>`SELECT org FROM sync_revoked WHERE org = ${org}`,
+      sql`SELECT org FROM sync_revoked WHERE org = ${org}`.pipe(rowsOf(OrgRow)),
       (rows) => rows.length > 0,
     )
 
@@ -468,15 +482,11 @@ const makeClient = Effect.gen(function* () {
 
   const push = Effect.fn('SyncClient.push')(function* (org: string) {
     yield* noteDevice
-    const rows = yield* sql<{
-      cs: string
-      state: string
-      payload: string
-    }>`
+    const rows = yield* sql`
       SELECT cs, state, payload FROM outbox
       WHERE org = ${org} AND state IN ('pending', 'waiting-file')
       ORDER BY id
-    `
+    `.pipe(rowsOf(OutboxRow))
     const acked: string[] = []
     const rejected: Array<{ cs: string; tag: string }> = []
     const waiting: Array<{ cs: string; hash: string }> = []

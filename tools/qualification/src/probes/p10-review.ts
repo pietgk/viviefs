@@ -7,7 +7,7 @@
  */
 import * as Option from 'effect/Option'
 import type { DurableSpan } from '@viviefs/telemetry'
-import { expectedSpanIds, type ProjectionRun } from '@viviefs/testing'
+import { expectedSpanIds, type ProjectionRun } from '@viviefs/telemetry/suites'
 import { spanReviewDrift as drift } from './span-review.ts'
 
 const nodeId = (name: string) => name.replaceAll(/[^A-Za-z0-9]/g, '_')

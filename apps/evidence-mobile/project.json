@@ -8,7 +8,6 @@
     "platform:client"
   ],
   "metadata": {
-    "evidenceOwner": "e2e-native",
     "rationale": "Expo composition root; device resume and notification journeys"
   },
   "targets": {

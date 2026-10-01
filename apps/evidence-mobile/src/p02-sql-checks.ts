@@ -4,8 +4,27 @@
  */
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
+import { rowsOf } from '@viviefs/datom'
 import * as Migrator from 'effect/unstable/sql/Migrator'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
+
+const AttributeValueRow = Schema.Struct({
+  a: Schema.String,
+  v: Schema.String,
+})
+const EntityRow = Schema.Struct({
+  e: Schema.String,
+})
+const EntityValueRow = Schema.Struct({
+  e: Schema.String,
+  v: Schema.String,
+})
+const NameRow = Schema.Struct({
+  name: Schema.String,
+})
+const ValueRow = Schema.Struct({
+  v: Schema.String,
+})
 
 class RollbackBoom extends Schema.TaggedError<RollbackBoom>()(
   'RollbackBoom',
@@ -95,10 +114,10 @@ export const runSqlDriverChecks = (): Effect.Effect<
         'migrate',
         Effect.gen(function* () {
           const applied = yield* migrate
-          const tables = yield* sql<{ name: string }>`
+          const tables = yield* sql`
             SELECT name FROM sqlite_master
             WHERE type = 'table' AND name = 'probe_datoms'
-          `
+          `.pipe(rowsOf(NameRow))
           if (tables.length !== 1) {
             throw new Error('probe_datoms missing after migrate')
           }
@@ -115,9 +134,9 @@ export const runSqlDriverChecks = (): Effect.Effect<
             sql`INSERT INTO probe_datoms (e, a, v, tx, op)
                 VALUES ('e-commit', 'title', 'kept', 'tx-commit', 1)`,
           )
-          const rows = yield* sql<{ v: string }>`
+          const rows = yield* sql`
             SELECT v FROM probe_datoms WHERE e = 'e-commit'
-          `
+          `.pipe(rowsOf(ValueRow))
           if (rows[0]?.v !== 'kept') {
             throw new Error(`commit not visible: ${JSON.stringify(rows)}`)
           }
@@ -139,9 +158,9 @@ export const runSqlDriverChecks = (): Effect.Effect<
               }),
             )
             .pipe(Effect.flip)
-          const rows = yield* sql<{ e: string }>`
+          const rows = yield* sql`
             SELECT e FROM probe_datoms WHERE e = 'e-rollback'
-          `
+          `.pipe(rowsOf(EntityRow))
           if (rows.length !== 0) {
             throw new Error(`rollback leaked ${rows.length} row(s)`)
           }
@@ -162,9 +181,9 @@ export const runSqlDriverChecks = (): Effect.Effect<
                 ('e-other', 'title', 'beta', 'tx-q3', 1)`
             }),
           )
-          const rows = yield* sql<{ a: string; v: string }>`
+          const rows = yield* sql`
             SELECT a, v FROM probe_datoms WHERE e = 'e-query' ORDER BY a
-          `
+          `.pipe(rowsOf(AttributeValueRow))
           if (rows.length !== 2 || rows[0]?.a !== 'status' || rows[1]?.a !== 'title') {
             throw new Error(`entity query ${JSON.stringify(rows)}`)
           }
@@ -177,9 +196,9 @@ export const runSqlDriverChecks = (): Effect.Effect<
       yield* runCheck(
         'eavt by attribute',
         Effect.gen(function* () {
-          const rows = yield* sql<{ e: string; v: string }>`
+          const rows = yield* sql`
             SELECT e, v FROM probe_datoms WHERE a = 'title' ORDER BY e
-          `
+          `.pipe(rowsOf(EntityValueRow))
           if (rows.length < 2) {
             throw new Error(`attribute query ${JSON.stringify(rows)}`)
           }
@@ -201,9 +220,9 @@ export const runSqlDriverChecks = (): Effect.Effect<
               }
             }),
           )
-          const found = yield* sql<{ v: string }>`
+          const found = yield* sql`
             SELECT v FROM probe_datoms WHERE e = ${target} AND a = 'payload'
-          `
+          `.pipe(rowsOf(ValueRow))
           if (found[0]?.v !== 'v-42') {
             throw new Error(`volume lookup ${JSON.stringify(found)}`)
           }

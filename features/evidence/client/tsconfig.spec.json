@@ -14,7 +14,7 @@
     "src/**/*.test.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "vitest.config.ts"
+    "vitest*.config.ts"
   ],
   "references": [{ "path": "./tsconfig.lib.json" }]
 }

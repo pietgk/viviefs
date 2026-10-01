@@ -5,16 +5,18 @@ import { fileURLToPath } from 'node:url'
 import * as Effect from 'effect/Effect'
 import { pgliteLogStore } from '@viviefs/store-postgres'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
+import { makeMutableClock } from '@viviefs/datom/suites'
 import {
-  P10_ENGINE_CHECK_COUNT,
   P10_PROJECTION_CHECK_COUNT,
   judgeTraceProjection,
-  makeMutableClock,
-  runTraceJournalChecks,
   runTraceProjection,
-  type CheckResult,
+} from '@viviefs/telemetry/suites'
+import type { CheckResult } from '@viviefs/testing'
+import {
+  P10_ENGINE_CHECK_COUNT,
+  runTraceJournalChecks,
   type StoreFactory,
-} from '@viviefs/testing'
+} from '@viviefs/workflow-engine/suites'
 import { fail, writeJson } from './dev-client.ts'
 import { runSinkChecks } from './p10-checks.ts'
 import { spanReviewDrift } from './p10-review.ts'

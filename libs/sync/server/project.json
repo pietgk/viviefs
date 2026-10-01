@@ -9,7 +9,6 @@
     "platform:server"
   ],
   "metadata": {
-    "evidenceOwner": "conformance",
     "rationale": "cursor stream and server validation"
   }
 }

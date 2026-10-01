@@ -1,16 +1,45 @@
-# Next session: Docs and teaching, from the Evidence ownership step
+# Next session: Docs and teaching, closing the Evidence ownership step
 
 ## Prompt to start the session
 
-> Read `AGENTS.md`, then `docs/plan/next-session.md` (this file), then the
-> "Docs and teaching (2026-09-29)" section of
-> `docs/plan/bootstrap/02-decision-log.md` (D59-D74), the Schedule and the
-> drift table in `docs/plan/bootstrap/10-open-items-and-risks.md`, and
-> ADR-0026. Continue Docs and teaching with the Evidence ownership step. Ask
-> before deviating from an agreed decision and record a deviation as an ADR
-> amendment.
+> Read `AGENTS.md`, then `docs/plan/next-session.md` (this file), then
+> `docs/plan/evidence-ownership/spec.md`, the "Evidence ownership design
+> review (2026-09-30)" section of `docs/plan/bootstrap/02-decision-log.md`
+> (D75-D80), and the Schedule in
+> `docs/plan/bootstrap/10-open-items-and-risks.md`. Close the Evidence
+> ownership step with one sequential P01-P11 run, then start the log-store
+> guide. Ask before deviating from an agreed decision and record a deviation
+> as an ADR amendment.
 
-## Where things stand (2026-09-30)
+## Where things stand (2026-10-01)
+
+- **The Evidence ownership step is built** (D70, D71, D75-D80; spec and build
+  record in [evidence-ownership/spec.md](evidence-ownership/spec.md)).
+  `pnpm verify all` is green with 16 steps. What is new:
+  - Every production file has one **file treatment** in
+    `tools/verify/src/evidence-registry.ts` (226 files); `ownership` fails an
+    unclassified, stale or mis-shaped entry. `metadata.evidenceOwner` is gone.
+  - **Suites ship with their contract** (D80): `@viviefs/datom/suites`,
+    `@viviefs/workflow-engine/suites`, `@viviefs/telemetry/suites`,
+    `@viviefs/identity/suites`; `libs/testing` holds only helpers, the suite
+    catalogue and the one Vitest config shape. The engine runs its own suites
+    on sqlite-node and PGlite, with the memory-engine positive control.
+  - `unit`, `integration` and `storybook` are **one root Vitest run each**
+    with Istanbul coverage; `evidence` in `quality` judges the run against
+    `evidence-baseline.json`, written only by `pnpm verify baseline`.
+  - **Schema at every boundary** is a lint rule (D79); SQL rows decode
+    through `rowsOf` in `libs/datom`.
+  - Terms in `GLOSSARY.md`: file treatment, suite, verify step, gate step,
+    coverage producer, verdict, owning producer, registry, evidence lockfile.
+- **Not done in this step**: the closing sequential P01-P11 run. Every gate is
+  stale: the suites moved, SQL rows decode through Schemas, and the evidence
+  app's workers and P02 SQL checks changed.
+- **For the human to confirm**: the suite catalogue as the one declaration
+  place (build record); `effect-solutions` 0.5.3, the newest, pins `effect`
+  4.0.0-beta.59 and leaves an unmet peer warning on install (dev-only CLI,
+  upstream).
+
+## Before 2026-10-01
 
 - **The Docs skeleton step is done** (D59-D61, D68). `apps/docs` is a
   Starlight 0.42 site on Astro 7.3. It renders `GLOSSARY.md`, the ADRs, the
@@ -86,10 +115,10 @@
 ## Next steps (the Schedule, Docs and teaching part)
 
 1. **Docs skeleton**: done 2026-09-30 (above).
-2. **Evidence ownership** (D70, D71): a design review of the treatment list
-   first; then treatments, coverage lockfile, `pnpm verify baseline`, the
-   engine crash matrix in `integration`, Schema at every boundary; one
-   sequential P01-P11 run closes it.
+2. **Evidence ownership** (D70, D71, D75-D80): built 2026-10-01. Close it with
+   one sequential run: `mise exec -- pnpm qualify --through P11` on a
+   committed, clean tree (device lab and Apple Container needed; see the lab
+   facts below).
 3. **Log-store guide**, which settles the template and what a lesson is.
    `teach`'s pedagogy (retrieval practice, one tangible win per lesson, a
    primary source per lesson) is input; its workspace layout is not.
@@ -101,6 +130,9 @@
 
 - Run Node through mise: `mise exec -- pnpm verify`; `mise exec -- pnpm
   qualify --through P11` for a sequential run on a committed tree.
+- Measured 2026-10-01 with coverage: `unit` 9 s, `integration` 14 s,
+  `storybook` 2 s, `evidence` under 1 s; `pnpm verify baseline` about 2.5
+  minutes (three producer runs and the bundles).
 - Measured 2026-09-29 (all projects, Nx cache skipped): `verify` about 2.5
   minutes (static 23 s, unit 10 s, integration 17 s, ui 3 s, quality 79 s).
   Qualify P01-P11 30 minutes, almost all devices and labs; P06 takes 6 s.

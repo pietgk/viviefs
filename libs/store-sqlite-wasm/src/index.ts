@@ -7,5 +7,7 @@ export {
   OPFS_MAX_NAME_LENGTH,
   deleteOpfsDatabase,
   runOpfsWorker,
+  workerPort,
   type OpfsWorkerFactory,
+  type WorkerPort,
 } from './opfs.ts'

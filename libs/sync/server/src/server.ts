@@ -16,21 +16,23 @@ import type { SqlError } from 'effect/unstable/sql/SqlError'
 import * as SqlClient from 'effect/unstable/sql/SqlClient'
 import { BlobStore } from '@viviefs/blobs'
 import {
-  Attr,
-  FutureSkew,
-  InvalidTx,
-  LogStore,
   accountId,
+  Attr,
   changesetMembers,
   decodeCommit,
   deferredId,
   encodeCommit,
+  FutureSkew,
   hashMembers,
   identityCatalog,
   indexCatalog,
+  InvalidTx,
   isSystemAttr,
+  LogStore,
   membershipId,
   orgId,
+  rowsOf,
+  SqlNumber,
   underPrefix,
   type Catalog,
   type Datom,
@@ -58,6 +60,23 @@ import {
   UnknownAttribute,
   type AppendRequest,
 } from '@viviefs/sync-protocol'
+
+const EntityOpRow = Schema.Struct({
+  e: Schema.String,
+  op: Schema.String,
+})
+const OpRow = Schema.Struct({
+  op: Schema.String,
+})
+const SeqRow = Schema.Struct({
+  seq: SqlNumber,
+})
+const TxRow = Schema.Struct({
+  tx: Schema.String,
+})
+const ValueRow = Schema.Struct({
+  v: Schema.String,
+})
 
 const JOURNAL = new Set<string>([
   Attr.workflowStarted,
@@ -94,36 +113,36 @@ type Sql = SqlClient.SqlClient
 
 const cursorOf = (sql: Sql) =>
   Effect.gen(function* () {
-    const rows = yield* sql<{ seq: unknown }>`
+    const rows = yield* sql`
       SELECT COALESCE(MAX(seq), 0) AS seq FROM datoms
-    `
+    `.pipe(rowsOf(SeqRow))
     return asSeq(rows[0]?.seq ?? 0)
   })
 
 const txExists = (sql: Sql, tx: string) =>
   Effect.gen(function* () {
-    const rows = yield* sql<{ tx: string }>`
+    const rows = yield* sql`
       SELECT tx FROM datoms WHERE tx = ${tx}
-    `
+    `.pipe(rowsOf(TxRow))
     return rows.length > 0
   })
 
 const factExists = (sql: Sql, entity: string, attribute: string) =>
   Effect.gen(function* () {
-    const rows = yield* sql<{ tx: string }>`
+    const rows = yield* sql`
       SELECT tx FROM datoms WHERE e = ${entity} AND a = ${attribute} LIMIT 1
-    `
+    `.pipe(rowsOf(TxRow))
     return rows.length > 0
   })
 
 const storedLease = (sql: Sql, entity: string) =>
   Effect.gen(function* () {
-    const rows = yield* sql<{ v: string }>`
+    const rows = yield* sql`
       SELECT v FROM datoms
       WHERE e = ${entity} AND a = ${Attr.leaseHolder}
       ORDER BY seq DESC
       LIMIT 1
-    `
+    `.pipe(rowsOf(ValueRow))
     const value = rows[0]?.v
     if (!value) return null
     return decodeLease(value)
@@ -190,12 +209,12 @@ const membershipsLayer: Layer.Layer<
       account: ProviderAccount,
     ) {
       const entity = yield* accountId(account).pipe(Effect.orDie)
-      const rows = yield* sql<{ v: string }>`
+      const rows = yield* sql`
         SELECT v FROM datoms
         WHERE e = ${entity} AND a = ${Attr.accountPerson} AND op = 'assert'
         ORDER BY seq
         LIMIT 1
-      `
+      `.pipe(rowsOf(ValueRow))
       return rows[0]?.v ?? null
     })
 
@@ -203,22 +222,22 @@ const membershipsLayer: Layer.Layer<
       person: string,
       org: string,
     ) {
-      const rows = yield* sql<{ op: string }>`
+      const rows = yield* sql`
         SELECT op FROM datoms
         WHERE e = ${membershipId(org, person)} AND a = ${Attr.membershipGranted}
         ORDER BY seq DESC
         LIMIT 1
-      `
+      `.pipe(rowsOf(OpRow))
       return rows[0]?.op === 'assert'
     })
 
     // Latest membership fact per organization, in log order.
     const organizationsOf = Effect.fnUntraced(function* (person: string) {
-      const rows = yield* sql<{ e: string; op: string }>`
+      const rows = yield* sql`
         SELECT e, op FROM datoms
         WHERE a = ${Attr.membershipGranted} AND v = ${person}
         ORDER BY seq
-      `
+      `.pipe(rowsOf(EntityOpRow))
       const suffix = `/M${person}`
       const latest = new Map<string, string>()
       for (const row of rows) {

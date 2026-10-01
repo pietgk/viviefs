@@ -1,116 +1,98 @@
 /**
- * Every Nx project must declare tags and an evidence owner (D48', ADR 0024).
- * Unclassified projects fail verify.
+ * verify static / ownership: reads the projects, the production files and the
+ * registry, and applies the rules in `ownership.ts` (ADR-0024, D76).
  */
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { SUITES } from '@viviefs/testing'
+import { REGISTRY } from './evidence-registry.ts'
+import { isProductionFile, projectProblems, registryProblems, type ProjectFile } from './ownership.ts'
+import { ROOT, STAGES } from './stages.ts'
 
-const EVIDENCE_OWNERS = Object.freeze([
-  'unit',
-  'conformance',
-  'crash-matrix',
-  'storybook',
-  'e2e-native',
-  'e2e-web',
-  'qualification',
-  'type-only',
-] as const)
-
-type ProjectFile = {
-  name?: string
-  tags?: string[]
-  metadata?: {
-    evidenceOwner?: string
-    rationale?: string
-  }
-}
-
-const KIND_TAGS = ['kind:app', 'kind:feature', 'kind:lib', 'kind:tool'] as const
-
-const tracked = execFileSync(
-  'git',
-  ['ls-files', '--cached', '--others', '--exclude-standard'],
-  { encoding: 'utf8' },
-)
+const tracked = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
+  encoding: 'utf8',
+  cwd: ROOT,
+})
   .split('\n')
-  .filter(
-    (path) =>
-      (path.endsWith('/project.json') || path === 'project.json') &&
-      !path.startsWith('repos/'),
-  )
+  .filter((path) => path !== '' && existsSync(join(ROOT, path)))
 
-const workspacePackages = execFileSync(
-  'git',
-  ['ls-files', '--cached', '--others', '--exclude-standard'],
-  { encoding: 'utf8' },
-)
-  .split('\n')
-  .filter(
-    (path) =>
-      path.endsWith('/package.json') &&
-      path !== 'package.json' &&
-      !path.startsWith('.agents/') &&
-      !path.startsWith('vendor/') &&
-      !path.startsWith('repos/'),
-  )
+const outside = (path: string) => /^(?:repos|vendor|\.agents)\//.test(path)
 
-const problems: string[] = []
-
-if (tracked.length === 0) {
-  problems.push('No project.json files are tracked.')
+const read = (path: string) => {
+  const absolute = join(ROOT, path)
+  return existsSync(absolute) ? readFileSync(absolute, 'utf8') : undefined
 }
 
-const projectDirs = new Set(tracked.map((path) => dirname(path)))
-
-for (const pkg of workspacePackages) {
-  const dir = dirname(pkg)
-  if (!projectDirs.has(dir)) {
-    problems.push(
-      `${pkg} has no sibling project.json. Every workspace package must declare tags and an evidence owner.`,
-    )
-  }
-}
-
-for (const path of tracked) {
-  let parsed: ProjectFile
+const parse = (path: string): ProjectFile['parsed'] => {
   try {
-    parsed = JSON.parse(readFileSync(join(process.cwd(), path), 'utf8')) as ProjectFile
-  } catch (error) {
-    problems.push(`${path} is not valid JSON: ${String(error)}`)
-    continue
-  }
-
-  const tags = parsed.tags ?? []
-  if (tags.length === 0) {
-    problems.push(`${path} has no tags.`)
-  } else if (!tags.some((tag) => (KIND_TAGS as readonly string[]).includes(tag))) {
-    problems.push(
-      `${path} has no kind: tag (need one of ${KIND_TAGS.join(', ')}).`,
-    )
-  }
-
-  const owner = parsed.metadata?.evidenceOwner
-  if (!owner) {
-    problems.push(`${path} is missing metadata.evidenceOwner.`)
-  } else if (!(EVIDENCE_OWNERS as readonly string[]).includes(owner)) {
-    problems.push(
-      `${path} has unknown evidenceOwner "${owner}". Allowed: ${EVIDENCE_OWNERS.join(', ')}.`,
-    )
-  }
-
-  const rationale = parsed.metadata?.rationale?.trim()
-  if (!rationale) {
-    problems.push(`${path} is missing metadata.rationale.`)
+    return JSON.parse(read(path) ?? '') as ProjectFile['parsed']
+  } catch {
+    return undefined
   }
 }
+
+type Targets = Record<string, { options?: { command?: string; commands?: ReadonlyArray<string> } }>
+
+const projects = tracked
+  .filter((path) => (path.endsWith('/project.json') || path === 'project.json') && !outside(path))
+  .map((path) => ({ path, parsed: parse(path) }))
+
+const workspacePackages = tracked.filter(
+  (path) => path.endsWith('/package.json') && path !== 'package.json' && !outside(path),
+)
+
+const targetsOf = (projectJson: string): Targets =>
+  ((parse(projectJson) as { targets?: Targets } | undefined)?.targets ?? {})
+
+const projectOf = (path: string): string | undefined => {
+  for (let dir = dirname(path); dir !== '.' && dir !== '/'; dir = dirname(dir)) {
+    if (existsSync(join(ROOT, dir, 'project.json'))) return join(dir, 'project.json')
+  }
+  return undefined
+}
+
+const stepRuns = (stepName: string, path: string) => {
+  const step = STAGES.flatMap((stage) => stage.steps).find(({ name }) => name === stepName)
+  if (!step) return false
+  return step.invocations.some(({ args }) => {
+    if (args.includes(path)) return true
+    const target = args[args.indexOf('-t') + 1]
+    if (!args.includes('-t') || target === undefined) return false
+    return projects.some(({ path: projectJson }) => {
+      const options = targetsOf(projectJson)[target]?.options
+      return [options?.command ?? '', ...(options?.commands ?? [])].some((command) => command.includes(path))
+    })
+  })
+}
+
+const gates = [...(read('tools/qualification/src/gates.ts') ?? '').matchAll(/gate: '(P\d\d)'/g)].map(
+  (match) => match[1] ?? '',
+)
+
+const problems = [
+  ...projectProblems(projects, workspacePackages),
+  ...registryProblems(REGISTRY, {
+    productionFiles: tracked.filter(isProductionFile),
+    source: read,
+    gates,
+    suites: SUITES.map(({ id }) => id),
+    stepRuns,
+    projectTargets: (path) => {
+      const projectJson = projectOf(path)
+      return projectJson ? Object.keys(targetsOf(projectJson)) : []
+    },
+  }),
+]
 
 if (problems.length > 0) {
-  throw new Error(
-    `Ownership registry is incomplete:\n${problems.map((line) => `  ${line}`).join('\n')}`,
-  )
+  throw new Error(`Ownership is incomplete:\n${problems.map((line) => `  ${line}`).join('\n')}`)
 }
 
+const counts = new Map<string, number>()
+for (const { treatment } of REGISTRY) counts.set(treatment, (counts.get(treatment) ?? 0) + 1)
 console.log(
-  `Ownership registry: ${tracked.length} projects classified, ${EVIDENCE_OWNERS.length} allowed owners.`,
+  `Ownership: ${projects.length} projects tagged; ${REGISTRY.length} production files classified (` +
+    [...counts].map(([treatment, count]) => `${treatment} ${count}`).join(', ') +
+    ').',
 )

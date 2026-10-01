@@ -9,7 +9,6 @@
     "platform:server"
   ],
   "metadata": {
-    "evidenceOwner": "unit",
     "rationale": "Evidence validators and server-side activities"
   }
 }

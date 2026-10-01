@@ -7,7 +7,6 @@
     "kind:tool"
   ],
   "metadata": {
-    "evidenceOwner": "qualification",
     "rationale": "gates, probes, ledger"
   },
   "targets": {
