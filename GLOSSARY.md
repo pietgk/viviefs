@@ -31,7 +31,7 @@ _Avoid_: pattern template
 
 **Implementation**:
 One concrete Layer satisfying a pattern's contract, qualified by running the
-pattern's conformance probe.
+pattern's suites.
 _Avoid_: adapter (reserved for the `layer:adapter` tag), plugin
 
 **Exemplar**:
@@ -374,8 +374,52 @@ The paired check proving a probe can detect the thing it claims is absent.
 **Ledger**:
 The append-only, machine-written record of gate runs, fingerprinted by inputs.
 
-**Evidence owner**:
-The single test layer responsible for proving a project's behaviour.
+**Gate step**:
+One unit of the work that builds or runs a gate, written `Pnn.k` (P11.7).
+_Avoid_: step (alone)
+
+**Verify step**:
+One named unit of a `verify` stage (`typecheck`, `unit`, `docs`), from the
+stage table in `tools/verify`.
+_Avoid_: step (alone), check (for the unit)
+
+**Coverage producer**:
+A verify step that runs tests with coverage and emits a coverage map and a
+test report: `unit`, `integration`, `storybook`.
+_Avoid_: producer (alone), runner
+
+**File treatment**:
+How one production file's behaviour is shown in `verify`: the verify step that
+produces its evidence and the verdict applied to it. Every production file has
+exactly one, with a written rationale, in the registry.
+_Avoid_: treatment (alone), evidence owner, coverage owner
+
+**Verdict**:
+The rule a file treatment applies to what its verify step produced: exact
+coverage, stories ran, reached, statically checked, or gate named.
+
+**Owning producer**:
+The coverage producer a file treatment names. Only its coverage of the file is
+judged; another producer reaching the file is informational.
+
+**Suite**:
+The executable form of one aspect of a pattern's contract: a named set of
+checks, written once, run against each implementation, with a positive control
+that must fail it. Named `<pattern>/<aspect>` (`durable-workflow/crash-matrix`).
+A pattern has one or more suites; a suite belongs to exactly one pattern. The
+same function runs in a verify step as a check and in a gate's probe as the
+claim.
+_Avoid_: conformance probe, test suite (a test file), host checks
+
+**Registry**:
+The one reviewed list of every production file with its file treatment,
+rationale and suites. Filesystem rules only discover files.
+
+**Evidence lockfile**:
+The machine-written record of each owning producer's exact per-file coverage,
+the providers' names and versions, the registry digest and the bundle-size
+references. Written only by `pnpm verify baseline`.
+_Avoid_: coverage baseline (as a target), ratchet
 
 **Lesson**:
 Teaching material that cites gate evidence and never becomes the source of a claim.

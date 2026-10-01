@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where tests live, and how the engine owns its suites (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+  body { font-size: 16px; line-height: 1.6; }
+  .eo-section { scroll-margin-top: 1rem; }
+  .eo-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .eo-mermaid svg { margin: 0 auto; }
+  code.eo-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  td.eo-nowrap, th.eo-nowrap { white-space: nowrap; overflow-wrap: normal; }
+  .eo-table-wrap { overflow-x: auto; }
+  .eo-term { border-left: 4px solid var(--color-primary); }
+  .eo-option { border-top-width: 4px; }
+  #convention td:first-child { white-space: nowrap; }
+  .eo-rec { border-color: var(--color-success); }
+  .eo-suites td:nth-child(2), .eo-suites td:nth-child(3) { min-width: 10rem; overflow-wrap: normal; }
+  .eo-suites td:nth-child(4) { min-width: 12rem; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Docs and teaching - Evidence ownership</span>
+    <span class="badge badge-outline">2026-09-30</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Where tests live, and how the engine owns its suites</h1>
+  <p class="text-lg opacity-80">D78 moves the engine suites into <code class="eo-inline">libs/workflow-engine</code>. Built as written, that is a dependency cycle, which lint refuses. This page shows why, compares two ways out, and proposes one location convention for every kind of test, so the answer also settles where future tests go.</p>
+</header>
+
+<section class="eo-section space-y-6" id="cause">
+  <h2 class="text-2xl font-bold">1. Why the move is a cycle</h2>
+  <p><code class="eo-inline">libs/testing</code> is a hub: it holds every pattern's suite, so it depends on datom, the engine, telemetry and identity. A project that <code class="eo-inline">libs/testing</code> depends on can never run a suite from it. Store projects can run the engine suites only because nothing in <code class="eo-inline">libs/testing</code> depends on a store.</p>
+  <div class="eo-mermaid"><pre class="mermaid">
+flowchart TB
+  hubTesting["libs/testing: every suite, the fake issuer, helpers"]
+  hubEngine["libs/workflow-engine"]
+  hubTelemetry["libs/telemetry"]
+  hubIdentity["libs/identity"]
+  hubDatom["libs/datom"]
+  hubSqlite["libs/store-sqlite-node"]
+  hubPg["libs/store-postgres"]
+  hubTesting --> hubEngine
+  hubTesting --> hubTelemetry
+  hubTesting --> hubIdentity
+  hubTesting --> hubDatom
+  hubTelemetry --> hubEngine
+  hubEngine --> hubDatom
+  hubSqlite --> hubDatom
+  hubPg --> hubDatom
+  hubSqlite -. "tests import" .-> hubTesting
+  hubPg -. "tests import" .-> hubTesting
+  hubEngine -. "tests would import: cycle" .-> hubTesting
+  </pre></div>
+  <div class="alert alert-warning alert-soft text-sm"><span><b>It is not only the engine.</b> The same wall stands in front of every suite that should run next to its implementation: the trace projection suite in <code class="eo-inline">libs/telemetry</code>, the token verifier suite in <code class="eo-inline">libs/identity</code> (its tests live in <code class="eo-inline">libs/testing</code> today for this reason), and later the sync and membership suites, now in <code class="eo-inline">tools/qualification</code>.</span></div>
+</section>
+
+<section class="eo-section space-y-6" id="options">
+  <h2 class="text-2xl font-bold">2. Two ways out</h2>
+
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="card bg-base-200 eo-option"><div class="card-body p-5 block space-y-2">
+      <h3 class="card-title text-lg">R1: the registry owns, runs stay where they are</h3>
+      <p class="text-sm">Nothing moves. The engine suites keep running in the store projects' integration tests (split into their own test file), the memory-engine positive control joins them, and each test is tagged with its suite id. <code class="eo-inline">engine.ts</code>'s registry entry names the three suites, and <code class="eo-inline">verify</code> checks they passed in the <code class="eo-inline">integration</code> producer.</p>
+      <p class="text-sm">Convention it implies: <b>a suite runs in the project of the implementation that varies</b>. The engine is one; the stores vary, so each store proves the engine survives on it.</p>
+      <p class="font-semibold text-sm">Pros</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>No moves, no new entries, no new lint rule; smallest change.</li>
+        <li>A new store adapter runs every store-dependent suite in one place, as the native and wasm stores already do on devices.</li>
+      </ul>
+      <p class="font-semibold text-sm">Cons</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>The hub stays. The telemetry, identity and sync suites cannot move next to their code later either.</li>
+        <li>Someone reading <code class="eo-inline">libs/workflow-engine</code> finds none of its main evidence there; only the registry points to it.</li>
+        <li>Suites that do not vary by store (token verifier, sync) have no natural home under the convention.</li>
+      </ul>
+    </div></div>
+
+    <div class="card bg-base-200 eo-option eo-rec"><div class="card-body p-5 block space-y-2">
+      <div class="flex flex-wrap gap-2"><span class="badge badge-success badge-sm">Recommended</span></div>
+      <h3 class="card-title text-lg">R2: suites ship with their contract</h3>
+      <p class="text-sm">Each suite moves into the lib that owns the contract it checks, under <code class="eo-inline">src/suites/</code>, exported as <code class="eo-inline">@viviefs/&lt;lib&gt;/suites</code>. <code class="eo-inline">libs/testing</code> shrinks to generic helpers that depend on no <code class="eo-inline">@viviefs</code> lib, so it sits at the bottom of the graph. Implementations run the suites in their own tests.</p>
+      <p class="text-sm">Convention: <b>a suite lives with its contract; it runs in the project of the implementation under test</b>.</p>
+      <p class="font-semibold text-sm">Pros</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>No hub, so no cycles, now or when the next pattern arrives.</li>
+        <li>A lib holds its contract, its suites and, for the engine, their runs: what a guide's <code class="eo-inline">testing</code> page points to is in one place.</li>
+        <li>Matches D75: a suite belongs to exactly one pattern, and now also sits in it.</li>
+      </ul>
+      <p class="font-semibold text-sm">Cons</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>Test code inside production libs, behind a <code class="eo-inline">./suites</code> entry. A lint rule must keep it out of production imports (only tests, <code class="eo-inline">src/suites/</code>, <code class="eo-inline">tools/</code> and the evidence apps may import it), replacing today's "core may not import <code class="eo-inline">@viviefs/testing</code>" rule.</li>
+        <li>About 15 files move, 4 <code class="eo-inline">package.json</code> exports added, imports updated in the stores, the evidence app and <code class="eo-inline">tools/qualification</code>.</li>
+        <li>The engine's tests depend on the store adapters (test-only edges).</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <h3 class="text-xl font-semibold">R2's dependency graph</h3>
+  <p>Solid arrows are production dependencies; dotted ones exist only in tests. Nothing points back up.</p>
+  <div class="eo-mermaid"><pre class="mermaid">
+flowchart TB
+  r2Testing["libs/testing: helpers only, no viviefs deps"]
+  r2Datom["libs/datom + suites: log-store, changesets"]
+  r2Engine["libs/workflow-engine + suites: crash-matrix, launch-sweep, engine-trace"]
+  r2Telemetry["libs/telemetry + suites: projection, sink"]
+  r2Identity["libs/identity + suites: token-verifier, fake issuer"]
+  r2Sqlite["libs/store-sqlite-node"]
+  r2Pg["libs/store-postgres"]
+  r2Datom --> r2Testing
+  r2Engine --> r2Datom
+  r2Telemetry --> r2Engine
+  r2Identity --> r2Testing
+  r2Sqlite --> r2Datom
+  r2Pg --> r2Datom
+  r2Sqlite -. "tests run datom suites" .-> r2Datom
+  r2Engine -. "tests run engine suites on" .-> r2Sqlite
+  r2Engine -. "tests run engine suites on" .-> r2Pg
+  r2Telemetry -. "tests run projection suite on" .-> r2Sqlite
+  </pre></div>
+  <p class="text-sm opacity-80">The <code class="eo-inline">suites</code> files depend on <code class="eo-inline">libs/testing</code> for helpers (<code class="eo-inline">CheckResult</code>, the mutable clock, <code class="eo-inline">runUnscoped</code>); production files in the same lib may not import either.</p>
+
+  <h3 class="text-xl font-semibold">Where each suite is defined and run</h3>
+  <div class="eo-table-wrap">
+    <table class="table table-sm eo-suites">
+      <thead><tr><th>Suite</th><th>R1: defined / run</th><th>R2: defined / run</th></tr></thead>
+      <tbody>
+        <tr><td class="eo-nowrap"><code class="eo-inline">log-store/conformance</code><br><code class="eo-inline">changesets/conformance</code></td><td>libs/testing / each store project; devices in P04, P05</td><td>libs/datom/src/suites / each store project; devices in P04, P05</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">durable-workflow/crash-matrix</code><br><code class="eo-inline">device-durability/launch-sweep</code><br><code class="eo-inline">tracing/engine-trace</code></td><td>libs/testing / each store project</td><td>libs/workflow-engine/src/suites / libs/workflow-engine, on sqlite-node and PGlite; devices in P07</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">tracing/projection</code></td><td>libs/testing / each store project</td><td>libs/telemetry/src/suites / libs/telemetry, on sqlite-node and PGlite</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">identity/token-verifier</code></td><td>libs/testing / libs/testing's own tests</td><td>libs/identity/src/suites / libs/identity (the fake issuer moves too)</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">interaction-state/intent-composer</code></td><td colspan="2">features/evidence/client / features/evidence/client: already next to its three implementations, both options</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">sync/protocol</code><br><code class="eo-inline">identity/membership</code><br><code class="eo-inline">tracing/sink</code></td><td colspan="2">tools/qualification, as today, in both options. Under R2 they move to their libs with the sync, identity and tracing guides; under R1 they cannot join libs/testing without a new cycle</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="eo-section space-y-6" id="convention">
+  <h2 class="text-2xl font-bold">3. Where every kind of test lives (proposed convention, R2)</h2>
+  <p>One rule per kind, so a new test has exactly one right place and <code class="eo-inline">verify</code> can check the name. File names decide the coverage producer; no second list.</p>
+  <div class="eo-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th class="eo-nowrap">Kind</th><th>Where</th><th>File name</th><th>Runs in</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Unit test</td><td>Next to the code it covers, same project</td><td class="eo-nowrap"><code class="eo-inline">src/x.test.ts</code></td><td>unit</td><td>As today</td></tr>
+        <tr><td>Integration test</td><td>Next to the code it covers, when proving it needs a real store or server</td><td class="eo-nowrap"><code class="eo-inline">src/x.integration.test.ts</code></td><td>integration</td><td>As today</td></tr>
+        <tr><td>Story</td><td>Next to the component</td><td class="eo-nowrap"><code class="eo-inline">X.stories.tsx</code></td><td>storybook (Chromium from P12)</td><td>As today, jsdom until P12</td></tr>
+        <tr><td>Suite</td><td>In the lib that owns the contract it checks</td><td class="eo-nowrap"><code class="eo-inline">src/suites/&lt;aspect&gt;.ts</code></td><td>not a test itself</td><td>New (R2)</td></tr>
+        <tr><td>Suite run</td><td>In the project of the implementation under test, one file per suite</td><td class="eo-nowrap"><code class="eo-inline">src/&lt;pattern&gt;-&lt;aspect&gt;.integration.test.ts</code> (or <code class="eo-inline">.test.ts</code> without a real store)</td><td>integration or unit</td><td>New name; tagged with the suite id</td></tr>
+        <tr><td>Test helper, fake</td><td>Generic: <code class="eo-inline">libs/testing</code>. Belonging to one contract: that lib's <code class="eo-inline">src/suites/</code></td><td class="eo-nowrap">-</td><td>-</td><td>New split (R2)</td></tr>
+        <tr><td>Probe (gate)</td><td><code class="eo-inline">tools/qualification/src/probes/</code>; calls suites for its host part</td><td class="eo-nowrap"><code class="eo-inline">pNN*.ts</code></td><td>qualify</td><td>As today</td></tr>
+        <tr><td>Device end to end</td><td>The probe drives the evidence app through agent-device</td><td class="eo-nowrap"><code class="eo-inline">pNN-device.ts</code></td><td>qualify</td><td>As today</td></tr>
+        <tr><td>Web end to end</td><td>The app it drives, in an <code class="eo-inline">e2e/</code> folder</td><td class="eo-nowrap"><code class="eo-inline">e2e/x.spec.ts</code></td><td>e2e-web (Playwright)</td><td>First one with P13</td></tr>
+        <tr><td>Exercise test</td><td>With the exercise (D66)</td><td class="eo-nowrap"><code class="eo-inline">exercises/&lt;pattern&gt;/NN.MM-name/</code></td><td>unit</td><td>With the log-store guide</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-info alert-soft text-sm"><span><b>Recommendation: R2.</b> The cycle is a symptom of the hub, and every pattern that gets a guide will hit it again under R1. R2 costs one restructuring now and gives each rule in the table above one reason. The sync, membership and sink suites move later, with their guides; nothing in this step needs them to.</span></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 block space-y-3">
+    <h3 class="card-title text-lg">Your answer</h3>
+    <form class="space-y-3" data-lavish-question="suites-location" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('suites-location'); const notes = (d.get('suites-location-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('Suite location: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'Suite location: ' + choice, element: event.currentTarget, queueKey: 'suites-location', data: { question: 'suites-location', answer: choice, notes } });">
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="suites-location" value="R2, suites ship with their contract, with the convention table"> <span>R2, with the convention table</span></label>
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="suites-location" value="R1, the registry owns and runs stay"> <span>R1</span></label>
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="suites-location" value="something else, see notes"> <span>Something else (notes)</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="suites-location-notes" rows="3" placeholder="Changes to the convention table or the options"></textarea>
+      <button type="submit" class="btn btn-primary btn-sm">Queue this answer</button>
+    </form>
+  </div></div>
+</section>
+
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) {
+    paint.clearRect(0, 0, 1, 1);
+    paint.fillStyle = "#000";
+    paint.fillStyle = color;
+    paint.fillRect(0, 0, 1, 1);
+    return paint.getImageData(0, 0, 1, 1).data;
+  }
+  function compositeRgba(foreground, background) {
+    const fa = foreground[3] / 255;
+    const ba = background[3] / 255;
+    const alpha = fa + ba * (1 - fa);
+    if (alpha === 0) return [0, 0, 0, 0];
+    return [
+      (foreground[0] * fa + background[0] * ba * (1 - fa)) / alpha,
+      (foreground[1] * fa + background[1] * ba * (1 - fa)) / alpha,
+      (foreground[2] * fa + background[2] * ba * (1 - fa)) / alpha,
+      alpha * 255,
+    ];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rootBackground = toRgba(getComputedStyle(root).backgroundColor);
+    const bodyBackground = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0, 0, 0, 0];
+    const [r, g, b, a] = compositeRgba(bodyBackground, rootBackground);
+    if (a > 0) return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
+    const colorScheme = getComputedStyle(root).colorScheme;
+    if (colorScheme.includes("dark") && !colorScheme.includes("light")) return true;
+    if (colorScheme.includes("light") && !colorScheme.includes("dark")) return false;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied;
+  let rendering = false;
+  let queued = false;
+  function queueRender() {
+    queued = true;
+    if (rendering) return;
+    void render();
+  }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "strict" });
+        for (const { el, src } of diagrams) {
+          el.removeAttribute("data-processed");
+          el.textContent = src;
+        }
+        try {
+          await mermaid.run({ nodes: diagrams.map((d) => d.el) });
+        } catch (error) {
+          console.error("Mermaid diagram render failed:", error);
+          return;
+        }
+        applied = theme;
+      }
+    } finally {
+      rendering = false;
+      if (queued) queueRender();
+    }
+  }
+  if (document.readyState === "complete") queueRender();
+  else window.addEventListener("load", queueRender, { once: true });
+  const themeObserver = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) {
+    if (!el) continue;
+    themeObserver.observe(el, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+  }
+  document.addEventListener("change", queueRender, true);
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>

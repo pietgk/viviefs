@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidence ownership - definitions and producers (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+  body { font-size: 16px; line-height: 1.6; }
+  .eo-section { scroll-margin-top: 1rem; }
+  .eo-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .eo-mermaid svg { margin: 0 auto; }
+  code.eo-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  td.eo-nowrap, th.eo-nowrap { white-space: nowrap; overflow-wrap: normal; }
+  .eo-table-wrap { overflow-x: auto; }
+  .eo-term { border-left: 4px solid var(--color-primary); }
+  .eo-option { border-top-width: 4px; }
+  .eo-rec { border-color: var(--color-success); }
+  .eo-suites td:nth-child(2), .eo-suites td:nth-child(3) { min-width: 10rem; overflow-wrap: normal; }
+  .eo-suites td:nth-child(4) { min-width: 12rem; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Docs and teaching - Evidence ownership</span>
+    <span class="badge badge-outline">2026-09-30</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Evidence ownership: what the words mean, and who produces the evidence</h1>
+  <p class="text-lg opacity-80">Round 2. Section 1 is revised after your notes: <b>file treatment</b> as the term, suites named from the pattern whose contract they check, and the suite-pattern relation checked against the code. Sections 2 and 3 are unchanged and answered. The written spec is <code class="eo-inline">docs/plan/evidence-ownership/spec.md</code>; it changes after this review.</p>
+  <div class="alert alert-success alert-soft">
+    <div>
+      <div class="font-semibold">Answered</div>
+      <ul class="list-disc ml-5 mt-1 space-y-1">
+        <li><b>Engine suites</b> move to <code class="eo-inline">libs/workflow-engine</code>: the crash matrix with its memory-engine positive control, the host launch sweep and the engine trace checks.</li>
+        <li><b>Schema at every boundary</b> refuses <code class="eo-inline">sql&lt;T&gt;</code>, <code class="eo-inline">JSON.parse</code>, <code class="eo-inline">Response.json()</code> <i>and</i> <code class="eo-inline">as unknown as</code> in non-test code.</li>
+        <li><b>Producers</b>: A, one root Vitest run per step; C (per-project runs, workspace coverage, merged) once the two steps pass one minute on a full run.</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<!-- 1. DEFINITIONS -->
+<section class="eo-section space-y-6" id="definitions">
+  <h2 class="text-2xl font-bold">1. Definitions (revised)</h2>
+  <p>Each term answers one question. A <b>file treatment</b> is about a <i>file</i>; a <b>suite</b> is about a <i>pattern's contract</i>.</p>
+
+  <div class="alert alert-info alert-soft text-sm">
+    <div>
+      <div class="font-semibold">What changed since round 1</div>
+      <ul class="list-disc ml-5 mt-1 space-y-1">
+        <li><b>Treatment becomes file treatment.</b> Agreed: the name then says what it is attached to, so nobody speaks of a project's or a suite's treatment. In code the type is <code class="eo-inline">FileTreatment</code>; inside a registry entry the field is <code class="eo-inline">treatment</code>.</li>
+        <li><b>Suite names were implicit</b>, and mixed three schemes: by gate ("P09 host checks"), by port ("token verifier conformance"), by technique ("crash matrix"). Now one scheme: <code class="eo-inline">&lt;pattern&gt;/&lt;aspect&gt;</code>, declared once in code.</li>
+        <li><b>Suites and patterns</b>: checked below against every suite in the repo. They do not overlap; they nest. Each suite checks one aspect of exactly one pattern's contract. The glossary already says so in other words ("an implementation is qualified by running the pattern's conformance probe").</li>
+        <li><b>"Engine suites" is a grouping, not a term.</b> The three suites <code class="eo-inline">libs/workflow-engine</code> runs belong to three patterns (durable workflow, device durability, tracing); what they share is the implementation under test.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 eo-term"><div class="card-body p-5 block space-y-2">
+      <h3 class="card-title text-lg">File treatment</h3>
+      <p class="text-sm opacity-70">Answers: <i>for this file, which verify step produces its evidence, and which verdict judges it?</i></p>
+      <p>How one production file's behaviour is shown in <code class="eo-inline">verify</code>: the <b>verify step</b> that produces the evidence and the <b>verdict</b> applied to it. Every production file has exactly one, with a written rationale, in the <b>registry</b>. Replaces the per-project <i>evidence owner</i>.</p>
+      <p class="text-sm">Example: <code class="eo-inline">libs/datom/src/hlc.ts</code> has file treatment <code class="eo-inline">node-unit</code>: the <code class="eo-inline">unit</code> step, judged by an exact coverage tuple.</p>
+      <p class="text-sm opacity-70"><i>Avoid</i>: treatment (alone), evidence owner, coverage owner.</p>
+    </div></div>
+
+    <div class="card bg-base-200 eo-term"><div class="card-body p-5 block space-y-2">
+      <h3 class="card-title text-lg">Suite</h3>
+      <p class="text-sm opacity-70">Answers: <i>which aspect of which pattern's contract was checked, against which implementations?</i></p>
+      <p>The executable form of one aspect of a <b>pattern</b>'s contract: a named set of checks, written once, run against each implementation of that contract, with a positive control that must fail it. A pattern has one or more suites; a suite belongs to exactly one pattern. The same suite function runs in a verify step as a check and in a gate's probe as the claim (D70).</p>
+      <p class="text-sm">Named <code class="eo-inline">&lt;pattern&gt;/&lt;aspect&gt;</code>, for example <code class="eo-inline">log-store/conformance</code>, <code class="eo-inline">durable-workflow/crash-matrix</code>. The pattern slug is the one its guide's <code class="eo-inline">pattern</code> frontmatter uses (D63).</p>
+      <p class="text-sm opacity-70"><i>Avoid</i>: conformance probe (a probe is what a gate runs; it calls suites), test suite (a Vitest file), host checks.</p>
+    </div></div>
+
+    <div class="card bg-base-200"><div class="card-body p-5 block space-y-2">
+      <h3 class="card-title text-lg">Verify step, producer</h3>
+      <p>A <b>verify step</b> is one named unit of a <code class="eo-inline">verify</code> stage (<code class="eo-inline">typecheck</code>, <code class="eo-inline">unit</code>, <code class="eo-inline">docs</code>...), from the stage table in <code class="eo-inline">tools/verify/src/stages.ts</code>. "Step" alone stays reserved for gate steps (<code class="eo-inline">P11.6</code>). A <b>producer</b> is a verify step that executes code and emits a coverage map and a test report: today <code class="eo-inline">unit</code>, <code class="eo-inline">integration</code>, <code class="eo-inline">storybook</code>.</p>
+    </div></div>
+
+    <div class="card bg-base-200"><div class="card-body p-5 block space-y-2">
+      <h3 class="card-title text-lg">Verdict</h3>
+      <p>The rule a file treatment applies to what its step produced. Five kinds: <b>exact coverage</b> (the file's tuple equals the lockfile), <b>stories ran</b> (every story passed with axe), <b>reached</b> (at least one statement ran), <b>statically checked</b> (the file's shape, for example only re-exports), <b>gate named</b> (the named gate is in the gate table; verify does not read the ledger, D63).</p>
+    </div></div>
+
+    <div class="card bg-base-200"><div class="card-body p-5 block space-y-2">
+      <h3 class="card-title text-lg">Exact coverage tuple, owning producer</h3>
+      <p>For one file and one producer: covered and total statements, branches, functions and lines. The <b>owning producer</b> is the one its file treatment names; only its tuple is judged. Another producer reaching the file is informational: it can neither fail nor rescue the verdict (web-interview ADR 010).</p>
+    </div></div>
+
+    <div class="card bg-base-200"><div class="card-body p-5 block space-y-2">
+      <h3 class="card-title text-lg">Registry, evidence lockfile</h3>
+      <p>The <b>registry</b> is the one list of <i>file, file treatment, rationale, suites</i>, reviewed by a human; filesystem rules only discover files. The <b>evidence lockfile</b> is machine-written by <code class="eo-inline">pnpm verify baseline</code>: owned tuples per producer, provider name and version, the registry digest, and the bundle-size references.</p>
+    </div></div>
+  </div>
+
+  <h3 class="text-xl font-semibold">How they connect</h3>
+  <div class="eo-mermaid"><pre class="mermaid">
+flowchart TB
+  cmPattern["Pattern"] -->|"contract checked by one or more"| cmSuite["Suite"]
+  cmEntry["Registry entry"] -->|"gives exactly one"| cmTreat["File treatment"]
+  cmEntry -->|"for"| cmFile["Production file"]
+  cmEntry -. "may name" .-> cmSuite
+  cmTreat -->|"names"| cmStep["Verify step (producer)"]
+  cmTreat -->|"applies"| cmVerdict["Verdict"]
+  cmSuite -->|"runs in"| cmStep
+  cmSuite -->|"same function called by"| cmGate["Gate probe (qualify)"]
+  cmStep -->|"emits"| cmOut["Coverage map and test report"]
+  cmVerdict -->|"judges"| cmOut
+  cmLock["Evidence lockfile"] -->|"records the owned tuples of"| cmOut
+  </pre></div>
+
+  <h3 class="text-xl font-semibold">Suites and patterns, checked against the code</h3>
+  <p>Every suite in the repo today, with the pattern whose contract it checks (the pattern list is D65's). Each lands in exactly one pattern; none checks two, and no suite exists outside a pattern.</p>
+  <div class="eo-table-wrap">
+    <table class="table table-sm eo-suites">
+      <thead><tr><th>Suite (proposed id), function today</th><th>Pattern</th><th>Checks</th><th>Implementations it runs against</th><th>Gate</th><th>Verify step</th></tr></thead>
+      <tbody>
+        <tr><td class="eo-nowrap"><code class="eo-inline">log-store/conformance</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runLogStoreChecks</code></div></td><td>Log store</td><td>append, read, ordering, idempotence, acceptance time</td><td>sqlite-node, PGlite; native and wasm on devices</td><td>P04</td><td>integration</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">changesets/conformance</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runChangesetChecks</code></div></td><td>Changesets and projections</td><td>changeset lifecycle, basis, projections</td><td>sqlite-node, PGlite; devices</td><td>P05</td><td>integration</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">durable-workflow/crash-matrix</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runCrashMatrix</code></div></td><td>Durable workflow</td><td>resume after a kill at every boundary, effects at most once</td><td>the engine on sqlite-node and PGlite; the memory engine must fail</td><td>P06</td><td>integration</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">device-durability/launch-sweep</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runLaunchSweepChecks</code></div></td><td>Device durability</td><td>parked work resumes at launch</td><td>the engine on sqlite-node and PGlite; devices in P07</td><td>P07</td><td>integration</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">interaction-state/intent-composer</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runComposerChecks</code></div></td><td>Interaction state and live reads</td><td>IntentComposer's behaviour</td><td>effect-machine, XState, Effect with Atom; <code class="eo-inline">broken.ts</code> must fail</td><td>P08</td><td>unit</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">sync/protocol</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runP09</code></div></td><td>Sync</td><td>outbox, cursor, acknowledgement, blobs</td><td>the sync server and client (one today)</td><td>P09</td><td>unit</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">tracing/engine-trace</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runTraceJournalChecks</code></div></td><td>Tracing and telemetry sinks</td><td>the engine journals what a trace needs</td><td>the engine on sqlite-node and PGlite</td><td>P10</td><td>integration</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">tracing/projection</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runTraceProjectionChecks</code></div></td><td>Tracing and telemetry sinks</td><td>lossless, stable traces from the log</td><td>the trace projector on sqlite-node and PGlite</td><td>P10</td><td>integration</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">tracing/sink</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runSinkChecks</code></div></td><td>Tracing and telemetry sinks</td><td>the <code class="eo-inline">TraceSink</code> contract</td><td>motel, Jaeger, otel-lgtm</td><td>P10</td><td>none: lab only</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">identity/token-verifier</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runTokenVerifierChecks</code></div></td><td>Identity</td><td>the token contract (9 checks)</td><td>fake verifier, OIDC on a served fake issuer; Keycloak in P11</td><td>P11</td><td>unit</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">identity/membership</code><div class="text-xs opacity-70 mt-1"><code class="eo-inline">runP11Node</code></div></td><td>Identity</td><td>membership, actor and server-only rules on sync</td><td>the sync server and client (one today)</td><td>P11</td><td>unit</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-warning alert-soft text-sm"><span><b>Two things this surfaces.</b> (1) Two suites (<code class="eo-inline">sync/protocol</code>, <code class="eo-inline">identity/membership</code>) have one implementation today. They are still suites: they check a pattern's contract, and a second implementation would run the same checks. Their functions are named after the gate (<code class="eo-inline">runP09</code>, <code class="eo-inline">runP11Node</code>) and live in <code class="eo-inline">tools/qualification</code>, not <code class="eo-inline">libs/testing</code>; renaming them is part of this step, moving them is a question for the sync and identity guides. (2) A gate can call several suites (P10 calls three), and a suite's gate is where its claim is recorded, not its name.</span></div>
+
+  <h3 class="text-xl font-semibold">How a suite is named and checked</h3>
+  <ul class="list-disc ml-5 space-y-1">
+    <li>Each suite is declared once in code: <code class="eo-inline">{ id, pattern, aspect, gate }</code> next to its function. The id is <code class="eo-inline">&lt;pattern&gt;/&lt;aspect&gt;</code>; the pattern slug is from a fixed list (D65's patterns), later checked against the guides' <code class="eo-inline">pattern</code> frontmatter.</li>
+    <li>A test that runs a suite tags itself with the suite id; a registry entry names suite ids. <code class="eo-inline">verify</code> fails on an unknown id, on an entry naming a suite that has no passing tagged test in the owning producer, and on a declared suite no test runs (except a lab-only one such as <code class="eo-inline">tracing/sink</code>, which names its gate instead).</li>
+  </ul>
+
+  <h3 class="text-xl font-semibold">Why a suite is not a file treatment: they are two axes</h3>
+  <p>A suite is checked <i>against</i> files whose file treatment is a coverage treatment; the suite's own files are <code class="eo-inline">test-support</code>. One file can be checked by several suites, and one suite checks files in several projects.</p>
+  <div class="eo-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th>File</th><th>File treatment (one)</th><th>Suites named on the entry (zero or more)</th></tr></thead>
+      <tbody>
+        <tr><td><code class="eo-inline">libs/store-sqlite-node/src/layer.ts</code></td><td><span class="badge badge-sm">node-integration</span></td><td><code class="eo-inline">log-store/conformance</code>, <code class="eo-inline">changesets/conformance</code></td></tr>
+        <tr><td><code class="eo-inline">libs/workflow-engine/src/engine.ts</code></td><td><span class="badge badge-sm">node-integration</span></td><td><code class="eo-inline">durable-workflow/crash-matrix</code>, <code class="eo-inline">device-durability/launch-sweep</code>, <code class="eo-inline">tracing/engine-trace</code></td></tr>
+        <tr><td><code class="eo-inline">libs/identity/src/oidc.ts</code></td><td><span class="badge badge-sm">node-unit</span></td><td><code class="eo-inline">identity/token-verifier</code></td></tr>
+        <tr><td><code class="eo-inline">libs/sync/server/src/server.ts</code></td><td><span class="badge badge-sm">node-unit</span></td><td><code class="eo-inline">sync/protocol</code>, <code class="eo-inline">identity/membership</code></td></tr>
+        <tr><td><code class="eo-inline">libs/datom/src/hlc.ts</code></td><td><span class="badge badge-sm">node-unit</span></td><td>none</td></tr>
+        <tr><td><code class="eo-inline">libs/testing/src/crash-matrix.ts</code></td><td><span class="badge badge-sm">test-support</span></td><td>none: it <i>is</i> the suite <code class="eo-inline">durable-workflow/crash-matrix</code>; its positive control proves it</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="text-xl font-semibold">The file treatments, each with its question</h3>
+  <div class="eo-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th class="eo-nowrap">File treatment</th><th>Use it when the file...</th><th class="eo-nowrap">Verify step</th><th>Verdict</th><th class="eo-nowrap">Draft count</th></tr></thead>
+      <tbody>
+        <tr><td class="eo-nowrap"><code class="eo-inline">node-unit</code></td><td>is runtime logic proven in-process in Node, no real store or server needed</td><td>unit</td><td>exact coverage</td><td>72</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">node-integration</code></td><td>needs a real store (sqlite-node, PGlite) or an HTTP server to prove</td><td>integration</td><td>exact coverage</td><td>8</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">rendered-ui</code></td><td>is a rendered component</td><td>storybook (jsdom until P12)</td><td>stories ran, with axe</td><td>2</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">process-entry</code></td><td>is a process (CLI, <code class="eo-inline">main</code>); logic lives elsewhere</td><td>unit</td><td>a named test runs it as a process and passes</td><td>7</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">test-support</code></td><td>is a suite, fake or harness</td><td>unit or integration, named</td><td>reached</td><td>17</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">build-step</code></td><td>is loaded by a build tool (Astro, Metro, Babel)</td><td>docs, build or bundle-size, named</td><td>that step ran for its project</td><td>7</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">device</code></td><td>needs a device or browser runtime (does not load in Node)</td><td>typecheck, lint only</td><td>gate named</td><td>46</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">qualify-only</code></td><td>is a lab or device driver or a gate runner</td><td>typecheck, lint only</td><td>gate named</td><td>26</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">re-export</code></td><td>only re-exports</td><td>ownership (static)</td><td>statically checked</td><td>16</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">type-only</code></td><td>only declares types</td><td>typecheck</td><td>statically checked</td><td>2</td></tr>
+        <tr><td class="eo-nowrap"><code class="eo-inline">named-slot</code></td><td>is an empty named slot (<code class="eo-inline">export {}</code>)</td><td>ownership (static)</td><td>statically checked</td><td>3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-warning alert-soft text-sm"><span><b>Worth seeing plainly:</b> 72 of 208 files (<code class="eo-inline">device</code> and <code class="eo-inline">qualify-only</code>) have nothing in <code class="eo-inline">verify</code> but <code class="eo-inline">typecheck</code> and <code class="eo-inline">lint</code>. That is D70 working as designed (device and lab legs run only in qualify), and the registry makes it visible instead of hiding it behind a project-level owner.</span></div>
+
+  <h3 class="text-xl font-semibold">Choosing a file treatment</h3>
+  <p>Asked in this order; the first yes decides. This is what makes the choice mechanical enough for an agent to classify a new file, and for a reviewer to challenge it.</p>
+  <div class="eo-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th>#</th><th>Question</th><th>If yes</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Only <code class="eo-inline">export {}</code> and its slot comment?</td><td class="eo-nowrap"><code class="eo-inline">named-slot</code></td></tr>
+        <tr><td>2</td><td>Only type declarations?</td><td class="eo-nowrap"><code class="eo-inline">type-only</code></td></tr>
+        <tr><td>3</td><td>Only re-exports?</td><td class="eo-nowrap"><code class="eo-inline">re-export</code></td></tr>
+        <tr><td>4</td><td>Does it fail to load in Node (needs a device or browser runtime)?</td><td class="eo-nowrap"><code class="eo-inline">device</code></td></tr>
+        <tr><td>5</td><td>Does only qualify run it (lab or device driver, gate runner)?</td><td class="eo-nowrap"><code class="eo-inline">qualify-only</code></td></tr>
+        <tr><td>6</td><td>Is it loaded by a build tool (Astro, Metro, Babel)?</td><td class="eo-nowrap"><code class="eo-inline">build-step</code></td></tr>
+        <tr><td>7</td><td>Is its contract a process (CLI, <code class="eo-inline">main</code>)?</td><td class="eo-nowrap"><code class="eo-inline">process-entry</code></td></tr>
+        <tr><td>8</td><td>Is it a suite, fake or harness?</td><td class="eo-nowrap"><code class="eo-inline">test-support</code></td></tr>
+        <tr><td>9</td><td>Is it a rendered component?</td><td class="eo-nowrap"><code class="eo-inline">rendered-ui</code></td></tr>
+        <tr><td>10</td><td>Does proving it need a real store or server?</td><td class="eo-nowrap"><code class="eo-inline">node-integration</code></td></tr>
+        <tr><td>11</td><td>Otherwise</td><td class="eo-nowrap"><code class="eo-inline">node-unit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="card-title text-lg">Your answer on the definitions</h3>
+    <form class="space-y-3" data-lavish-question="definitions" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('definitions'); const notes = (d.get('definitions-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('Definitions: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'Definitions: ' + choice, element: event.currentTarget, queueKey: 'definitions', data: { question: 'definitions', answer: choice, notes } });">
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="definitions" value="agreed as revised: file treatment, suites named pattern/aspect as a field on the registry entry"> <span>Agreed as revised</span></label>
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="definitions" value="agreed with the changes in the notes"> <span>Agreed with changes (notes below)</span></label>
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="definitions" value="not agreed, see notes"> <span>Not agreed (notes below)</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="definitions-notes" rows="3" placeholder="Changes to a term, a treatment or the decision order"></textarea>
+      <button type="submit" class="btn btn-primary btn-sm">Queue this answer</button>
+    </form>
+  </div></div>
+</section>
+
+<!-- 2. TODAY -->
+<section class="eo-section space-y-6" id="today">
+  <h2 class="text-2xl font-bold">2. Producers, projects and Nx today</h2>
+  <p>Each producer step asks Nx to run one target over the projects that declare it. Each target is <code class="eo-inline">vitest run</code> in the project's own directory, cached by Nx on <code class="eo-inline">default</code> and <code class="eo-inline">^production</code> inputs, with no declared outputs. Locally the scope is <code class="eo-inline">nx affected</code>; in CI it is <code class="eo-inline">nx run-many --all</code>.</p>
+  <div class="eo-mermaid"><pre class="mermaid">
+flowchart LR
+  subgraph nxVerify["pnpm verify"]
+    nxUnit["unit step"]
+    nxInteg["integration step"]
+    nxStory["storybook step"]
+  end
+  nxUnit -->|"nx affected -t test"| nxUnitP["9 projects: docs, evidence-client, datom, telemetry, testing, ui, workflow-engine, qualification, verify"]
+  nxInteg -->|"nx affected -t test-integration"| nxIntegP["3 projects: evidence-server, store-postgres, store-sqlite-node"]
+  nxStory -->|"nx affected -t test-storybook"| nxStoryP["1 project: evidence-client, jsdom"]
+  </pre></div>
+
+  <h3 class="text-xl font-semibold">Measured (2026-09-30, throwaway runs, Istanbul coverage)</h3>
+  <div class="eo-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th>Fact</th><th>Why it matters for the choice</th></tr></thead>
+      <tbody>
+        <tr><td>Evidence crosses projects. <code class="eo-inline">libs/sync/server/src/server.ts</code> (750 lines) is reached 233/249 statements, all by <code class="eo-inline">tools/qualification</code>'s P09 and P11 host checks. <code class="eo-inline">libs/identity</code> is reached by <code class="eo-inline">libs/testing</code>'s token and session tests.</td><td>If only a project's own tests count, about 2,500 lines in 14 files (sync client, protocol and server, identity, blobs, evidence model) have no evidence.</td></tr>
+        <tr><td>A per-project run with Vitest's <code class="eo-inline">root</code> at the project cannot instrument files outside it (every one failed). With <code class="eo-inline">root</code> at the workspace and <code class="eo-inline">dir</code> at the project, it can: the sync server gets the same 233/249.</td><td>Per-project runs can keep cross-project evidence, with one config change per project.</td></tr>
+        <tr><td>One root run per step: <code class="eo-inline">unit</code> 10.7 s, <code class="eo-inline">integration</code> 19.8 s, coverage on.</td><td>The same as today's full run (10 s and 17 s). Coverage costs nothing measurable.</td></tr>
+        <tr><td>Two runs compared: <code class="eo-inline">unit</code> identical in every file; <code class="eo-inline">integration</code> differed in one branch of <code class="eo-inline">libs/datom/src/hlc.ts</code> (a live-clock tiebreak).</td><td><code class="eo-inline">hlc.ts</code> is owned by <code class="eo-inline">unit</code>, so it does not matter; but the baseline must be taken more than once.</td></tr>
+        <tr><td>Device code (<code class="eo-inline">apps/evidence-mobile</code>, <code class="eo-inline">libs/platform-native</code>, native and wasm stores) does not even load in Node: including it in coverage crashes the run.</td><td>A producer's coverage includes only files whose treatment names that producer, read from the registry.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 3. OPTIONS -->
+<section class="eo-section space-y-6" id="options">
+  <h2 class="text-2xl font-bold">3. How <code class="eo-inline">unit</code> and <code class="eo-inline">integration</code> produce evidence</h2>
+  <p>The registry, verdicts and lockfile are the same in all three. What differs is how each step's one coverage map comes about, and what counts as evidence. B is the only option that changes what counts.</p>
+
+    <div class="grid lg:grid-cols-3 gap-4">
+    <div class="card bg-base-200 eo-option eo-rec"><div class="card-body p-5 space-y-2 block">
+      <div class="flex flex-wrap gap-2"><span class="badge badge-success badge-sm">Recommended now</span></div>
+      <h3 class="card-title text-lg">A: one root run per step</h3>
+      <p class="text-sm">A root Vitest config lists the projects whose <code class="eo-inline">project.json</code> declares <code class="eo-inline">test</code> (or <code class="eo-inline">test-integration</code>), each with its own environment. One process, one map.</p>
+      <p class="font-semibold text-sm">Pros</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>Fewest moving parts: no merge, no cached coverage whose correctness depends on Nx inputs.</li>
+        <li>Cross-project evidence counts.</li>
+        <li>Measured the same time as a full run today (about 30 s both steps).</li>
+      </ul>
+      <p class="font-semibold text-sm">Cons</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>No Nx cache or <code class="eo-inline">affected</code> for these two steps: every local <code class="eo-inline">verify</code> runs all of them.</li>
+        <li>Two ways to run a project's tests: the root run (verify) and <code class="eo-inline">nx run datom:test</code> (by hand). Same tests and configs, so they cannot disagree on results, only on scope.</li>
+        <li>Cost grows with every tested project (exercise tracks will add several).</li>
+      </ul>
+    </div></div>
+
+    <div class="card bg-base-200 eo-option"><div class="card-body p-5 space-y-2 block">
+      <div class="flex flex-wrap gap-2"><span class="badge badge-error badge-soft badge-sm">Changes what counts</span></div>
+      <h3 class="card-title text-lg">B: per project, own files only</h3>
+      <p class="text-sm">Today's Nx targets, each also measuring coverage of its own project's files. A file is proven only by tests in its own project.</p>
+      <p class="font-semibold text-sm">Pros</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>Nx <code class="eo-inline">affected</code> and cache unchanged; no merge.</li>
+        <li>Evidence sits next to the code it proves.</li>
+      </ul>
+      <p class="font-semibold text-sm">Cons</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>14 files, about 2,500 lines, lose their evidence today. Getting it back means new tests in those projects that repeat what the P09 and P11 host checks and the token contract already prove: layers that permanently overlap (D48', web-interview ADR 005).</li>
+        <li>A conformance suite run from a store project would not count for the engine, and so on: suites stop working as shared evidence.</li>
+      </ul>
+    </div></div>
+
+    <div class="card bg-base-200 eo-option"><div class="card-body p-5 space-y-2 block">
+      <div class="flex flex-wrap gap-2"><span class="badge badge-info badge-soft badge-sm">Upgrade path from A</span></div>
+      <h3 class="card-title text-lg">C: per project, workspace coverage, merged</h3>
+      <p class="text-sm">Today's Nx targets with Vitest's root at the workspace. Each writes its coverage as a declared Nx output; the step runs <code class="eo-inline">run-many --all</code> so unchanged projects replay from cache, then merges.</p>
+      <p class="font-semibold text-sm">Pros</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>Cross-project evidence counts.</li>
+        <li>Nx stays the one way to run tests; a change reruns only what it affects.</li>
+        <li>Scales with the number of projects.</li>
+      </ul>
+      <p class="font-semibold text-sm">Cons</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li>Evidence is only as right as each target's Nx inputs. Example today: <code class="eo-inline">p09.test.ts</code> reads committed evidence notes that are not in its inputs, so a stale cached pass is possible.</li>
+        <li>A merge step (union of hits, drop unreached entries), and <code class="eo-inline">affected</code> becomes <code class="eo-inline">run-many --all</code> for these steps.</li>
+        <li>More code in <code class="eo-inline">tools/verify</code> to maintain.</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <h3 class="text-xl font-semibold">The same situations under each option</h3>
+  <div class="eo-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th>Situation</th><th>A: root run</th><th>B: own files</th><th>C: merged</th></tr></thead>
+      <tbody>
+        <tr><td>You change <code class="eo-inline">libs/sync/server/src/server.ts</code></td><td>All unit tests run (about 11 s); its tuple comes from the qualification tests</td><td>Affected projects run; <code class="eo-inline">libs/sync/server</code> has no tests of its own, so the file fails as unproven</td><td>Affected projects rerun (qualification among them), the rest replay; its tuple comes from the qualification tests</td></tr>
+        <tr><td>You change only <code class="eo-inline">tools/verify</code></td><td>All unit tests run</td><td>Only verify's tests run</td><td>Only verify's tests run; the others replay</td></tr>
+        <tr><td>Full run (CI, <code class="eo-inline">verify all</code>)</td><td>About 30 s, measured</td><td>About today's time</td><td>About today's time, plus the merge</td></tr>
+        <tr><td>Where evidence can go wrong</td><td>Only in the tests</td><td>Only in the tests, but much less of it counts</td><td>In the tests, or in a target's Nx inputs</td></tr>
+        <tr><td>Moving to another option later</td><td>To C: changes only how the map is assembled; registry and lockfile stay</td><td>Leaving B needs no rework, but entering it needs new tests</td><td>Back to A: delete the merge</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-info alert-soft text-sm"><span><b>Recommendation:</b> A now. It is the simplest thing that is right, costs no measurable time today, and does not rest evidence on cache correctness. Move to C when the two steps pass a stated threshold (proposal: one minute on a full run, in line with D70's "a host-only check over a minute needs a reason"); only the step's assembly changes. B is not recommended because it discards cross-project evidence and pushes toward duplicate tests.</span></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="card-title text-lg">Your answer on producers</h3>
+    <form class="space-y-3" data-lavish-question="producers" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('producers'); const notes = (d.get('producers-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('Producers: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'Producers: ' + choice, element: event.currentTarget, queueKey: 'producers', data: { question: 'producers', answer: choice, notes } });">
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="producers" value="A, one root run per step, with C as the upgrade past one minute"> <span>A now, C past one minute</span></label>
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="producers" value="C, per-project runs with workspace coverage, merged, from the start"> <span>C from the start</span></label>
+      <label class="flex gap-2 items-start"><input type="radio" class="radio radio-sm mt-1" name="producers" value="B, per project with own files only"> <span>B</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="producers-notes" rows="3" placeholder="Threshold, concerns, or another shape"></textarea>
+      <button type="submit" class="btn btn-primary btn-sm">Queue this answer</button>
+    </form>
+  </div></div>
+</section>
+
+<footer class="text-sm opacity-70 border-t border-base-300 pt-6">
+  Sources: <code class="eo-inline">tools/verify/src/stages.ts</code>, the <code class="eo-inline">project.json</code> targets, web-interview ADR 005, 006, 010 and <code class="eo-inline">scripts/source-evidence-registry.ts</code>, D26, D48', D63, D70, D71. Measurements were throwaway runs on <code class="eo-inline">a970df75c</code> with <code class="eo-inline">@vitest/coverage-istanbul</code> 5.0.1, reverted afterwards.
+</footer>
+
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) {
+    paint.clearRect(0, 0, 1, 1);
+    paint.fillStyle = "#000";
+    paint.fillStyle = color;
+    paint.fillRect(0, 0, 1, 1);
+    return paint.getImageData(0, 0, 1, 1).data;
+  }
+  function compositeRgba(foreground, background) {
+    const fa = foreground[3] / 255;
+    const ba = background[3] / 255;
+    const alpha = fa + ba * (1 - fa);
+    if (alpha === 0) return [0, 0, 0, 0];
+    return [
+      (foreground[0] * fa + background[0] * ba * (1 - fa)) / alpha,
+      (foreground[1] * fa + background[1] * ba * (1 - fa)) / alpha,
+      (foreground[2] * fa + background[2] * ba * (1 - fa)) / alpha,
+      alpha * 255,
+    ];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rootBackground = toRgba(getComputedStyle(root).backgroundColor);
+    const bodyBackground = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0, 0, 0, 0];
+    const [r, g, b, a] = compositeRgba(bodyBackground, rootBackground);
+    if (a > 0) return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
+    const colorScheme = getComputedStyle(root).colorScheme;
+    if (colorScheme.includes("dark") && !colorScheme.includes("light")) return true;
+    if (colorScheme.includes("light") && !colorScheme.includes("dark")) return false;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied;
+  let rendering = false;
+  let queued = false;
+  function queueRender() {
+    queued = true;
+    if (rendering) return;
+    void render();
+  }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "strict" });
+        for (const { el, src } of diagrams) {
+          el.removeAttribute("data-processed");
+          el.textContent = src;
+        }
+        try {
+          await mermaid.run({ nodes: diagrams.map((d) => d.el) });
+        } catch (error) {
+          console.error("Mermaid diagram render failed:", error);
+          return;
+        }
+        applied = theme;
+      }
+    } finally {
+      rendering = false;
+      if (queued) queueRender();
+    }
+  }
+  if (document.readyState === "complete") queueRender();
+  else window.addEventListener("load", queueRender, { once: true });
+  const themeObserver = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) {
+    if (!el) continue;
+    themeObserver.observe(el, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+  }
+  document.addEventListener("change", queueRender, true);
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>

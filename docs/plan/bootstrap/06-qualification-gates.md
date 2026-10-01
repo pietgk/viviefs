@@ -40,7 +40,8 @@ Agreed 2026-09-29, so that a step, a gate and a milestone never share a name.
 
 - **Gates are numbered in the order they run.** A new gate that runs before registered ones takes its place and the
   later ones move up. Only gates without a ledger entry may move.
-- **A step belongs to a gate** and is written `Pnn.k`: P11.7 is step 7 of P11's build steps. "Step 7" alone is not used.
+- **A gate step belongs to a gate** and is written `Pnn.k`: P11.7 is gate step 7 of P11. "Step 7" alone is not
+  used, and neither is "step" alone: `verify` has verify steps (D75).
 - **Work that is not a gate has a name, not a number**: Housekeeping, Docs and teaching. The scaffolding work order in
   [00-next-session.md](00-next-session.md) keeps its numbers as history only.
 
