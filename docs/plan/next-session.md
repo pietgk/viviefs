@@ -1,4 +1,4 @@
-# Next session: Docs and teaching, closing the Evidence ownership step
+# Next session: Docs and teaching, the log-store guide
 
 ## Prompt to start the session
 
@@ -6,10 +6,9 @@
 > `docs/plan/evidence-ownership/spec.md`, the "Evidence ownership design
 > review (2026-09-30)" section of `docs/plan/bootstrap/02-decision-log.md`
 > (D75-D80), and the Schedule in
-> `docs/plan/bootstrap/10-open-items-and-risks.md`. Close the Evidence
-> ownership step with one sequential P01-P11 run, then start the log-store
-> guide. Ask before deviating from an agreed decision and record a deviation
-> as an ADR amendment.
+> `docs/plan/bootstrap/10-open-items-and-risks.md`. Start the log-store guide
+> (D62-D67), which settles the guide template. Ask before deviating from an
+> agreed decision and record a deviation as an ADR amendment.
 
 ## Where things stand (2026-10-01)
 
@@ -31,9 +30,10 @@
     through `rowsOf` in `libs/datom`.
   - Terms in `GLOSSARY.md`: file treatment, suite, verify step, gate step,
     coverage producer, verdict, owning producer, registry, evidence lockfile.
-- **Not done in this step**: the closing sequential P01-P11 run. Every gate is
-  stale: the suites moved, SQL rows decode through Schemas, and the evidence
-  app's workers and P02 SQL checks changed.
+- **Closed**: P01-P11 passed in one sequential run on `9716b875d`, run
+  `2026-10-01T05-58-55.362Z-02076418`, clean tree, about 30 minutes. P07's visible notification
+  tap still misses on both platforms and the relaunch fallback completes the
+  deferred (open item, unchanged).
 - **For the human to confirm**: the suite catalogue as the one declaration
   place (build record); `effect-solutions` 0.5.3, the newest, pins `effect`
   4.0.0-beta.59 and leaves an unmet peer warning on install (dev-only CLI,
@@ -115,10 +115,7 @@
 ## Next steps (the Schedule, Docs and teaching part)
 
 1. **Docs skeleton**: done 2026-09-30 (above).
-2. **Evidence ownership** (D70, D71, D75-D80): built 2026-10-01. Close it with
-   one sequential run: `mise exec -- pnpm qualify --through P11` on a
-   committed, clean tree (device lab and Apple Container needed; see the lab
-   facts below).
+2. **Evidence ownership** (D70, D71, D75-D80): done 2026-10-01 (above).
 3. **Log-store guide**, which settles the template and what a lesson is.
    `teach`'s pedagogy (retrieval practice, one tangible win per lesson, a
    primary source per lesson) is input; its workspace layout is not.

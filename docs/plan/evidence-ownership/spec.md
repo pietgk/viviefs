@@ -1,6 +1,6 @@
 # Evidence ownership: design review
 
-Status: claimed (design review agreed 2026-09-30: D75-D80; built 2026-10-01, `pnpm verify all` green; the closing sequential P01-P11 run is pending)
+Status: resolved (design review agreed 2026-09-30: D75-D80; built 2026-10-01 in `9716b875d`; closed by the sequential P01-P11 run `2026-10-01T05-58-55.362Z-02076418` on that commit, every gate passing)
 
 The Evidence ownership step of Docs and teaching (D70, D71). This page is the design review D71 asks for before
 any of it is built: the file treatments, how each one's evidence is produced and judged, the lockfile, where
