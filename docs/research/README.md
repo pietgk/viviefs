@@ -19,3 +19,4 @@ records as pages and serves HTML records as they are.
 | [2026-09-29 How a pattern is delivered](2026-09-29-delivery-model.html) | The Docs and teaching grilling overview, with the drift audit, the crash-matrix explainer, the web-interview comparison and measured costs (D59-D74) |
 | [2026-09-30 Evidence ownership review](2026-09-30-evidence-ownership-review.html) | The Evidence ownership design review: definitions, suites against patterns, coverage producers measured and compared (D75-D79) |
 | [2026-09-30 Where tests live](2026-09-30-test-locations-review.html) | Why moving the engine suites was a cycle, suites with their contract against the registry owning them, and where every kind of test lives (D80) |
+| [2026-09-30 Enterprise and independent P2P communication](2026-09-30-communication-architecture.md) | Updated discussion base: current protocol, Iroh and alternatives, shared architecture and unresolved authority decisions |
