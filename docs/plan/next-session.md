@@ -139,16 +139,7 @@
 - Facts for the app shell: `@storybook/addon-vitest` supports Vitest 5 only
   from `11.0.0-alpha.1`; `@storybook/react-native` 10.6 needs Reanimated 4.5.1,
   gesture-handler, bottom-sheet and safe-area-context 5.8.
-- Lab facts for any device run are in [p11-next-session.md](p11-next-session.md)
-  (steps P11.6 and P11.8).
-- `chrome-devtools-axi` still fails with "pageId: expected number" (2026-09-30).
-  Headless Chrome screenshots work: `"/Applications/Google
-  Chrome.app/Contents/MacOS/Google Chrome" --headless=new --window-size=1440,2600
-  --virtual-time-budget=8000 --screenshot=/tmp/page.png <url>`. Its minimum
-  window width is 500 px, so a narrower shot looks clipped.
-- Docs site: `pnpm exec nx run docs:build`, then `pnpm exec astro preview` in
-  `apps/docs` (Astro 7 runs it as a daemon: `astro preview stop`), or
-  `pnpm exec nx run docs:serve`. Astro 7's Markdown processor is Sätteri, not
-  remark: plugins are `mdastPlugins` / `hastPlugins` (`satteri`). Repository
-  pages are not under `src/content/docs`, so Starlight's `autogenerate`
-  cannot list them; `repo-pages.ts` builds those sidebar groups.
+- Device runs: how to run a probe alone and the lab facts are in
+  [tools/qualification/README.md](../../tools/qualification/README.md).
+- Docs site: how to run it and how it is put together are in
+  [apps/docs/README.md](../../apps/docs/README.md).

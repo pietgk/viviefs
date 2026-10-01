@@ -2,8 +2,9 @@
 
 P11 is closed: the gate qualified on its own, and P01-P11 then passed in one
 sequential run on a clean tree (step 8). This page stays as the record of how
-P11 was built and what the lab taught; the facts below still apply to any
-device run.
+P11 was built. What the lab taught, and how to run a probe alone, moved to
+[tools/qualification/README.md](../../tools/qualification/README.md)
+(2026-10-01), the one place for them.
 
 Next: Docs and teaching, then the follow-on gates (P12-P17 since the Docs and
 teaching grilling). The current handover is [next-session.md](next-session.md).
@@ -73,43 +74,9 @@ timeout; each was fixed before the next run. Details and the fixes:
 P02, P04 and P05 passed on web, so nothing needed Metro's
 `Cross-Origin-Opener-Policy`.
 
-## Facts learned in steps 6 and 8 (check before blaming the code)
+## Facts learned in steps 6 and 8
 
-- **Lab state outlives a gate** (step 8). The emulator, the simulator, the
-  agent-device daemon and the motel daemon run across gates and days. P07
-  leaves Android's notification shade open (sessions now close it); an
-  agent-device daemon started by an iOS call had no `adb` (every call now
-  carries the SDK); a motel started eight days earlier from `/tmp` answered
-  health but hung on ingest (a canary span now decides reuse).
-- **iOS accessibility after the sign-in sheet** (step 8): for a few seconds
-  agent-device's runner can log "Could not match active AX application", and a
-  press finds nothing. P11 taps retry only that miss.
-- **`agent-cli navigate`** waits up to 45 s twice and reopens the app once;
-  the harness gives it 240 s.
-- **iOS simulator**: after long use WebKit's GPU process can hang in the sign-in
-  sheet ("A problem repeatedly occurred"). `runP11OnPlatform` reboots the
-  simulator. A new development build also needs `ios/.xcode.env.local` to point
-  at mise's Node (it had a stale editor-bundled path; the file is not in git).
-- **agent-device on the sign-in sheet**: its tree is unreadable for a moment
-  while the sheet loads, and `wait` gives up on that; the driver polls with
-  `snapshot -i` every 5 s. Selectors: iOS by label (`role=textfield
-  label="Username or email"`, `role=securetextfield label="Password"`), Android
-  by Keycloak's HTML ids (`id="username"`, `id="password"`, `id="kc-login"`).
-- **agent-device daemon** keeps the PATH it started with. Every harness call now
-  carries the Android SDK; a daemon started by hand without it still needs
-  `agent-device daemon stop` before Android.
-- **Chrome on the emulator**: first-run screens, and web accessibility switched
-  off after a quiet spell. `prepareAndroidChrome()` in `devices.ts` sets test
-  flags (debug app plus `/data/local/tmp/chrome-command-line`).
-- **A new development build** greets its first launch with a sheet
-  ("Continue") that opens the developer menu; the runner dismisses both.
-- **Web**: open the app at `http://localhost:8081`, not `127.0.0.1` (the redirect
-  URI must match Keycloak's). Keycloak's browser session survives a reload; with
-  `prompt=login` it then asks only for the remembered user's password.
-- **Metro** no longer sends `Cross-Origin-Opener-Policy` (it severed the sign-in
-  popup). P02, P04 and P05 passed on web in step 8: nothing needed it.
-- **wa-sqlite path limit**: 64 characters including `-journal`; a longer OPFS
-  database name used to hang the app silently (now bounded and reported).
+Moved to [tools/qualification/README.md](../../tools/qualification/README.md#lab-facts-check-these-before-blaming-the-code).
 
 ## Working notes
 

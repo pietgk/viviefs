@@ -41,7 +41,9 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
   baseline` is the one command that writes `evidence-baseline.json`; run it only to
   record a reviewed coverage change, never to make `verify` pass. Where each kind of
   test lives: [04-repo-structure](docs/plan/bootstrap/04-repo-structure.md#where-tests-live-d80).
-- **Qualify**: `pnpm qualify`. Ledger is machine-written; never hand-edit it.
+- **Qualify**: `pnpm qualify`. Ledger is machine-written; never hand-edit it. Before a
+  device or lab run, read the lab facts in
+  [`tools/qualification/README.md`](tools/qualification/README.md).
 - **Teach**: docs pages are canonical. Lessons cite evidence; they never become the
   source of a claim.
 - **Guides**: [`apps/docs/src/content/docs/guides/`](apps/docs/src/content/docs/guides/index.mdx).

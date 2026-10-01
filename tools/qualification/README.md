@@ -34,8 +34,18 @@ parked; motel `p07.park` / `p07.resume`; `expo-notifications` 58.0.3).
 P08 is implemented (IntentComposer three ways: effect-machine is the copy
 target, XState v5 + `fromPromise` and Effect + Atom stay retained probes;
 generated mermaid checked by unit test; broken Confirm positive control).
-P12-P17 that have not been implemented refuse to pass; there is no
+P09 is implemented (sync over Effect RPC: outbox, cursor, server authority,
+blobs; the `sync/protocol` suite and its span review). P10 is implemented
+(durable spans projected from the journal on sqlite-node and PGlite; motel,
+Jaeger and otel-lgtm sinks). P11 is implemented (one token contract on the
+fake issuer and Keycloak; membership, actor and server-only data on the
+authenticated protocol; PKCE sign-in and local replicas on iOS, Android and
+web; three device positive controls). P12-P17 refuse to pass; there is no
 passing placeholder.
+
+A probe's host part calls the same suite `verify` runs (D70, D80); the suites
+and the catalogue of suite ids are in `@viviefs/testing` and each lib's
+`src/suites/`.
 
 ## Run
 
@@ -54,3 +64,63 @@ the foundation stage.
 Unknown gate ids fail. Every negative claim in a later probe must ship a
 positive control. Sanitized evidence records go to `docs/evidence/`; bulky
 artifacts stay in `.artifacts/qualification` (gitignored).
+
+## Running a probe alone
+
+Run a probe file directly for a measurement without a ledger entry; only
+`pnpm qualify` writes the ledger. Through mise, because the shell's Node is
+refused:
+
+```sh
+mise exec -- node --experimental-strip-types tools/qualification/src/probes/p11-lab.ts      # Keycloak and the evidence server; prints the passwords
+mise exec -- node --experimental-strip-types tools/qualification/src/probes/p11-device.ts web ios android
+mise exec -- node --experimental-strip-types tools/qualification/src/probes/p11-device.ts web --control shared-replica
+```
+
+The P09, P10 and P11 evidence notes carry a span review between
+`span-review` markers, with line anchors into the probe's checks file. A change
+that moves those lines makes the probe test fail; regenerate the block from the
+probe (`spanReview(spans)` of the probe's run), never by hand.
+
+## Lab facts (check these before blaming the code)
+
+Learned in P11 and in the sequential runs since (2026-09-28 to 2026-10-01).
+
+- **Lab state outlives a gate.** The emulator, the simulator, the agent-device
+  daemon and the motel daemon run across gates and days. P07 leaves Android's
+  notification shade open (sessions now close it); an agent-device daemon
+  started by an iOS call had no `adb` (every call now carries the SDK); a motel
+  started days earlier from `/tmp` answered health but hung on ingest (a canary
+  span now decides reuse). Details:
+  [closure note](../../docs/evidence/2026-09-28-p01-p11-closure.md).
+- **iOS accessibility after the sign-in sheet**: for a few seconds
+  agent-device's runner can log "Could not match active AX application", and a
+  press finds nothing. P11 taps retry only that miss.
+- **`agent-cli navigate`** waits up to 45 s twice and reopens the app once; the
+  harness gives it 240 s.
+- **iOS simulator**: after long use WebKit's GPU process can hang in the
+  sign-in sheet ("A problem repeatedly occurred"); `runP11OnPlatform` reboots
+  the simulator. A new development build also needs `ios/.xcode.env.local` to
+  point at mise's Node (the file is not in git).
+- **agent-device on the sign-in sheet**: its tree is unreadable for a moment
+  while the sheet loads, and `wait` gives up on that; the driver polls with
+  `snapshot -i` every 5 s. Selectors: iOS by label (`role=textfield
+  label="Username or email"`, `role=securetextfield label="Password"`), Android
+  by Keycloak's HTML ids (`id="username"`, `id="password"`, `id="kc-login"`).
+- **agent-device daemon** keeps the PATH it started with. Every harness call
+  carries the Android SDK; a daemon started by hand without it needs
+  `agent-device daemon stop` before Android.
+- **Chrome on the emulator**: first-run screens, and web accessibility switched
+  off after a quiet spell. `prepareAndroidChrome()` in `devices.ts` sets test
+  flags (debug app plus `/data/local/tmp/chrome-command-line`).
+- **A new development build** greets its first launch with a sheet
+  ("Continue") that opens the developer menu; the runner dismisses both.
+- **P07's notification tap** misses on iOS and Android; the relaunch fallback
+  completes the deferred (an open item, not a harness failure).
+- **Web**: open the app at `http://localhost:8081`, not `127.0.0.1` (the
+  redirect URI must match Keycloak's). Keycloak's browser session survives a
+  reload; with `prompt=login` it then asks only for the remembered user's
+  password. Metro no longer sends `Cross-Origin-Opener-Policy` (it severed the
+  sign-in popup); P02, P04 and P05 pass on web without it.
+- **wa-sqlite path limit**: 64 characters including `-journal`; a longer OPFS
+  database name used to hang the app silently (now bounded and reported).
