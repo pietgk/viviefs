@@ -37,7 +37,7 @@ export const DOCS_ONLY_PATHS: ReadonlyArray<{
 ]
 
 /** The steps that check a docs-only change. */
-export const DOCS_ONLY_STEPS: ReadonlyArray<string> = ['docs', 'diagrams']
+export const DOCS_ONLY_STEPS: ReadonlyArray<string> = ['docs', 'diagrams', 'guides']
 
 export const isDocsOnlyPath = (path: string): boolean =>
   DOCS_ONLY_PATHS.some(({ pattern }) => pattern.test(path))

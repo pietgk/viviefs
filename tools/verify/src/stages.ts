@@ -132,6 +132,11 @@ export const STAGES: Stage[] = [
         blurb: 'unit tests of every project with a test target, with coverage',
         invocations: [coverageProducer('unit')],
       },
+      {
+        name: 'exercises',
+        blurb: 'each exercise solution passes and each problem fails as expected; teaching, so no coverage',
+        invocations: [nxTarget('exercise')],
+      },
     ],
   },
   {
@@ -194,6 +199,19 @@ export const STAGES: Stage[] = [
             args: [
               '--experimental-strip-types',
               'tools/verify/src/check-diagrams.ts',
+            ],
+          },
+        ],
+      },
+      {
+        name: 'guides',
+        blurb: 'guides follow the guide template; statuses, exemplar links and exercise tracks agree',
+        invocations: [
+          {
+            command: 'node',
+            args: [
+              '--experimental-strip-types',
+              'tools/verify/src/check-guides.ts',
             ],
           },
         ],

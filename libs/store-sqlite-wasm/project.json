@@ -9,6 +9,7 @@
     "platform:client"
   ],
   "metadata": {
-    "rationale": "log store on sqlite-wasm (OPFS)"
+    "rationale": "log store on sqlite-wasm (OPFS)",
+    "guides": ["log-store"]
   }
 }

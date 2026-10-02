@@ -2,7 +2,7 @@
 
 ## Freeze, named-slot, hypothesis
 
-A scaffolding session treats these differently. Grilling decisions D1-D80 remain accepted intent, unverified until
+A scaffolding session treats these differently. Grilling decisions D1-D94 remain accepted intent, unverified until
 the named gate.
 
 **Freeze** (scaffold as specified; ask before changing):
@@ -80,7 +80,7 @@ as `Pnn.k`, other work by name.
 | Order | Work | What |
 | --- | --- | --- |
 | 1 | Housekeeping (done 2026-09-29; P01-P11 passed in one sequential run on `54e724786`) | Qualify ADR-0024, 0025 and 0028-0031 against `verify` with checks that can fail; explain "Hermes inspector did not appear"; clear the Effect language-service suggestions; draft upstream issues (not filed); renumber gates; amend ADR-0026 (acceptance on the guide); one handover; a sequential P01-P11 run |
-| 2 | Docs and teaching | In this order (D74): **Recording** the grilling (D59-D74); **Skills** update, after an include/adapt list is reviewed (D69; done 2026-09-29, ADR-0001 and ADR-0027 amended); **Docs skeleton**: `apps/docs` with the `.lavish/` move, Mermaid integrity and the docs-only rule (D59-D61, D68; done 2026-09-30); **Evidence ownership**: file treatments, coverage lockfile, engine suites in `verify` and Schema at every boundary (D70, D71; design review 2026-09-30, D75-D80; done 2026-10-01: built in `9716b875d`, P01-P11 passed in one sequential run on it, `2026-10-01T05-58-55.362Z-02076418`); **Log-store guide**, which settles the guide template (D62-D67); **App shell**, below; **Durable workflow guide**; **Identity guide**; then the other guides (D65) |
+| 2 | Docs and teaching | In this order (D74): **Recording** the grilling (D59-D74); **Skills** update, after an include/adapt list is reviewed (D69; done 2026-09-29, ADR-0001 and ADR-0027 amended); **Docs skeleton**: `apps/docs` with the `.lavish/` move, Mermaid integrity and the docs-only rule (D59-D61, D68; done 2026-09-30); **Evidence ownership**: file treatments, coverage lockfile, engine suites in `verify` and Schema at every boundary (D70, D71; design review 2026-09-30, D75-D80; done 2026-10-01: built in `9716b875d`, P01-P11 passed in one sequential run on it, `2026-10-01T05-58-55.362Z-02076418`); **Log-store guide**, which settles the guide template (D62-D67; design review 2026-10-01, D81-D86, and a second round, D87-D91; built 2026-10-01 as a draft guide, the template, the `guides` and `exercises` verify steps; accepted when the human accepts it, with P04 and P05 run on that commit); **App shell**, below; **Durable workflow guide**; **Identity guide**; then the other guides (D65) |
 | 2, App shell | P12 UI on every platform, P13 Links and routing | One grilling for both, design review, gates; closed by one sequential run. P08 re-runs on the rewritten IntentComposer view (D72, D73) |
 | 3 | P14 Quarantine after a lost lease | Grilling, design review, gate |
 | 4 | P15 Encrypted store, P16 Crypto-shredding, P17 Browser engine leader | In that order |
@@ -107,24 +107,9 @@ Found in the Docs and teaching grilling; each has a decision and a place in the 
 
 ## Deferred decisions
 
-Each item says when it is decided and what is recommended. Agreed 2026-09-27.
-
-| Item | What it is | Decide when | Agreed direction |
-|---|---|---|---|
-| Production hosting, deployment topology, production telemetry backend | Where the server runs; which backend replaces the local lab sinks; TLS; how the web app keeps its sign-in session (P11 keeps it in memory) | The first consumer app leaves the lab | Decide then, together with sampling of durable spans |
-| Engine scale-out (Effect Cluster), multi-runner server | Server-side workflows on more than one runner | A real server-side workflow load or an availability need | Keep; the server never runs device workflows (D14) |
-| Product apps into viviefs as app pairs (D55) | Whether BirVana, ERP and GRC live here | Before the first consumer app | Decide after P11-P17 |
-| Encryption at rest per consumer app (D50) | Which apps turn on SQLCipher | At the start of an app that holds sensitive data | Per app, once P15 has qualified SQLCipher |
-| Quarantine after a lost lease (D15) | User content stranded when a device loses its lease | P14's grilling, after Docs and teaching | Human-conflict entry (D34) resolved by a command; gate P14. P09 already rejects the stale journal write before it enters the device log; user content stays in the log |
-| Partial sync (prefix subscriptions), history consolidation, client-side data access on a full-org replica | Devices hold the whole organization's log | When roles restrict data within an organization, or a replica grows too large | Raised in the P11 grilling (2026-09-27): roles are carried, not enforced, so nothing is brought forward. Server isolation (D18) stays authoritative |
-| UI on every platform (D72) | IntentComposer renders DOM only; no story runs in a browser or on a device | App shell step of Docs and teaching, with P13 | One React Native component tree; stories in Chromium in `verify` and on the simulators in P12 |
-| Physical devices, and a visible local-notification tap that completes a deferred | Everything so far ran on simulators; P07 completed the deferred from JavaScript, the banner tap was not observed (ADR-0013) | Before the first consumer app | One real-phone run on iOS and Android covering both |
-| Identity, keys and trust (merges tamper-evidence of stored history and signed changesets, Q15) | Stored history is trusted, not provable; `actor` is a server-checked label, not a signature; `envelope.device` is not authenticated; who may take over a lease is unspecified | Before the first consumer app that makes audit claims, as one research and grilling step, together with P16 | Research inputs: vivief (per-device keypairs, device links as datoms, transport identity kept apart from authorization, Holochain considered), Holochain from primary sources. Candidate direction: hash chain with device-held checkpoints, device keys linked to a person, signed changesets. Until then the server log is never compacted, and crypto-shredding hashes stored ciphertext (P11 grilling Q15, Q23, Q24). Explainer: [identity, keys and trust](../../research/2026-09-28-identity-keys-and-trust.html) |
-| Roles in use, invitations, self-service membership | P11 enforces membership only; the operator grants and revokes | The first consumer app that needs a role | Roles are already carried in the caller; the first enforced role comes with its consumer |
-| Local deletion after a revoked membership | P11 keeps the organization's copy read-only on the device | With P16 | Deletion is a courtesy, not security; decide it with erasure |
-| Identity provider migration | Moving people to a new identity provider | When a consumer changes provider | Relinking is one datom on the server's account entity (ADR-0022); tooling then |
-| Datom `op` as `TEXT` (`assert` / `retract`) or a boolean | Storage cost next to `e`, `a`, `v`; a change re-runs P04-P09 | When a storage or performance budget exists | Keep (deferred 2026-09-22) |
-| The trace projector on iOS, Android and web | P10 ran it on the host; P03 measured OTLP from Hermes | When the evidence app or a consumer app runs the projector | Not in P11 (P11 grilling). Wire it with the first consumer app, and extend a device run to check it |
+The deferred decisions agreed on 2026-09-27 are issues now (D92), each with the trigger that decides it under
+`Decide when:`: I7 to I20 in [docs/issues](../../issues/README.md), listed with their status under Reference > Issues on
+the docs site. Open questions for the human (I1 to I6) are there too.
 
 ## Risks
 

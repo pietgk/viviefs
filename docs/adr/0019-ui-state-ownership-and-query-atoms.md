@@ -1,5 +1,7 @@
 # ADR-0019: UI state ownership and live reads with query atoms
 
+Summary: Three state owners: domain facts in the log, interaction state in a machine, settling text in the component; live reads through query atoms.
+
 Status: Qualified
 
 Date: 2026-09-20

@@ -8,6 +8,7 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type ViteUserConfig } from 'vitest/config'
+import { LEARNER_VARIABLE, learnerReporter } from './exercise-reporter.ts'
 import { suiteTags } from './suites.ts'
 
 export const COVERAGE_PRODUCERS = ['unit', 'integration', 'storybook'] as const
@@ -49,3 +50,30 @@ export const projectTestConfig = (
       tags: suiteTags,
     },
   })
+
+/**
+ * An exercise track's config (D66): each exercise's test sits in its own
+ * `NN.MM-name/` folder, next to `problem/` and `solution/`; tests at the track
+ * root check the track itself. Tracks run in verify's `exercises` step, not in
+ * a coverage producer: teaching material is not evidence of production code.
+ */
+export const EXERCISE_FILES = ['[0-9][0-9].[0-9][0-9]-*/exercise.test.ts', '*.test.ts']
+
+export const exerciseTrackConfig = (
+  configUrl: string,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): ViteUserConfig => {
+  const track = dirname(fileURLToPath(configUrl))
+  const learner = env[LEARNER_VARIABLE] === 'problem'
+  return defineConfig({
+    root: track,
+    test: {
+      include: EXERCISE_FILES,
+      exclude: ['**/node_modules/**'],
+      environment: 'node',
+      tags: suiteTags,
+      // `pnpm exercise` (D91): one verdict for the learner instead of Vitest's output.
+      ...(learner ? { reporters: [learnerReporter(dirname(dirname(track)))] } : {}),
+    },
+  })
+}

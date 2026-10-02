@@ -18,6 +18,12 @@
       "import": "./src/node.ts",
       "default": "./src/node.ts"
     },
+    "./exercise": {
+      "@viviefs/source": "./src/exercise.ts",
+      "types": "./src/exercise.ts",
+      "import": "./src/exercise.ts",
+      "default": "./src/exercise.ts"
+    },
     "./vitest": {
       "@viviefs/source": "./src/vitest.ts",
       "types": "./src/vitest.ts",

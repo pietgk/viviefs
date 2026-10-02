@@ -1,5 +1,7 @@
 # ADR-0012: Durable execution over one datom-backed engine
 
+Summary: Effect's Workflow API runs on our own datom-backed engine, the same on device and server.
+
 Status: Qualified
 
 Date: 2026-09-20

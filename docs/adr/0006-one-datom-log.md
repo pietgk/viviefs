@@ -1,5 +1,7 @@
 # ADR-0006: One datom log as the substrate
 
+Summary: One append-only datom log holds the journal, domain data and sync; traces are derived from it.
+
 Status: Qualified
 
 Date: 2026-09-20

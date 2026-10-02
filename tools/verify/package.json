@@ -18,7 +18,8 @@
     "@viviefs/testing": "workspace:*",
     "effect": "4.0.0-rc.116",
     "eslint": "10.11.0",
-    "typescript": "npm:@typescript/typescript6@6.0.2"
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "yaml": "2.9.0"
   },
   "devDependencies": {
     "vite": "8.3.0",

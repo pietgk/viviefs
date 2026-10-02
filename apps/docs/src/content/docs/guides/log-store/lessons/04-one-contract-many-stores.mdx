@@ -1,0 +1,98 @@
+---
+title: One contract, many stores
+description: A log store is a SqlClient Layer plus the shared LogStore, and it is done when it passes log-store/conformance.
+lesson: 4
+evidence:
+  - docs/evidence/2026-09-20-p04.md
+source:
+  title: Effect, Managing Layers
+  href: https://effect.website/docs/requirements-management/layers/
+---
+
+import ReadNext from '../../../../../components/ReadNext.astro'
+import Sample from '../../../../../components/Sample.astro'
+
+## Recall first
+
+<details>
+<summary>What does compact() remove, and what does it leave?</summary>
+
+Datoms at or below the lowest acknowledged cursor; everything above stays.
+</details>
+
+<details>
+<summary>Why is the tx minted once, not on every send?</summary>
+
+It is the fact's identity, so a resend must carry the same `tx`.
+</details>
+
+## The idea
+
+**The contract is one Effect service.** Everything the earlier lessons used,
+mint, receive, append, stream, acknowledge, compact, is `LogStore`:
+
+<Sample path="libs/datom/src/log-store.ts" region="service" />
+
+**One implementation of it, many databases.** `logStoreLayer` is written once
+against Effect's `SqlClient`. A store is that Layer with a `SqlClient` Layer
+for its database, the replica's device id and its source of randomness:
+
+<Sample path="libs/store-sqlite-node/src/layer.ts" region="log-store" />
+
+On iOS and Android the `SqlClient` is op-sqlite, on the web sqlite-wasm with
+OPFS, on the server Postgres. Swapping a store is one Layer line in an app.
+
+**A store is done when the suite says so.** `log-store/conformance` is the
+contract in executable form: twelve checks, written once, run against every
+store. A store that type-checks can still be wrong; the suite is what catches
+it. An in-memory database, for example, passes most checks and fails
+`hlc reboot`, because nothing survives the restart the check simulates.
+
+## What the gate showed
+
+P04 ran the same suite against sqlite-node, PGlite, op-sqlite on
+the iOS simulator and the Android emulator, and sqlite-wasm with OPFS on the
+web, and every check passed on every store. That is the claim that lets the
+rest of the stack treat them as one.
+
+## Your turn
+
+Exercise 04.01: `logStoreIn` builds a log store from its parts, and the
+suite runs against it. Read which checks fail, and make the store pass all
+twelve.
+
+1. Run it. The first run is red on purpose: `problem/` runs, but does not
+   yet do what this lesson teaches, and the verdict says what is missing.
+
+   ```sh
+   pnpm exercise log-store 04.01
+   ```
+
+2. Edit `exercises/log-store/04.01-a-store-layer/problem/store.ts`, and run it again until the verdict says done.
+3. Compare your code with `exercises/log-store/04.01-a-store-layer/solution/store.ts`, then answer the questions below.
+
+It passes when `log-store/conformance` reports every check as passed.
+
+## Check yourself
+
+<details>
+<summary>What does a new store add, and what does it share with the others?</summary>
+
+It adds a `SqlClient` Layer; it shares `LogStore` and the suite.
+</details>
+
+<details>
+<summary>Why is an in-memory database not a log store?</summary>
+
+Nothing survives a restart, so the clock and the log would reset.
+</details>
+
+<details>
+<summary>Where do the checks of a store that needs a device run?</summary>
+
+In the gate's probe on devices; `verify` typechecks and lints it.
+</details>
+
+## Read next
+
+<ReadNext source={frontmatter.source} />

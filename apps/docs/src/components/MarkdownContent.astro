@@ -1,0 +1,129 @@
+---
+/**
+ * Starlight's page content, plus the reference preview card (D90): hovering
+ * or focusing a gate, ADR or decision link shows its kind, name and one-line
+ * summary, written into the link when the page was built
+ * (`src/lib/reference-links.ts`). Escape, leaving or blurring hides it. The
+ * decision row a link lands on is highlighted.
+ */
+import Default from '@astrojs/starlight/components/MarkdownContent.astro'
+---
+
+<Default><slot /></Default>
+
+<script>
+  const SHOW_DELAY_MS = 120
+  let card: HTMLDivElement | undefined
+  let owner: HTMLAnchorElement | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  const cardElement = (): HTMLDivElement => {
+    if (card) return card
+    card = document.createElement('div')
+    card.id = 'ref-card'
+    card.className = 'ref-card'
+    card.setAttribute('role', 'tooltip')
+    card.hidden = true
+    document.body.append(card)
+    return card
+  }
+
+  const hide = () => {
+    clearTimeout(timer)
+    if (owner) owner.removeAttribute('aria-describedby')
+    owner = undefined
+    if (card) card.hidden = true
+  }
+
+  const place = (link: HTMLAnchorElement, element: HTMLDivElement) => {
+    const margin = 8
+    const box = link.getBoundingClientRect()
+    const width = element.offsetWidth
+    const height = element.offsetHeight
+    const left = Math.min(Math.max(margin, box.left), window.innerWidth - width - margin)
+    const below = box.bottom + margin
+    const top = below + height > window.innerHeight - margin ? box.top - height - margin : below
+    element.style.left = `${left + window.scrollX}px`
+    element.style.top = `${top + window.scrollY}px`
+  }
+
+  const show = (link: HTMLAnchorElement) => {
+    const element = cardElement()
+    const { refKind = '', refLabel = '', refSummary = '', refMeta = '' } = link.dataset
+    const kind = document.createElement('div')
+    kind.className = 'ref-card-kind'
+    kind.textContent = refMeta ? `${refKind} · ${refMeta}` : refKind
+    const label = document.createElement('div')
+    label.className = 'ref-card-label'
+    label.textContent = refLabel
+    const summary = document.createElement('div')
+    summary.className = 'ref-card-summary'
+    summary.textContent = refSummary
+    element.replaceChildren(kind, label, summary)
+    element.hidden = false
+    place(link, element)
+    owner = link
+    link.setAttribute('aria-describedby', element.id)
+  }
+
+  const referenceLink = (target: EventTarget | null): HTMLAnchorElement | null =>
+    target instanceof Element ? target.closest<HTMLAnchorElement>('a.ref-link') : null
+
+  const schedule = (event: Event) => {
+    const link = referenceLink(event.target)
+    if (!link || link === owner) return
+    clearTimeout(timer)
+    timer = setTimeout(() => show(link), event.type === 'focusin' ? 0 : SHOW_DELAY_MS)
+  }
+
+  const leave = (event: Event) => {
+    if (referenceLink(event.target)) hide()
+  }
+
+  document.addEventListener('pointerover', schedule)
+  document.addEventListener('pointerout', leave)
+  document.addEventListener('focusin', schedule)
+  document.addEventListener('focusout', leave)
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') hide()
+  })
+  window.addEventListener('scroll', hide, { passive: true })
+</script>
+
+<style is:global>
+  .ref-card {
+    position: absolute;
+    z-index: 100;
+    max-width: min(24rem, calc(100vw - 1rem));
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--sl-color-gray-6);
+    box-shadow: var(--sl-shadow-md);
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+    line-height: 1.45;
+    pointer-events: none;
+  }
+  .ref-card-kind {
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-xs);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .ref-card-label {
+    margin-top: 0.15rem;
+    color: var(--sl-color-white);
+    font-weight: 600;
+  }
+  .ref-card-summary {
+    margin-top: 0.25rem;
+  }
+  /* The decision a link landed on (D89). */
+  tr:target {
+    background: var(--sl-color-accent-low);
+  }
+  tr:target td {
+    color: var(--sl-color-white);
+  }
+</style>

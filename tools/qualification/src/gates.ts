@@ -8,6 +8,17 @@
 
 export interface GateProbe {
   gate: string
+  /**
+   * The gate's name, as in the gate table of 06-qualification-gates.md. Docs
+   * render a gate as its id and name ("P04 Log store conformance", D86).
+   */
+  name: string
+  /**
+   * The claim this gate proves: a statement the stack depends on that could
+   * be false (D93), as in the "Fact to establish" column of the plan's gate
+   * table. P is for proof.
+   */
+  claim: string
   path: string
   args: string[]
   timeoutMs: number
@@ -18,6 +29,9 @@ export interface GateProbe {
 export const gateProbes: GateProbe[] = [
   {
     gate: 'P01',
+    name: 'Platform on SDK 58',
+    claim:
+      'Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes, and builds with Metro',
     path: 'tools/qualification/src/probes/p01.ts',
     args: [],
     timeoutMs: 2_700_000,
@@ -27,6 +41,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P02',
+    name: 'SQLite drivers',
+    claim:
+      '`@effect/sql-sqlite-react-native` on op-sqlite 17.x works on RN 0.88 New Architecture (iOS and Android); `@effect/sql-sqlite-wasm` with OPFS works on web',
     path: 'tools/qualification/src/probes/p02.ts',
     args: [],
     timeoutMs: 3_600_000,
@@ -36,6 +53,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P03',
+    name: 'OTLP and motel',
+    claim:
+      'Effect\'s native OTLP exporter works on Hermes; motel receives from simulator and physical device',
     path: 'tools/qualification/src/probes/p03.ts',
     args: [],
     timeoutMs: 1_800_000,
@@ -45,6 +65,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P04',
+    name: 'Log store conformance',
+    claim:
+      'The datom log store contract holds on SQLite (native including Android, wasm, Node) and Postgres',
     path: 'tools/qualification/src/probes/p04.ts',
     args: [],
     timeoutMs: 3_600_000,
@@ -54,6 +77,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P05',
+    name: 'Changesets and projections',
+    claim:
+      'Changesets give atomic, deterministic visibility',
     path: 'tools/qualification/src/probes/p05.ts',
     args: [],
     timeoutMs: 3_600_000,
@@ -63,6 +89,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P06',
+    name: 'Workflow engine crash matrix',
+    claim:
+      'The datom-backed `WorkflowEngine` resumes correctly after a kill at every boundary',
     path: 'tools/qualification/src/probes/p06.ts',
     args: [],
     timeoutMs: 600_000,
@@ -72,6 +101,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P07',
+    name: 'Device resume E2E',
+    claim:
+      'A force-quit app resumes the exemplar workflow, and a notification wakes it',
     path: 'tools/qualification/src/probes/p07.ts',
     args: [],
     timeoutMs: 3_600_000,
@@ -81,6 +113,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P08',
+    name: 'UI three-way prototype',
+    claim:
+      'Which interaction-state approach fits: XState v5 + Effect, `@typeonce/effect-machine`, Effect + Atom',
     path: 'tools/qualification/src/probes/p08.ts',
     args: [],
     timeoutMs: 600_000,
@@ -90,6 +125,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P09',
+    name: 'Sync',
+    claim:
+      'Datom replication with server authority works offline and across devices',
     path: 'tools/qualification/src/probes/p09.ts',
     args: [],
     timeoutMs: 1_200_000,
@@ -99,6 +137,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P10',
+    name: 'Trace projection',
+    claim:
+      'The trace derived from the log is lossless and stable across replays',
     path: 'tools/qualification/src/probes/p10.ts',
     args: [],
     timeoutMs: 600_000,
@@ -108,6 +149,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P11',
+    name: 'Identity',
+    claim:
+      'Fake and OIDC implementations satisfy one identity contract',
     path: 'tools/qualification/src/probes/p11.ts',
     args: [],
     timeoutMs: 3_600_000,
@@ -117,6 +161,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P12',
+    name: 'UI on every platform',
+    claim:
+      'One React Native component tree renders and passes its stories on iOS, Android and web',
     path: 'tools/qualification/src/probes/p12.ts',
     args: [],
     timeoutMs: 600_000,
@@ -126,6 +173,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P13',
+    name: 'Links and routing',
+    claim:
+      'One URL opens the same screen and state on every platform',
     path: 'tools/qualification/src/probes/p13.ts',
     args: [],
     timeoutMs: 600_000,
@@ -135,6 +185,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P14',
+    name: 'Quarantine after a lost lease',
+    claim:
+      'User content stranded by a lost lease is never dropped and is resolved by a human',
     path: 'tools/qualification/src/probes/p14.ts',
     args: [],
     timeoutMs: 600_000,
@@ -144,6 +197,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P15',
+    name: 'Encrypted store',
+    claim:
+      'SQLCipher store passes the log store conformance suite',
     path: 'tools/qualification/src/probes/p15.ts',
     args: [],
     timeoutMs: 600_000,
@@ -153,6 +209,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P16',
+    name: 'Crypto-shredding',
+    claim:
+      'Erased subjects are unreadable everywhere',
     path: 'tools/qualification/src/probes/p16.ts',
     args: [],
     timeoutMs: 600_000,
@@ -162,6 +221,9 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P17',
+    name: 'Browser engine leader',
+    claim:
+      'Only one tab runs the engine',
     path: 'tools/qualification/src/probes/p17.ts',
     args: [],
     timeoutMs: 600_000,

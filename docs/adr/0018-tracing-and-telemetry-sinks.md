@@ -1,5 +1,7 @@
 # ADR-0018: Tracing derived from the log; telemetry sink pattern
 
+Summary: Traces are projected from the log with deterministic ids; telemetry sinks are viewers behind one OTLP endpoint.
+
 Status: Qualified
 
 Date: 2026-09-20

@@ -1,0 +1,105 @@
+---
+title: Who holds the log
+description: Consumers acknowledge what they have seen; compaction removes only what every consumer has seen, and names the one holding it.
+lesson: 3
+evidence:
+  - docs/evidence/2026-09-20-p04.md
+  - docs/evidence/2026-09-26-p10.md
+source:
+  title: ADR-0011, the log store pattern (compaction and the server log)
+  href: https://github.com/pietgk/viviefs/blob/main/docs/adr/0011-log-store-pattern.md
+---
+
+import ReadNext from '../../../../../components/ReadNext.astro'
+import Sample from '../../../../../components/Sample.astro'
+
+## Recall first
+
+<details>
+<summary>What does the clock do when it receives a tx from slightly ahead?</summary>
+
+It moves up to it, so the next mint is above that `tx`.
+</details>
+
+<details>
+<summary>Why does the clock count instead of using the wall clock alone?</summary>
+
+The wall clock can stand still or jump back; the counter keeps order.
+</details>
+
+## The idea
+
+**A device cannot keep everything forever, but someone may still need it.**
+A sync peer, or a trace sink exporting spans, reads the log from its own
+position. Removing facts it has not read loses them for good.
+
+**Consumers say what they have seen.** A consumer is named (`device-a`,
+`trace/motel`) and calls `acknowledge(consumer, cursor)` after it has really
+delivered the facts up to `cursor`. `acknowledged(consumer)` reads that
+position back.
+
+**The horizon is the slowest consumer.** `compact()` removes only datoms at
+or below the lowest acknowledged cursor. When a consumer stays behind, the log
+stays too, and `compact()` names it in `heldBy`, so a sink that is down shows
+up as the reason instead of as missing spans.
+
+<Sample path="libs/datom/src/log-store.ts" region="compact" />
+
+**To let compaction go on, catch the slow consumer up.** Read from its own
+cursor, deliver, acknowledge the last `seq` delivered, then compact.
+Acknowledging first and delivering after looks the same until a crash in
+between: then compaction removes facts that were never delivered.
+
+**The server never compacts.** Its log is the audit trail
+(ADR-0011); only device logs compact.
+
+## What the gate showed
+
+P04 checked that compaction never passed the horizon on all five
+stores. After P10, the horizon also covers trace sinks as
+`trace/<sink>`, `compact()` reports `heldBy`, and the "compaction horizon"
+check asserts both.
+
+## Your turn
+
+Exercise 03.01: the log has ten facts; `device-a` has seen all of them,
+`trace/motel` only four, so it holds the log. `exportThenCompact` compacts
+right away. Make it export what the sink has not seen first, so compaction
+can remove all ten.
+
+1. Run it. The first run is red on purpose: `problem/` runs, but does not
+   yet do what this lesson teaches, and the verdict says what is missing.
+
+   ```sh
+   pnpm exercise log-store 03.01
+   ```
+
+2. Edit `exercises/log-store/03.01-compaction-horizon/problem/compact.ts`, and run it again until the verdict says done.
+3. Compare your code with `exercises/log-store/03.01-compaction-horizon/solution/compact.ts`, then answer the questions below.
+
+It passes when exactly the six unseen facts are exported, the horizon reaches
+the last fact, and the log is empty after compaction.
+
+## Check yourself
+
+<details>
+<summary>Three consumers acknowledged 40, 12 and 33. Where is the horizon?</summary>
+
+At 12, the lowest acknowledged cursor of the three consumers.
+</details>
+
+<details>
+<summary>What goes wrong when a sink acknowledges before it delivers?</summary>
+
+A crash in between lets compaction remove undelivered facts.
+</details>
+
+<details>
+<summary>How do you find out which consumer keeps the log from shrinking?</summary>
+
+Read `heldBy` from the result that `compact()` returns to you.
+</details>
+
+## Read next
+
+<ReadNext source={frontmatter.source} />

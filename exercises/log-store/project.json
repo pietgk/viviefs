@@ -1,0 +1,23 @@
+{
+  "name": "exercises-log-store",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "exercises/log-store",
+  "projectType": "library",
+  "tags": [
+    "kind:tool"
+  ],
+  "metadata": {
+    "rationale": "the log-store exercise track (D66, D85): each solution passes, each problem fails with its expected assertion"
+  },
+  "targets": {
+    "exercise": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "exercises/log-store"
+      }
+    }
+  }
+}

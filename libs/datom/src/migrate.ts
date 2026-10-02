@@ -10,6 +10,7 @@ const NameRow = Schema.Struct({
 
 const migrateSqlite = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
+  // #region datoms-table
   yield* sql`CREATE TABLE IF NOT EXISTS datoms (
     seq INTEGER PRIMARY KEY AUTOINCREMENT,
     e TEXT NOT NULL,
@@ -22,6 +23,7 @@ const migrateSqlite = Effect.gen(function* () {
   yield* sql`CREATE INDEX IF NOT EXISTS datoms_eavt ON datoms (e, a, v, tx)`
   yield* sql`CREATE INDEX IF NOT EXISTS datoms_aevt ON datoms (a, e, v, tx)`
   yield* sql`CREATE INDEX IF NOT EXISTS datoms_cs ON datoms (cs)`
+  // #endregion datoms-table
   yield* sql`CREATE TABLE IF NOT EXISTS changesets (
     cs TEXT PRIMARY KEY,
     actor TEXT NOT NULL,

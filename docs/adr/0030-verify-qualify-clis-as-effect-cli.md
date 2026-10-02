@@ -1,5 +1,7 @@
 # ADR-0030: Verify and qualify CLIs as Effect CLI
 
+Summary: The verify and qualify CLIs are Effect CLI programs.
+
 Status: Qualified
 
 Date: 2026-09-21

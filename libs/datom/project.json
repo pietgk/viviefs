@@ -9,7 +9,8 @@
     "platform:universal"
   ],
   "metadata": {
-    "rationale": "pure datom and HLC logic"
+    "rationale": "pure datom and HLC logic",
+    "guides": ["log-store"]
   },
   "targets": {
     "test": {

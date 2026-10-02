@@ -1,5 +1,7 @@
 # ADR-0026: Verify - Qualify - Teach
 
+Summary: Verify keeps the code's contract, Qualify proves claims about the stack, Teach writes the guides a pattern is accepted on.
+
 Status: Proposed, unverified
 
 Date: 2026-09-20. Amended 2026-09-29: a pattern is accepted on its guide.
@@ -7,11 +9,14 @@ Amended again 2026-09-29 (Docs and teaching grilling): verify and qualify are
 separated by what a check needs, not by speed; acceptance needs current gates.
 Amended 2026-09-30 (Evidence ownership design review): per-file treatments and
 suites replace the per-project evidence owner.
+Amended 2026-10-01 (Log-store guide design review): what a lesson is, which
+guide owns a concept and an ADR, and a project may be the exemplar of several
+guides.
 
 Qualifying gate: none (process). The pattern is the process; later ADRs are
 qualified under it.
 
-Related: D28-D30, D46, D48', D59-D80.
+Related: D28-D30, D46, D48', D59-D94.
 [Verify - Qualify - Teach](../plan/bootstrap/05-verify-qualify-teach.md),
 [Gates](../plan/bootstrap/06-qualification-gates.md). Principles adapted from
 complyj ADR 0006.
@@ -35,7 +40,7 @@ no retries (flakiness is a defect). Vitest + `@effect/vitest` only for unit
 and integration. Storybook, Maestro and Playwright remain other layers.
 GitHub Actions runs `verify`. Simulator crash E2E is gated before a release,
 not on every PR. `verify help` is generated from the executed table. "Done"
-is green verify, with a mechanical path rule for docs-only diffs.
+is a passing verify, with a mechanical path rule for docs-only diffs.
 
 **Qualify** (before depending on a claim): numbered gates with retained
 probes, positive controls, fingerprinted append-only ledger, sequential full
@@ -50,7 +55,7 @@ test + reference solution that passes in verify); lessons that cite gate
 evidence and never become the source of a claim. One source: docs pages
 canonical, `AGENTS.md` a map, skills thin procedures.
 
-Delivery: accepted ADR with evidence, green exemplar, concept page, exercise,
+Delivery: accepted ADR with evidence, an exemplar that passes verify, concept page, exercise,
 lesson, and a link from the exemplar to that teaching material.
 
 **Acceptance is on the guide** (amendment 2026-09-29). A pattern's teaching
@@ -90,6 +95,20 @@ suites run against the file. This refines D71, which listed conformance,
 crash matrix and probe host checks among the treatments. Exact coverage is
 judged only against the file's owning producer and recorded in the evidence
 lockfile, written by `pnpm verify baseline` alone.
+
+**Guides map onto patterns without repeating each other** (amendment
+2026-10-01, Log-store guide design review, D81-D86). Patterns build on each
+other; they do not nest. A concept lives in the guide of the pattern whose
+contract defines it and whose suite checks it, and every ADR is named by exactly
+one guide. A lesson is one page that teaches one idea and ends in its exercise
+section, with recall before and after and one primary source. A project's
+`metadata.guides` is a list, because one project can be the exemplar of two
+patterns (this amends D67's single guide). Gate, ADR and decision references
+read as their name and link to the evidence note, the ADR or the decision's
+row, resolved when the site renders so no author has to remember it, with a
+one-line preview on hover (D87-D90); every decision has a name and every ADR a
+one-line summary. A learner's `pnpm exercise` run ends in a verdict that says
+what is missing and where to edit (D91).
 
 **Acceptance needs current gates** (D63). Before a guide is recorded as
 accepted, its gates run and pass on that commit, and the commit names the

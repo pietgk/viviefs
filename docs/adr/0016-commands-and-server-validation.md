@@ -1,5 +1,7 @@
 # ADR-0016: Commands, server validation and rejection
 
+Summary: Commands are pure Effect functions shared by client and server; the server validates and rejects with a typed error.
+
 Status: Qualified
 
 Date: 2026-09-20

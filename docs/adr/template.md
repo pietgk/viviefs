@@ -1,5 +1,7 @@
 # ADR-NNNN: Title
 
+Summary: One line: what this decides, and why, for a reader who has a minute. Shown when a reference to this ADR is hovered.
+
 Status: Proposed, unverified
 
 Date: YYYY-MM-DD

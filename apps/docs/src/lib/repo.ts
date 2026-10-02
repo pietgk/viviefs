@@ -22,13 +22,18 @@ export const RENDERED_DIRECTORIES: ReadonlyArray<RenderedDirectory> = [
   { directory: 'docs/adr', route: 'reference/adr' },
   { directory: 'docs/evidence', route: 'reference/evidence' },
   { directory: 'docs/research', route: 'research' },
+  { directory: 'docs/issues', route: 'reference/issues' },
 ]
 
 /** A single repository Markdown file the site renders as a page. */
 export const RENDERED_FILES: ReadonlyArray<{
   readonly file: string
   readonly route: string
-}> = [{ file: 'GLOSSARY.md', route: 'reference/glossary' }]
+}> = [
+  { file: 'GLOSSARY.md', route: 'reference/glossary' },
+  // Decisions are reference (D89); the rest of docs/plan stays on GitHub.
+  { file: 'docs/plan/bootstrap/02-decision-log.md', route: 'reference/decisions' },
+]
 
 /**
  * Research records that are HTML pages (D68) are served byte for byte from

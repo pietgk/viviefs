@@ -1,5 +1,7 @@
 # ADR-0017: Sync: outbox and cursor stream over Effect RPC
 
+Summary: Sync replicates datoms: an outbox up, one cursor stream per organization down, over Effect RPC.
+
 Status: Qualified
 
 Date: 2026-09-20

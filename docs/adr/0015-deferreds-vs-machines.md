@@ -1,5 +1,7 @@
 # ADR-0015: Human steps as deferreds; workflows own progress
 
+Summary: A human step is a durable deferred in the workflow; machines and atoms own only ephemeral interaction.
+
 Status: Qualified
 
 Date: 2026-09-20

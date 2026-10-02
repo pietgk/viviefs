@@ -1,5 +1,7 @@
 # ADR-0029: Effect reference subtree and language service
 
+Summary: Effect's source is vendored read-only under repos/effect as the reference, with the Effect language service in tsc.
+
 Status: Qualified
 
 Date: 2026-09-21

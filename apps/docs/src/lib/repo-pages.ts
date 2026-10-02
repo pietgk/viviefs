@@ -36,14 +36,23 @@ export const parseRepositoryPage = (
 
 export type Badge = {
   readonly text: string
-  readonly variant: 'success' | 'note' | 'default'
+  readonly variant: 'success' | 'note' | 'caution' | 'default'
 }
 
-/** The sidebar badge of an ADR: the first word of its status. */
+/**
+ * The sidebar badge of an ADR or an issue: the first word of its status
+ * (`Qualified`), or the whole triage role of an issue (`ready-for-human`).
+ */
 export const statusBadge = (status: string): Badge => {
-  const word = /^[A-Za-z]+/.exec(status)?.[0] ?? status
+  const word = /^[A-Za-z-]+/.exec(status)?.[0] ?? status
   const variant =
-    word === 'Accepted' ? 'success' : word === 'Qualified' ? 'note' : 'default'
+    word === 'Accepted' || word === 'resolved'
+      ? 'success'
+      : word === 'Qualified' || word.startsWith('ready-for-')
+        ? 'note'
+        : word.startsWith('needs-')
+          ? 'caution'
+          : 'default'
   return { text: word, variant }
 }
 
@@ -71,8 +80,8 @@ const htmlTitle = (path: string, html: string): string => {
   return title
 }
 
-/** A numbered ADR, the only kind of page with a status badge. */
-const NUMBERED_ADR = /^docs\/adr\/\d{4}-[^/]+\.md$/
+/** A numbered ADR or issue: the pages with a status badge. */
+const NUMBERED_RECORD = /^docs\/(?:adr|issues)\/\d{4}-[^/]+\.md$/
 
 /**
  * The sidebar entries of a rendered directory: its README as "Index", then
@@ -91,8 +100,12 @@ export const sidebarItems = (
     const page = parseRepositoryPage(path, readFileSync(join(root, path), 'utf8'))
     const slug = routeFor(path)
     if (slug === null) throw new Error(`${path} has no site route.`)
-    const label = path.endsWith('/README.md') ? 'Index' : page.title.replace(/^ADR-/, '')
-    return NUMBERED_ADR.test(path) && page.status !== null
+    const label = path.endsWith('/README.md')
+      ? 'Index'
+      : path.endsWith('/template.md')
+        ? 'Template'
+        : page.title.replace(/^ADR-/, '')
+    return NUMBERED_RECORD.test(path) && page.status !== null
       ? { label, slug, badge: statusBadge(page.status) }
       : { label, slug }
   })

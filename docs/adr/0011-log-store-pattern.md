@@ -1,5 +1,7 @@
 # ADR-0011: Log store pattern, read models, compaction and analytics
 
+Summary: One LogStore contract over SQL, many stores, one conformance suite; read models are disposable and the server log is never compacted.
+
 Status: Qualified
 
 Date: 2026-09-20

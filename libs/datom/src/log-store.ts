@@ -29,6 +29,7 @@ import {
   type StoredDatom,
 } from './schema.ts'
 
+// #region service
 export class LogStore extends Context.Service<
   LogStore,
   {
@@ -71,6 +72,7 @@ export class LogStore extends Context.Service<
     readonly compact: () => Effect.Effect<CompactResult, SqlError>
   }
 >()('viviefs/datom/LogStore') {}
+// #endregion service
 
 type PersistedHlc = {
   last: Hlc | null
@@ -213,6 +215,7 @@ export const layer = Layer.effect(
       }
     })
 
+    // #region append
     const append = Effect.fn('LogStore.append')(function* (
       datoms: ReadonlyArray<Datom>,
       envelope: Envelope,
@@ -268,6 +271,7 @@ export const layer = Layer.effect(
         }),
       )
     })
+    // #endregion append
 
     const envelope = Effect.fn('LogStore.envelope')(function* (cs: string) {
       const rows = yield* sql`
@@ -291,6 +295,7 @@ export const layer = Layer.effect(
       } satisfies Envelope
     })
 
+    // #region stream-from
     const streamFrom = Effect.fn('LogStore.streamFrom')(function* (
       cursor: Cursor,
       limit?: number,
@@ -304,6 +309,7 @@ export const layer = Layer.effect(
       `.pipe(rowsOf(DatomRow))
       return rows.map(readStored)
     })
+    // #endregion stream-from
 
     const scanPrefix = Effect.fn('LogStore.scanPrefix')(function* (
       prefix: string,
@@ -339,6 +345,7 @@ export const layer = Layer.effect(
       return value == null ? null : asSeq(value)
     })
 
+    // #region compact
     const holder = Effect.gen(function* () {
       const rows = yield* sql`
         SELECT device FROM device_cursors ORDER BY seq ASC, device ASC LIMIT 1
@@ -381,6 +388,7 @@ export const layer = Layer.effect(
       })
       return { removed, horizon: at, heldBy } satisfies CompactResult
     })
+    // #endregion compact
 
     return LogStore.of({
       mint,

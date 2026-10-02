@@ -1,0 +1,14 @@
+---
+/**
+ * A lesson's one primary source (D81), from its frontmatter `source`:
+ * `<ReadNext source={frontmatter.source} />`.
+ */
+interface Props {
+  source: { title: string; href: string } | undefined
+}
+
+const { source } = Astro.props
+if (source === undefined) throw new Error('<ReadNext /> needs the lesson frontmatter source.')
+---
+
+<p><a href={source.href}>{source.title}</a></p>

@@ -1,7 +1,9 @@
 # Qualification gates (D46)
 
 The spikes are gates: retained probes with stated pass conditions and positive controls, recorded in the ledger.
-Order matters; later gates depend on earlier ones. `P` = platform/pattern gate (complyj uses `Q` for its own).
+Order matters; later gates depend on earlier ones. `P` is for proof: each gate proves exactly one claim, the "Fact to
+establish" below (D93; until 2026-10-02 this line read "platform/pattern gate"; complyj uses `Q` for its own). The
+docs site shows each claim with its evidence under Reference > Claims.
 
 D46 named six foundation **themes**: platform, log store, engine + crash matrix, UI prototype, sync, trace
 projection. P01-P10 are those themes split so each fact can fail independently (platform → P01-P03, log store →

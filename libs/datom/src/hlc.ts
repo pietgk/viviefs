@@ -163,6 +163,7 @@ export const correctedNow = (input: {
   }
 }
 
+// #region mint
 export const mintHlc = (input: {
   now: number
   last: Hlc | null
@@ -183,6 +184,7 @@ export const mintHlc = (input: {
   }
   return { pt, c, tx: encodeHlc(pt, c, input.deviceFp, input.random) }
 }
+// #endregion mint
 
 export type ReceiveResult =
   | { readonly _tag: 'ok'; readonly last: Hlc }
@@ -194,6 +196,7 @@ export type ReceiveResult =
     }
   | { readonly _tag: 'invalid_tx' }
 
+// #region receive
 export const receiveHlc = (input: {
   last: Hlc | null
   remoteTx: string
@@ -216,3 +219,4 @@ export const receiveHlc = (input: {
     last: input.last ? maxHlc(input.last, remote) : remote,
   }
 }
+// #endregion receive

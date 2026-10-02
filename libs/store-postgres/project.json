@@ -9,7 +9,8 @@
     "platform:server"
   ],
   "metadata": {
-    "rationale": "log store on Postgres"
+    "rationale": "log store on Postgres",
+    "guides": ["log-store"]
   },
   "targets": {
     "test-integration": {

@@ -1,5 +1,7 @@
 # ADR-0031: TypeScript strictness flags from Effect, evaluated
 
+Summary: Three strictness flags from Effect's setup, each enabled after verify passed with it.
+
 Status: Qualified
 
 Date: 2026-09-21

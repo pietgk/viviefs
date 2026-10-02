@@ -30,6 +30,7 @@ export const StoredDatom = Schema.Struct({
 })
 export type StoredDatom = typeof StoredDatom.Type
 
+// #region envelope
 export const Envelope = Schema.Struct({
   cs: Schema.String,
   actor: Schema.String,
@@ -46,6 +47,7 @@ export const Envelope = Schema.Struct({
   acceptedAt: Schema.NullOr(Schema.Int),
 })
 export type Envelope = typeof Envelope.Type
+// #endregion envelope
 
 export type Cursor = number
 

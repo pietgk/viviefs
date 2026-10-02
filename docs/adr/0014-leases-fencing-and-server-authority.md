@@ -1,5 +1,7 @@
 # ADR-0014: Leases, fencing and server authority
 
+Summary: One fenced lease per execution; the server holds all workflow state, decides, and never runs device work.
+
 Status: Qualified
 
 Date: 2026-09-20

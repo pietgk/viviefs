@@ -1,5 +1,7 @@
 # ADR-0005: SQLite drivers
 
+Summary: Effect's official SQLite drivers: op-sqlite on iOS and Android, sqlite-wasm with OPFS on the web, expo-sqlite as the fallback.
+
 Status: Qualified
 
 Date: 2026-09-20

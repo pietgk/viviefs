@@ -1,5 +1,7 @@
 # ADR-0027: Developer experience planes
 
+Summary: Developer experience in three planes, one source of truth each: agent context, host toolchain, lab runtime.
+
 Status: Proposed, unverified
 
 Date: 2026-09-20. Amended 2026-09-29 (Skills step of Docs and teaching, D69):

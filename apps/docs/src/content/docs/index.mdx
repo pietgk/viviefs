@@ -85,7 +85,7 @@ stateDiagram-v2
   Proposed --> Qualified: gate passes, evidence linked
   Qualified --> Qualified: inputs change, gate re-runs
   Qualified --> Accepted: human accepts the pattern's guide
-  Accepted --> Delivered: exemplar green + two-way links
+  Accepted --> Delivered: exemplar passes verify + two-way links
   Delivered --> [*]
   note right of Proposed: "Proposed, unverified"
 ```
@@ -121,17 +121,15 @@ The same chain as the map, filled in for the first guide.
 - **Decisions** D31, D33' and D37: one datom log as the single substrate, a
   hybrid logical clock for `tx`, and an append-only datom table with indexes
   and typed read models.
-- **ADRs**: [0006 One datom log](/reference/adr/0006-one-datom-log/),
-  [0007 Hybrid logical clock](/reference/adr/0007-hybrid-logical-clock/),
-  [0011 Log store pattern](/reference/adr/0011-log-store-pattern/).
-- **Gates** P04 and P05, with evidence in
-  [the P04 note](/reference/evidence/2026-09-20-p04/) and
-  [the P05 note](/reference/evidence/2026-09-20-p05/).
-- **Exemplar**: `libs/datom` and the store adapters. `verify` runs the
+- **ADRs**: ADR-0006, ADR-0007, ADR-0011.
+- **Gates**: P04 and P05, each linked to its
+  evidence note.
+- **Exemplar**: `libs/datom` and the four store projects. `verify` runs the
   conformance suite against sqlite-node and Postgres in `integration`;
   qualify runs it against every implementation.
-- **Guide** (to write): concepts, how-to ("add a store implementation"), the
-  review checklist, lessons and the exercise track.
+- **Guide**: [Log store](/guides/log-store/), a draft: concepts, how-to
+  ("add a store implementation"), testing, the review checklist, four lessons
+  and the exercise track in `exercises/log-store`.
 
 A datom is one fact: entity, attribute, value, the transaction's hybrid
 logical clock, assert or retract, and the changeset it belongs to. This is

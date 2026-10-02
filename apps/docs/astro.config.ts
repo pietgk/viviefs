@@ -16,6 +16,8 @@ import mermaid from 'astro-mermaid'
 import { defineConfig } from 'astro/config'
 import starlightLinksValidator from 'starlight-links-validator'
 import starlightLlmsTxt from 'starlight-llms-txt'
+import { guideGroups, guideItems, TEMPLATE_DIRECTORY, TEMPLATE_ROUTE } from './src/lib/guides.ts'
+import { decisionAnchors, glossaryAnchors, referenceLinks } from './src/lib/reference-links.ts'
 import { repoLinks } from './src/lib/repo-links.ts'
 import { sidebarItems } from './src/lib/repo-pages.ts'
 import { findRepositoryRoot } from './src/lib/repo.ts'
@@ -23,11 +25,14 @@ import { findRepositoryRoot } from './src/lib/repo.ts'
 const repositoryRoot = findRepositoryRoot()
 
 export default defineConfig({
-  // The site runs only locally (`astro preview`) until deployment is decided;
+  // The site runs only locally (`nx run docs:preview`) until deployment is decided;
   // `llms.txt` needs an absolute URL.
   site: 'http://localhost:4321',
   markdown: {
-    processor: satteri({ mdastPlugins: [repoLinks(repositoryRoot)] }),
+    processor: satteri({
+      mdastPlugins: [repoLinks(repositoryRoot), referenceLinks(repositoryRoot)],
+      hastPlugins: [decisionAnchors(), glossaryAnchors()],
+    }),
   },
   vite: {
     server: { fs: { allow: [repositoryRoot] } },
@@ -55,6 +60,8 @@ export default defineConfig({
       title: 'ViViEfs',
       // The 404 page is src/content/docs/404.md, rendered like any page.
       disable404Route: true,
+      // Adds the reference preview card to every page (D90).
+      components: { MarkdownContent: './src/components/MarkdownContent.astro' },
       // Repository Markdown rendered in place gets Starlight's own Markdown
       // features (heading anchors, asides), like pages in src/content/docs.
       markdown: { processedDirs: [relative(process.cwd(), repositoryRoot) || '.'] },
@@ -74,21 +81,32 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          items: [{ label: 'Guide index', slug: 'guides' }],
+          items: [{ label: 'Guide index', slug: 'guides' }, ...guideGroups(repositoryRoot)],
         },
         {
           label: 'Reference',
           items: [
             { label: 'Glossary', slug: 'reference/glossary' },
+            { label: 'Decisions', slug: 'reference/decisions' },
+            {
+              label: 'Guide template',
+              collapsed: true,
+              items: guideItems(repositoryRoot, TEMPLATE_DIRECTORY, TEMPLATE_ROUTE),
+            },
             {
               label: 'ADRs',
               collapsed: true,
               items: sidebarItems(repositoryRoot, 'docs/adr'),
             },
             {
-              label: 'Evidence',
+              label: 'Issues',
               collapsed: true,
-              items: sidebarItems(repositoryRoot, 'docs/evidence'),
+              items: sidebarItems(repositoryRoot, 'docs/issues'),
+            },
+            {
+              label: 'Claims and evidence',
+              collapsed: true,
+              items: [{ label: 'Claims', slug: 'reference/claims' }, ...sidebarItems(repositoryRoot, 'docs/evidence')],
             },
           ],
         },

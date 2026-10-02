@@ -1,5 +1,7 @@
 # ADR-0001: Record architectural decisions
 
+Summary: Numbered ADRs in docs/adr, from one template, with expected and observed outcomes kept apart.
+
 Status: Proposed, unverified
 
 Date: 2026-09-20. Amended 2026-09-29 (Skills step of Docs and teaching): the

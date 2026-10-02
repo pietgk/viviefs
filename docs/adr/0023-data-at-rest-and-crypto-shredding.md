@@ -1,5 +1,7 @@
 # ADR-0023: Data at rest and crypto-shredding
 
+Summary: Encryption at rest per app with SQLCipher, and erasure by destroying per-subject keys.
+
 Status: Proposed, unverified
 
 Date: 2026-09-20
@@ -45,7 +47,7 @@ consumer apps that do not need it are not forced.
 
 ## Failure-handling
 
-P15: P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore.
+P15: P04 + P05 suites pass on SQLCipher with keys in Keychain/Keystore.
 Positive control: wrong key cannot open the database.
 
 P16: after key destruction, personal attributes are unreadable on every

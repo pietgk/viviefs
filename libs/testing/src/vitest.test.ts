@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { SUITES } from './suites.ts'
-import { CONFIG_FILES, COVERAGE_PRODUCERS, TEST_FILES, projectTestConfig } from './vitest.ts'
+import { CONFIG_FILES, COVERAGE_PRODUCERS, EXERCISE_FILES, TEST_FILES, exerciseTrackConfig, projectTestConfig } from './vitest.ts'
 
 describe('project Vitest config', () => {
   it('gives each test file to exactly one producer by its name', () => {
@@ -25,5 +25,11 @@ describe('project Vitest config', () => {
     expect(config.root).toBe('/repo/libs/datom')
     expect(config.test?.include).toEqual(TEST_FILES.integration.include)
     expect(config.test?.tags?.map((tag) => tag.name)).toEqual(SUITES.map((suite) => suite.id))
+  })
+
+  it('runs each exercise test of a track, rooted at the track', () => {
+    const config = exerciseTrackConfig('file:///repo/exercises/log-store/vitest.config.ts')
+    expect(config.root).toBe('/repo/exercises/log-store')
+    expect(config.test?.include).toEqual(EXERCISE_FILES)
   })
 })

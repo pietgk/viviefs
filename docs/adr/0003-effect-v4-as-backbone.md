@@ -1,5 +1,7 @@
 # ADR-0003: Effect v4 RC as the backbone
 
+Summary: Effect v4 is the backbone everywhere, one exactly pinned version for effect and every @effect package.
+
 Status: Qualified
 
 Date: 2026-09-20

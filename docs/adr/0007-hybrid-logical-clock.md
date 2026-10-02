@@ -1,5 +1,7 @@
 # ADR-0007: Hybrid logical clock for `tx`
 
+Summary: Every tx is minted by a hybrid logical clock, so order holds offline, across clock jumps and between devices.
+
 Status: Qualified
 
 Date: 2026-09-20

@@ -10,7 +10,7 @@ that link to guides, not a second copy of those guides (D30).
 2. [`docs/adr/README.md`](docs/adr/README.md) - decisions. Status `Proposed, unverified`
    until the named gate qualifies them.
 3. [`docs/plan/bootstrap/README.md`](docs/plan/bootstrap/README.md) - complete design
-   context (D1-D80). Treat grilling decisions as accepted intent, unverified until
+   context (D1-D94). Treat grilling decisions as accepted intent, unverified until
    the named gate. Ask before deviating; record a deviation as an ADR amendment.
 4. [`docs/plan/bootstrap/10-open-items-and-risks.md`](docs/plan/bootstrap/10-open-items-and-risks.md) -
    freeze / named-slot / hypothesis, and the Schedule. P05 pinned `viviefs/changeset/*` and
@@ -29,12 +29,12 @@ The current handover is [`docs/plan/next-session.md`](docs/plan/next-session.md)
 
 ## Delivery
 
-A pattern is delivered only with qualification evidence, a green exemplar, and an
+A pattern is delivered only with qualification evidence, an exemplar that passes verify, and an
 accepted guide (ADR-0026): a concept page, an exercise, a lesson, and a link from the
 exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-teach.md).
 
 - **Verify**: `pnpm verify` (staged `static -> unit -> integration -> ui -> quality`).
-  Done = green. Never loosen a gate to make it pass. A change that touches only
+  Done means verify passes. Never loosen a gate to make it pass. A change that touches only
   prose runs the docs steps (the docs-only rule in `tools/verify/src/docs-only.ts`);
   `pnpm verify all` runs everything. Every production file has one file treatment in
   `tools/verify/src/evidence-registry.ts`; classify a new file there. `pnpm verify
@@ -47,7 +47,11 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
 - **Teach**: docs pages are canonical. Lessons cite evidence; they never become the
   source of a claim.
 - **Guides**: [`apps/docs/src/content/docs/guides/`](apps/docs/src/content/docs/guides/index.mdx).
-  Read the MDX sources; browse with `pnpm exec nx run docs:serve` (D64).
+  Read the MDX sources; browse with `pnpm exec nx run docs:serve` (D64). Every guide
+  has the shape of the guide template (`apps/docs/src/guide-template/`), checked by
+  `verify`'s `guides` step. Before changing code a guide names as its exemplar, read
+  that guide's `review` page. Exercises: `exercises/<pattern>/`, run one with
+  `pnpm exercise <pattern> <NN.MM>`.
 - **Research**: dated records in [`docs/research/`](docs/research/README.md), where the
   `research` skill writes. Never the source of a guide's claim (D68).
 
@@ -101,7 +105,8 @@ wins on a name collision, so `code-review` here replaces Claude Code's built-in
 
 ### Issue tracker
 
-Specs and tickets are committed Markdown under `docs/plan/<effort>/`. See
+Issues and tickets are numbered files in [`docs/issues/`](docs/issues/README.md),
+id `I12` ("#12" in conversation); specs stay in `docs/plan/<effort>/`. See
 [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
 
 ### Triage labels

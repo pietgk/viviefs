@@ -35,12 +35,15 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
   - static: typecheck (incl. docs samples), lint (boundaries, determinism rules, Schema at every boundary), lint-scope,
     ownership (project tags, one file treatment per production file), skill tree against `skills-lock.json`
     (ADR-0027), audit.
-  - unit: one Vitest run from the root over every project's unit tests, with coverage (D77).
+  - unit: one Vitest run from the root over every project's unit tests, with coverage (D77); then `exercises`: each
+    exercise track's solutions pass and problems fail as expected, without coverage, because teaching material is
+    not evidence of production code.
   - integration: one Vitest run over the suites and tests that need a real store or server: log-store and changesets
     suites on each store, the engine suites and the projection suite on sqlite-node and PGlite.
   - ui: stories with play + a11y (jsdom until P12, D72), Playwright web smoke (from P13).
-  - quality: production builds, gated JS bundle size, docs site, diagrams, and `evidence`: this run's coverage,
-    suites and stories judged against the registry and the evidence lockfile.
+  - quality: production builds, gated JS bundle size, docs site, diagrams, `guides` (every guide in the shape of
+    the guide template; ADR and guide statuses, exemplar links and exercise tracks agree), and `evidence`: this
+    run's coverage, suites and stories judged against the registry and the evidence lockfile.
 - Fail fast between stages, collect all failures within a stage. `verify help` is generated from the executed table.
 - "Done" is mechanical: green `verify`, with a path rule for docs-only diffs (inherited from web-interview; the
   escape hatch must stay a path rule, not judgment).
@@ -85,8 +88,11 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
 - **Guides** (D62-D65): one per pattern in `guides/<pattern>/`, in the one guide template; a pattern is accepted on
   its guide.
 - **Exercises** (`exercises/`, effect.institute spirit): a stub, a failing test, a reference solution that passes in
-  `verify`. Layout and checks in D66.
-- **Lessons** cite gate evidence and never become the source of a claim (complyj rule).
+  `verify`. Layout and checks in D66; learners run `pnpm exercise <pattern> <NN.MM>` (D85).
+- **Lessons** (D81): one page per idea, ending in its exercise section, with recall before and after and one primary
+  source. They cite gate evidence and never become the source of a claim (complyj rule).
+- **Patterns build on each other** (D82): a concept lives in the guide of the pattern whose contract defines it and
+  whose suite checks it; every ADR is named by one guide; gates and ADRs are named, linked references (D86).
 - **One source**: docs pages are canonical; AGENTS.md is a short map; skills are thin procedures linking to guides.
 - Key lessons to plan early: the determinism rule, the basis check in changesets, HLC edge cases, "can it ever move?
   then it is a reference", deferreds vs machines, crash and resume seen in the trace.

@@ -1,5 +1,7 @@
 # ADR-0022: Identity and organization isolation
 
+Summary: People sign in through OIDC; the server enforces organization isolation on every pull, push, lease and command.
+
 Status: Qualified
 
 Date: 2026-09-20. Amended 2026-09-27 by the P11 grilling; 2026-09-28 with how the device signs in (step 6).

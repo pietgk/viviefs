@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claims, issues as records, and a glossary a newcomer can read (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; line-height: 1.5; background: var(--color-base-300); border-radius: 0.75rem; padding: 0.9rem 1rem; overflow-x: auto; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-option { border-top-width: 4px; }
+  .cr-rec { border-color: var(--color-success); }
+  .cr-site { background: #17181c; color: #c0c2c7; border-radius: 0.75rem; padding: 1.1rem 1.4rem; font-family: ui-sans-serif, system-ui, sans-serif; }
+  .cr-site p { margin: 0.5rem 0; }
+  .cr-site a { color: #a4b4ff; text-decoration: underline; text-underline-offset: 3px; }
+  .cr-ref { position: relative; display: inline; }
+  .cr-card { display: none; position: absolute; z-index: 10; left: 0; top: 1.7rem; width: 23rem; background: #23262f; border: 1px solid #3d4150; border-radius: 0.5rem; padding: 0.7rem 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.45); font-size: 0.85rem; line-height: 1.45; color: #d6d8dd; }
+  .cr-card b { color: #fff; }
+  .cr-kind { font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; color: #9aa0b0; }
+  .cr-ref:hover .cr-card, .cr-ref:focus-within .cr-card { display: block; }
+  .cr-before { border-left: 4px solid var(--color-error); }
+  .cr-after { border-left: 4px solid var(--color-success); }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Docs and teaching - Log-store guide, review round 3</span>
+    <span class="badge badge-outline">2026-10-02</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Claims, issues as records, and a glossary a newcomer can read</h1>
+  <p class="text-lg opacity-80">Three proposals from your round-3 review: call the numbered things claims, keep open issues as files the docs can reference, and link every glossary term so a reader who stumbles gets a plain answer on hover. Each section says where I agree, where I push back, and what I would build. Decision names (D88): recorded as agreed.</p>
+</header>
+
+<section class="space-y-6" id="claims">
+  <h2 class="text-2xl font-bold">1. Claims or gates, and whether P04 becomes C04</h2>
+  <p>You are right that the reader meets <b>claims</b>: "the log store contract holds on every store" is what matters, and the sidebar calls the chapter Evidence. But "claim" and "gate" are two different things, and the docs read better when both words stay, each with one meaning:</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  ADR["ADR<br />a decision that depends on claims"] -- "depends on" --> CL["Claim<br />a statement about the stack<br />that could be false"]
+  CL -- "proven by" --> G["Gate P04<br />the check that can fail:<br />probe + positive control"]
+  G -- "each run recorded in" --> L[("Ledger")]
+  G -- "described in" --> EV["Evidence note<br />the dated record of a run"]
+</pre></div>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Sentence</th><th>With "gate"</th><th>With "claim"</th></tr></thead>
+    <tbody>
+      <tr><td>What the qualify command runs</td><td>runs gates</td><td>runs claims (a claim does not run)</td></tr>
+      <tr><td>What the ledger records</td><td>P04 passed, failed, stale</td><td>C04 passed? (a claim holds or not; a check passes)</td></tr>
+      <tr><td>What an ADR needs</td><td>Qualifying gate: P04</td><td>Claims: C04 (reads well)</td></tr>
+      <tr><td>What a reader wants to know</td><td>P04 Log store conformance (a topic)</td><td>"the log store contract holds on every store" (the claim)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3 class="text-xl font-semibold">Renaming P04 to C04: I recommend against it</h3>
+  <ul class="list-disc ml-6 space-y-1">
+    <li>The ledger holds 168 runs recorded under <code class="cr-inline">P01</code> to <code class="cr-inline">P11</code>. It is append-only and machine-written: renaming means either rewriting history we promised never to touch, or keeping a P-to-C map forever.</li>
+    <li>80 tracked files carry the id in their name (<code class="cr-inline">probes/p04.ts</code>, <code class="cr-inline">2026-09-20-p04.md</code>), plus an environment variable the evidence app reads, and hundreds of references.</li>
+    <li>The gain is one letter. With "P is for proof", <b>P04 reads as "proof 04"</b>: the proof of one claim. That is your intent, without the rename.</li>
+  </ul>
+  <h3 class="text-xl font-semibold">What I would build instead: put the claim in front</h3>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <ul class="list-disc ml-6 space-y-1 text-sm">
+        <li><b>Claim</b> becomes a glossary term: "a statement the stack depends on that could be false; each gate proves exactly one". <b>Gate</b>: "the check that proves one claim; P is for proof".</li>
+        <li><code class="cr-inline">gates.ts</code> gets a <code class="cr-inline">claim</code> field: the statement, taken from the plan's "Fact to establish" column. The gate's short name stays.</li>
+        <li>A generated <b>Reference &gt; Claims</b> page: one row per gate, with id, claim, pass condition, positive control, the ADRs that depend on it and every evidence note. The Evidence chapter becomes <b>Claims and evidence</b>.</li>
+        <li><code class="cr-inline">P04</code> anywhere links to its row on that page, and the hover shows the claim.</li>
+      </ul>
+    </div>
+    <div class="cr-site">
+      <p class="cr-kind">Reference &gt; Claims, row P04</p>
+      <p><b style="color:#fff">P04 Log store conformance</b></p>
+      <p><b>Claim:</b> the datom log store contract holds on SQLite (native including Android, wasm, Node) and Postgres.</p>
+      <p><b>Proven when:</b> append, dedup by tx, the clock rules, cursor streaming, prefix scans and the compaction horizon pass on every store.</p>
+      <p><b>Positive control:</b> a duplicate append is a no-op while a new tx is appended.</p>
+      <p><b>ADRs that depend on it:</b> <a href="#claims">ADR-0006 One datom log</a>, <a href="#claims">ADR-0007 Hybrid logical clock</a>, <a href="#claims">ADR-0011 Log store pattern</a></p>
+      <p><b>Evidence:</b> <a href="#claims">2026-09-20</a>, foundation closure 2026-09-26, closure 2026-09-28</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-6" id="issues">
+  <h2 class="text-2xl font-bold">2. Open issues as files the docs can reference</h2>
+  <p>Agreed, and the vendored skills already fit it: <code class="cr-inline">triage</code>, <code class="cr-inline">to-tickets</code> and <code class="cr-inline">wayfinder</code> work against "the issue tracker", which <code class="cr-inline">docs/agents/issue-tracker.md</code> already defines as committed Markdown with the triage roles as a <code class="cr-inline">Status:</code> line. What is missing is one place with stable ids. Today open items live in four places: the deferred-decisions table, the risks table, handover notes, and <code class="cr-inline">upstream-issues.md</code>.</p>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <p class="text-sm opacity-70">docs/issues/0001-node-forge-advisory.md</p>
+<pre class="cr-code"># I1: node-forge advisory fails audit, no fix released
+
+Status: ready-for-human
+Category: bug
+Found: 2026-10-02
+
+## What
+
+`pnpm audit` reports GHSA-86w9-cpqp-85rv (high) in node-forge
+1.4.0, the newest release, so verify's audit step fails. It
+comes only through @expo/cli (development builds), not the app.
+
+## Options
+
+Ignore this advisory with a reason in pnpm-workspace.yaml (a
+loosened gate, so a human decides), or stay red until a fix.
+
+## Comments</pre>
+    </div>
+    <div class="space-y-3">
+      <ul class="list-disc ml-6 space-y-1 text-sm">
+        <li><b>One directory</b>, <code class="cr-inline">docs/issues/NNNN-slug.md</code>, numbered like ADRs and never reused. Tickets that an effort's spec breaks into go there too, with an <code class="cr-inline">Effort:</code> line, so every issue has one global id. The <code class="cr-inline">issue-tracker.md</code> adaptation changes; the vendored skills do not.</li>
+        <li><b>States</b> are the triage roles (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix) plus resolved. A resolved issue keeps its file, like a superseded ADR.</li>
+        <li><b>Reference &gt; Issues</b> on the site, with a status badge per issue, like the ADRs. <code class="cr-inline">I1</code> anywhere renders as "I1 node-forge advisory fails audit", linked, with the first line of "What" on hover. An unknown id fails the build.</li>
+        <li><b>Migrated</b>: the 14 deferred decisions, the open drift, the P07 notification tap, the effect-solutions peer warning, the API reference question, accepting the log-store guide, and what P stands for, which this page answers. Risks stay a table; each risk can link its issue.</li>
+      </ul>
+    </div>
+  </div>
+  <h3 class="text-xl font-semibold">The id: why not <code class="cr-inline">#1</code></h3>
+  <p>The skills speak of <code class="cr-inline">#42</code>, but the docs already use <code class="cr-inline">#6347</code> for an Effect issue on GitHub. A bare <code class="cr-inline">#N</code> would be ours on one page and upstream's on the next, and the build could not tell them apart. <code class="cr-inline">I42</code> follows <code class="cr-inline">P04</code> and <code class="cr-inline">D37</code>; <code class="cr-inline">issue-tracker.md</code> tells the skills that "#42" said in conversation means <code class="cr-inline">I42</code>.</p>
+</section>
+
+<section class="space-y-6" id="glossary">
+  <h2 class="text-2xl font-bold">3. A glossary a newcomer can read, linked from every page</h2>
+  <p>Agreed on the mechanism: the plugin and the preview card from round 2 can link glossary terms exactly as they link decisions. But your reader test shows the deeper problem is the definitions, not the links. A hover that shows "a reusable architectural solution... green in its exemplar" makes the stumble faster, not shorter. So two parts, and the second matters more.</p>
+  <h3 class="text-xl font-semibold">a. Definitions a newcomer can read</h3>
+  <p>Every definition starts with <b>one plain sentence</b> that someone outside software understands, and the hover shows that sentence. The precise part follows, for people and agents who need it, and may use other glossary terms, which are linked.</p>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-before"><div class="card-body p-5 block space-y-2">
+      <h4 class="font-semibold">Pattern, today</h4>
+      <p class="text-sm">A reusable architectural solution with one contract and possibly several implementations (log store, telemetry sink, identity, encrypted store). Delivered only when qualified with evidence, green in its exemplar, and its guide accepted.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-after"><div class="card-body p-5 block space-y-2">
+      <h4 class="font-semibold">Pattern, proposed</h4>
+      <p class="text-sm"><b>A proven way to build one part of an app, written down once so every app here builds that part the same way.</b> It has one contract (what it promises) and may have several implementations (the log store works on SQLite and on Postgres). It counts as delivered when gates have proven its claims, its exemplar passes verify, and a person has accepted its guide.</p>
+    </div></div>
+  </div>
+  <p>Missing terms get entries, because the docs lean on them: <b>claim, evidence note, ADR, decision, contract, qualified, accepted, delivered, Effect, service, layer</b>. "Green" leaves the docs: it becomes "passes verify". I draft every first sentence; you test them with the same reader; what still confuses him gets rewritten.</p>
+  <h3 class="text-xl font-semibold">b. Linking terms, without turning every page blue</h3>
+  <div class="cr-site">
+    <p>The log store is a <span class="cr-ref"><a href="#glossary">pattern</a><span class="cr-card"><span class="cr-kind">Glossary</span><br><b>Pattern</b><br>A proven way to build one part of an app, written down once so every app here builds that part the same way.</span></span> with one <span class="cr-ref"><a href="#glossary">contract</a><span class="cr-card"><span class="cr-kind">Glossary</span><br><b>Contract</b><br>What a part promises to the code that uses it, written so a check can catch a broken promise.</span></span> and several implementations. A pattern is accepted on its guide; the pattern's <span class="cr-ref"><a href="#glossary">guide</a><span class="cr-card"><span class="cr-kind">Glossary</span><br><b>Guide</b><br>Everything a person or an agent needs to understand and use one pattern: why, how, what to check, and lessons with exercises.</span></span> teaches it.</p>
+  </div>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Rule</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Link the <b>first</b> use of a term on a page (in the example, "pattern" once, not twice)</td><td>As Wikipedia and MDN do: one link per term per page helps; every occurrence is noise</td></tr>
+      <tr><td>Match the term and its plural, any case, whole words; never in headings, code or links</td><td>"patterns", "a Pattern"; same exclusions as references</td></tr>
+      <tr><td>Terms that are also everyday words (<i>app, feature, device, person, command, engine, worker, verify</i>) link only in their glossary sense: capitalised as a term, or listed per page</td><td>"the CLI command" must not link to Command; this is the one place judgment stays, so it is a short, reviewed list</td></tr>
+      <tr><td>Inside the glossary, terms in a definition link to their entries</td><td>A reader can follow a chain from any term</td></tr>
+      <tr><td>Each term gets an anchor (<code class="cr-inline">/reference/glossary/#pattern</code>); a definition without a first sentence fails the build</td><td>Deterministic, like ADR summaries</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><b>Where I push back:</b> linking every term on every page by machine is reliable for ids like <code class="cr-inline">D37</code>, which mean one thing, and less so for words, which mean several. First use per page and a short everyday-words list keep the links right. The real test is your reader: after the rewrite, does he understand "pattern" from its hover?</p>
+</section>
+
+<section class="space-y-6" id="decide">
+  <h2 class="text-2xl font-bold">4. To decide</h2>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <form class="card bg-base-200" data-lavish-question="claims" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('claims'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Claims: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Claims: ' + c, element: event.currentTarget, queueKey: 'claims', data: { question: 'claims', answer: c, notes: n } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">a. Claims and gates (section 1)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="claims" value="keep Pnn, P is for proof; Claim a glossary term; a claim field in gates.ts; Reference > Claims page; Evidence chapter becomes Claims and evidence"> <span>Keep P04 (P is for proof); add claims to the front</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="claims" value="rename Pnn to Cnn and the gate concept to claim, accepting a P-to-C map for the ledger"> <span>Rename to C04 anyway</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="claims" value="other: see notes"> <span>Other (notes)</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+    <form class="card bg-base-200" data-lavish-question="issues" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('issues'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Issues: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Issues: ' + c, element: event.currentTarget, queueKey: 'issues', data: { question: 'issues', answer: c, notes: n } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">b. Issues (section 2)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="issues" value="agree: docs/issues/NNNN-slug.md, ids In, triage roles plus resolved, Reference > Issues, open items migrated, issue-tracker.md adapted"> <span>Agree: <code class="cr-inline">docs/issues/</code>, ids like I1, migrate open items</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="issues" value="other: see notes"> <span>Other (notes)</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+    <form class="card bg-base-200" data-lavish-question="glossary" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('glossary'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Glossary: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Glossary: ' + c, element: event.currentTarget, queueKey: 'glossary', data: { question: 'glossary', answer: c, notes: n } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">c. Glossary (section 3)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="glossary" value="agree: plain first sentence per definition (hover shows it), missing terms added, first use per page linked, everyday-words list, terms link inside the glossary; I test the rewrite with the reader"> <span>Agree: plain first sentences, then first-use links</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="glossary" value="link every occurrence, not only the first per page"> <span>Link every occurrence</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="glossary" value="other: see notes"> <span>Other (notes)</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+    <form class="card bg-base-200" data-lavish-question="order" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('order'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Order: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Order: ' + c, element: event.currentTarget, queueKey: 'order', data: { question: 'order', answer: c, notes: n } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">d. Order of work</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="order" value="issues first (so the rest of the review lands as issues), then claims, then the glossary rewrite and links"> <span>Issues first, then claims, then the glossary</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="order" value="glossary first, then issues, then claims"> <span>Glossary first</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+  </div>
+  <p class="text-sm opacity-80">Queue the answers, then Send to Agent. Comments on any part are welcome.</p>
+</section>
+
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) {
+    paint.clearRect(0, 0, 1, 1);
+    paint.fillStyle = "#000";
+    paint.fillStyle = color;
+    paint.fillRect(0, 0, 1, 1);
+    return paint.getImageData(0, 0, 1, 1).data;
+  }
+  function compositeRgba(foreground, background) {
+    const fa = foreground[3] / 255;
+    const ba = background[3] / 255;
+    const alpha = fa + ba * (1 - fa);
+    if (alpha === 0) return [0, 0, 0, 0];
+    return [
+      (foreground[0] * fa + background[0] * ba * (1 - fa)) / alpha,
+      (foreground[1] * fa + background[1] * ba * (1 - fa)) / alpha,
+      (foreground[2] * fa + background[2] * ba * (1 - fa)) / alpha,
+      alpha * 255,
+    ];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rootBackground = toRgba(getComputedStyle(root).backgroundColor);
+    const bodyBackground = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0, 0, 0, 0];
+    const [r, g, b, a] = compositeRgba(bodyBackground, rootBackground);
+    if (a > 0) return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
+    const colorScheme = getComputedStyle(root).colorScheme;
+    if (colorScheme.includes("dark") && !colorScheme.includes("light")) return true;
+    if (colorScheme.includes("light") && !colorScheme.includes("dark")) return false;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied;
+  let rendering = false;
+  let queued = false;
+  function queueRender() {
+    queued = true;
+    if (rendering) return;
+    void render();
+  }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "strict" });
+        for (const { el, src } of diagrams) {
+          el.removeAttribute("data-processed");
+          el.textContent = src;
+        }
+        try {
+          await mermaid.run({ nodes: diagrams.map((d) => d.el) });
+        } catch (error) {
+          console.error("Mermaid diagram render failed:", error);
+          return;
+        }
+        applied = theme;
+      }
+    } finally {
+      rendering = false;
+      if (queued) queueRender();
+    }
+  }
+  if (document.readyState === "complete") queueRender();
+  else window.addEventListener("load", queueRender, { once: true });
+  const themeObserver = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) {
+    if (!el) continue;
+    themeObserver.observe(el, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+  }
+  document.addEventListener("change", queueRender, true);
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>

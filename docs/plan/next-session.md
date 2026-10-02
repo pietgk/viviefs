@@ -1,43 +1,83 @@
-# Next session: Docs and teaching, the log-store guide
+# Next session: Docs and teaching, accepting the log-store guide, then the app shell
 
 ## Prompt to start the session
 
 > Read `AGENTS.md`, then `docs/plan/next-session.md` (this file), then
-> `docs/plan/evidence-ownership/spec.md`, the "Evidence ownership design
-> review (2026-09-30)" section of `docs/plan/bootstrap/02-decision-log.md`
-> (D75-D80), and the Schedule in
-> `docs/plan/bootstrap/10-open-items-and-risks.md`. Start the log-store guide
-> (D62-D67), which settles the guide template. Ask before deviating from an
-> agreed decision and record a deviation as an ADR amendment.
+> `docs/plan/log-store-guide/spec.md` (with its build record), the
+> "Log-store guide design review (2026-10-01)" section of
+> `docs/plan/bootstrap/02-decision-log.md` (D81-D91), and the Schedule in
+> `docs/plan/bootstrap/10-open-items-and-risks.md`. If the human has reviewed
+> the log-store guide, record what they said; acceptance follows D63. Then
+> start the app shell (P12, P13) with its grilling. Ask before deviating from
+> an agreed decision and record a deviation as an ADR amendment.
 
-## Where things stand (2026-10-01)
+## Where things stand (2026-10-01, afternoon)
+
+- **The log-store guide is built, as a draft** (D81-D91; spec and build record
+  in [log-store-guide/spec.md](log-store-guide/spec.md); review page
+  [2026-10-01-log-store-guide-review.html](../research/2026-10-01-log-store-guide-review.html)).
+  `pnpm verify all` is green with 18 steps. What is new:
+  - **The guide template** is a skeleton guide in `apps/docs/src/guide-template/`,
+    published under Reference. `verify`'s new `guides` step derives the
+    required pages, `##` headings and frontmatter keys from it, and checks
+    ADR and guide statuses (D63), exemplar links both ways (`metadata.guides`
+    is a list, D84), the exercise layout (D66), lessons paired with exercise
+    sections (D81), every ADR on one guide (D82), no bare gate or ADR id in a
+    guide's prose (D86), and that the plan names each gate as `gates.ts` does.
+  - **The guide** `apps/docs/src/content/docs/guides/log-store/`: index (with
+    the generated status block), concepts, how-to, testing, review, four
+    lessons, try-it. Samples are regions of the exemplar.
+  - **References, names, previews** (D87-D91, review round 2, the same day):
+    every gate, ADR and decision id on every page renders as its id and
+    name, linked, with a preview card on hover; inline-code repository paths
+    are links; an unknown id or a stale path fails the site build. Decisions
+    have names, ADRs a `Summary:` line, and the decision log is Reference >
+    Decisions. `pnpm exercise` prints a learner's verdict ("not yet" or
+    "done") instead of Vitest's output.
+  - **What a lesson is** (D81): one page, one idea, recall before and after,
+    the gate that showed it, its exercise section, one primary source.
+  - **Patterns build on each other** (D82): a concept lives in the guide of
+    the pattern whose contract defines it and whose suite checks it. The
+    changesets guide owns changesets, conflict policies, entity ids and read
+    models; ADR-0011 stays on the log-store guide (D83).
+  - **The exercise track** `exercises/log-store` (five exercises) runs in the
+    new `exercises` step, without coverage; learners run
+    `pnpm exercise log-store 02.01`. The harness is `@viviefs/testing/exercise`.
+  - `metadata.guides`, a README and an entry-module TSDoc link on `libs/datom`
+    and the four store projects.
+- **Round 3 of the review (2026-10-02, D92-D94)**: open issues are files in
+  `docs/issues/` (I1-I21, Reference > Issues); every gate shows the claim it
+  proves (Reference > Claims; P is for proof); the glossary starts each
+  definition with a plain sentence, and the first use of a term on a page
+  links to it with a preview. The human is still reviewing the docs.
+- **For the human to decide**: the open issues, each with its options in
+  its file (Reference > Issues on the docs site):
+  - I1 the `node-forge` advisory that fails `audit` (no fix released): ignore
+    it with a reason, or stay red. `verify all` is red on this alone.
+  - I2 accepting the log-store guide (D63: P04 and P05 on that commit).
+  - I3 the API reference for Effect services (D61).
+  - I4 the `effect-solutions` peer warning, I5 the suite catalogue, I6
+    posting the two upstream drafts.
+  - I21 the glossary reader test.
+  - I22 the overlap in Claims and evidence (Claims page, evidence index and
+    one note per gate): a short design review on how to present each level
+    of detail before changing it.
+- **Gates**: none ran in this step. Every gate is stale since the Evidence
+  ownership commit's run (expected; the Schedule closes them in batches).
+
+## Before this step (2026-10-01, morning)
 
 - **The Evidence ownership step is built** (D70, D71, D75-D80; spec and build
-  record in [evidence-ownership/spec.md](evidence-ownership/spec.md)).
-  `pnpm verify all` is green with 16 steps. What is new:
-  - Every production file has one **file treatment** in
-    `tools/verify/src/evidence-registry.ts` (226 files); `ownership` fails an
-    unclassified, stale or mis-shaped entry. `metadata.evidenceOwner` is gone.
-  - **Suites ship with their contract** (D80): `@viviefs/datom/suites`,
-    `@viviefs/workflow-engine/suites`, `@viviefs/telemetry/suites`,
-    `@viviefs/identity/suites`; `libs/testing` holds only helpers, the suite
-    catalogue and the one Vitest config shape. The engine runs its own suites
-    on sqlite-node and PGlite, with the memory-engine positive control.
-  - `unit`, `integration` and `storybook` are **one root Vitest run each**
-    with Istanbul coverage; `evidence` in `quality` judges the run against
-    `evidence-baseline.json`, written only by `pnpm verify baseline`.
-  - **Schema at every boundary** is a lint rule (D79); SQL rows decode
-    through `rowsOf` in `libs/datom`.
-  - Terms in `GLOSSARY.md`: file treatment, suite, verify step, gate step,
-    coverage producer, verdict, owning producer, registry, evidence lockfile.
+  record in [evidence-ownership/spec.md](evidence-ownership/spec.md)). Every
+  production file has one file treatment in
+  `tools/verify/src/evidence-registry.ts`; suites ship with their contract
+  (D80); `unit`, `integration` and `storybook` are one root Vitest run each
+  with Istanbul coverage, judged by `evidence` against
+  `evidence-baseline.json`; Schema at every boundary is a lint rule (D79).
 - **Closed**: P01-P11 passed in one sequential run on `9716b875d`, run
-  `2026-10-01T05-58-55.362Z-02076418`, clean tree, about 30 minutes. P07's visible notification
-  tap still misses on both platforms and the relaunch fallback completes the
-  deferred (open item, unchanged).
-- **For the human to confirm**: the suite catalogue as the one declaration
-  place (build record); `effect-solutions` 0.5.3, the newest, pins `effect`
-  4.0.0-beta.59 and leaves an unmet peer warning on install (dev-only CLI,
-  upstream).
+  `2026-10-01T05-58-55.362Z-02076418`. P07's visible notification tap still
+  misses on both platforms and the relaunch fallback completes the deferred
+  (open item, unchanged).
 
 ## Before 2026-10-01
 
@@ -111,22 +151,25 @@
 | UI on every platform | One React Native component tree; stories in Chromium (`verify`) and on the simulators (P12); Storybook 11 alpha pinned (D72) |
 | Links and routing | New pattern and gate P13, with the first Playwright journey and Lighthouse budgets (D73) |
 | Order and gates | Schedule below; P12 and P13 new, quarantine, encrypted store, crypto-shredding and browser leader move to P14-P17 (D74) |
+| Log-store guide | A lesson is one page paired with an exercise section; patterns build on each other; ADR-0011 on the log-store guide; `metadata.guides` a list; four lessons, five exercises, `pnpm exercise`; named, linked gate and ADR references (D81-D86); references, names, previews and the exercise verdict on every page (D87-D91) |
 
 ## Next steps (the Schedule, Docs and teaching part)
 
-1. **Docs skeleton**: done 2026-09-30 (above).
-2. **Evidence ownership** (D70, D71, D75-D80): done 2026-10-01 (above).
-3. **Log-store guide**, which settles the template and what a lesson is.
-   `teach`'s pedagogy (retrieval practice, one tangible win per lesson, a
-   primary source per lesson) is input; its workspace layout is not.
+1. **Docs skeleton**: done 2026-09-30.
+2. **Evidence ownership** (D70, D71, D75-D80): done 2026-10-01.
+3. **Log-store guide** (D62-D67, D81-D91): built 2026-10-01 as a draft;
+   accepted when the human accepts it (above).
 4. **App shell**: one grilling for P12 and P13, then both gates, then one
    sequential run.
-5. **Durable workflow guide**, then **identity guide**, then the rest.
+5. **Changesets guide** (it owns read models now, D82), **durable workflow
+   guide**, then **identity guide**, then the rest. The durable workflow track
+   brings the `exercise` generator (D66).
 
 ## Working notes
 
 - Run Node through mise: `mise exec -- pnpm verify`; `mise exec -- pnpm
   qualify --through P11` for a sequential run on a committed tree.
+- Measured 2026-10-01 afternoon: `exercises` 3 s, `guides` under 1 s; the docs build 4 s.
 - Measured 2026-10-01 with coverage: `unit` 9 s, `integration` 14 s,
   `storybook` 2 s, `evidence` under 1 s; `pnpm verify baseline` about 2.5
   minutes (three producer runs and the bundles).

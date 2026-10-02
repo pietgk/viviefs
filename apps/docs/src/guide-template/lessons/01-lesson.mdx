@@ -1,0 +1,54 @@
+---
+# Template only: how the published template is routed. Guides have no slug.
+slug: reference/guide-template/lessons/01-lesson
+title: A lesson
+description: One key idea, ending in its exercise section (D81).
+lesson: 1
+evidence: []
+source:
+  title: The decision that defines a lesson (D81)
+  href: https://github.com/pietgk/viviefs/blob/main/docs/plan/bootstrap/02-decision-log.md
+---
+
+import ReadNext from '../../components/ReadNext.astro'
+
+A lesson is one page in `lessons/NN-name.mdx` that teaches one idea and ends
+in exercise section `NN` (D81). Keep it short enough to hold in working
+memory. Frontmatter: `lesson` is `NN` as a number, `evidence` lists the
+evidence notes it cites (at least one, under `docs/evidence/`), `source` is
+its one primary source.
+
+## Recall first
+
+Two or three questions on the lesson before, or on the concepts this one
+needs. Fold each answer in a `<details>` block, so the reader tries first.
+
+## The idea
+
+The one idea, step by step, with the exemplar's own code embedded by region.
+
+## What the gate showed
+
+The claim, the gate that established it and its evidence note. This page
+explains; the gate proves.
+
+## Your turn
+
+What exercise `NN.MM` asks, in one or two sentences, and what passing means.
+Then the same three steps in every lesson (D91):
+
+1. Run it: `pnpm exercise <pattern> NN.MM`. The first run is red on purpose:
+   `problem/` runs, but does not yet do what this lesson teaches, and the
+   verdict says what is missing.
+2. Edit the `problem/` file, named as a path, and run it again until the
+   verdict says done.
+3. Compare with the `solution/` file, then answer the questions below.
+
+## Check yourself
+
+Two or three questions, answers folded, each answer about as long as the
+others so their shape gives nothing away.
+
+## Read next
+
+<ReadNext source={frontmatter.source} />

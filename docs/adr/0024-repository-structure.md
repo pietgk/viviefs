@@ -1,5 +1,7 @@
 # ADR-0024: Repository structure
 
+Summary: Four project kinds (apps, features, libs, tools), three tag dimensions, boundaries enforced by lint.
+
 Status: Qualified (boundaries, ownership, lint scope). Generators unverified
 
 Date: 2026-09-20. Amended 2026-09-30 (Evidence ownership design review): where

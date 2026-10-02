@@ -5,6 +5,7 @@ import * as SqliteClient from '@effect/sql-sqlite-node/SqliteClient'
 import { cryptoEntropy, deviceLayer, logStoreLayer } from '@viviefs/datom'
 import * as Layer from 'effect/Layer'
 
+// #region log-store
 export const sqliteNodeLayer = (filename: string) =>
   SqliteClient.layer({ filename })
 
@@ -17,3 +18,4 @@ export const sqliteNodeLogStore = (options: {
     Layer.provide(cryptoEntropy),
     Layer.provide(deviceLayer(options.deviceId)),
   )
+// #endregion log-store

@@ -1,5 +1,7 @@
 # ADR-0009: Per-attribute conflict policies
 
+Summary: Each attribute declares how concurrent writes resolve: last writer wins, write-once fenced, or a human decides.
+
 Status: Qualified
 
 Date: 2026-09-20

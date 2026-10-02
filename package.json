@@ -18,6 +18,7 @@
     "sync": "nx sync",
     "verify": "node --experimental-strip-types tools/verify/src/verify.ts",
     "verify:help": "node --experimental-strip-types tools/verify/src/verify.ts help",
+    "exercise": "sh -c 'VIVIEFS_EXERCISE=problem NODE_OPTIONS=--disable-warning=ExperimentalWarning exec vitest run --config \"exercises/$0/vitest.config.ts\" \"$1-\"'",
     "qualify": "node --experimental-strip-types tools/qualification/src/cli.ts qualify",
     "ledger": "node --experimental-strip-types tools/qualification/src/cli.ts ledger"
   },

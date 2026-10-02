@@ -1,3 +1,8 @@
+/**
+ * @viviefs/datom: datoms, the hybrid logical clock and the shared `LogStore`.
+ *
+ * Guide: apps/docs/src/content/docs/guides/log-store/index.mdx
+ */
 export {
   APPEND_VOLUME,
   FUTURE_SKEW_MS,

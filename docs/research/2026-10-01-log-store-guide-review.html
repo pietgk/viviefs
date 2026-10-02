@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log-store guide: patterns, guides and the first track (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(img, svg, video, canvas, iframe) { max-width: 100%; height: auto; }
+  body { font-size: 16px; line-height: 1.6; }
+  .lg-section { scroll-margin-top: 1rem; }
+  .lg-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .lg-mermaid svg { margin: 0 auto; }
+  code.lg-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.lg-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; line-height: 1.5; background: var(--color-base-300); border-radius: 0.75rem; padding: 0.9rem 1rem; overflow-x: auto; white-space: pre; }
+  .lg-file { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; opacity: 0.75; }
+  td.lg-nowrap, th.lg-nowrap { white-space: nowrap; overflow-wrap: normal; }
+  .lg-table-wrap { overflow-x: auto; }
+  .lg-option { border-top-width: 4px; }
+  .lg-rec { border-color: var(--color-success); }
+  .lg-own-ls { background: color-mix(in oklab, var(--color-primary) 18%, transparent); }
+  .lg-own-cs { background: color-mix(in oklab, var(--color-secondary) 18%, transparent); }
+  .lg-yes { color: var(--color-success); font-weight: 600; }
+  .lg-no { opacity: 0.6; }
+  .lg-fail { color: var(--color-error); }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Docs and teaching - Log-store guide</span>
+    <span class="badge badge-outline">2026-10-01</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Patterns, guides and the first track</h1>
+  <p class="text-lg opacity-80">You picked "read models out too" and asked for a picture before deciding: what is a pattern and what is only a concept inside one, how guides map onto patterns without repeating each other, what <code class="lg-inline">metadata.guides</code> looks like on real projects, and how the log-store track fits together. Spec: <code class="lg-inline">docs/plan/log-store-guide/spec.md</code>. Agreed already: a lesson is one MDX page paired with one exercise section.</p>
+</header>
+
+<section class="lg-section space-y-6" id="test">
+  <h2 class="text-2xl font-bold">1. What is a pattern, and what is only a concept</h2>
+  <p>The glossary: a <b>pattern</b> is a reusable solution with one contract and possibly several implementations, delivered on its guide. A <b>suite</b> belongs to exactly one pattern and is named <code class="lg-inline">&lt;pattern&gt;/&lt;aspect&gt;</code>. That gives a test anyone can apply: <i>does it have a contract code depends on, a suite that checks it, and a gate that qualified it?</i> If yes, it is a pattern and gets a guide. If no, it is a concept, and it lives in the guide of the pattern whose contract defines it.</p>
+  <div class="lg-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Candidate</th><th>Contract in code</th><th>Implementations</th><th>Own suite and gate</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr class="lg-own-ls"><td class="lg-nowrap"><b>Log store</b></td><td><code class="lg-inline">LogStore</code> service</td><td>sqlite-node, Postgres, op-sqlite, wasm</td><td class="lg-yes"><code class="lg-inline">log-store/conformance</code>, <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a></td><td><b>Pattern</b></td></tr>
+      <tr class="lg-own-cs"><td class="lg-nowrap"><b>Changesets</b> (and projections)</td><td>commit, abort, basis; <code class="lg-inline">Projector</code> service</td><td>one projector, run on every log store</td><td class="lg-yes"><code class="lg-inline">changesets/conformance</code>, <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a></td><td><b>Pattern</b>, built on the log store</td></tr>
+      <tr><td>Envelope</td><td>a record shape; <code class="lg-inline">LogStore.append(datoms, envelope)</code> stores it</td><td class="lg-no">none</td><td class="lg-no">checked inside <code class="lg-inline">log-store/conformance</code> (append, acceptance time)</td><td>Concept of the <b>log store</b></td></tr>
+      <tr><td>Conflict policy</td><td>a declaration per attribute in the catalogue (LWW, write-once, human)</td><td class="lg-no">three variants of one rule, none to swap</td><td class="lg-no">checked inside <code class="lg-inline">changesets/conformance</code> (basis lww, write-once, human conflict)</td><td>Concept of <b>changesets</b></td></tr>
+      <tr><td>Entity ids, defining attribute</td><td>a naming convention (<code class="lg-inline">ids.ts</code>) and a visibility rule (<code class="lg-inline">visibility.ts</code>)</td><td class="lg-no">none</td><td class="lg-no">checked inside <code class="lg-inline">changesets/conformance</code> (defining attribute lifecycle, prefix-id cascade)</td><td>Concept of <b>changesets</b>; sync, live reads and identity link to it</td></tr>
+      <tr><td>HLC and <code class="lg-inline">tx</code></td><td><code class="lg-inline">mint</code>, <code class="lg-inline">receive</code> on <code class="lg-inline">LogStore</code></td><td class="lg-no">none</td><td class="lg-no">checked inside <code class="lg-inline">log-store/conformance</code> (five HLC checks)</td><td>Concept of the <b>log store</b> (it has its own ADR; an ADR is not a pattern)</td></tr>
+      <tr><td>Read model</td><td>tables the <code class="lg-inline">Projector</code> writes</td><td class="lg-no">none</td><td class="lg-no">checked inside <code class="lg-inline">changesets/conformance</code> (rebuild equals incremental)</td><td>Concept of <b>changesets</b> (your "out too")</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="alert alert-info"><span><b>Patterns do not nest; they build on each other.</b> Nesting would mean a guide inside a guide, and a concept taught twice. Instead each pattern owns its concepts and links to the patterns it builds on. One rule decides every concept: <b>it lives in the guide of the pattern whose contract defines it and whose suite checks it</b>. Every other guide links there.</span></div>
+</section>
+
+<section class="lg-section space-y-6" id="map">
+  <h2 class="text-2xl font-bold">2. The pattern map</h2>
+  <p>The nine patterns in the suite catalogue (<code class="lg-inline">libs/testing/src/suites.ts</code>, D65), with "builds on" edges. The pattern id is also the guide folder, the suite prefix and the value in <code class="lg-inline">metadata.guides</code>, so one name is used everywhere; the guide's title can be longer ("Changesets and projections"). Edges are my reading of the ADRs; dashed ones are for that pattern's own design review to confirm.</p>
+  <div class="lg-mermaid"><pre class="mermaid">
+flowchart BT
+  ls["log-store<br/>P04 Log store conformance"]
+  cs["changesets<br/>P05 Changesets and projections"]
+  dw["durable-workflow<br/>P06 Workflow engine crash matrix"]
+  dd["device-durability<br/>P07 Device resume E2E"]
+  sy["sync<br/>P09 Sync"]
+  tr["tracing<br/>P03 OTLP and motel, P10 Trace projection"]
+  is["interaction-state<br/>P08 UI three-way prototype"]
+  id["identity<br/>P11 Identity"]
+  lr["links-and-routing<br/>P13 Links and routing"]
+  click ls "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md" _blank
+  click cs "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md" _blank
+  click dw "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p06.md" _blank
+  click dd "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-21-p07.md" _blank
+  click sy "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-22-p09.md" _blank
+  click tr "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-26-p10.md" _blank
+  click is "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-21-p08.md" _blank
+  click id "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-28-p11.md" _blank
+  cs --> ls
+  dw --> cs
+  dd --> dw
+  sy --> cs
+  tr --> dw
+  tr --> ls
+  is --> cs
+  id -.-> sy
+  lr -.-> is
+  classDef first fill:#3b82f6,color:#fff,stroke:#1e3a8a
+  classDef next fill:#a855f7,color:#fff,stroke:#581c87
+  class ls first
+  class cs next
+</pre></div>
+  <p class="text-sm opacity-80">Arrow: "builds on". A guide links to what it builds on and never re-explains it. Three more guides are not patterns (D65): Working in ViViEfs, Verify - Qualify - Teach, Stack baseline.</p>
+</section>
+
+<section class="lg-section space-y-6" id="split">
+  <h2 class="text-2xl font-bold">3. The split between the first two guides</h2>
+  <p>With read models out, every row below follows from the rule in section 1. Blue is taught in the log-store guide, purple in the changesets guide. "Mentions" means one sentence and a link, never a second explanation.</p>
+  <div class="lg-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Concept</th><th>Defined in</th><th>Checked by</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr class="lg-own-ls"><td>Datom</td><td class="lg-file">schema.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>: append, duplicate append</td><td>log-store</td></tr>
+      <tr class="lg-own-ls"><td>HLC and <code class="lg-inline">tx</code></td><td class="lg-file">hlc.ts, log-store.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>: hlc mint, backwards clock, reboot, remote-ahead, future skew</td><td>log-store</td></tr>
+      <tr class="lg-own-ls"><td>Envelope, acceptance time</td><td class="lg-file">schema.ts, log-store.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>: append, acceptance time</td><td>log-store</td></tr>
+      <tr class="lg-own-ls"><td>Log position, acknowledged cursor, compaction horizon, <code class="lg-inline">heldBy</code></td><td class="lg-file">log-store.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>: cursor streaming, compaction horizon</td><td>log-store</td></tr>
+      <tr class="lg-own-ls"><td>Prefix scans</td><td class="lg-file">log-store.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>: prefix scans</td><td>log-store (the id convention itself: changesets)</td></tr>
+      <tr class="lg-own-ls"><td>The three kinds of tables (log, read models, replica state)</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/adr/0006-one-datom-log.md">ADR-0006 One datom log</a></td><td>the rule decides where a fact goes</td><td>log-store; mentions read models</td></tr>
+      <tr class="lg-own-ls"><td>Log store implementation</td><td class="lg-file">store-* layer.ts</td><td><code class="lg-inline">log-store/conformance</code> on each store</td><td>log-store</td></tr>
+      <tr class="lg-own-cs"><td>Changeset, commit datom, manifest, abort, expiry, basis</td><td class="lg-file">manifest.ts, projector.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a>: incomplete changeset, commit ordering, cs equals tx, abort, expiry</td><td>changesets; mentions <code class="lg-inline">cs</code> on the datom</td></tr>
+      <tr class="lg-own-cs"><td>Conflict policy, conflict datom</td><td class="lg-file">catalog.ts, manifest.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a>: basis lww, write-once, human conflict, orphan conflict</td><td>changesets</td></tr>
+      <tr class="lg-own-cs"><td>Entity id, defining attribute, prefix composition</td><td class="lg-file">ids.ts, visibility.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a>: defining attribute lifecycle, prefix-id cascade</td><td>changesets</td></tr>
+      <tr class="lg-own-cs"><td>Read model, projector, Reactivity keys, draft view</td><td class="lg-file">projector.ts, read-models.ts, keys.ts</td><td><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a>: rebuild equals incremental, reactivity keys, draft view</td><td>changesets</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3 class="text-xl font-semibold">One consequence to decide: ADR-0011</h3>
+  <p><a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/adr/0011-log-store-pattern.md">ADR-0011 Log store pattern</a> (full title "Log store pattern, read models, compaction and analytics"). Its main design (several stores, one suite, compaction, analytics as a projection) is the log store, proven by <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>. One sentence of it is read models: "disposable, rebuilt from the log, never migrated", proven by <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a>.</p>
+  <div class="grid lg:grid-cols-3 gap-4">
+    <div class="card bg-base-200 lg-option lg-rec"><div class="card-body p-5 block space-y-2">
+      <h4 class="card-title text-lg">A. ADR-0011 on the log-store guide (recommended, your pick)</h4>
+      <p class="text-sm">The guide states the rule as the log store's promise ("you may drop any read model") and links to the changesets guide for how they are rebuilt. Because ADR-0011 cites two gates, the guide names both, <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a> and <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a>, and both run before it is accepted.</p>
+      <p class="text-sm"><b>Cost:</b> P05 Changesets and projections runs at acceptance for one sentence. Every ADR is named by exactly one guide, which <code class="lg-inline">guides</code> can check.</p>
+    </div></div>
+    <div class="card bg-base-200 lg-option"><div class="card-body p-5 block space-y-2">
+      <h4 class="card-title text-lg">B. ADR-0011 on the changesets guide</h4>
+      <p class="text-sm">The log-store guide names <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/adr/0006-one-datom-log.md">ADR-0006 One datom log</a> and <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/adr/0007-hybrid-logical-clock.md">ADR-0007 Hybrid logical clock</a>, and only <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>.</p>
+      <p class="text-sm"><b>Cost:</b> the ADR titled "Log store pattern" is accepted on a guide that does not teach the log store, and the log-store guide cannot cite its own pattern ADR as the why.</p>
+    </div></div>
+    <div class="card bg-base-200 lg-option"><div class="card-body p-5 block space-y-2">
+      <h4 class="card-title text-lg">C. ADR-0011 on both guides</h4>
+      <p class="text-sm">Each guide names it; it is Accepted when the first is.</p>
+      <p class="text-sm"><b>Cost:</b> an ADR accepted on material that does not exist yet, and D63's "accepted guide's ADRs are all Accepted" means less.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="lg-section space-y-6" id="guides">
+  <h2 class="text-2xl font-bold">4. <code class="lg-inline">metadata.guides</code>, on the real projects</h2>
+  <p>The exemplar of a pattern is the smallest real code showing it end to end. For the log store that is <code class="lg-inline">libs/datom</code> (the <code class="lg-inline">LogStore</code> itself) and the four store projects (its implementations). For changesets it is <code class="lg-inline">libs/datom</code> again: <code class="lg-inline">projector.ts</code>, <code class="lg-inline">manifest.ts</code>, <code class="lg-inline">visibility.ts</code>. So one project is the exemplar of two patterns. The stores are not exemplars of changesets: they only run its suite.</p>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <p class="lg-file">libs/datom/project.json, after this step</p>
+<pre class="lg-code">"metadata": {
+  "rationale": "pure datom and HLC logic",
+  "guides": ["log-store"]
+}</pre>
+      <p class="lg-file">libs/datom/project.json, after the changesets guide</p>
+<pre class="lg-code">"metadata": {
+  "rationale": "pure datom and HLC logic",
+  "guides": ["log-store", "changesets"]
+}</pre>
+      <p class="lg-file">libs/store-postgres/project.json</p>
+<pre class="lg-code">"metadata": {
+  "rationale": "log store on Postgres",
+  "guides": ["log-store"]
+}</pre>
+    </div>
+    <div class="space-y-2">
+      <p class="lg-file">guides/log-store/index.mdx (frontmatter)</p>
+<pre class="lg-code">---
+title: Log store
+pattern: log-store
+adrs: [0006, 0007, 0011]
+gates: [P04, P05]
+exemplar:
+  - libs/datom
+  - libs/store-sqlite-node
+  - libs/store-postgres
+  - libs/store-sqlite-native
+  - libs/store-sqlite-wasm
+exercises: exercises/log-store
+status: draft
+---</pre>
+      <p class="lg-file">libs/datom/README.md and the TSDoc of src/index.ts</p>
+<pre class="lg-code">Guides: [Log store](../../apps/docs/src/content/docs/guides/log-store/index.mdx)
+
+/**
+ * @packageDocumentation
+ * Guide: apps/docs/src/content/docs/guides/log-store/index.mdx
+ */</pre>
+    </div>
+  </div>
+  <h3 class="text-xl font-semibold">What <code class="lg-inline">guides</code> says when a link is broken, both ways</h3>
+<pre class="lg-code"><span class="lg-fail">guides/log-store: exemplar libs/store-postgres does not list "log-store" in metadata.guides</span>
+<span class="lg-fail">libs/datom: metadata.guides names "changesets", which has no guide</span>
+<span class="lg-fail">libs/store-postgres/README.md: no link to guides/log-store</span>
+<span class="lg-fail">libs/datom/src/index.ts: TSDoc does not name guides/log-store</span></pre>
+  <h3 class="text-xl font-semibold">The alternatives, on the same example</h3>
+  <div class="grid lg:grid-cols-3 gap-4">
+    <div class="card bg-base-200 lg-option lg-rec"><div class="card-body p-5 block space-y-2">
+      <h4 class="card-title text-lg">List (your pick)</h4>
+      <p class="text-sm">Works as shown. The changesets guide adds its name to <code class="lg-inline">libs/datom</code> in the commit that creates it, and the check holds both ways.</p>
+    </div></div>
+    <div class="card bg-base-200 lg-option"><div class="card-body p-5 block space-y-2">
+      <h4 class="card-title text-lg">One string</h4>
+      <p class="text-sm"><code class="lg-inline">libs/datom</code> says <code class="lg-inline">"log-store"</code>. The changesets guide must then leave out the project its projector lives in, or fail <span class="lg-fail">"exemplar libs/datom does not point back"</span>. The guide's main exemplar would be unlinked.</p>
+    </div></div>
+    <div class="card bg-base-200 lg-option"><div class="card-body p-5 block space-y-2">
+      <h4 class="card-title text-lg">Split <code class="lg-inline">libs/datom</code></h4>
+      <p class="text-sm">A <code class="lg-inline">libs/projection</code> would make core projects one-to-one with patterns. It moves code every gate from P04 to P11 depends on, so all of them re-run, and it is a code-structure decision, not a docs one. The list does not rule it out later.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="lg-section space-y-6" id="track">
+  <h2 class="text-2xl font-bold">5. The log-store track</h2>
+  <p>Each lesson teaches one idea and ends in its exercise section; the learner's win is a red test turning green. Lessons cite the gate that proved the claim and embed the exemplar's own code. With read models out, every lesson cites <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a>; none needs P05.</p>
+  <div class="lg-mermaid"><pre class="mermaid">
+flowchart LR
+  subgraph G["guides/log-store"]
+    C["concepts"]
+    L1["01 A datom is one fact"]
+    L2["02 Time without a trusted clock"]
+    L3["03 Who holds the log"]
+    L4["04 One contract, many stores"]
+  end
+  subgraph X["exercises/log-store"]
+    E11["01.01 append and stream"]
+    E21["02.01 mintHlc"]
+    E22["02.02 receiveHlc"]
+    E31["03.01 compaction horizon"]
+    E41["04.01 a new store Layer"]
+  end
+  subgraph EV["evidence"]
+    P04["P04 Log store conformance"]
+  end
+  click P04 "https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md" _blank
+  L1 --> E11
+  L2 --> E21
+  L2 --> E22
+  L3 --> E31
+  L4 --> E41
+  L1 -.-> P04
+  L2 -.-> P04
+  L3 -.-> P04
+  L4 -.-> P04
+  C --> L1
+</pre></div>
+  <div class="lg-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Lesson</th><th>The idea</th><th>Exercise: what the learner writes</th><th>The test that is red until they do</th><th>Exemplar code embedded</th></tr></thead>
+    <tbody>
+      <tr><td class="lg-nowrap">01 A datom is one fact</td><td>Append-only; <code class="lg-inline">tx</code> is identity; three kinds of tables</td><td>01.01: append a batch through a real sqlite-node <code class="lg-inline">LogStore</code>, stream it from cursor 0, append it again</td><td>second append reports <code class="lg-inline">{ inserted: 0, duplicates: n }</code></td><td class="lg-file">schema.ts #datom, log-store.ts #append</td></tr>
+      <tr><td class="lg-nowrap">02 Time without a trusted clock</td><td>Mint and receive; backwards clock, reboot, remote ahead, future skew</td><td>02.01: <code class="lg-inline">mintHlc</code>. 02.02: <code class="lg-inline">receiveHlc</code></td><td>a backwards wall clock still mints a larger <code class="lg-inline">(pt, c)</code>; 5001 ms ahead is <code class="lg-inline">future_skew</code></td><td class="lg-file">hlc.ts #mint, #receive</td></tr>
+      <tr><td class="lg-nowrap">03 Who holds the log</td><td>Acknowledged cursors set the horizon; <code class="lg-inline">heldBy</code> names who is behind</td><td>03.01: acknowledge two consumers, compact, then advance the slow one</td><td>compaction removes nothing past the slow consumer, and <code class="lg-inline">heldBy</code> names it</td><td class="lg-file">log-store.ts #compact</td></tr>
+      <tr><td class="lg-nowrap">04 One contract, many stores</td><td>A store is a <code class="lg-inline">SqlClient</code> Layer plus the shared log store</td><td>04.01: wire an in-memory sqlite-node log store Layer</td><td><code class="lg-inline">log-store/conformance</code> passes all 12 checks</td><td class="lg-file">store-sqlite-node layer.ts</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3 class="text-xl font-semibold">Two loops over the same test</h3>
+  <div class="lg-mermaid"><pre class="mermaid">
+flowchart TB
+  T["NN.MM/exercise.test.ts<br/>one check function"]
+  subgraph LEARN["Learner: pnpm exercise log-store 02.01"]
+    PR1["check(problem)"] --> R1{"passes?"}
+    R1 -- "no: the assertion says what is missing" --> EDIT["edit problem/"]
+    EDIT --> PR1
+    R1 -- "yes" --> WIN["done: next lesson"]
+  end
+  subgraph VER["verify, unit producer"]
+    S["check(solution) must pass"]
+    P["check(problem) must fail with the expected assertion"]
+  end
+  T --> PR1
+  T --> S
+  T --> P
+</pre></div>
+</section>
+
+<section class="lg-section space-y-6" id="refs">
+  <h2 class="text-2xl font-bold">6. Every gate and ADR reference reads as its name and is a link</h2>
+  <p>From your comment on section 3: a bare "P04" or "0011" makes a reader stop and look it up. On this page every reference now reads as its id and its name, and links to its evidence note or ADR (the nodes in the diagrams too). Proposed as a rule of the guide template, so it holds in every guide without anyone remembering it:</p>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <p class="lg-file">In a guide page (MDX)</p>
+<pre class="lg-code">Both run before acceptance: &lt;Gate id="P04" /&gt;
+and &lt;Gate id="P05" /&gt;. The why is &lt;Adr id="0011" /&gt;.</pre>
+      <p class="lg-file">Renders as</p>
+      <p class="text-sm">Both run before acceptance: <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p04.md">P04 Log store conformance</a> and <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/evidence/2026-09-20-p05.md">P05 Changesets and projections</a>. The why is <a class="link link-hover text-primary" href="https://github.com/pietgk/viviefs/blob/main/docs/adr/0011-log-store-pattern.md">ADR-0011 Log store pattern</a>.</p>
+    </div>
+    <div class="space-y-2">
+      <p class="lg-file">Rules</p>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <li><code class="lg-inline">&lt;Gate&gt;</code> links to the gate's newest evidence note, <code class="lg-inline">&lt;Adr&gt;</code> to the ADR page; an unknown id fails the site build, like a missing sample region does.</li>
+        <li>Gate names get one home in code: a <code class="lg-inline">name</code> field in <code class="lg-inline">tools/qualification/src/gates.ts</code> (today the names exist only in the table in <code class="lg-inline">06-qualification-gates.md</code>), and the Status block uses the same component.</li>
+        <li>The <code class="lg-inline">guides</code> check refuses a bare <code class="lg-inline">P\d\d</code> or <code class="lg-inline">ADR-\d{4}</code> in a guide's prose; frontmatter stays ids, because it is data.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="lg-section space-y-6" id="decide">
+  <h2 class="text-2xl font-bold">7. To confirm</h2>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <form class="card bg-base-200" data-lavish-question="concept-rule" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('concept-rule'); const notes = (d.get('concept-rule-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('Concept rule and split: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'Concept rule: ' + choice, element: event.currentTarget, queueKey: 'concept-rule', data: { question: 'concept-rule', answer: choice, notes } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">a. The rule and the split (sections 1-3)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="concept-rule" value="agree: patterns build on each other, a concept lives with the pattern whose contract defines and suite checks it, split as in section 3"> <span>Agree: the rule, no nesting, the split in section 3</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="concept-rule" value="change: see notes"> <span>Change something (notes)</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="concept-rule-notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+    <form class="card bg-base-200" data-lavish-question="adr-0011" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('adr-0011'); const notes = (d.get('adr-0011-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('ADR-0011: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'ADR-0011: ' + choice, element: event.currentTarget, queueKey: 'adr-0011', data: { question: 'adr-0011', answer: choice, notes } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">b. ADR-0011 (section 3)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="adr-0011" value="A, on the log-store guide, gates P04 and P05; every ADR on exactly one guide"> <span>A: log-store guide, P04 and P05</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="adr-0011" value="B, on the changesets guide; log-store guide is 0006 and 0007 on P04"> <span>B: changesets guide</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="adr-0011" value="C, on both guides"> <span>C: both guides</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="adr-0011-notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+    <form class="card bg-base-200" data-lavish-question="guides-list" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('guides-list'); const notes = (d.get('guides-list-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('metadata.guides: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'metadata.guides: ' + choice, element: event.currentTarget, queueKey: 'guides-list', data: { question: 'guides-list', answer: choice, notes } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">c. <code class="lg-inline">metadata.guides</code> after the example (section 4)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="guides-list" value="confirmed: a list, D67 amended"> <span>Confirmed: a list (D67 amended)</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="guides-list" value="reconsider: see notes"> <span>Reconsider (notes)</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="guides-list-notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+    <form class="card bg-base-200" data-lavish-question="track" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('track'); const notes = (d.get('track-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('Track: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'Track: ' + choice, element: event.currentTarget, queueKey: 'track', data: { question: 'track', answer: choice, notes } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">d. The track (section 5)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="track" value="confirmed: four lessons, five exercises, pnpm exercise"> <span>Confirmed as shown</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="track" value="change: see notes"> <span>Change something (notes)</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="track-notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+  </div>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <form class="card bg-base-200" data-lavish-question="refs" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const choice = d.get('refs'); const notes = (d.get('refs-notes') || '').toString().trim(); if (!choice) return; window.lavish.queuePrompt('Gate and ADR references: ' + choice + (notes ? '. Notes: ' + notes : ''), { tag: 'choice', text: 'References: ' + choice, element: event.currentTarget, queueKey: 'refs', data: { question: 'refs', answer: choice, notes } });">
+      <div class="card-body p-5 block space-y-3">
+        <h3 class="card-title text-lg">e. Named, linked references (section 6)</h3>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="refs" value="agree: Gate and Adr components, names in gates.ts, the guides check refuses bare ids in prose"> <span>Agree: components, names in <code class="lg-inline">gates.ts</code>, bare ids refused</span></label>
+        <label class="flex gap-2 items-start"><input class="radio radio-sm mt-1" type="radio" name="refs" value="change: see notes"> <span>Change something (notes)</span></label>
+        <textarea class="textarea textarea-bordered w-full" name="refs-notes" placeholder="Notes"></textarea>
+        <button class="btn btn-primary btn-sm" type="submit">Queue this answer</button>
+      </div>
+    </form>
+  </div>
+  <p class="text-sm opacity-80">Queue the answers, then Send to Agent. Comments on any row or diagram are welcome too.</p>
+</section>
+
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const paint = document.createElement("canvas").getContext("2d");
+  function toRgba(color) {
+    paint.clearRect(0, 0, 1, 1);
+    paint.fillStyle = "#000";
+    paint.fillStyle = color;
+    paint.fillRect(0, 0, 1, 1);
+    return paint.getImageData(0, 0, 1, 1).data;
+  }
+  function compositeRgba(foreground, background) {
+    const fa = foreground[3] / 255;
+    const ba = background[3] / 255;
+    const alpha = fa + ba * (1 - fa);
+    if (alpha === 0) return [0, 0, 0, 0];
+    return [
+      (foreground[0] * fa + background[0] * ba * (1 - fa)) / alpha,
+      (foreground[1] * fa + background[1] * ba * (1 - fa)) / alpha,
+      (foreground[2] * fa + background[2] * ba * (1 - fa)) / alpha,
+      alpha * 255,
+    ];
+  }
+  function pageIsDark() {
+    const root = document.documentElement;
+    const rootBackground = toRgba(getComputedStyle(root).backgroundColor);
+    const bodyBackground = document.body ? toRgba(getComputedStyle(document.body).backgroundColor) : [0, 0, 0, 0];
+    const [r, g, b, a] = compositeRgba(bodyBackground, rootBackground);
+    if (a > 0) return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
+    const colorScheme = getComputedStyle(root).colorScheme;
+    if (colorScheme.includes("dark") && !colorScheme.includes("light")) return true;
+    if (colorScheme.includes("light") && !colorScheme.includes("dark")) return false;
+    return darkQuery.matches;
+  }
+  const diagrams = [...document.querySelectorAll(".mermaid")].map((el) => ({ el, src: el.textContent }));
+  let applied;
+  let rendering = false;
+  let queued = false;
+  function queueRender() {
+    queued = true;
+    if (rendering) return;
+    void render();
+  }
+  async function render() {
+    rendering = true;
+    try {
+      while (queued) {
+        queued = false;
+        const theme = pageIsDark() ? "dark" : "default";
+        if (theme === applied) continue;
+        mermaid.initialize({ startOnLoad: false, theme, securityLevel: "loose" });
+        for (const { el, src } of diagrams) {
+          el.removeAttribute("data-processed");
+          el.textContent = src;
+        }
+        try {
+          await mermaid.run({ nodes: diagrams.map((d) => d.el) });
+        } catch (error) {
+          console.error("Mermaid diagram render failed:", error);
+          return;
+        }
+        applied = theme;
+      }
+    } finally {
+      rendering = false;
+      if (queued) queueRender();
+    }
+  }
+  if (document.readyState === "complete") queueRender();
+  else window.addEventListener("load", queueRender, { once: true });
+  const themeObserver = new MutationObserver(queueRender);
+  for (const el of [document.documentElement, document.body]) {
+    if (!el) continue;
+    themeObserver.observe(el, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+  }
+  document.addEventListener("change", queueRender, true);
+  darkQuery.addEventListener("change", queueRender);
+</script>
+</body>
+</html>

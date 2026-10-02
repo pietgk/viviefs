@@ -1,0 +1,105 @@
+---
+title: A datom is one fact
+description: The log only grows, and tx is a datom's identity, so sending a fact twice stores it once.
+lesson: 1
+evidence:
+  - docs/evidence/2026-09-20-p04.md
+source:
+  title: Datomic, the data model (where datoms come from)
+  href: https://docs.datomic.com/whatis/data-model.html
+---
+
+import ReadNext from '../../../../../components/ReadNext.astro'
+import Sample from '../../../../../components/Sample.astro'
+
+## Recall first
+
+This is the first lesson; the questions are on the
+[concepts](/guides/log-store/concepts/) it builds on. Answer before you open
+them.
+
+<details>
+<summary>What are the six fields of a datom?</summary>
+
+`e`, `a`, `v`, `tx`, `op` and `cs`: entity, attribute, value, transaction id,
+assert or retract, and changeset.
+</details>
+
+<details>
+<summary>Where does a fact go that is neither a read model nor one replica's own state?</summary>
+
+Into the log, as datoms. Domain truth lives only there.
+</details>
+
+## The idea
+
+**A fact is never changed, only added.** A title that changes is a second
+datom asserting the new value; the old one stays, which is what gives every
+replica the same history and the server an audit trail.
+
+<Sample path="libs/datom/src/schema.ts" region="datom" />
+
+**`tx` is the fact's identity.** The store mints it once, when the fact is
+created. The `datoms` table holds each `tx` once, and an append that meets a
+`tx` it already has counts it as a duplicate instead of storing it again.
+
+<Sample path="libs/datom/src/log-store.ts" region="append" />
+
+**So a resend is harmless, if it is the same fact.** Networks fail after the
+server stored a write and before the client heard so; the client sends again.
+That is safe only because the second send carries the same `tx`. A client
+that mints again on retry does not resend a fact: it creates a new one.
+
+**`seq` is only a position.** Each replica numbers its own log; two replicas
+give the same fact different `seq`, never a different `tx`. Readers remember
+positions (`streamFrom(seq)`), facts are compared by `tx`.
+
+## What the gate showed
+
+P04 ran append and duplicate append on sqlite-node, PGlite, the
+iOS simulator, the Android emulator and web: appending a datom whose `tx` was
+already stored was a no-op, while a new `tx` was appended. That pair is the
+gate's positive control, so the check can tell a store that dedups from one
+that does not.
+
+## Your turn
+
+Exercise 01.01: `sendTwice` sends three facts, then sends them again as a
+retry would. Make the second send add nothing, without touching the store.
+
+1. Run it. The first run is red on purpose: `problem/` runs, but does not
+   yet do what this lesson teaches, and the verdict says what is missing.
+
+   ```sh
+   pnpm exercise log-store 01.01
+   ```
+
+2. Edit `exercises/log-store/01.01-append-and-stream/problem/send.ts`, and run it again until the verdict says done.
+3. Compare your code with `exercises/log-store/01.01-append-and-stream/solution/send.ts`, then answer the questions below.
+
+It passes when the first send inserts three, the second reports three
+duplicates, and the log holds each fact once, in order.
+
+## Check yourself
+
+<details>
+<summary>Why does minting a tx inside the retry loop duplicate facts?</summary>
+
+Each attempt gets a new `tx`, so each is a new fact to the store.
+</details>
+
+<details>
+<summary>Two replicas hold one fact. Which field is equal on both?</summary>
+
+Its `tx` is equal; its `seq` is a local position and differs.
+</details>
+
+<details>
+<summary>A title changes twice. How many datoms describe the title now?</summary>
+
+Three datoms: the first assert and one more for each change.
+</details>
+
+## Read next
+
+<ReadNext source={frontmatter.source} />

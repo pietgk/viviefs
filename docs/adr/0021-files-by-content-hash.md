@@ -1,5 +1,7 @@
 # ADR-0021: Files by content hash
 
+Summary: Files are stored and referenced by content hash; a changeset that references a file waits until the file exists on the server.
+
 Status: Qualified
 
 Date: 2026-09-20

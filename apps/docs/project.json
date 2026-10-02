@@ -40,6 +40,16 @@
         "env": { "ASTRO_TELEMETRY_DISABLED": "1" }
       }
     },
+    "preview": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": ["build"],
+      "options": {
+        "command": "pnpm exec astro preview",
+        "cwd": "apps/docs",
+        "env": { "ASTRO_TELEMETRY_DISABLED": "1" }
+      }
+    },
     "serve": {
       "executor": "nx:run-commands",
       "continuous": true,

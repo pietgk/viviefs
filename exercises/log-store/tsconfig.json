@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "../../libs/store-sqlite-node"
+    },
+    {
+      "path": "../../libs/datom"
+    },
+    {
+      "path": "../../libs/testing"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
+}

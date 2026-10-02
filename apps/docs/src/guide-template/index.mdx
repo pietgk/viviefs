@@ -1,0 +1,56 @@
+---
+# Template only: how the published template is routed. Guides have no slug.
+slug: reference/guide-template
+title: Guide template
+description: The one shape every guide follows (D62). Copy this folder to guides/<pattern>/ and fill it in.
+pattern: the pattern id, as in libs/testing/src/suites.ts
+adrs: []
+gates: []
+exemplar: []
+exercises: exercises/the-pattern-id
+status: draft
+---
+
+import GuideStatus from '../components/GuideStatus.astro'
+
+Every guide has the pages, `##` headings and frontmatter keys of this
+template, in this order; `verify`'s `guides` step derives its rules from these
+files, so a change here changes the rule for every guide in the same commit
+(D62). A heading in square brackets, like `## [One heading per concept]`,
+stands for one or more headings of the author's choice. The frontmatter keys
+are D63's: `pattern` is the pattern id, which is also the guide's folder;
+`adrs` are four-digit ids, each named by exactly one guide (D82); `gates` are
+the ADRs' qualifying gates; `exemplar` lists the projects whose
+`metadata.guides` names this guide (D84); `accepted` is added, with the date,
+only in the commit that accepts the guide.
+
+Write a gate, ADR or decision by its id (`P04`, `ADR-0011`, `D37`) and a
+repository path as inline code (`libs/datom`). The site renders each id as its
+name, linked, with a preview on hover, and each path as a link (D87).
+
+## What it is
+
+Two or three sentences: the problem the pattern solves and the shape of its
+answer. Link the ADR that decided it.
+
+## When to use it
+
+The situations that call for the pattern.
+
+## When not to
+
+The situations that look like they do, and what to use instead.
+
+## Status
+
+<GuideStatus data={frontmatter} />
+
+## Reading paths
+
+One short path per use, each a list of pages in order:
+
+- **Discuss**: what to read to talk about the pattern.
+- **Design**: what to read before deciding how to use it.
+- **Implement**: what to read before writing code that uses it.
+- **Review**: what to read before reviewing such code. Always ends with the
+  review page.

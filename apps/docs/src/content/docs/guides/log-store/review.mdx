@@ -1,0 +1,41 @@
+---
+title: Review
+description: What to check in a change that touches the log store; what an agent reads before changing it.
+---
+
+
+## Enforced by a tool
+
+- Rows decode through a row Schema (`rowsOf`), never `sql<T>`, `JSON.parse`
+  or `as unknown as` (lint, D79).
+- `libs/datom` reads time only through `HlcClock` and randomness only through
+  `HlcEntropy`; `Date.now`, `Math.random` and raw `Promise` are refused (lint,
+  D26).
+- Every store that loads in Node runs `log-store/conformance` in `verify`, and
+  a suite that no test runs fails `evidence`.
+- A new file without a file treatment fails `ownership`; a coverage change
+  without a reviewed baseline fails `evidence`.
+- Production code cannot import the suites (lint, D80).
+
+## Needs judgment
+
+- Is it a fact? Then it is a datom in the log, not a new table. Only read
+  models and one replica's own state live outside it (ADR-0006).
+- Does a retry or a replay reuse the original `tx`? Anything that mints on
+  every attempt creates new facts.
+- Does a new consumer of the log acknowledge what it has seen, and only after
+  it has really delivered it?
+- Does anything compact the server's log? It must not (ADR-0011).
+- Does a new store keep its data across a restart? `:memory:` passes most
+  checks and fails `hlc reboot`.
+
+## Common mistakes
+
+| Mistake | How it shows | Fix |
+| --- | --- | --- |
+| Minting a new `tx` on retry | Duplicate facts after a network error; the second append reports inserts, not duplicates | Mint once, resend the same datoms (exercise 01.01) |
+| Comparing `tx` by wall time, or reading the wall clock for ordering | Order flips after a clock jump | Compare `(pt, c)` with `compareHlc`; take time from `HlcClock` |
+| Fractional milliseconds as physical time | Two `tx` share `(pt, c)` and order by random bits (found 2026-09-27, ADR-0007) | `correctedNow` floors; keep it |
+| Acknowledging before delivering | A crash loses facts a sink never got, and compaction removes them | Acknowledge after the batch is delivered (exercise 03.01) |
+| A new store on an in-memory database | `hlc reboot` fails in the suite | Give it a file (exercise 04.01) |
+| A domain table outside the log | A fact with no history, outside sync and the audit trail | Make it datoms; derive a read model if a query needs it |

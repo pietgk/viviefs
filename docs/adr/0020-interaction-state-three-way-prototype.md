@@ -1,5 +1,7 @@
 # ADR-0020: Interaction state: outcome of the three-way prototype
 
+Summary: The three-way prototype chose effect-machine for interaction state (IntentComposer).
+
 Status: Qualified
 
 Date: 2026-09-20

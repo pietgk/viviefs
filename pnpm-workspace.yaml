@@ -4,6 +4,7 @@ packages:
   - libs/*
   - libs/sync/*
   - tools/*
+  - exercises/*
 
 allowBuilds:
   nx: true

@@ -1,0 +1,121 @@
+---
+title: Concepts
+description: Datom, transaction id, envelope, the three kinds of tables, cursors and the compaction horizon.
+---
+
+import Sample from '../../../../components/Sample.astro'
+
+The concepts below are defined by the `LogStore` contract and checked by its
+suite, `log-store/conformance`, so this is their one page (D82). Changesets,
+conflict policies, entity ids and read models are defined by the changesets
+pattern, which builds on this one; they get a sentence here and their own
+page in the changesets guide.
+
+## Datom
+
+A datom is one fact: entity `e`, attribute `a`, value `v`, the transaction id
+`tx` that minted it, `op` (`assert` or `retract`), and `cs`, the changeset it
+belongs to. Each datom is its own transaction, and the log only grows: a fact
+is never updated in place; a later datom asserts or retracts. The why is
+ADR-0006.
+
+<Sample path="libs/datom/src/schema.ts" region="datom" />
+
+`tx` is the datom's identity. The `datoms` table has a unique `tx` and an
+append ignores a datom whose `tx` it already holds, so sending the same datom
+twice is safe. Every datom also gets `seq`, its position in this replica's
+log: positions differ between replicas, `tx` does not.
+
+<Sample path="libs/datom/src/migrate.ts" region="datoms-table" />
+
+Two indexes serve the two ways the log is read: EAVT (everything about an
+entity) and AEVT (every entity with an attribute). `cs` names the changeset;
+when `cs` equals `tx` the datom is a changeset of one, which is what most
+writes are (the changesets guide explains the rest, ADR-0008).
+
+## Transaction id and the hybrid logical clock
+
+`tx` comes from a hybrid logical clock: physical time in milliseconds `pt`,
+corrected by the server's offset, and a counter `c` used only when `pt` would
+not advance. It is encoded as a 26-character, lexicographically sortable id
+that also holds the device's fingerprint and random bits, so two devices never
+mint the same `tx`. The why is ADR-0007.
+
+<Sample path="libs/datom/src/hlc.ts" region="mint" />
+
+Minting never goes below the last value this replica minted or received,
+even when the wall clock jumps back or the device reboots: the last value is
+persisted in `hlc_state`. Receiving a `tx` from elsewhere moves the clock up
+to it, but a `tx` more than 5000 ms ahead of corrected time is refused, so one
+wrong clock cannot drag every later mint into the future.
+
+<Sample path="libs/datom/src/hlc.ts" region="receive" />
+
+## Envelope and acceptance time
+
+The envelope is one fixed-shape record per changeset, keyed by `cs`: who
+(`actor`, `device`), under which lease, with which trace context and command.
+The log store stores it next to the datoms, in the `changesets` table, not as
+datoms. Acceptance time is the server's clock when it accepted the changeset;
+it is set once and never replaced.
+
+<Sample path="libs/datom/src/schema.ts" region="envelope" />
+
+## The three kinds of tables
+
+Domain truth lives only in the log (ADR-0006). Every other SQL table
+is one of three kinds:
+
+| Kind | Examples | Rebuilt from the log? |
+| --- | --- | --- |
+| The log itself | `datoms`, `changesets` (envelopes) | It is the source |
+| Read models | `projected_facts`, `changeset_status` | Yes: disposable, never migrated |
+| Operational state of one replica | `hlc_state`, `device_cursors` | No, and it holds no domain facts |
+
+A fact that fits none of them goes into the log. Read models are the log
+store's promise to everything built on it: any read model may be dropped and
+rebuilt (ADR-0011). How they are built is the changesets guide's.
+
+## Log position and streaming
+
+`streamFrom(cursor, limit)` returns the facts after a log position, in log
+order, at most `limit` of them. Sync, trace export and projections all read
+the log this way, each remembering its own position.
+
+<Sample path="libs/datom/src/log-store.ts" region="stream-from" />
+
+## Prefix scans
+
+Entity ids encode their parent for strict composition (`O{org}/L{list}/I{item}`,
+ADR-0010). `scanPrefix(prefix)` returns every datom of every entity
+under a prefix, which is how a list and everything in it are read at once.
+The id convention itself belongs to the changesets guide.
+
+## Acknowledged cursor and the compaction horizon
+
+A consumer is anything that must see facts before they may go: a device, or a
+trace sink registered as `trace/<sink>`. It records the position it has seen
+with `acknowledge(consumer, cursor)`. The compaction horizon is the lowest
+acknowledged cursor, and `compact()` removes only datoms at or below it, so no
+registered consumer ever misses a fact. When a consumer stays behind,
+`compact()` names it in `heldBy` instead of losing what it has not seen.
+With no consumer registered, the horizon is 0 and nothing is removed.
+
+<Sample path="libs/datom/src/log-store.ts" region="compact" />
+
+Device logs compact; the server's log is never compacted, because it is the
+audit trail (ADR-0011).
+
+## Log store implementation
+
+A log store implementation is a `SqlClient` Layer plus the shared `LogStore`
+Layer, its device id and its source of randomness. The SQL is the same on
+every store; only the migration has a SQLite and a Postgres dialect. An
+implementation is qualified by running `log-store/conformance` against it,
+which is what P04 did on five stores.
+
+<Sample path="libs/store-sqlite-node/src/layer.ts" region="log-store" />
+
+The whole contract is one Effect service:
+
+<Sample path="libs/datom/src/log-store.ts" region="service" />

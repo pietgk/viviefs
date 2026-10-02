@@ -1,5 +1,7 @@
 /**
  * Web SQLite log store: `@effect/sql-sqlite-wasm` with OPFS.
+ *
+ * Guide: apps/docs/src/content/docs/guides/log-store/index.mdx
  */
 export { sqliteWasmOpfsLayer, sqliteWasmLogStore } from './layer.ts'
 export {

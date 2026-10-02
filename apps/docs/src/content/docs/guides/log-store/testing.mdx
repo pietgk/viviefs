@@ -1,0 +1,43 @@
+---
+title: Testing
+description: Which gate established each claim, which verify step keeps each behaviour, and what to add when extending the log store.
+---
+
+
+## Claims and their gates
+
+| Claim | Gate | Where it ran |
+| --- | --- | --- |
+| One `LogStore` over `SqlClient` appends, dedups by `tx`, mints and receives HLC values, streams from a cursor, scans prefixes and holds the compaction horizon, on every store | P04 | sqlite-node, PGlite, the iOS simulator and the Android emulator (op-sqlite), web (wasm with OPFS) |
+| The HLC never mints below history across a backwards wall clock, a reboot and a remote-ahead receive; a `tx` 5001 ms in the future is refused | P04 | the same five stores |
+| Read models rebuilt from the log equal the incrementally projected ones, so they can be dropped | P05 | the same five stores |
+
+The positive control of P04: a duplicate append is a no-op while
+a new `tx` is appended. Since 2026-09-26 the compaction horizon covers trace
+sinks as consumers, and since 2026-09-27 minted time is whole milliseconds
+(both in ADR-0011 and ADR-0007).
+
+## Behaviours and their verify steps
+
+| Behaviour | Checked by | Verify step |
+| --- | --- | --- |
+| The twelve checks of `log-store/conformance`: append, duplicate append, acceptance time, HLC mint, backwards clock, reboot, remote-ahead, future skew, cursor streaming, prefix scans, compaction horizon, volume | `runLogStoreChecks` in `libs/datom/src/suites/log-store.ts`, run by `libs/store-sqlite-node` and `libs/store-postgres` | `integration` |
+| HLC encoding, ordering, mint and receive edge cases, whole-millisecond time | `libs/datom/src/hlc.test.ts` | `unit` |
+| SQL rows decode through a Schema, never a `sql<T>` assertion | the D79 lint rule, and `rowsOf` in `libs/datom/src/rows.ts` | `lint` |
+| `libs/datom` reads no clock and no randomness except through `HlcClock` and `HlcEntropy` | the D26 lint rules | `lint` |
+| Every exemplar file that `unit` or `integration` owns keeps its exact coverage | the registry and `evidence-baseline.json` | `evidence` |
+
+The native and wasm stores need a device or a browser, so `verify` only
+typechecks and lints them; P04 runs the suite there.
+
+## When you extend it
+
+- **A new store**: run `log-store/conformance` and `changesets/conformance`
+  against it (see How-to), classify its files, and re-run P04 and
+  P05.
+- **A new operation on `LogStore`**: add its checks to
+  `runLogStoreChecks` with a positive control, so every store runs them, and
+  re-run P04.
+- **A change to the tables or the clock**: the table and column names are
+  pinned (D44); change them only with a gate re-run on every store, and never
+  rename an attribute (a new attribute and a projector mapping instead).

@@ -2,7 +2,7 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7419687,
+        "hbcBytes": 7419689,
         "jsBytes": 4570881,
         "packages": {
           "(unmapped)": 198014,
@@ -68,10 +68,10 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-01"
+        "recordedAt": "2026-10-02"
       },
       "ios": {
-        "hbcBytes": 5313496,
+        "hbcBytes": 5313497,
         "jsBytes": 2477457,
         "packages": {
           "(unmapped)": 196327,
@@ -130,7 +130,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-01"
+        "recordedAt": "2026-10-02"
       }
     }
   },
@@ -192,6 +192,30 @@
       }
     },
     "unit": {
+      "apps/docs/src/lib/claims.ts": {
+        "branches": "35/45",
+        "functions": "21/21",
+        "lines": "47/47",
+        "statements": "54/54"
+      },
+      "apps/docs/src/lib/guides.ts": {
+        "branches": "14/20",
+        "functions": "10/10",
+        "lines": "33/33",
+        "statements": "34/38"
+      },
+      "apps/docs/src/lib/reference-links.ts": {
+        "branches": "85/95",
+        "functions": "23/23",
+        "lines": "95/95",
+        "statements": "123/127"
+      },
+      "apps/docs/src/lib/references.ts": {
+        "branches": "103/117",
+        "functions": "37/37",
+        "lines": "141/141",
+        "statements": "167/168"
+      },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
         "functions": "7/7",
@@ -205,7 +229,7 @@
         "statements": "11/25"
       },
       "apps/docs/src/lib/repo-pages.ts": {
-        "branches": "24/28",
+        "branches": "32/36",
         "functions": "10/13",
         "lines": "36/38",
         "statements": "37/43"
@@ -600,6 +624,12 @@
         "lines": "27/27",
         "statements": "27/28"
       },
+      "tools/verify/src/guides.ts": {
+        "branches": "164/203",
+        "functions": "63/66",
+        "lines": "240/249",
+        "statements": "284/304"
+      },
       "tools/verify/src/lint-scope.ts": {
         "branches": "18/18",
         "functions": "7/7",
@@ -656,5 +686,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "d558f725a0b8a97199e8b8be1ab479851a80af326176b31b3df726e60c466b35"
+  "registryDigest": "dc220c0c6a977c0a795b9848f3e5046528efab1786ed8a5b26b95b5b63619c39"
 }

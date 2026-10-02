@@ -9,7 +9,8 @@
     "platform:server"
   ],
   "metadata": {
-    "rationale": "log store on node:sqlite"
+    "rationale": "log store on node:sqlite",
+    "guides": ["log-store"]
   },
   "targets": {
     "test-integration": {

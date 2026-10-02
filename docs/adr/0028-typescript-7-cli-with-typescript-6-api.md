@@ -1,5 +1,7 @@
 # ADR-0028: TypeScript 7 CLI with TypeScript 6 API
 
+Summary: tsc is TypeScript 7 for type checking; the typescript package is TypeScript 6 for the tools that need its API.
+
 Status: Qualified
 
 Date: 2026-09-21

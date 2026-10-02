@@ -25,25 +25,36 @@ exercises/<pattern>/
 - One Nx project per track, tagged `kind:tool` (D57).
 - No `explainer/` folder, no `.gitkeep`, no `readme.md` that restates the guide.
 
+Each exercise section `NN` pairs with lesson `NN` of the guide (D81): the lesson
+teaches the idea, the section is its tangible win.
+
 ## The test is the positive control
 
-Each exercise has one test that runs against both folders. The solution must
-pass. The problem must fail, with the assertion the exercise expects. A problem
-that already passes teaches nothing, so write the test first and watch both
-verdicts before moving on.
+Each exercise has one `exercise.test.ts` that runs one check against both
+folders through `exercise()` from `@viviefs/testing/exercise`. The solution
+must pass. The problem must fail, with the assertion the exercise expects
+(`failsWith`). A problem that already passes teaches nothing, so write the test
+first and watch both verdicts before moving on. Learners run the check against
+`problem/` alone with `pnpm exercise <pattern> <NN.MM>`.
+
+The log-store track (`exercises/log-store/`) is the reference: shared setup in
+`track.ts`, one folder per exercise, the track's `vitest.config.ts` from
+`exerciseTrackConfig`.
 
 ## Steps
 
-1. Read the pattern's guide (`concepts`, `how-to`) and its exercise list.
-2. Create the folders for each planned exercise.
+1. Read the pattern's guide (`concepts`, `how-to`, its lessons).
+2. Create the folders for each planned exercise. A new track is an Nx project
+   `exercises/<pattern>` (`kind:tool`, a `test` target) named in the guide's
+   `exercises` frontmatter.
 3. Write the test, then the solution until it passes, then cut the solution
    back to the problem stub until the test fails with the expected assertion.
-4. Run `pnpm verify`.
+4. Run `pnpm verify`. Its `guides` step checks the layout, the numbering and
+   the pairing with lessons.
 
 To renumber, `git mv` the folder so history follows it, then run `pnpm verify`.
 
 ## Not built yet
 
-The layout check in `verify` comes with the log-store track, and the `exercise`
-generator in `@viviefs/generators` with the durable workflow track (D66). When
-either lands, replace the matching step above with it.
+The `exercise` generator in `@viviefs/generators` comes with the durable
+workflow track (D66). When it lands, replace step 2 with it.

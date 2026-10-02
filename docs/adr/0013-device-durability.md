@@ -1,5 +1,7 @@
 # ADR-0013: Device durability
 
+Summary: On a device, durable means resume on the next launch, woken by local notifications.
+
 Status: Qualified (P07 native resume). P17 (browser leader) unverified
 
 Date: 2026-09-20

@@ -1,0 +1,18 @@
+{
+  "name": "@viviefs/exercises-log-store",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@viviefs/datom": "workspace:*",
+    "@viviefs/store-sqlite-node": "workspace:*",
+    "@viviefs/testing": "workspace:*",
+    "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-rc.116",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}

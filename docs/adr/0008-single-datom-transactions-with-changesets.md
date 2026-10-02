@@ -1,5 +1,7 @@
 # ADR-0008: Single-datom transactions with changesets
 
+Summary: Each datom is its own transaction; changesets make several datoms visible at once with a commit datom.
+
 Status: Qualified
 
 Date: 2026-09-20

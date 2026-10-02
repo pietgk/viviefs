@@ -1,5 +1,7 @@
 # ADR-0004: Expo SDK 58 and Hermes platform baseline
 
+Summary: Expo SDK 58 on React Native 0.88 and Hermes from day one, pinned, with the polyfills the platform needs.
+
 Status: Qualified
 
 Date: 2026-09-20
@@ -32,7 +34,7 @@ iOS, Android and web are first-class. P01 fails if the Android emulator fails.
 ## Trade-offs
 
 SDK 58 is beta. Pinning it avoids a migration from 56/57 for nothing. The cost
-is instability until stable lands. Skipping Android to make iOS green is
+is instability until stable lands. Skipping Android to make iOS pass is
 forbidden.
 
 ## Failure-handling

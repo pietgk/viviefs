@@ -52,6 +52,8 @@ decision alone (ADR 0026, amended 2026-09-29).
   renumber existing records.
 - Start with the [template](template.md). This template and these conventions are
   authoritative. They override any ADR format supplied by an installed agent skill.
+- Give every ADR a one-line `Summary:` under its title (D88): the site shows it
+  when a reference to the ADR is hovered, and the build fails without it.
 - Record expected vs observed outcome separately. Observed stays empty until
   evidence exists. Never mark a gate passed from prose.
 - Use statuses Proposed (unverified), Qualified, Accepted, Rejected,

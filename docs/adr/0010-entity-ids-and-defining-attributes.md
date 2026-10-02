@@ -1,5 +1,7 @@
 # ADR-0010: Entity ids, defining attributes and strict-composition prefixes
 
+Summary: Entity ids encode their parent only for strict composition; a defining attribute makes an entity exist.
+
 Status: Qualified
 
 Date: 2026-09-20

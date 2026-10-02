@@ -1,5 +1,7 @@
 # ADR-0025: AI-robust guardrails
 
+Summary: Guardrails an agent cannot slip past: the Effect language service, determinism and boundary lint, Schema at every boundary.
+
 Status: Qualified (lint rules, Schema at every boundary). The per-workflow crash-matrix rule unverified
 
 Date: 2026-09-20

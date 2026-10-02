@@ -1,0 +1,59 @@
+---
+title: How-to
+description: Add a store implementation, append facts a retry cannot duplicate, read from a cursor, and hold compaction for a consumer.
+---
+
+import Sample from '../../../../components/Sample.astro'
+
+## Add a store implementation
+
+1. Find or write the Effect `SqlClient` for the database. The SQL in
+   `libs/datom` speaks two dialects, SQLite and Postgres (`migrate.ts`); a
+   database outside both needs its own migration branch there first.
+2. Create a `layer:adapter` lib, `libs/store-<name>`, with
+   `metadata.guides: ["log-store"]`, a README linking this guide, and a
+   `layer.ts` that provides the shared `logStoreLayer` with that `SqlClient`,
+   `cryptoEntropy` and the replica's `deviceLayer`:
+
+   <Sample path="libs/store-sqlite-node/src/layer.ts" region="log-store" />
+
+3. Run `log-store/conformance` against it. If the store loads in Node, add
+   `src/log-store-conformance.integration.test.ts` that calls
+   `runLogStoreChecks` and tags itself with `runsSuite('log-store/conformance')`,
+   as `libs/store-sqlite-node` does; `verify`'s `integration` step then runs it
+   on every change. If it needs a device or a browser, add it to the
+   P04 probe instead.
+4. Classify the new files in `tools/verify/src/evidence-registry.ts`, run
+   `pnpm verify`, then the gates: `pnpm qualify --gate P04` and `pnpm qualify --gate P05`.
+
+Exercise 04.01 does steps 2 and 3 on node:sqlite.
+
+## Append facts that a retry cannot duplicate
+
+Mint the `tx` once, when the fact is created, and keep it with the datom until
+the store has acknowledged it. A retry sends the same datoms with the same
+`tx`, and the store counts them as duplicates. Minting again on retry makes a
+second fact. Exercise 01.01 is exactly this mistake.
+
+<Sample path="libs/datom/src/log-store.ts" region="append" />
+
+`append` also receives every `tx` it stores, so the replica's clock never
+mints below a fact it holds, and it refuses a `tx` from too far in the future
+(`FutureSkew`).
+
+## Read the log from a cursor
+
+Keep the last `seq` you processed, call `streamFrom(seq, limit)` until it
+returns nothing, and store the new position only after the work is done. A
+crash in between re-reads facts you already handled, so make the work
+idempotent by `tx`.
+
+## Register a consumer that holds compaction
+
+A consumer that must see every fact (a device, a trace sink as
+`trace/<sink>`) calls `acknowledge(consumer, cursor)` once before it starts,
+and again after each batch it has really delivered. From then on `compact()`
+keeps every fact it has not acknowledged. The contract has no way yet to
+unregister a consumer, so one that stops for good holds the log; `heldBy`
+names it, so the hold is visible instead of silent. Exercise 03.01 walks through it. The trace projector does
+this for each sink (ADR-0018).

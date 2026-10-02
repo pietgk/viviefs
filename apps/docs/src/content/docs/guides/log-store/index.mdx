@@ -1,0 +1,66 @@
+---
+title: Log store
+description: One append-only log of datoms, the same contract on SQLite (native, wasm, Node) and Postgres.
+pattern: log-store
+adrs: ['0006', '0007', '0011']
+gates: [P04, P05]
+exemplar:
+  - libs/datom
+  - libs/store-sqlite-node
+  - libs/store-postgres
+  - libs/store-sqlite-native
+  - libs/store-sqlite-wasm
+exercises: exercises/log-store
+status: draft
+---
+
+import GuideStatus from '../../../../components/GuideStatus.astro'
+
+## What it is
+
+Every fact in ViViEfs, from a list title to a workflow's journal entry, is a
+datom in one append-only log. The log store is the pattern that keeps that
+log: it appends datoms, mints the transaction id that orders them, streams
+them from a position, and compacts only what every consumer has seen. One
+`LogStore` service runs over Effect's `SqlClient`, so the same code and the
+same suite cover SQLite on iOS, Android, the web and Node, and Postgres on the
+server. Why one log: ADR-0006. Why this clock: ADR-0007. Why
+one contract with several stores: ADR-0011.
+
+## When to use it
+
+- You are storing a fact: domain data, a journal entry, membership. It goes
+  into the log as datoms, and every other table is derived from it or holds
+  one replica's own state.
+- You need a new place to run: a new SQLite driver, a server database. It is
+  a new log store implementation, and it is done when it passes the suite.
+- You need to read everything that happened after some point: sync, trace
+  export and projections all stream the log from a cursor.
+
+## When not to
+
+- Several facts that must become visible together: that is a changeset, built
+  on the log store (ADR-0008; the changesets guide comes next).
+- A query shape for a screen: that is a read model, rebuilt from the log and
+  never migrated. You may drop any read model; how one is built belongs to the
+  changesets guide.
+- Analytics: project to Parquet or DuckLake and query with DuckDB. DuckDB is
+  never the durable log (ADR-0011).
+- Telemetry storage: traces are derived from the log; a tracing backend is a
+  viewer, never a journal (ADR-0006).
+
+## Status
+
+<GuideStatus data={frontmatter} />
+
+## Reading paths
+
+- **Discuss**: this page, then [Concepts](/guides/log-store/concepts/) (Datom,
+  The three kinds of tables).
+- **Design**: [Concepts](/guides/log-store/concepts/), then
+  [Testing](/guides/log-store/testing/) for what each gate established.
+- **Implement**: [Concepts](/guides/log-store/concepts/),
+  [How-to](/guides/log-store/how-to/), and the lessons with their exercises,
+  starting at [A datom is one fact](/guides/log-store/lessons/01-a-datom-is-one-fact/).
+- **Review**: [Concepts](/guides/log-store/concepts/), then
+  [Review](/guides/log-store/review/).

@@ -41,6 +41,13 @@ describe('statusBadge', () => {
     expect(statusBadge('Proposed, unverified')).toEqual({ text: 'Proposed', variant: 'default' })
     expect(statusBadge('Accepted 2026-10-01')).toEqual({ text: 'Accepted', variant: 'success' })
   })
+
+  it("shows an issue's whole triage role, coloured by what it waits for (D92)", () => {
+    expect(statusBadge('ready-for-human')).toEqual({ text: 'ready-for-human', variant: 'note' })
+    expect(statusBadge('needs-info')).toEqual({ text: 'needs-info', variant: 'caution' })
+    expect(statusBadge('resolved')).toEqual({ text: 'resolved', variant: 'success' })
+    expect(statusBadge('wontfix')).toEqual({ text: 'wontfix', variant: 'default' })
+  })
 })
 
 describe('sidebarItems', () => {
@@ -57,12 +64,12 @@ describe('sidebarItems', () => {
   write('docs/research/README.md', '# Research records\n')
   write('docs/research/2026-01-01-note.html', '<title>A note</title>')
 
-  it('lists the index first, then pages in file order, with ADR badges', () => {
+  it('lists the index first, then pages in file order, with ADR badges and the template as Template', () => {
     expect(sidebarItems(root, 'docs/adr')).toEqual([
       { label: 'Index', slug: 'reference/adr' },
       { label: '0001: First', slug: 'reference/adr/0001-first', badge: { text: 'Qualified', variant: 'note' } },
       { label: '0002: Second', slug: 'reference/adr/0002-second', badge: { text: 'Proposed', variant: 'default' } },
-      { label: 'NNNN: Title', slug: 'reference/adr/template' },
+      { label: 'Template', slug: 'reference/adr/template' },
     ])
   })
 

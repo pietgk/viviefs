@@ -1,0 +1,109 @@
+---
+title: Time without a trusted clock
+description: A hybrid logical clock mints ordered, unique tx values offline, across clock jumps, reboots and other devices.
+lesson: 2
+evidence:
+  - docs/evidence/2026-09-20-p04.md
+source:
+  title: Kulkarni, Demirbas et al., Logical Physical Clocks and Consistent Snapshots in Globally Distributed Databases (2014)
+  href: https://cse.buffalo.edu/tech-reports/2014-04.pdf
+---
+
+import ReadNext from '../../../../../components/ReadNext.astro'
+import Sample from '../../../../../components/Sample.astro'
+
+## Recall first
+
+<details>
+<summary>Why is resending a datom safe?</summary>
+
+It carries the same `tx`, and the store keeps each `tx` once.
+</details>
+
+<details>
+<summary>What does `seq` tell you, and what does it not?</summary>
+
+A position in this replica's log; not the fact's identity or its order
+elsewhere.
+</details>
+
+## The idea
+
+**Wall clocks lie.** A phone's clock is corrected by the network, set by
+hand, or wrong after days offline. If `tx` were wall time, a clock that jumps
+back would mint facts that sort before facts already written.
+
+**A hybrid logical clock keeps physical meaning and never goes back.** A value
+is `(pt, c)`: physical time in milliseconds, corrected by the server's
+offset, and a counter. To mint: if time moved past the last `pt`, use
+`(now, 0)`; otherwise keep the last `pt` and count up. When the 16-bit
+counter is full, `pt` moves one millisecond ahead.
+
+<Sample path="libs/datom/src/hlc.ts" region="mint" />
+
+**Other devices' clocks count too.** When a `tx` minted elsewhere arrives,
+the clock moves up to it, so this replica never mints below a fact it holds.
+But a `tx` more than 5000 ms ahead of corrected time is refused: accepting it
+would drag every later mint into that wrong future.
+
+<Sample path="libs/datom/src/hlc.ts" region="receive" />
+
+**A reboot loses the monotonic clock, not the history.** The last value is
+saved in `hlc_state` with every mint, and after a reboot minting starts from
+`max(wall clock + offset, last pt)`.
+
+**Whole milliseconds only.** A fractional `pt` beats the last `pt`, resets
+the counter, and is truncated when encoded, so two values could share
+`(pt, c)`. The live server hit exactly this; see ADR-0007.
+
+## What the gate showed
+
+P04 minted across a backwards wall jump, a reboot with the last
+value persisted, and a remote-ahead receive, and the order held on all five
+stores. It picked the 5000 ms future-skew bound; a `tx` 5001 ms ahead was
+refused.
+
+## Your turn
+
+Two exercises, both pure functions. In 02.01, `mint` handles time that moved
+forward; make it right when time did not. In 02.02, `receive` takes the later
+clock value; make it refuse a clock from too far ahead.
+
+1. Run it. The first run is red on purpose: `problem/` runs, but does not
+   yet do what this lesson teaches, and the verdict says what is missing.
+
+   ```sh
+   pnpm exercise log-store 02.01
+   pnpm exercise log-store 02.02
+   ```
+
+2. Edit `exercises/log-store/02.01-mint/problem/mint.ts` and `exercises/log-store/02.02-receive/problem/receive.ts`, and run it again until the verdict says done.
+3. Compare your code with `exercises/log-store/02.01-mint/solution/mint.ts` and `exercises/log-store/02.02-receive/solution/receive.ts`, then answer the questions below.
+
+They pass when every case, including a two-minute jump back and a full
+counter, gives the same `(pt, c)` as the exemplar's `mintHlc`, and a `tx`
+5001 ms ahead is refused.
+
+## Check yourself
+
+<details>
+<summary>The wall clock jumps back two minutes. What does the next mint keep?</summary>
+
+It keeps the last `pt` and adds one to the counter `c`.
+</details>
+
+<details>
+<summary>Why is a tx from far in the future refused, not adopted?</summary>
+
+Adopting it would push every later mint into that future.
+</details>
+
+<details>
+<summary>What survives a reboot so that minting never goes back?</summary>
+
+The last minted value and the offset, saved in `hlc_state`.
+</details>
+
+## Read next
+
+<ReadNext source={frontmatter.source} />

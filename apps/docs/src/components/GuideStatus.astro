@@ -1,0 +1,106 @@
+---
+/**
+ * A guide's status block (D62, D63), generated from its frontmatter and the
+ * ADR files: where the guide is in acceptance, each ADR and its status, each
+ * gate with its evidence, the exemplar projects and the exercise track. It
+ * does not read the ledger: whether a gate passed on the current commit is
+ * established when the guide is accepted. It takes the frontmatter as a prop,
+ * because `llms.txt` renders pages outside Starlight's route.
+ */
+import { Badge } from '@astrojs/starlight/components'
+import { previewProperties } from '../lib/reference-links.ts'
+import { adrReference, gateReference, type Reference } from '../lib/references.ts'
+import { findRepositoryRoot, GITHUB_REPOSITORY } from '../lib/repo.ts'
+
+interface Props {
+  /** The guide index page's frontmatter: `<GuideStatus data={frontmatter} />`. */
+  data: {
+    adrs?: ReadonlyArray<string>
+    gates?: ReadonlyArray<string>
+    exemplar?: ReadonlyArray<string>
+    exercises?: string
+    status?: string
+    accepted?: string
+  }
+}
+
+const { data } = Astro.props
+const root = findRepositoryRoot()
+const adrs = (data.adrs ?? []).map((id) => adrReference(root, id))
+const gates = (data.gates ?? []).map((id) => gateReference(root, id))
+const tree = (path: string) => `${GITHUB_REPOSITORY}/tree/main/${path}`
+const attributes = (reference: Reference) => {
+  const { className, ...data } = previewProperties(reference)
+  return { class: className.join(' '), ...data }
+}
+const statusWord = (status: string) => /^[A-Za-z]+/.exec(status)?.[0] ?? status
+const variant = (word: string) => (word === 'Accepted' ? 'success' : word === 'Qualified' ? 'note' : 'default')
+const guideStatus = data.status ?? 'draft'
+---
+
+<table class="guide-status">
+  <tbody>
+    <tr>
+      <th scope="row">Guide</th>
+      <td>
+        <Badge text={guideStatus} variant={guideStatus === 'accepted' ? 'success' : 'caution'} />
+        {data.accepted && <span> accepted {data.accepted}</span>}
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">ADRs</th>
+      <td>
+        <ul>
+          {adrs.map((adr) => (
+            <li>
+              <Badge text={statusWord(adr.meta)} variant={variant(statusWord(adr.meta))} /> <a href={adr.href} {...attributes(adr)}>{adr.label}</a>
+            </li>
+          ))}
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Gates</th>
+      <td>
+        <ul>
+          {gates.map((gate) => (
+            <li>
+              <a href={gate.href} {...attributes(gate)}>{gate.label}</a>
+            </li>
+          ))}
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Exemplar</th>
+      <td>
+        <ul>
+          {(data.exemplar ?? []).map((project) => (
+            <li>
+              <a href={tree(project)}><code>{project}</code></a>
+            </li>
+          ))}
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Exercises</th>
+      <td>{data.exercises && <a href={tree(data.exercises)}><code>{data.exercises}</code></a>}</td>
+    </tr>
+  </tbody>
+</table>
+
+<style>
+  .guide-status ul {
+    list-style: none;
+    padding-inline-start: 0;
+    margin: 0;
+  }
+  .guide-status li + li {
+    margin-top: 0.25rem;
+  }
+  .guide-status th {
+    white-space: nowrap;
+    vertical-align: top;
+  }
+</style>

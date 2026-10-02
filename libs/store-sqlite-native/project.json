@@ -9,6 +9,7 @@
     "platform:client"
   ],
   "metadata": {
-    "rationale": "log store on op-sqlite"
+    "rationale": "log store on op-sqlite",
+    "guides": ["log-store"]
   }
 }

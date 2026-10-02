@@ -1,5 +1,7 @@
 # ADR-0002: ViViEfs purpose, scope and the evidence-collection exemplar
 
+Summary: ViViEfs is its own repository: a reference stack for an Expo app and its backend, proven on one evidence-collection exemplar.
+
 Status: Proposed, unverified
 
 Date: 2026-09-20
