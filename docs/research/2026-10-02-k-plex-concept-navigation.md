@@ -91,3 +91,80 @@ For the first view, Changeset is a useful focus. Its definition can sit beside c
 Candidate comparison: K-Plex in a disposable generated Obsidian vault; TheBrain as an interaction reference or import target; a repo-derived browser view integrated with the docs site. The browser view is my leading hypothesis for reader access and canonical-source maintenance. K-Plex is the quickest concrete way to evaluate the spatial model with a real editor. Quality of semantics, navigation and change maintenance should decide, not the amount of implementation work.
 
 Open questions for discussion are who primarily reads the graph, whether it is initially read-only, which two or three relationship families deserve permanent screen regions, and whether terms or pages should be the initial navigation unit. Keyboard navigation, small-screen readability, large-degree nodes, MDX handling, rename behavior and exact-version performance remain unmeasured.
+
+## Follow-up, 2026-10-02: architecture browsing is the first experiment
+
+The discussion identified two different uses: teaching a reader a concept, and exploring the architecture of the complete repository. The user's preferred next step is an **actual K-Plex experiment in an isolated, generated Obsidian vault**, with ideas borrowed from C4. Future exports could support other vaults and viewers. Integrating an open-ended graph into a lesson remains a separate pedagogical question. This supersedes the initial preference above for starting with a docs-site concept navigator; the earlier analysis is retained as research context.
+
+### What to borrow from C4
+
+C4 distinguishes a software system, its runtime applications and data stores, the functional components inside those runtime units, and code elements implementing those components. Its diagrams offer different levels of detail for different audiences; using every level is optional. [C4 abstractions](https://c4model.com/abstractions), [C4 diagrams](https://c4model.com/diagrams)
+
+An Nx project or directory must not automatically become a C4 container or component. C4 containers describe runtime applications or data stores. Components group functionality behind an interface within a container; packaging and folders are a different concern. An application can compose code from several repository projects, and one library can contribute to several runtime compositions. [Container definition](https://c4model.com/abstractions/container), [Component definition](https://c4model.com/abstractions/component)
+
+The useful C4 disciplines are explicit scope, types, concise responsibilities, meaningful directed relationship labels and communication protocols. The official notation guidance permits interactive alternatives to conventional diagrams. Runtime interaction order belongs in a separate dynamic view when it adds explanatory value; it must not be inferred from the static import graph. [Notation](https://c4model.com/diagrams/notation), [Dynamic diagrams](https://c4model.com/diagrams/dynamic)
+
+**Proposed export views:** a runtime architecture view; a repository-project dependency view; a pattern/contract/implementation view; and a decision/claim/evidence view. Let readers cross between them through explicit mappings. ViViEfs remains the repository/reference stack in the glossary, rather than being relabelled a single deployed business system. Runtime mappings need inspection of the relevant app compositions.
+
+“Complete repository” should mean navigable coverage with a visible inventory, not every file simultaneously on screen. The export should state what it includes, what it excludes, and the revision it represents. Vendored reference repositories, dependencies and generated output need explicit scope labels so their presence does not imply that ViViEfs owns their architecture. This is an experiment design proposal, not an accepted classification.
+
+### Concrete K-Plex release contract
+
+The follow-up inspected the **0.0.5 release**, commit `3ac122e95baf77498f2b2270894519d8178361fe`, rather than relying on newer main-branch code. Its manifest requires Obsidian 1.13.0 or later and identifies the plugin as `k-plex`. [Release manifest](https://github.com/zsviczian/kplex/blob/3ac122e95baf77498f2b2270894519d8178361fe/manifest.json)
+
+The release recognises these example field names without custom ontology configuration:
+
+| Spatial role | Example default YAML keys |
+| --- | --- |
+| Parent | `Parent`, `Parents` |
+| Child | `Child`, `Children` |
+| Friend | `Friend`, `Friends`, `Jump`, `Jumps` |
+| Challenger | `Challenger`, `opposes` |
+| Previous | `Previous`, `Prev`, `Before` |
+| Next | `Next`, `After` |
+| Hidden | `hidden` |
+
+These are examples from longer alias lists. Defaults also recognise broad words such as `source` as a parent field, so blindly exporting arbitrary metadata keys can have unintended semantics. Custom fields are assigned through `hierarchy.parents`, `children`, `leftFriends`, `rightFriends`, `previous`, `next`, `hidden` and `exclusions`. Ontology arrays replace the corresponding defaults during settings merging. [Release settings](https://github.com/zsviczian/kplex/blob/3ac122e95baf77498f2b2270894519d8178361fe/src/settings.ts#L49)
+
+For a first exported note, the simplest explicit structure is:
+
+```yaml
+---
+Parent:
+  - "[[Repository projects]]"
+Friends:
+  - "[[Related decision]]"
+source-path: "libs/example/project.json"
+export-revision: "<repository commit>"
+---
+```
+
+This is an illustrative generated note, not a claim that the example project exists. Quote wikilinks so YAML reads them as strings. The release's builder reads configured frontmatter fields and compatible inline fields, then extracts the link targets and records their declared roles. [Release graph builder](https://github.com/zsviczian/kplex/blob/3ac122e95baf77498f2b2270894519d8178361fe/src/index/GraphBuilder.ts#L1190)
+
+Use parent/child for one clearly labelled organising relation per exported view. Preserve directed facts such as imports or runtime calls separately, with readable edge labels and source locators. Putting every dependency under Parent would blend containment with dependency. Mapping a custom field to a lateral role changes its placement but does not create a new logical inverse rule; the note and connection inspector must still make the direction comprehensible.
+
+For a generated export, a candidate initial plugin configuration is `showInferredNodes: false`, `showFolderNodes: false`, `showTagNodes: false`, and an explicit ontology. This makes declared relationships the initial review surface. Release defaults instead show inferred nodes and infer ordinary links as children unless other inference settings apply. The experiment should test both declared-only browsing and an optional ordinary-link perspective. These settings are a proposal based on source inspection, not a runtime validation. [Release settings](https://github.com/zsviczian/kplex/blob/3ac122e95baf77498f2b2270894519d8178361fe/src/settings.ts#L233)
+
+The release loads and merges its own plugin data through Obsidian's plugin API. Its desktop graph-opening command has the local ID `excalibrain-start`, despite the K-Plex name; with the plugin ID, the full command identifier is `k-plex:excalibrain-start`. [Release startup and commands](https://github.com/zsviczian/kplex/blob/3ac122e95baf77498f2b2270894519d8178361fe/src/main.ts#L117)
+
+### Keeping the trial isolated and useful
+
+An Obsidian vault is a folder with notes and vault-specific configuration. An existing export folder can be opened as a separate vault. Plugins are installed and enabled for that environment through its community-plugin settings. [Vault management](https://help.obsidian.md/Files+and+folders/Manage+vaults), [Community plugins](https://help.obsidian.md/Extending+Obsidian/Community+plugins)
+
+Proposed trial boundaries:
+
+1. Generate into a dedicated output folder, with no symlinks back to canonical repository documents. Keep source paths as navigational references.
+2. Export stable node IDs, labels, types, relationships, provenance and the source revision before translating them into Obsidian notes. This preserves a route to other viewers without making K-Plex's spatial roles the canonical domain model.
+3. Treat generated notes as disposable. Record any useful manually discovered relation in the appropriate repository-owned source or experiment input before regenerating; do not maintain competing copies of definitions.
+4. Start at an overview with several named perspectives. Check that an architecture question can cross from app to composition, contract, implementation, source, decision and evidence.
+5. Test a repository change and regenerate. Compare node/edge inventories and verify the affected neighbourhood. Include an intentional unresolved target to establish that missing coverage is visible.
+
+Acceptance for this trial is practical: actual K-Plex opens the generated vault on a compatible Obsidian version; important relationships have understandable labels and sources; scope and unclassified items remain visible; and regeneration preserves usable navigation. The experiment's screenshots, installed versions and observed limitations should be recorded separately from these researched facts. This follow-up does not claim that the trial has run.
+
+### Prepared export after the discussion
+
+An isolated research export was prepared under `.lavish/k-plex/ViViEfs-Architecture-Trial`, with a throwaway exporter at `.lavish/k-plex/export_architecture.py`. It reads the repository at revision `78d63c80e` and produces 96 nodes and 198 directed relationships: all 26 owned project records, all 31 ADRs, 17 gates, seven selected terms, view/group nodes, and five runtime elements grounded in the inspected P11 lab composition. Declared package dependencies are labelled as declarations, not runtime calls. Individual source files, reference subtrees, installed dependencies and build output are outside this export.
+
+The generated Markdown links resolve, and node filenames are unique. `graph.json` retains direction and provenance independently of the K-Plex presentation. `Generated/` contains source-derived notes; `Workspace/` is reserved for human exploration and is not rewritten by the exporter. K-Plex 0.0.5 release files were downloaded into this isolated vault, and Obsidian 1.13.7 was observed installed. Plugin rendering, navigation and rename/removal reconciliation are still unverified. This preparation is research scratch, not a production exporter or a completed runtime trial.
+
+The architectural workspace should preserve proposed relationships in the human-owned area, with explicit distinction from extracted facts. Accepting a proposal means reviewing and recording it in the appropriate canonical repository source. Additional vaults should be scoped projections of the same sourced model where useful; implementing a general viewer framework before a second concrete use case would be premature.
