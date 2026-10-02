@@ -52,18 +52,35 @@
   links to it with a preview. The human is still reviewing the docs.
 - **For the human to decide**: the open issues, each with its options in
   its file (Reference > Issues on the docs site):
-  - I1 the `node-forge` advisory that fails `audit` (no fix released): ignore
-    it with a reason, or stay red. `verify all` is red on this alone.
+  - I1 the `node-forge` advisory: decided 2026-10-02, ignored with a reason
+    until a fix is released (see below); the issue stays open for that.
   - I2 accepting the log-store guide (D63: P04 and P05 on that commit).
   - I3 the API reference for Effect services (D61).
   - I4 the `effect-solutions` peer warning, I5 the suite catalogue, I6
     posting the two upstream drafts.
   - I21 the glossary reader test.
+  - I23 `@typeonce/effect-machine` on stable Effect: a code change in a
+    qualification input, to batch with the next qualification run.
   - I22 the overlap in Claims and evidence (Claims page, evidence index and
     one note per gate): a short design review on how to present each level
     of detail before changing it.
-- **Gates**: none ran in this step. Every gate is stale since the Evidence
-  ownership commit's run (expected; the Schedule closes them in batches).
+- **Gates**: P01-P11 pass on `1a5175fa2` (below).
+
+## Effect 4.0.0 (2026-10-02)
+
+- **Effect is on the stable 4.0.0** (ADR-0003 and ADR-0029 amended): every
+  `effect` and `@effect/*` pin, `@effect/tsgo` 0.47.2 with `unstableApiUsage`
+  off, `effect/unstable/*` imports now `effect/*`, and `repos/effect` pulled
+  from the `effect@4.0.0` tag. The next Effect bump moves the pins and the
+  subtree in one change (ADR-0029 has the command).
+- **verify is green without exceptions**: I1's advisory is ignored by id with
+  its reason in `pnpm-workspace.yaml`; uuid below 11.1.1 is overridden to
+  11.1.1 (only `xcode` 3 under Expo's prebuild used it); and
+  `apps/docs/src/samples/` is a tracked directory, with the D87 path check
+  counting a directory without files as missing.
+- **Closed**: P01-P11 passed in one sequential run on `1a5175fa2`, run
+  `2026-10-02T14-20-51.580Z-2ce3b275`, clean tree, about 29 minutes. P07's
+  notification-tap fallbacks are unchanged from 2026-10-01.
 
 ## Before this step (2026-10-01, morning)
 

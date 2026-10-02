@@ -11,3 +11,7 @@ Found: 2026-10-01
 `effect-solutions` 0.5.3, the newest, pins `effect` 4.0.0-beta.59 and leaves an unmet peer warning on every install. It is a development-only CLI (`pnpm exec effect-solutions show <topic>`) and the cause is upstream; confirm that the warning is acceptable until a newer release.
 
 ## Comments
+
+2026-10-02: Unchanged after Effect 4.0.0: `effect-solutions` 0.5.3 is still the
+newest and still pins `effect` 4.0.0-beta.59. A second peer warning,
+`@typeonce/effect-machine` requiring the release candidate, is I23.

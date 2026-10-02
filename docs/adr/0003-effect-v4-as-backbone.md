@@ -72,5 +72,8 @@ Evidence: [2026-09-20-p01.md](../evidence/2026-09-20-p01.md). Qualified
 The code changes were the import paths (`effect/unstable/*` became `effect/*`),
 `effect/Encoding` becoming `effect/encoding/Base64` in the P01 checks, and the
 Metro stub's path (`dist/sql/Migrator.js`; with the old path the iOS export
-fails on the dynamic `import()`). `verify` was green on every project. The
-P01-P11 passes are stale until a sequential rerun on 4.0.0.
+fails on the dynamic `import()`). `verify` was green on every project.
+P01-P11 passed again in one sequential run on `1a5175fa2`, run
+`2026-10-02T14-20-51.580Z-2ce3b275`, clean tree, inputs unchanged during the
+run, about 29 minutes. P07's notification-tap fallbacks were the same as in the
+run of 2026-10-01.
