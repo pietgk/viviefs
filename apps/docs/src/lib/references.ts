@@ -220,6 +220,15 @@ export const onlyReference = (text: string): string | null => {
   return found.length === 1 && first && !first.inRange && first.start === 0 && first.end === text.trim().length ? first.id : null
 }
 
+/**
+ * Whether a path is a file or a directory with a file somewhere under it. Git
+ * cannot hold an empty directory, so one that exists only in a working tree
+ * is missing from every fresh clone and from GitHub.
+ */
+const holdsAFile = (absolute: string): boolean =>
+  !statSync(absolute).isDirectory() ||
+  readdirSync(absolute, { recursive: true, withFileTypes: true }).some((entry) => entry.isFile())
+
 /** Roots under which a code span is a repository path that must exist. */
 const CHECKED_ROOTS = /^(?:apps|libs|features|tools|docs|exercises)\//
 
@@ -243,7 +252,7 @@ export const codePath = (root: string, value: string): CodePath => {
   if (!path.includes('/') && !isRootFile) return { _tag: 'NotAPath' }
   const bare = path.replace(/\/$/, '')
   const absolute = join(root, bare)
-  if (!existsSync(absolute)) {
+  if (!existsSync(absolute) || !holdsAFile(absolute)) {
     return CHECKED_ROOTS.test(path) ? { _tag: 'Missing', path } : { _tag: 'NotAPath' }
   }
   const site = siteUrlFor(bare)

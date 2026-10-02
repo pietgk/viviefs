@@ -209,6 +209,11 @@ describe('code spans as repository paths', () => {
     expect(codePath(root, 'libs/gone/src/x.ts')).toEqual({ _tag: 'Missing', path: 'libs/gone/src/x.ts' })
   })
 
+  it('reports a directory without files as missing, since Git cannot hold it', () => {
+    mkdirSync(join(root, 'apps/docs/src/empty/nested'), { recursive: true })
+    expect(codePath(root, 'apps/docs/src/empty/')).toEqual({ _tag: 'Missing', path: 'apps/docs/src/empty/' })
+  })
+
   it('leaves code that is not a path alone', () => {
     for (const value of ['LogStore', 'guides/<pattern>/', 'exercises/x/NN.MM-name/', 'docs/issues/NNNN-slug.md', 'src/lib/guides.ts', 'a b/c', 'apps/**/*.ts', '../x', 'notes.md'])
       expect(codePath(root, value), value).toEqual({ _tag: 'NotAPath' })

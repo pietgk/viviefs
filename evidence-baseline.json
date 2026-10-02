@@ -211,10 +211,10 @@
         "statements": "123/127"
       },
       "apps/docs/src/lib/references.ts": {
-        "branches": "103/117",
-        "functions": "37/37",
-        "lines": "141/141",
-        "statements": "167/168"
+        "branches": "107/121",
+        "functions": "39/39",
+        "lines": "144/144",
+        "statements": "170/171"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
