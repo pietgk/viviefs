@@ -22,6 +22,10 @@ overrides:
   # GHSA-3pq3-5fj3-cg6v, GHSA-542g-h47m-68v8 and three more (high, found 2026-09-30):
   # nx 23.2.1, the latest stable, pins axios 1.18.1; patched from 1.20.0.
   'axios@1': 1.20.0
+  # GHSA-w5hq-g745-h8pq (moderate): xcode 3.0.1, which @expo/config-plugins uses in
+  # prebuild, pins uuid ^7 and only calls uuid.v4(). xcode 4 drops uuid
+  # (apache/cordova-node-xcode#153, unreleased); remove this when Expo moves to it.
+  'uuid@<11.1.1': 11.1.1
   '@op-engineering/op-sqlite': 18.2.5
   # One copy of each native Expo module: expo-auth-session's ranges would
   # otherwise pull newer patch releases next to the ones expo 58 bundles.
