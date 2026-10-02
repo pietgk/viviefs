@@ -109,7 +109,7 @@ Three deployments make the proposal concrete:
 
 For the independent mode, start the discussion with evidence capture, file exchange and agreed mergeable attributes. Shared exclusive activities need a separate ownership rule. This scope makes independence useful while exposing where ERP invariants require coordination.
 
-Effect's [RPC protocol seam](../../repos/effect/packages/effect/src/unstable/rpc/RpcClient.ts) and ViViEfs' `SyncRpc` service offer useful separation. An Iroh implementation is not already qualified. Reusing RPC over an Iroh stream would require framing, cancellation, errors, flow control and version tests. Keep domain validation in the common core where possible; establish canonical signing bytes regardless of whether other participants initially use TypeScript.
+Effect's [RPC protocol seam](https://github.com/Effect-TS/effect/blob/b8d14d3eed3cc15e939baa660e9800b96144a636/packages/effect/src/unstable/rpc/RpcClient.ts) and ViViEfs' `SyncRpc` service offer useful separation. An Iroh implementation is not already qualified. Reusing RPC over an Iroh stream would require framing, cancellation, errors, flow control and version tests. Keep domain validation in the common core where possible; establish canonical signing bytes regardless of whether other participants initially use TypeScript.
 
 ## 5. Guarantees that determine the architecture
 
