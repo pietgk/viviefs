@@ -27,3 +27,12 @@ overrides:
   # otherwise pull newer patch releases next to the ones expo 58 bundles.
   expo-constants: 58.0.3
   expo-linking: 58.0.3
+
+auditConfig:
+  ignoreGhsas:
+    # I1: node-forge RSA signature verification (high). No patched release exists
+    # (1.4.0 is the newest); it comes only through @expo/cli, a development tool,
+    # not through anything the apps ship. Remove when node-forge ships a fix or
+    # @expo/cli drops it; `pnpm audit --ignore-unfixable` would hide every future
+    # unfixable advisory, so this names the one we accepted.
+    - GHSA-86w9-cpqp-85rv
