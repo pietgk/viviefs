@@ -13,10 +13,10 @@
     }
   },
   "dependencies": {
-    "@effect/platform-node": "4.0.0-rc.116",
-    "@effect/vitest": "4.0.0-rc.116",
+    "@effect/platform-node": "4.0.0",
+    "@effect/vitest": "4.0.0",
     "@viviefs/testing": "workspace:*",
-    "effect": "4.0.0-rc.116",
+    "effect": "4.0.0",
     "eslint": "10.11.0",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "yaml": "2.9.0"

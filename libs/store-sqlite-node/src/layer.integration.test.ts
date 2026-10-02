@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import * as SqlClient from 'effect/unstable/sql/SqlClient'
+import * as SqlClient from 'effect/sql/SqlClient'
 import { join } from 'node:path'
 import { HlcClock, LogStore } from '@viviefs/datom'
 import { makeMutableClock } from '@viviefs/datom/suites'

@@ -1,5 +1,5 @@
-import * as Atom from 'effect/unstable/reactivity/Atom'
-import * as AtomRegistry from 'effect/unstable/reactivity/AtomRegistry'
+import * as Atom from 'effect/reactivity/Atom'
+import * as AtomRegistry from 'effect/reactivity/AtomRegistry'
 import * as Effect from 'effect/Effect'
 import type { ComposerDriver, ComposerSession } from './driver.ts'
 import { emptyComposer, type ComposerSnapshot } from './interaction.ts'

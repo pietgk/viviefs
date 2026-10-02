@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
+import * as FetchHttpClient from 'effect/http/FetchHttpClient'
 import { TokenRejected, TokenVerifier } from './index.ts'
 import { oidcTokenVerifier } from './oidc.ts'
 import { decodeJwt } from 'jose'

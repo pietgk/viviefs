@@ -25,7 +25,10 @@
     "types": ["node"],
     "plugins": [
       {
-        "name": "@effect/language-service"
+        "name": "@effect/language-service",
+        "diagnosticSeverity": {
+          "unstableApiUsage": "off"
+        }
       }
     ]
   }

@@ -7,20 +7,20 @@ and https://www.effect.solutions/cli.
 
 Viviefs entrypoints: [`tools/verify/src/verify.ts`](../../tools/verify/src/verify.ts)
 and [`tools/qualification/src/cli.ts`](../../tools/qualification/src/cli.ts).
-`@effect/platform-node` is pinned at the same RC as `effect`.
+`@effect/platform-node` is pinned at the same version as `effect`.
 
 ## Do
 
-- `import { Argument, Command, Flag } from 'effect/unstable/cli'`.
+- `import { Argument, Command, Flag } from 'effect/cli'`.
 - Define `Command.make(name, { flags, args }, handler)`.
 - Wire subcommands with `Command.withSubcommands`.
 - Run with `Command.run(cmd, { version })`.
 - This repo's CLIs run on Node (mise pin). Provide `NodeServices.layer` and
-  `NodeRuntime.runMain` from `@effect/platform-node` at the same RC as
+  `NodeRuntime.runMain` from `@effect/platform-node` at the same version as
   `effect`. Do not switch verify to Bun.
 
 ```ts
-import { Argument, Command, Flag } from 'effect/unstable/cli'
+import { Argument, Command, Flag } from 'effect/cli'
 import { Console, Effect } from 'effect'
 
 const shout = Flag.Boolean('shout').pipe(Flag.withAlias('s'), Flag.withDefault(false))

@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "@viviefs/testing": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-rc.116",
+    "@effect/vitest": "4.0.0",
     "vite": "8.3.0",
     "vitest": "5.0.1"
   }

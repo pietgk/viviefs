@@ -18,7 +18,7 @@ import { LogStore, type Cursor, type EnvelopeType, type StoredDatomType } from '
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import type { SqlError } from 'effect/unstable/sql/SqlError'
+import type { SqlError } from 'effect/sql/SqlError'
 import {
   END_ATTRIBUTES,
   executionEntityOf,

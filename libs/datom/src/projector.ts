@@ -2,9 +2,9 @@ import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 import * as Layer from 'effect/Layer'
-import * as Reactivity from 'effect/unstable/reactivity/Reactivity'
-import * as SqlClient from 'effect/unstable/sql/SqlClient'
-import type { SqlError } from 'effect/unstable/sql/SqlError'
+import * as Reactivity from 'effect/reactivity/Reactivity'
+import * as SqlClient from 'effect/sql/SqlClient'
+import type { SqlError } from 'effect/sql/SqlError'
 import { HlcClock } from './clock.ts'
 import {
   indexCatalog,

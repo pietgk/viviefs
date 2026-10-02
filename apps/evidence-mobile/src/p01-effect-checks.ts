@@ -4,16 +4,16 @@
  */
 import * as DateTime from 'effect/DateTime'
 import * as Effect from 'effect/Effect'
-import * as Encoding from 'effect/Encoding'
+import * as Base64 from 'effect/encoding/Base64'
 import * as Fiber from 'effect/Fiber'
 import * as Layer from 'effect/Layer'
 import * as Random from 'effect/Random'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
-import * as Model from 'effect/unstable/schema/Model'
-import * as Activity from 'effect/unstable/workflow/Activity'
-import * as Workflow from 'effect/unstable/workflow/Workflow'
-import * as WorkflowEngine from 'effect/unstable/workflow/WorkflowEngine'
+import * as Model from 'effect/schema/Model'
+import * as Activity from 'effect/workflow/Activity'
+import * as Workflow from 'effect/workflow/Workflow'
+import * as WorkflowEngine from 'effect/workflow/WorkflowEngine'
 
 export type CheckStatus = 'PASS' | 'FAIL'
 
@@ -197,7 +197,7 @@ export const runP01Checks = (): Effect.Effect<CheckResult[]> =>
     checks.push(
       yield* runCheck(
         'Encoding base64',
-        Effect.sync(() => Encoding.encodeBase64('héllo')),
+        Effect.sync(() => Base64.encode('héllo')),
       ),
     )
     checks.push(

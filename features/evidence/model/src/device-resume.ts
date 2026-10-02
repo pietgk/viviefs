@@ -3,10 +3,10 @@ import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as Schedule from 'effect/Schedule'
 import * as Schema from 'effect/Schema'
-import * as Activity from 'effect/unstable/workflow/Activity'
-import * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
-import * as Workflow from 'effect/unstable/workflow/Workflow'
-import * as WorkflowEngine from 'effect/unstable/workflow/WorkflowEngine'
+import * as Activity from 'effect/workflow/Activity'
+import * as DurableDeferred from 'effect/workflow/DurableDeferred'
+import * as Workflow from 'effect/workflow/Workflow'
+import * as WorkflowEngine from 'effect/workflow/WorkflowEngine'
 
 /**
  * Evidence-collection device-resume exemplar (D23, D24). Upload is a

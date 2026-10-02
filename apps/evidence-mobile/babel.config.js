@@ -1,8 +1,8 @@
 const target =
-  /node_modules[/\\]effect[/\\]dist[/\\]unstable[/\\]sql[/\\]Migrator\.js$/
+  /node_modules[/\\]effect[/\\]dist[/\\]sql[/\\]Migrator\.js$/
 
 /**
- * Metro rejects the non-literal `import()` in effect/unstable/sql/Migrator.js
+ * Metro rejects the non-literal `import()` in effect/sql/Migrator.js
  * (Effect-TS/effect#6347). Stub it so SQL/cluster barrels can bundle. P01
  * exemplar of the workaround; drop this plugin when upstream lands.
  */

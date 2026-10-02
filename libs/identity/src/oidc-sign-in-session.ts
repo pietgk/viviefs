@@ -27,9 +27,9 @@ import * as Ref from 'effect/Ref'
 import * as Schema from 'effect/Schema'
 import * as Semaphore from 'effect/Semaphore'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
-import * as HttpClient from 'effect/unstable/http/HttpClient'
-import * as HttpClientRequest from 'effect/unstable/http/HttpClientRequest'
-import * as HttpClientResponse from 'effect/unstable/http/HttpClientResponse'
+import * as HttpClient from 'effect/http/HttpClient'
+import * as HttpClientRequest from 'effect/http/HttpClientRequest'
+import * as HttpClientResponse from 'effect/http/HttpClientResponse'
 import { CallerStatement } from './caller-statement.ts'
 import {
   IdentityProviderUnreachable,

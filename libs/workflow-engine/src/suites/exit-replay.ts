@@ -16,9 +16,9 @@ import * as Exit from 'effect/Exit'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
-import * as Activity from 'effect/unstable/workflow/Activity'
-import * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
-import * as Workflow from 'effect/unstable/workflow/Workflow'
+import * as Activity from 'effect/workflow/Activity'
+import * as DurableDeferred from 'effect/workflow/DurableDeferred'
+import * as Workflow from 'effect/workflow/Workflow'
 import { deviceLayer, HlcClock } from '@viviefs/datom'
 import {
   engineConfigLayer,

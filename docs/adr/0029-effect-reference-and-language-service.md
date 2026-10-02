@@ -4,7 +4,8 @@ Summary: Effect's source is vendored read-only under repos/effect as the referen
 
 Status: Qualified
 
-Date: 2026-09-21
+Date: 2026-09-21. Amended 2026-10-02 (Effect 4.0.0): the subtree follows the
+release tag of the pinned version, not `main`.
 
 Qualifying gate: verify
 
@@ -23,9 +24,11 @@ TypeScript 7, which this repo dual-pinned in ADR-0028. Cloning Effect into
 
 ## Design
 
-- Vendor Effect v4 source at `repos/effect` with `git subtree` from
-  `Effect-TS/effect` `main`, squashed. Read-only reference. Application code
-  still imports `effect` and `@effect/*` from pnpm at `4.0.0-rc.116`.
+- Vendor Effect v4 source at `repos/effect` with `git subtree`, squashed, at
+  the `Effect-TS/effect` tag of the version pnpm pins (`effect@4.0.0`), so the
+  reference is the code the apps run. Read-only reference. Application code
+  still imports `effect` and `@effect/*` from pnpm. Move both in one change:
+  `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git effect@<version> --squash`.
 - Pin `@effect/tsgo` exactly. `prepare` runs
   `effect-tsgo patch --typescript --typescript-package @typescript/native`
   so CLI `tsc` (TypeScript 7) emits Effect diagnostics. Do not patch the
@@ -80,3 +83,9 @@ and do not fail `tsc`.
 refuses it (`no-restricted-imports`, message citing this ADR), shown firing
 in [`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts); no existing file imported from `repos/`. The same test checks that
 `tsc` is the `@effect/tsgo` build.
+
+2026-10-02: Effect 4.0.0. `repos/effect` was pulled from the `effect@4.0.0` tag;
+its tree equals the tag's tree. `@effect/tsgo` 0.47.2 (built for 4.0's public
+module paths) adds `unstableApiUsage`, which warned on every workflow, sql,
+rpc, http and cli use and failed typecheck; it is off in `tsconfig.base.json`
+(ADR-0003). `mise exec -- pnpm verify` was green.

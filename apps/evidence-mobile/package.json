@@ -21,8 +21,8 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@effect/sql-sqlite-react-native": "4.0.0-rc.116",
-    "@effect/sql-sqlite-wasm": "4.0.0-rc.116",
+    "@effect/sql-sqlite-react-native": "4.0.0",
+    "@effect/sql-sqlite-wasm": "4.0.0",
     "@expo/metro-runtime": "58.0.3",
     "@op-engineering/op-sqlite": "18.2.5",
     "@viviefs/datom": "workspace:*",
@@ -35,7 +35,7 @@
     "@viviefs/telemetry": "workspace:*",
     "@viviefs/testing": "workspace:*",
     "@viviefs/workflow-engine": "workspace:*",
-    "effect": "4.0.0-rc.116",
+    "effect": "4.0.0",
     "expo": "58.0.0-preview.3",
     "expo-auth-session": "58.0.2",
     "expo-crypto": "58.0.1",

@@ -16,6 +16,6 @@
   "dependencies": {
     "@viviefs/datom": "workspace:*",
     "@viviefs/identity": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   }
 }

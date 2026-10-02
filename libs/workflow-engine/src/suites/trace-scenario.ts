@@ -17,10 +17,10 @@ import * as Latch from 'effect/Latch'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import * as Tracer from 'effect/Tracer'
-import * as Activity from 'effect/unstable/workflow/Activity'
-import * as DurableClock from 'effect/unstable/workflow/DurableClock'
-import * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
-import * as Workflow from 'effect/unstable/workflow/Workflow'
+import * as Activity from 'effect/workflow/Activity'
+import * as DurableClock from 'effect/workflow/DurableClock'
+import * as DurableDeferred from 'effect/workflow/DurableDeferred'
+import * as Workflow from 'effect/workflow/Workflow'
 import {
   activityId,
   Attr,

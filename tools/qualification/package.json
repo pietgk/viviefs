@@ -13,8 +13,8 @@
     }
   },
   "devDependencies": {
-    "@effect/platform-node": "4.0.0-rc.116",
-    "@effect/vitest": "4.0.0-rc.116",
+    "@effect/platform-node": "4.0.0",
+    "@effect/vitest": "4.0.0",
     "@viviefs/blobs": "workspace:*",
     "@viviefs/datom": "workspace:*",
     "@viviefs/evidence-client": "workspace:*",
@@ -28,7 +28,7 @@
     "@viviefs/testing": "workspace:*",
     "@viviefs/workflow-engine": "workspace:*",
     "agent-device": "0.21.6",
-    "effect": "4.0.0-rc.116",
+    "effect": "4.0.0",
     "playwright": "1.55.1",
     "vite": "8.3.0",
     "vitest": "5.0.1"

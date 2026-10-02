@@ -22,7 +22,7 @@ Known work from SDK 56 that P01 must re-measure:
 - `crypto.getRandomValues` and `crypto.subtle.digest` polyfills (expo-crypto or
   react-native-quick-crypto). Hermes has neither; Workflow hashes ids with
   `subtle.digest`.
-- Metro rejects the dynamic `import()` in `effect/unstable/sql/Migrator.js`
+- Metro rejects the dynamic `import()` in `effect/sql/Migrator.js`
   (Effect-TS/effect#6347). The babel stub in `docs/plan/bootstrap/research/rn-check/babel.config.js`
   is the workaround until upstream lands.
 - Prefer deep imports (`effect/Effect`) or Expo tree shaking: the barrel added
@@ -41,7 +41,7 @@ forbidden.
 
 P01 pass condition: the research/02 probe (15 checks including Workflow +
 Activity on the memory engine) on a real iOS simulator and a real Android
-emulator with real polyfills; a bundle importing `effect/unstable/sql` builds
+emulator with real polyfills; a bundle importing `effect/sql` builds
 with the Migrator babel workaround; JS bundle-size baseline recorded. Positive
 control: without the crypto polyfill the workflow check fails.
 

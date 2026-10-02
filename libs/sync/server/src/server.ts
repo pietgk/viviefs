@@ -11,9 +11,9 @@ import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import * as Semaphore from 'effect/Semaphore'
 import * as Stream from 'effect/Stream'
-import * as Headers from 'effect/unstable/http/Headers'
-import type { SqlError } from 'effect/unstable/sql/SqlError'
-import * as SqlClient from 'effect/unstable/sql/SqlClient'
+import * as Headers from 'effect/http/Headers'
+import type { SqlError } from 'effect/sql/SqlError'
+import * as SqlClient from 'effect/sql/SqlClient'
 import { BlobStore } from '@viviefs/blobs'
 import {
   accountId,

@@ -14,17 +14,17 @@
     }
   },
   "dependencies": {
-    "@effect/platform-node": "4.0.0-rc.116",
+    "@effect/platform-node": "4.0.0",
     "@viviefs/blobs": "workspace:*",
     "@viviefs/datom": "workspace:*",
     "@viviefs/identity": "workspace:*",
     "@viviefs/store-postgres": "workspace:*",
     "@viviefs/sync-protocol": "workspace:*",
     "@viviefs/sync-server": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-rc.116",
+    "@effect/vitest": "4.0.0",
     "@viviefs/evidence-model": "workspace:*",
     "@viviefs/sync-client": "workspace:*",
     "@viviefs/testing": "workspace:*",

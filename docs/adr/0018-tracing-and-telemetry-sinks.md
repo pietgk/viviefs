@@ -27,7 +27,7 @@ Replays emit nothing new for stored results; new attempts link to previous
 ones. Extending that scheme to changeset ids for command spans is new, not
 grilled; keep it only if P10 needs command spans.
 
-Export through Effect's native OTLP exporter (`effect/unstable/observability`,
+Export through Effect's native OTLP exporter (`effect/observability`,
 JSON serialization, `fetch`). No `@opentelemetry/*` dependencies. Live
 `withSpan` / `Effect.fn` inside activities is parented to the durable spans.
 The tracing backend is never the store the engine reads from.

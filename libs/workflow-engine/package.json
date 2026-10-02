@@ -23,10 +23,10 @@
     "@noble/hashes": "2.4.0",
     "@viviefs/datom": "workspace:*",
     "@viviefs/testing": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-rc.116",
+    "@effect/vitest": "4.0.0",
     "@viviefs/store-postgres": "workspace:*",
     "@viviefs/store-sqlite-node": "workspace:*",
     "vite": "8.3.0",

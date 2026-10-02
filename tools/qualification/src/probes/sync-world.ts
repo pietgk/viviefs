@@ -11,9 +11,9 @@ import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import type * as Scope from 'effect/Scope'
-import type * as RpcClient from 'effect/unstable/rpc/RpcClient'
-import * as RpcTest from 'effect/unstable/rpc/RpcTest'
-import * as SqlClient from 'effect/unstable/sql/SqlClient'
+import type * as RpcClient from 'effect/rpc/RpcClient'
+import * as RpcTest from 'effect/rpc/RpcTest'
+import * as SqlClient from 'effect/sql/SqlClient'
 import { layerMemory } from '@viviefs/blobs'
 import {
   HlcClock,

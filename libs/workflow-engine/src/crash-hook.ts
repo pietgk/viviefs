@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import type * as Latch from 'effect/Latch'
-import * as WorkflowEngine from 'effect/unstable/workflow/WorkflowEngine'
+import * as WorkflowEngine from 'effect/workflow/WorkflowEngine'
 
 export type CrashBoundary =
   | 'before-activity'

@@ -5,8 +5,8 @@ import * as Exit from 'effect/Exit'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import { AppState } from 'react-native'
-import * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
-import * as WorkflowEngine from 'effect/unstable/workflow/WorkflowEngine'
+import * as DurableDeferred from 'effect/workflow/DurableDeferred'
+import * as WorkflowEngine from 'effect/workflow/WorkflowEngine'
 import {
   deviceLayer,
   executionId as executionEntity,

@@ -12,7 +12,7 @@ import {
   type EnvelopeType,
 } from '../index.ts'
 import type { CheckResult } from '@viviefs/testing'
-import type * as SqlClient from 'effect/unstable/sql/SqlClient'
+import type * as SqlClient from 'effect/sql/SqlClient'
 
 export const P04_CHECK_NAMES = [
   'append',

@@ -38,7 +38,7 @@
     "@formatjs/intl-locale": "5.3.11",
     "@viviefs/identity": "workspace:*",
     "@viviefs/workflow-engine": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   },
   "devDependencies": {
     "expo-auth-session": "58.0.2",

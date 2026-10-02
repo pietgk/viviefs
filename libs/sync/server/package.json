@@ -19,6 +19,6 @@
     "@viviefs/identity": "workspace:*",
     "@viviefs/sync-protocol": "workspace:*",
     "@viviefs/workflow-engine": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   }
 }

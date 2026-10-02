@@ -18,7 +18,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
+import * as FetchHttpClient from 'effect/http/FetchHttpClient'
 import { oidcTokenVerifier } from '@viviefs/identity/oidc'
 import {
   TOKEN_CHECK_COUNT,

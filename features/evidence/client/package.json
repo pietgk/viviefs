@@ -14,19 +14,19 @@
     }
   },
   "dependencies": {
-    "@effect/atom-react": "4.0.0-rc.116",
+    "@effect/atom-react": "4.0.0",
     "@typeonce/effect-machine": "0.38.0",
     "@viviefs/datom": "workspace:*",
     "@viviefs/evidence-model": "workspace:*",
     "@viviefs/ui": "workspace:*",
-    "effect": "4.0.0-rc.116",
+    "effect": "4.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "scheduler": "0.26.0",
     "xstate": "5.33.2"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-rc.116",
+    "@effect/vitest": "4.0.0",
     "@testing-library/dom": "10.4.1",
     "@testing-library/react": "16.3.3",
     "@types/react": "19.2.2",

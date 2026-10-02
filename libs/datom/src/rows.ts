@@ -6,7 +6,7 @@
  */
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
-import { SqlError, UnknownError } from 'effect/unstable/sql/SqlError'
+import { SqlError, UnknownError } from 'effect/sql/SqlError'
 
 export const rowsOf = <S extends Schema.Decoder<unknown>>(row: S) => {
   const decode = Schema.decodeUnknownEffect(Schema.Array(row))

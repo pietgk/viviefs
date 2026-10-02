@@ -1,6 +1,6 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
-import * as Atom from 'effect/unstable/reactivity/Atom'
+import * as Atom from 'effect/reactivity/Atom'
 import { Attr, keysFor } from '@viviefs/datom'
 import type { EvidenceReadModel } from './screen-view.ts'
 

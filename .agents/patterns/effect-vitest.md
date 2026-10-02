@@ -4,7 +4,7 @@ Agent extract. Source of truth: [`repos/effect/LLMS.md`](../../repos/effect/LLMS
 (section "Testing Effect programs"),
 [`repos/effect/ai-docs/src/09_testing/`](../../repos/effect/ai-docs/src/09_testing/),
 and https://www.effect.solutions/testing.
-Viviefs runner pin: `@effect/vitest@4.0.0-rc.116` (same RC as `effect`, ADR-0003).
+Viviefs runner pin: `@effect/vitest@4.0.0` (same version as `effect`, ADR-0003).
 Do not install `@effect/vitest@beta`.
 
 | Runner | When | Example |

@@ -206,7 +206,7 @@ sleeps up to 60s run in memory.
   `executionId + activity + attempt` (D32). Extending that scheme to changeset ids for commands is new, not
   grilled; keep it only if P10 needs command spans, otherwise drop it. Replays emit nothing new for stored results;
   new attempts link to previous ones.
-- Export through Effect's native OTLP exporter (`effect/unstable/observability`, JSON serialization, `fetch`), no
+- Export through Effect's native OTLP exporter (`effect/observability`, JSON serialization, `fetch`), no
   `@opentelemetry/*` dependencies. Killed apps lose nothing: export resumes from the cursor.
 - Live spans (`Effect.withSpan`, `Effect.fn`) inside activities are parented to the durable spans.
 - Sinks: motel (default), Jaeger, otel-lgtm, chosen by endpoint config only.
@@ -232,8 +232,8 @@ sleeps up to 60s run in memory.
 
 - Effect v4 core runs on Hermes V1 with Expo's `TextDecoder`; add `crypto.getRandomValues` and
   `crypto.subtle.digest` polyfills (expo-crypto or react-native-quick-crypto).
-- Metro rejects the dynamic `import()` in `effect/unstable/sql/Migrator.js` (Effect-TS/effect#6347). The babel
-  plugin in `research/rn-check/babel.config.js` stubs it.
+- Metro rejects the dynamic `import()` in `effect/sql/Migrator.js` (Effect-TS/effect#6347). The babel
+  plugin in `apps/evidence-mobile/babel.config.js` stubs it.
 - Prefer deep imports (`effect/Effect`) or Expo tree shaking: the barrel adds about 2.7 MB to an iOS bundle, deep
   imports about 0.6 MB.
 - All of this was measured on SDK 56 / RN 0.85 and must be rerun on SDK 58 (gate P01).

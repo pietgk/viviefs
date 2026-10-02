@@ -14,9 +14,9 @@
     }
   },
   "dependencies": {
-    "@effect/sql-sqlite-react-native": "4.0.0-rc.116",
+    "@effect/sql-sqlite-react-native": "4.0.0",
     "@viviefs/datom": "workspace:*",
-    "effect": "4.0.0-rc.116"
+    "effect": "4.0.0"
   },
   "peerDependencies": {
     "@op-engineering/op-sqlite": "18.2.5"

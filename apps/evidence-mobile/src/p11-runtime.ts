@@ -17,10 +17,10 @@ import * as ManagedRuntime from 'effect/ManagedRuntime'
 import * as Scope from 'effect/Scope'
 import * as Semaphore from 'effect/Semaphore'
 import * as Stream from 'effect/Stream'
-import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
-import * as RpcClient from 'effect/unstable/rpc/RpcClient'
-import * as RpcSerialization from 'effect/unstable/rpc/RpcSerialization'
-import * as SqlClient from 'effect/unstable/sql/SqlClient'
+import * as FetchHttpClient from 'effect/http/FetchHttpClient'
+import * as RpcClient from 'effect/rpc/RpcClient'
+import * as RpcSerialization from 'effect/rpc/RpcSerialization'
+import * as SqlClient from 'effect/sql/SqlClient'
 import {
   deviceLayer,
   evidenceCatalog,

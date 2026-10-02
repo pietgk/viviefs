@@ -1,8 +1,8 @@
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Queue from 'effect/Queue'
-import * as Reactivity from 'effect/unstable/reactivity/Reactivity'
-import type * as SqlClient from 'effect/unstable/sql/SqlClient'
+import * as Reactivity from 'effect/reactivity/Reactivity'
+import type * as SqlClient from 'effect/sql/SqlClient'
 import {
   Attr,
   CHANGESET_TTL_MS,

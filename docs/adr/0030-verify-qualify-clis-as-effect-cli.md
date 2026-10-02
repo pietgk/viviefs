@@ -21,9 +21,9 @@ learn the half-Effect idiom ADR-0003 refuses.
 
 ## Design
 
-- Pin `@effect/platform-node` at the same RC as `effect` (`4.0.0-rc.116`).
+- Pin `@effect/platform-node` at the same version as `effect` (ADR-0003).
 - Parse and run the CLIs with `Command` / `Argument` / `Flag` from
-  `effect/unstable/cli`, `NodeRuntime.runMain`, and `NodeServices.layer`.
+  `effect/cli`, `NodeRuntime.runMain`, and `NodeServices.layer`.
   Node, not Bun: verify still asserts the mise Node pin.
 - Keep the staged fail-fast table in `tools/verify/src/stages.ts`. A failing
   stage still stops the ones after it; every step inside a stage still runs.
@@ -34,7 +34,7 @@ learn the half-Effect idiom ADR-0003 refuses.
   `Effect.promise`, so FORCE_COLOR, offline signs, and empty Nx patterns stay
   the same contract.
 
-Revisit only if `effect/unstable/cli` ships a breaking parse change at an RC
+Revisit only if `effect/cli` ships a breaking parse change at a version
 bump, which is its own pin change.
 
 ## Trade-offs

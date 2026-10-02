@@ -8,7 +8,7 @@ import * as PgliteClient from '@effect/sql-pglite/PgliteClient'
 import { cryptoEntropy, deviceLayer, logStoreLayer } from '@viviefs/datom'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import { SqlError, ConnectionError } from 'effect/unstable/sql/SqlError'
+import { SqlError, ConnectionError } from 'effect/sql/SqlError'
 
 /**
  * PGlite owned by this layer. `PGlite.close()` (0.5.8) does not wait for

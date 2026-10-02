@@ -8,8 +8,8 @@ import * as Schedule from 'effect/Schedule'
 import * as Schema from 'effect/Schema'
 import type * as Scope from 'effect/Scope'
 import * as Tracer from 'effect/Tracer'
-import * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
-import * as Workflow from 'effect/unstable/workflow/Workflow'
+import * as DurableDeferred from 'effect/workflow/DurableDeferred'
+import * as Workflow from 'effect/workflow/Workflow'
 import { blobHash } from '@viviefs/blobs'
 import {
   Attr,

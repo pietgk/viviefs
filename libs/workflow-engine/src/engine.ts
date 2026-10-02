@@ -11,10 +11,10 @@ import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import type * as Scope from 'effect/Scope'
 import * as Tracer from 'effect/Tracer'
-import type * as Activity from 'effect/unstable/workflow/Activity'
-import type * as DurableDeferred from 'effect/unstable/workflow/DurableDeferred'
-import * as Workflow from 'effect/unstable/workflow/Workflow'
-import * as WorkflowEngine from 'effect/unstable/workflow/WorkflowEngine'
+import type * as Activity from 'effect/workflow/Activity'
+import type * as DurableDeferred from 'effect/workflow/DurableDeferred'
+import * as Workflow from 'effect/workflow/Workflow'
+import * as WorkflowEngine from 'effect/workflow/WorkflowEngine'
 import {
   activityId,
   Attr,

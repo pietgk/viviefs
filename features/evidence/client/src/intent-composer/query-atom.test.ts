@@ -1,9 +1,9 @@
 import { describe, expect, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import * as Atom from 'effect/unstable/reactivity/Atom'
-import * as AtomRegistry from 'effect/unstable/reactivity/AtomRegistry'
-import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
+import * as Atom from 'effect/reactivity/Atom'
+import * as AtomRegistry from 'effect/reactivity/AtomRegistry'
+import * as AsyncResult from 'effect/reactivity/AsyncResult'
 import { evidenceId } from '@viviefs/datom'
 import {
   EvidenceReader,

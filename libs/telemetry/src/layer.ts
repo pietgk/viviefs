@@ -4,9 +4,9 @@
  * spans go through the trace projector instead (`trace-projector.ts`).
  */
 import * as Layer from 'effect/Layer'
-import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
-import * as OtlpSerialization from 'effect/unstable/observability/OtlpSerialization'
-import * as OtlpTracer from 'effect/unstable/observability/OtlpTracer'
+import * as FetchHttpClient from 'effect/http/FetchHttpClient'
+import * as OtlpSerialization from 'effect/observability/OtlpSerialization'
+import * as OtlpTracer from 'effect/observability/OtlpTracer'
 
 export const DEFAULT_OTLP_SERVICE_NAME = 'viviefs-evidence'
 
