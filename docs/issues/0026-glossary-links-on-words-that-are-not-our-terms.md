@@ -1,0 +1,47 @@
+# I26: Glossary links on words that are not our terms
+
+Status: needs-triage
+
+Category: bug
+
+Found: 2026-10-03
+
+## What
+
+The docs site links a word to its glossary entry even where the page uses that word in another project's sense, so a reader who hovers it gets a wrong meaning, and there is no way to mark a passage as "not our terms". The linker (D94, `termFinder` in `apps/docs/src/lib/references.ts`, run by `apps/docs/src/lib/reference-links.ts`) links the first use of each glossary term on a page, in any case and in the plural, except in headings, code, links and a few glossary places. The `EVERYDAY_TERMS` list (`Command`, `Effect`, `Service`, ...) only links those words when they are capitalised mid-sentence. That keeps "a side effect" from linking to Effect, but it cannot tell our Workflow from another tool's workflow.
+
+## Observed
+
+Writing I25, a page about other projects (repowise, LikeC4, archify, Bausteinsicht, draw.io, Grafana, vivief), linked these words in the wrong sense before they were reworded:
+
+| Text on the page | Meant | Linked to |
+| --- | --- | --- |
+| `architecture, workflow, sequence` (archify's diagram kinds) | a kind of diagram | Workflow (durable work on the engine) |
+| `Cursor's index` | the `Cursor` editor | Cursor (a sync position) |
+| `Nextcloud with shared cursors` | mouse pointers of other people | Cursor |
+| `The diagram editor Bausteinsicht builds on` | uses | Builds on (a pattern relation) |
+| `Desktop app, web app` | a program | App |
+| `joined (names, ids, attributes)` | keys on OTel spans | Attribute (of a datom) |
+| `plays a pattern or a gate step by step` | one step at a time | Gate step |
+| `Vision View Effect` (vivief's name) | vivief's effect | Effect (the library) |
+| `HTTP, actors, state machines` (a vivief quote) | the `actor` model | actor (the envelope field) |
+| `ADR 0027` of vivief, as link text | vivief's ADR | ADR-0027 of this repo (D87 turned the link into a link to our ADR) |
+
+Each was fixed by rewording, by moving the word into a link (links are skipped), or by dropping it. Words like "pattern", "intent" and "contract" in the vivief section still link to our entries, close but not the same sense.
+
+## Why it matters
+
+- A wrong hover is worse than no hover: the reader trusts it, because D94 makes the glossary the place where a term means one thing.
+- Authors bend prose around the linker. The workarounds above change what a sentence says, or make a link only to switch off linking.
+- It will happen more. The ideas-batch issues (I24, I25) and research records describe other projects on purpose, and quotes from them use their words.
+- The last row is the same problem for D87 references: an id from another repo (vivief's `ADR 0027`) is read as an id of this one.
+
+## Questions
+
+- How does an author mark a passage, a quote, a table or a whole page as "not our terms": a block quote, a directive such as `:::foreign`, a comment marker, front matter, or a per-folder rule like `KEPT_AS_WRITTEN` for paths?
+- Should a mark stop glossary links only, or D87 references too (ids of another repo)?
+- Should a source table or a quote of another project be detected without a mark, for example every block quote?
+- Should `verify` report terms linked in a marked passage, or a term whose sense is ambiguous, so a human decides?
+- Is a short list of words with more than one sense in our own docs (workflow, cursor, attribute, app) worth adding to the `EVERYDAY_TERMS` rule, or is a mark enough?
+
+## Comments
