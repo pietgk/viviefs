@@ -52,8 +52,39 @@ Copied on 2026-10-03. The three repowise blog posts are written by the repowise 
 | --- | --- | --- |
 | [grafana-flowcharting](https://github.com/algenty/grafana-flowcharting) | A Grafana panel that shows a draw.io diagram and colors, animates and links its shapes from live metrics, through rules that map series to shapes. | Unmaintained: last release 0.9.0 in 2020, last commit in 2023, Angular, which Grafana 12 no longer runs. Apache-2.0. The idea is what we keep. |
 | [Grafana Canvas panel](https://grafana.com/blog/canvas-panel-in-grafana-create-custom-visualizations-with-all-the-latest-features) | Built into Grafana: elements placed by hand, connections between them, colors and text bound to live queries. | Maintained. |
-| [Grafana Graphviz panel](https://grafana.com/blog/how-to-visualize-workflows-and-business-processes-in-grafana-introducing-the-graphviz-panel) | A diagram in the DOT language, laid out automatically, with node colors, labels, edge widths, tooltips and links driven by live queries. The DOT source can itself come from a query. Grafana names FlowCharting as no longer maintained. | Private preview, Grafana 12.3 or later (2026-08-11). |
+| [Grafana Graphviz panel](https://grafana.com/grafana/plugins/grafana-graphviz-panel/) ([introduction](https://grafana.com/blog/how-to-visualize-workflows-and-business-processes-in-grafana-introducing-the-graphviz-panel)) | A diagram in the DOT language, laid out automatically, with node colors, labels, edge widths, tooltips and links driven by live queries from any Grafana data source. Three input modes: builder (visual, no code), code (DOT) and query (the diagram comes from a data source). Grafana names FlowCharting as no longer maintained. | Private preview: version 0.0.7 (2026-08-17), Grafana 12.3 or later, not for production, no SLA. AGPL-3.0, by Grafana Labs. |
 | Service graphs from traces | The OpenTelemetry Collector's service graph connector, Tempo's metrics generator and Jaeger's dependency view build a map of who calls whom, with rates, errors and latency, from the spans themselves. | Maintained. otel-lgtm (Grafana with Tempo) and Jaeger are already lab images here (D45'). |
+
+### The Graphviz panel: one picture to explain and to monitor
+
+The [plugin page](https://grafana.com/grafana/plugins/grafana-graphviz-panel/) gives three reasons for the panel under "Why Graphviz panel", and each one names an idea of this issue:
+
+| The plugin's reason | In this issue |
+| --- | --- |
+| "Map metrics to your mental models." Grafana is good at time series, but "operational insights often live in relationships between things". | The picture is the goal: the shape a reader keeps in mind, with the numbers on it. |
+| "Diagrams as code." Define once, reuse everywhere. | A small text file in the repo that an agent writes, a check reads, and a model's ids can name (References). |
+| "Data-driven diagrams." Color nodes by health thresholds, update labels with live values, scale edge widths by throughput. | Truth from OTel, shown on the design picture. |
+
+Its three input modes match three sources of a picture: builder mode is drawn by a human (as in draw.io), code mode is written as DOT in the repo, and query mode is generated from data (from a model, the code or the datom log).
+
+The [introduction post](https://grafana.com/blog/how-to-visualize-workflows-and-business-processes-in-grafana-introducing-the-graphviz-panel/) (2026-08-11) shows eight diagrams, each a short DOT file with live data bound to it:
+
+| Example | What it shows | What is live |
+| --- | --- | --- |
+| Payment flow | checkout, authorization, fraud check, settlement, payout | node color by health threshold, throughput on the edges, "1,240 tx/min" and "99.2% success" in the labels |
+| Service map | services and who calls whom | fill color by health, edge width (`penwidth`) by request rate, rate and latency in the labels |
+| Network weathermap | sites and the links between them, laid out by `neato` | link color and label by utilization, site color by health |
+| Incident runbook | a tree of branches to follow during an incident | mostly fixed; "the branch that currently applies lights up" |
+| CI/CD pipeline | build, test, security scan, deploy to staging, deploy to production | stage color by status, duration and counts in the labels |
+| Telemetry pipeline | node_exporter to Alloy to Grafana Cloud (metrics, logs, traces) | labels from live queries; the traces node showed "0 spans/s" in grey, which told them tracing was idle |
+| Host health | CPU, memory, disks and network around one host | each part colored by its threshold, recolored on its own when load went up |
+| Customer ladder | customers grouped by number of orders | counts from a live query on every load |
+
+How data reaches the picture: color by threshold (Grafana's own thresholds), `${field}` values in labels, edge width scaled to throughput, tooltips and links that drill down into the dashboard behind a node, dashboard variables (`${service}`, `${env}`) so one diagram serves many teams, and a query mode where a query returns the DOT text itself ("Your infrastructure describes its own picture"). Layouts: `dot` for flows top-down or left-right, `neato` and `fdp` for networks, `circo` for circles.
+
+The post binds the picture to Grafana queries, mostly metrics; it does not read traces or Tempo directly. OTel reaches it as metrics: span metrics and service graph metrics from traces, or the collector's own metrics, as in the telemetry pipeline example.
+
+The idea to keep: the picture is the goal. One simplified, intuitive diagram per flow that is right for explaining the flow and for monitoring it, so a reader learns the same picture an operator watches. The DOT file is small text in the repo that an agent can write and a check can read, and its nodes could be the same ids as the design model's elements (see References below). The panel is one way to show the picture live, and it is a private preview under AGPL-3.0. DOT itself is not tied to it: [Graphviz](https://graphviz.org/) (EPL-2.0) or its WebAssembly build (`@hpcc-js/wasm-graphviz`) can draw the same file on the docs site, without the live data.
 
 ## What vivief already had
 
@@ -79,7 +110,7 @@ The original repo, [vivief ("Vision View Effect")](https://github.com/pietgk/viv
 Two sources could meet in one model. Design comes from the code: the architecture the code says it has (services, layers, commands, workflows, the effects each one may produce). Truth comes from OTel: what the running system did (spans, logs, metrics, and in this stack the datom log that the durable spans are derived from). Put the two side by side and you get:
 
 - **Drift**: a call or an effect that runs but is not in the design, or a part of the design that never runs.
-- **A live diagram**: the design diagram, colored and animated by what the system does now (the grafana-flowcharting idea, on Canvas, Graphviz or a service graph).
+- **A live diagram**: the design diagram as one goal picture, colored and animated by what the system does now (the grafana-flowcharting idea, on Canvas, Graphviz or a service graph), the same picture for explaining and for monitoring.
 - **A lesson**: the same diagram played step by step for one request (a draw.io page animation, or a recorded trace replayed), as the viewer that the explainer videos in I24 point at.
 
 This may be the place to start the session: it ties vivief's Vision - View - Effects loop, the architecture tools above, and the observability this stack already qualifies into one question.
@@ -101,13 +132,14 @@ Fog to chart, in no order:
 - **Effects in code.** Can effects be extracted from Effect code (services, layers, commands, workflows, activities), where types already say a lot? Does `(Context, Intent) => (Context', [Effects])` hold for the whole stack, and should it be a glossary term?
 - **Truth from OTel.** Which signals show the running system best (durable spans from the log, live spans, metrics, service graphs), where the live diagram is shown (Grafana in otel-lgtm, the docs site, the app), and how design and run time are joined (by name, by id, or by the keys on spans and logs).
 - **Views.** C4 levels, dynamic views of a workflow, sequence diagrams of sync: which ones a reader needs, and whether they come from a model, from code, or from the datom log at run time (D32). Mermaid stays, or draw.io, LikeC4 or Graphviz join it, and for which kind of view.
+- **One picture to explain and to monitor.** Which flows of this stack deserve one goal picture in the style of the Graphviz panel examples (for example sync from the outbox to the server and back, a durable workflow and its activities, the IntentComposer, the `verify` stages, the telemetry sinks themselves), what is live on each, and whether the same picture is shown in a lesson on the docs site and on a dashboard in otel-lgtm.
 - **Editors and viewers.** draw.io as an editor next to the code (VS Code, desktop), its embed mode and online viewer for the docs site, and what the Minimal and Sketch themes suggest for our own review and lesson surfaces: less chrome, the diagram in front, a rough style for drafts.
 - **Lessons as animated diagrams.** A lesson viewer that plays a pattern or a gate one step at a time (draw.io page animations, a replayed trace), as a cheaper and checkable step towards the explainer videos in I24. How it cites evidence, and how it stays true when the code changes.
 - **Notebooks.** Where a notebook fits and adds value: exploring the datom log or traces, a lesson that runs its own code, a design review with live queries. Which notebook (JupyterLab, which already embeds draw.io, or a TypeScript one), and how it relates to exercises and guides.
 - **Notebook or chat.** The IntentComposer as a block in a notebook or a block in a chat, where the line between the two blurs: a chat is a notebook that grows by turns, a notebook is a chat you can rerun. What that means for the IntentComposer's three parts (composing, reviewing, submitting) and for how an agent and a human build an intent together.
 - **Agents.** An MCP server about the repo, generated short context pages like vivief's Claude windows, or the current `AGENTS.md` map and skills. How each one is kept fresh.
 - **Maintenance signals.** Hotspots, ownership, co-change, blast radius, dead code, drift. Which of them `verify` should own, and which stay advice.
-- **Build, reuse or adopt.** Reuse DevAC from vivief, adopt repowise (AGPL-3.0: check what that means for this repo), LikeC4, Bausteinsicht or archify (MIT), draw.io (Apache-2.0), or build a small part ourselves. ADR-0029's reference subtree is one model for reading another repo.
+- **Build, reuse or adopt.** Reuse DevAC from vivief, adopt repowise or the Graphviz panel (both AGPL-3.0: check what that means for this repo; the panel is also a private preview), LikeC4, Bausteinsicht or archify (MIT), draw.io (Apache-2.0), Graphviz (EPL-2.0), or build a small part ourselves. ADR-0029's reference subtree is one model for reading another repo.
 - **Teaching.** How architecture views link into guides, lessons and the K-Plex style concept navigation, and what I22 (claims and evidence levels) and I24 (output formats for understanding) add.
 
 ## Comments
