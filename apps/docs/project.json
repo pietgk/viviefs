@@ -45,7 +45,7 @@
       "continuous": true,
       "dependsOn": ["build"],
       "options": {
-        "command": "pnpm exec astro preview",
+        "command": "pnpm exec astro preview stop && pnpm exec astro preview",
         "cwd": "apps/docs",
         "env": { "ASTRO_TELEMETRY_DISABLED": "1" }
       }
@@ -54,7 +54,15 @@
       "executor": "nx:run-commands",
       "continuous": true,
       "options": {
-        "command": "pnpm exec astro dev",
+        "command": "pnpm exec astro dev stop && pnpm exec astro dev",
+        "cwd": "apps/docs",
+        "env": { "ASTRO_TELEMETRY_DISABLED": "1" }
+      }
+    },
+    "stop": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec astro dev stop && pnpm exec astro preview stop",
         "cwd": "apps/docs",
         "env": { "ASTRO_TELEMETRY_DISABLED": "1" }
       }
