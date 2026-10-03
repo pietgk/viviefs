@@ -47,7 +47,7 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
 - **Teach**: docs pages are canonical. Lessons cite evidence; they never become the
   source of a claim.
 - **Guides**: [`apps/docs/src/content/docs/guides/`](apps/docs/src/content/docs/guides/index.mdx).
-  Read the MDX sources; browse with `pnpm exec nx run docs:serve` (D64). Every guide
+  Read the MDX sources; browse with `pnpm docs:prod` (D64). Every guide
   has the shape of the guide template (`apps/docs/src/guide-template/`), checked by
   `verify`'s `guides` step. Before changing code a guide names as its exemplar, read
   that guide's `review` page. Exercises: `exercises/<pattern>/`, run one with

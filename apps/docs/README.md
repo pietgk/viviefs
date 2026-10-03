@@ -10,16 +10,49 @@ From the repository root:
 
 ```sh
 pnpm exec nx run docs:build      # what verify's docs step runs; links, anchors and samples fail it
-pnpm exec nx run docs:serve      # development server on http://localhost:4321, reloads on change
-pnpm exec nx run docs:preview    # builds, then serves dist/ as it would be deployed
+pnpm docs:dev                    # development server on http://localhost:4321, reloads on change; no search
+pnpm docs:prod                   # builds, then serves dist/ as it would be deployed, with search
+pnpm docs:stop                   # stops both servers, wherever they were started
 ```
 
+Search is Pagefind: `astro build` writes its index to `dist/pagefind/`, and
+Starlight shows "Search is only available in production builds" instead of
+the search box in the development server. Use `docs:prod` to search.
+
 `astro` is a dependency of this project only, so `pnpm exec astro ...` works
-in `apps/docs`, not at the root. In a terminal, preview runs in the
-foreground (Ctrl-C stops it). Astro 7 runs it in the background when it
-detects an agent session; stop that one with
-`pnpm --dir apps/docs exec astro preview stop`. A port in use moves the
-server to the next free one (4322 next to a running `docs:serve`).
+in `apps/docs`, not at the root. In a terminal, both servers run in the
+foreground (Ctrl-C stops them). Astro 7 runs them in the background when it
+detects an agent session, and then reuses a server that is already running.
+A port in use moves the server to the next free one (4322 next to a running
+`docs:dev`).
+
+Astro and Nx each guard against a second server, so starting and stopping go
+through Astro's own lock file (`.astro/dev.json`, `.astro/preview.json`):
+
+- Astro refuses to start a second dev or preview server while its lock file
+  names a live one. `docs:serve` and `docs:preview` therefore run `astro dev
+  stop` or `astro preview stop` first, which also ends a server left behind
+  by an agent session or a closed terminal. Astro checks that the process in
+  the lock file is still Astro, stops it with SIGTERM (SIGKILL after five
+  seconds) and removes the lock. `astro preview --force`, which the refusal
+  suggests, only works with `--background` in Astro 7.3.5.
+- Nx shares a running continuous task between Nx processes: a second
+  `docs:dev` or `docs:prod` while the first still runs in another terminal
+  prints "Waiting for docs:preview in another nx process" and uses that
+  server instead of starting its own. To replace it, run `pnpm docs:stop`
+  first; the other terminal's command then ends with exit code 130.
+- `pnpm docs:stop` stops both servers through the lock files. It cannot stop
+  a server started with `--ignore-lock`, which writes no lock file; stop that
+  one with Ctrl-C.
+
+The development server needs about 100 seconds before it answers, while the
+content layer reads the repository's Markdown, and it does not always come
+up (I27): a start that takes longer than 60 seconds can fail inside Vite
+("transport invoke timed out after 60000ms"), and the server then says it is
+ready but never answers. In an agent session Astro 7 gives up on it after 30
+seconds ("Dev server failed to start within 30s") while Nx still reports the
+target as successful; `pnpm docs:dev --ignore-lock` keeps it in the
+foreground.
 
 ## How it is put together
 
