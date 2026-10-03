@@ -7,6 +7,7 @@
  * `tools/qualification/src/gates.ts`; ADR summaries are each ADR's `Summary:`
  * line; decision names are the Name column of the decision log.
  */
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { claimHref, GATE_TABLE, parseGateClaims } from './claims.ts'
@@ -229,6 +230,29 @@ const holdsAFile = (absolute: string): boolean =>
   !statSync(absolute).isDirectory() ||
   readdirSync(absolute, { recursive: true, withFileTypes: true }).some((entry) => entry.isFile())
 
+const ignoredPaths = new Map<string, boolean>()
+
+/**
+ * Whether Git ignores a path, as for a build output (`apps/docs/dist`) or a
+ * local artifact (`.artifacts/`). It exists only where it was made, so it is
+ * neither linked nor reported missing. Outside a Git repository nothing is
+ * ignored.
+ */
+const isIgnored = (root: string, path: string): boolean => {
+  const key = `${root}\0${path}`
+  const known = ignoredPaths.get(key)
+  if (known !== undefined) return known
+  let ignored: boolean
+  try {
+    execFileSync('git', ['check-ignore', '--quiet', path], { cwd: root, stdio: 'ignore' })
+    ignored = true
+  } catch {
+    ignored = false
+  }
+  ignoredPaths.set(key, ignored)
+  return ignored
+}
+
 /** Roots under which a code span is a repository path that must exist. */
 const CHECKED_ROOTS = /^(?:apps|libs|features|tools|docs|exercises)\//
 
@@ -240,8 +264,8 @@ export type CodePath =
 /**
  * What an inline code span is: a repository path to link (the site page when
  * the site renders it, else GitHub), not a path, or a path under a checked
- * root that does not exist. Placeholders (`<pattern>`, `NN.MM`, globs) are
- * not paths.
+ * root that does not exist. Placeholders (`<pattern>`, `NN.MM`, globs) and
+ * paths Git ignores are not paths.
  */
 export const codePath = (root: string, value: string): CodePath => {
   const path = value.trim()
@@ -251,6 +275,7 @@ export const codePath = (root: string, value: string): CodePath => {
   const isRootFile = !path.includes('/') && /\.\w+$/.test(path)
   if (!path.includes('/') && !isRootFile) return { _tag: 'NotAPath' }
   const bare = path.replace(/\/$/, '')
+  if (isIgnored(root, bare)) return { _tag: 'NotAPath' }
   const absolute = join(root, bare)
   if (!existsSync(absolute) || !holdsAFile(absolute)) {
     return CHECKED_ROOTS.test(path) ? { _tag: 'Missing', path } : { _tag: 'NotAPath' }

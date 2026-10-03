@@ -33,6 +33,9 @@ overrides:
   expo-linking: 58.0.3
 
 auditConfig:
+  # Each advisory accepted here is a row in I1, the one issue for advisories
+  # that fail audit with no fix released; a human decides each entry, and the
+  # row names when it is removed.
   ignoreGhsas:
     # I1: node-forge RSA signature verification (high). No patched release exists
     # (1.4.0 is the newest); it comes only through @expo/cli, a development tool,
@@ -40,3 +43,12 @@ auditConfig:
     # @expo/cli drops it; `pnpm audit --ignore-unfixable` would hide every future
     # unfixable advisory, so this names the one we accepted.
     - GHSA-86w9-cpqp-85rv
+    # I1: http-cache-semantics max-stale cross-user cache disclosure (high). No
+    # patched release (4.2.0 is affected); it comes only through astro, which
+    # builds the static docs site. Remove when a fix ships or astro drops it.
+    - GHSA-ch52-4w7c-c8xp
+    # I1: braces stack exhaustion on deeply nested patterns (high). No patched
+    # release (3.0.3 is affected); it comes only through micromatch in Metro's
+    # file map and starlight-llms-txt, build tools that read our own globs.
+    # Remove when a fix ships or both drop it.
+    - GHSA-vfj7-8cjw-p6xm

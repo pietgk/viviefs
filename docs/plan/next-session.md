@@ -52,8 +52,10 @@
   links to it with a preview. The human is still reviewing the docs.
 - **For the human to decide**: the open issues, each with its options in
   its file (Reference > Issues on the docs site):
-  - I1 the `node-forge` advisory: decided 2026-10-02, ignored with a reason
-    until a fix is released (see below); the issue stays open for that.
+  - I1 advisories that fail audit with no fix released: `node-forge`
+    (2026-10-02), `http-cache-semantics` and `braces` (2026-10-03), each
+    ignored with a reason until its trigger fires; every new one is decided
+    there, and the issue stays open while its table has rows.
   - I2 accepting the log-store guide (D63: P04 and P05 on that commit).
   - I3 the API reference for Effect services (D61).
   - I4 the `effect-solutions` peer warning, I5 the suite catalogue, I6

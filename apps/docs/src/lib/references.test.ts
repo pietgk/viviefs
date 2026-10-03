@@ -2,6 +2,7 @@
 // a summary and a page; ids are found in prose, ranges included; code spans
 // are repository paths or not. Everything resolves in a fixture repository,
 // so no test here depends on a real document.
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -212,6 +213,32 @@ describe('code spans as repository paths', () => {
   it('reports a directory without files as missing, since Git cannot hold it', () => {
     mkdirSync(join(root, 'apps/docs/src/empty/nested'), { recursive: true })
     expect(codePath(root, 'apps/docs/src/empty/')).toEqual({ _tag: 'Missing', path: 'apps/docs/src/empty/' })
+  })
+
+  it('leaves a path Git ignores alone, since it is not in the repository', () => {
+    // A build output or a local artifact exists only where it was made: in a
+    // fresh clone it is missing, and on GitHub it is never there.
+    const repository = mkdtempSync(join(tmpdir(), 'viviefs-docs-ignored-'))
+    try {
+      execFileSync('git', ['init', '--quiet'], { cwd: repository })
+      for (const [path, content] of Object.entries({
+        '.gitignore': 'dist/\n.artifacts/\n',
+        'apps/docs/dist/index.html': '<html></html>',
+        '.artifacts/verify/evidence-mobile/ios/main.jsbundle': '',
+        'apps/docs/src/index.ts': '',
+      })) {
+        mkdirSync(dirname(join(repository, path)), { recursive: true })
+        writeFileSync(join(repository, path), content)
+      }
+      expect(codePath(repository, 'apps/docs/dist')).toEqual({ _tag: 'NotAPath' })
+      expect(codePath(repository, '.artifacts/verify/evidence-mobile')).toEqual({ _tag: 'NotAPath' })
+      expect(codePath(repository, 'apps/docs/src/index.ts')).toEqual({
+        _tag: 'Link',
+        href: 'https://github.com/pietgk/viviefs/blob/main/apps/docs/src/index.ts',
+      })
+    } finally {
+      rmSync(repository, { recursive: true, force: true })
+    }
   })
 
   it('leaves code that is not a path alone', () => {

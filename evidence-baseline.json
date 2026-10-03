@@ -2,7 +2,7 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7437257,
+        "hbcBytes": 7437258,
         "jsBytes": 4583567,
         "packages": {
           "(unmapped)": 199230,
@@ -68,7 +68,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-02"
+        "recordedAt": "2026-10-03"
       },
       "ios": {
         "hbcBytes": 5331764,
@@ -130,7 +130,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-02"
+        "recordedAt": "2026-10-03"
       }
     }
   },
@@ -211,10 +211,10 @@
         "statements": "123/127"
       },
       "apps/docs/src/lib/references.ts": {
-        "branches": "107/121",
-        "functions": "39/39",
-        "lines": "144/144",
-        "statements": "170/171"
+        "branches": "111/125",
+        "functions": "40/40",
+        "lines": "156/156",
+        "statements": "184/185"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
