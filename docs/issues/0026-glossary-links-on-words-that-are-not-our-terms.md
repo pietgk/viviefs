@@ -45,3 +45,11 @@ Each was fixed by rewording, by moving the word into a link (links are skipped),
 - Is a short list of words with more than one sense in our own docs (workflow, cursor, attribute, app) worth adding to the `EVERYDAY_TERMS` rule, or is a mark enough?
 
 ## Comments
+
+2026-10-04: The same happens to ids. Pinot's latency figure `10ms P95` (the
+95th percentile) in I31 failed the build: `P95` reads as a gate id that does
+not exist (D87). It was rewritten as "the 95th percentile". Percentiles
+(`P50`, `P95`, `P99`) will come back in any page about telemetry.
+A quote cannot be reworded at all: in I33, Matt Pocock's "constrain them only
+to good decisions" links "decisions" to our Decision entry, and the quote has
+to stay as he wrote it.
