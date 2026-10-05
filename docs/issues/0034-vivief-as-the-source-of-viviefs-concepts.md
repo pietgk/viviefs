@@ -75,6 +75,29 @@ A first look, to be checked by the review:
 | `intent/`, `contract/`, `fact/` documents; agent windows | Issues and research; ADRs and decisions; guides and evidence; `AGENTS.md`, `llms.txt` | Similar shape, different names. |
 | Domains (DevAC, counseling, procurement) | Product apps as app pairs (I9) | |
 
+## From concepts to implementation: vivief's decision framework
+
+vivief's [implementation knowledge base](https://github.com/pietgk/vivief/blob/main/docs/contract/vivief-concepts-impl-kb.md) (`contract/vivief-concepts-impl-kb.md`, v6, last changed 2026-04-10, about 560 lines) is its bridge from the concepts to what gets built: a decision framework, not code-level details, that "frames the choices needed with criteria and tradeoffs, leaving actual decisions open for follow-up evaluation." Its concrete candidates are dated (Node, Deno or Bun; peer-to-peer and CRDTs; ViViEfs chose Effect v4 on Expo and server-authoritative sync instead), but its framework still holds:
+
+- **One shape per decision**: what to decide, why it matters, criteria derived from the concepts, candidates with strengths and concerns, and the concept it serves. "The concepts are stable across technology choices; the technology choices serve the concepts."
+- **What each concept needs from technology**: for example, `Datom` needs an append-only store with provenance and replay; `Projection` needs queries, live delivery, trust filtering and encryption.
+- **Phases with dependencies**: foundation (the datom store, Schema validation at commit, snapshot projections, function handlers, a first card surface), extension, advanced, and deferred.
+- **What to defer, and when to revisit**: each deferred item has a reason and a trigger, such as "when a second domain is needed".
+- **The deterministic-first loop in practice**: what makes an LLM propose a rule, how a human reviews it, how it is validated (tests, false positives, at least one fixture), refined and superseded, and when it may promote itself by confidence.
+- **The knowledge evolution path**: tacit knowledge, a knowledge file in Markdown that a skill uses, a proto-rule with thresholds, a proposed rule, an active rule, and finally enforcement in infrastructure; "a human approves each transition". DevAC measured it: a prompt with its written rules scored about 68 % against about 28 % without.
+
+ViViEfs runs its own version of this framework already, in other words:
+
+| vivief's framework | ViViEfs |
+| --- | --- |
+| Concepts, then technology choices with criteria | The bootstrap plan: the grilling decisions (D1-D94), then ADRs with a qualifying gate each |
+| Phases with dependencies | The Schedule and the ordered gates (`docs/plan/bootstrap/06-qualification-gates.md`) |
+| What to defer, with a trigger | Freeze, named slot and hypothesis (`docs/plan/bootstrap/10-open-items-and-risks.md`) and the `Decide when:` line on issues |
+| A decision record per choice | The ADR template: Problem, Design, Trade-offs, Failure-handling, Outcome (I33) |
+| Knowledge file, proto-rule, active rule, infrastructure | Research records, guides and skills; lint rules and `verify` steps; gates |
+
+What ViViEfs does not have is the explicit step from a concept to its criteria, and the path by which a written rule becomes an enforced one. Both matter for creating: they are how a new pattern would be derived from the foundation instead of chosen ad hoc.
+
 ## Suggested maps
 
 Each could be its own wayfinder map with its own destination; the order is a suggestion.
@@ -82,11 +105,13 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 1. **Inventory** (research, mostly AFK): read vivief's documents outside the archive and record, per concept, decision and vision, where it stands in ViViEfs: taken, different, missing, or rejected and why. Destination: one research record that the other maps use.
 2. **Foundation**: what ViViEfs is about (creation? creation and communication, verified by teaching?) and which of vivief's concepts become ViViEfs's foundation, as glossary terms and ADRs. Destination: a decision on the foundation concepts.
 3. **Vocabulary**: the names, together with I30 (the formula and its names), I26 (words that are not our terms), I33 (abstraction or pattern) and vivief's glossary. Destination: a glossary where each term means one thing.
-4. **The first exemplar**: what makes the log-store guide acceptable as the first pattern (I2, I21), seen through vivief's slices and creation loop. Destination: the changes that let a human accept it.
+4. **From concept to the first exemplar**: how a concept becomes a pattern a human accepts, with vivief's decision framework (criteria from concepts, phases, deferral triggers, the knowledge evolution path) next to ViViEfs's grilling, ADRs and gates, and what that means for the log-store guide (I2, I21) seen through vivief's slices and creation loop. Destination: the path from a concept to an accepted pattern, and the changes that let a human accept the log-store guide.
 5. **Showing and understanding**: `Surface` modes, self-documentation and contracts made visible, with I24, I25 and I32. Destination: which views ViViEfs builds.
 6. **Agents and trust**: deterministic-first, trust strategies, skills as effect handlers, with I29 and I33. Destination: how agents and humans share creation in this stack.
 
 ## Questions
+
+- Does ViViEfs adopt the decision framework's shape for deriving a pattern from the foundation concepts (criteria from concepts, candidates, the concept served), next to the ADR, and does the knowledge evolution path become how a written rule earns enforcement?
 
 - What is the meta insight of ViViEfs: creation, as in vivief; the proposed vision of creation and communication, verified by teaching and learning; or something narrower that fits a reference stack?
 - If learning is the verification, what is the evidence: a learner (human or agent) passing an exercise, a reader test like I21, an agent that builds the next pattern from the guides alone?

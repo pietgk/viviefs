@@ -49,7 +49,7 @@ The claim, in this stack's terms: an agent given a contract, a Layer and a suite
 - **I29.** A recorded, replayable test is an abstraction an agent fills in once and then cannot drift from.
 - **I30.** A glossary term with an effect form is an abstraction an agent reads instead of the code behind it.
 - **I25.** Tools such as ripwire answer "what should I touch" from structure instead of raw files, which is the same bet.
-- **vivief.** "Push as much as possible into the deterministic world": an abstraction is how work moves there.
+- **vivief.** "Push as much as possible into the deterministic world": an abstraction is how work moves there. Its [knowledge evolution path](https://github.com/pietgk/vivief/blob/main/docs/contract/vivief-concepts-impl-kb.md#knowledge-evolution-path) is how one is earned: tacit knowledge, a knowledge file, a proto-rule, a proposed rule, an active rule, enforcement in infrastructure (I34).
 - **The risk.** A wrong abstraction constrains every agent the wrong way at once. Matt Pocock's answer is that agents make unwinding it cheap; the gates and suites are what would tell us an abstraction is wrong.
 
 ## From problem to conclusion
