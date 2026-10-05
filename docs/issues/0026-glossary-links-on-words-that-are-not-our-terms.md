@@ -36,10 +36,17 @@ Each was fixed by rewording, by moving the word into a link (links are skipped),
 - It will happen more. The ideas-batch issues (I24, I25) and research records describe other projects on purpose, and quotes from them use their words.
 - The last row is the same problem for D87 references: an id from another repo (vivief's `ADR 0027`) is read as an id of this one.
 
+## A way to prevent it: names that carry their context
+
+A term that names its context and domain from the start clashes less with words that enter later from outside. vivief's [foundation glossary](https://github.com/pietgk/vivief/blob/main/docs/contract/foundation.md#12-glossary) does this: `Code Effect`, `Flow Effect`, `Group Effect`, `UI Effect`, `Executable Spec` (a lint rule that enforces architectural intent), and its [concepts quick reference](https://github.com/pietgk/vivief/blob/main/docs/contract/concepts-quick-ref.md) has `Code Diagnostics`, `Effect Telemetry`, `A11y Edge` and `DevAC Health`. A bare `Effect` or `Spec` would have taken the whole word. The same glossary also shows the opposite: it defines a bare `Sibling` as "another repo in the same workspace", which takes the word for one meaning.
+
+This repo has the problem waiting already: the plans call vivief, complyj and web-interview "sibling repos", and the K-Plex research (2026-10-02) uses siblings for concepts that share a parent in a navigation tree. A glossary term `Sibling` would lock the word for one of the two; `Sibling Repo` and `Sibling Concept` keep both, and leave "sibling" free in its plain sense (a brother is a sibling) when a product app needs it. The same holds for words that already clash here: workflow, cursor, attribute, app, engine.
+
 ## Questions
 
 - How does an author mark a passage, a quote, a table or a whole page as "not our terms": a block quote, a directive such as `:::foreign`, a comment marker, front matter, or a per-folder rule like `KEPT_AS_WRITTEN` for paths?
 - Should a mark stop glossary links only, or D87 references too (ids of another repo)?
+- Should every new glossary term name its context (`Sibling Repo`, `Code Effect`), and should existing bare terms (Workflow, Cursor, Attribute, Engine) be renamed that way, or only marked where they clash?
 - Should a source table or a quote of another project be detected without a mark, for example every block quote?
 - Should `verify` report terms linked in a marked passage, or a term whose sense is ambiguous, so a human decides?
 - Is a short list of words with more than one sense in our own docs (workflow, cursor, attribute, app) worth adding to the `EVERYDAY_TERMS` rule, or is a mark enough?

@@ -12,6 +12,16 @@ Series: ideas-batch, fourth batch: `ideas-batch-glossary-entries-written-as-effe
 
 Give each glossary term a fourth form next to its name, its one plain sentence and its paragraph: a description written as effects at a high or super-high level, which a human engineer and an LLM read the same way, and which shows what part of the term can be built deterministically and where reasoning is needed. It starts from vivief's formula, everything is an effect, `(State, Effect) => (State', [Effects'])`, whose names we have not settled yet (`State`, `Context`, `Effect`, `Intent`, `Command`). It overlaps with I29: test specs written in glossary terms that an agent runs and records as deterministic tests. This issue does not decide anything.
 
+## Start from vivief's concepts quick reference
+
+vivief's [DevAC concepts quick reference](https://github.com/pietgk/vivief/blob/main/docs/contract/concepts-quick-ref.md) is close to what this issue looks for, and belongs at the front of the discussion. In one page of about 300 lines it has:
+
+- **The thesis first**: the formula, "deterministic-first", and what effects documentation means, before any term.
+- **A division of labour**: the system watches, validates and caches (deterministic); the LLM queries, reasons and proposes; the human decides, edits and approves. "Ask if the answer can be determined deterministically."
+- **A glossary grouped by context**: `Core`, `Architecture`, `Workflow`, `Status`, `Actor` and `UI Effect` terms, so a term is read inside its group.
+- **Names that carry their context**: `Code Diagnostics`, `Work Activity`, `Effect Telemetry` ("runtime observation converted to effect format for comparison with static analysis", the idea of I25), `A11y Edge`, `UI Effect` (I26 takes this up as a way to prevent clashes).
+- **Deprecated terms**: each old word, what to use instead, and why (`Analyser` became `Extractor`, "clearer: it extracts data into seeds"). Our glossary has an Avoid list per term, without the reason or the history.
+
 ## The formula and its names
 
 vivief wrote one formula for every state transition, and this repo has said it three ways so far:
@@ -27,7 +37,8 @@ The names do not agree yet, and some already mean something else here:
 
 - `Effect` in the glossary is the TypeScript library. vivief's effect is data: a description of something that happens or is asked for. One of the two needs another name, or the glossary needs to say which one a page means.
 - `Intent` is "what the user asked for, before it is checked", the input to a command. In vivief's formula the input can be any effect, not only a user's.
-- `State` and `Context` are not glossary terms. The command's state is a read model, and the command does not return a new one: it returns a changeset, and the new read model follows when the changeset is applied and projected. Whether the formula's `State'` is the changeset, the read model after projection, or the log, is part of the naming question.
+- `State` and `Context` are not glossary terms here. In vivief's [foundation glossary](https://github.com/pietgk/vivief/blob/main/docs/contract/foundation.md#12-glossary) they are, with other meanings than the formula's: `Context` is "the set of repos/worktrees relevant to current work" and `State` the "current snapshot of the system". So vivief itself used `Context` for two things.
+- Here, the command's state is a read model, and the command does not return a new one: it returns a changeset, and the new read model follows when the changeset is applied and projected. Whether the formula's `State'` is the changeset, the read model after projection, or the log, is part of the naming question.
 - `Command` already is the formula in this stack's words, for one kind of change.
 
 vivief also grouped effects by level ([foundation](https://github.com/pietgk/vivief/blob/main/docs/contract/foundation.md#55-effect-hierarchies), section 5.5): low-level effects at a boundary (a database query, an HTTP request), high-level effects composed from them by rules (charge a payment, authenticate a user), and actor-level effects (state machines). "Super high" is not one of vivief's levels; it is new here, and what it means is a question below.
@@ -81,6 +92,7 @@ What this could give:
 
 ## Questions for the brainstorm
 
+- Does `GLOSSARY.md` take the quick reference's shape: the thesis first, terms grouped by context, names that carry their context, and a table of replaced terms with the reason?
 - What are the names in the formula: `State` or `Context`, `Effect` or `Intent`, and which word stays for the TypeScript library? Does the formula become a glossary term itself?
 - What do the levels mean here: low, high, actor-level, and is "super high" a user goal or a whole flow, the level a test spec is written at?
 - What is the notation: plain text like the sketches, TypeScript types, an Effect Schema, or a small DSL that `verify` can parse? Does it live in `GLOSSARY.md` or next to the code it names?
