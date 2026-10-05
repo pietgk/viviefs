@@ -9,7 +9,7 @@ context: one glossary and one ADR directory at the root.
   to the synonyms it marks _Avoid_.
 - [`docs/adr/`](../adr/README.md): the ADRs touching the area you work in.
 - [`docs/plan/bootstrap/02-decision-log.md`](../plan/bootstrap/02-decision-log.md):
-  the grilling decisions (D1-D74), accepted as intent and unverified until the
+  the grilling decisions, accepted as intent and unverified until the
   named gate.
 
 ## Where decisions go

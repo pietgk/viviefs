@@ -1,9 +1,9 @@
 # Architectural decision records
 
 ADRs preserve why consequential choices were made. The
-[bootstrap plan](../plan/bootstrap/README.md) describes the stack; grilling
-decisions D1-D58 are accepted as design intent and unverified until the named
-gate. [GLOSSARY.md](../../GLOSSARY.md) defines terms.
+[bootstrap plan](../plan/bootstrap/README.md) describes the stack; the grilling decisions in its
+[decision log](../plan/bootstrap/02-decision-log.md) are accepted as design
+intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) defines terms.
 
 ## Index
 

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charting map 1: the vivief inventory (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Wayfinder - charting map 1 of I34</span>
+    <span class="badge badge-outline">2026-10-05</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Charting map 1: the vivief inventory</h1>
+  <p class="text-lg opacity-80">I34 suggests six wayfinder maps; this is the first one, Inventory. It also starts the repo's first wayfinder map, so its shape becomes the example for maps 2-6. Before I chart tickets, this round settles the <b>destination</b>: what the finished inventory is, what it reads, and how one row says where a vivief idea stands in ViViEfs. The rows below are real, drafted from both repositories today, so you can judge the shape on content rather than on labels.</p>
+</header>
+
+<section class="space-y-5" id="where">
+  <h2 class="text-2xl font-bold">Where the map lives</h2>
+  <p>The tracker is the repo's own (<a class="cr-link" href="../agents/issue-tracker.md">issue tracker</a>, Wayfinding operations): the map is a file in its effort, its tickets are numbered issues.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body">
+      <h3 class="font-bold">Map</h3>
+      <p><code class="cr-inline">docs/plan/vivief-inventory/map.md</code>: Destination, Notes, Decisions so far, Not yet specified, Out of scope.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body">
+      <h3 class="font-bold">Tickets</h3>
+      <p>Issues from I35 on, with <code class="cr-inline">Effort: docs/plan/vivief-inventory/</code>, a <code class="cr-inline">Type:</code> line and <code class="cr-inline">Blocked by:</code>.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body">
+      <h3 class="font-bold">Parent</h3>
+      <p>I34 (vivief as the source of ViViEfs's concepts) stays open; the map links back to it, and I34 gets a comment pointing at the map.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-5" id="sources">
+  <h2 class="text-2xl font-bold">What there is to read</h2>
+  <p>I34's baseline is vivief's documents outside the archive. You invited me to extend the context; these are the candidates, measured today in <code class="cr-inline">~/ws/vivief</code> (HEAD <code class="cr-inline">3071cb2</code>, 2026-06-01).</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Source</th><th class="text-right">Files</th><th class="text-right">Lines</th><th>What it adds</th><th>My proposal</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">docs/</code> outside the archive</td><td class="text-right">171</td><td class="text-right">~42,000</td><td>I34's baseline: intent, contract (concepts v6, impl KB, 55 ADRs, 13 visions), fact, claude windows, story.</td><td><span class="badge badge-success badge-sm">read in full</span></td></tr>
+      <tr><td><code class="cr-inline">docs/REVIEW.md</code> and <code class="cr-inline">contract/adr/RELEVANCE.md</code></td><td class="text-right">2</td><td class="text-right">~560</td><td>vivief's own triage: every intent sorted into Promote, Design, Consolidate, Update, Park or Archive (round 3, 2026-04), and every ADR marked Active, Transitional, Superseded or Context. A ready-made filter and order of reading.</td><td><span class="badge badge-success badge-sm">use as the starting index</span></td></tr>
+      <tr><td><code class="cr-inline">plugins/devac/</code></td><td class="text-right">~30</td><td class="text-right">~4,600</td><td>vivief's agent tooling as it was actually used: 10 skills, 13 commands, a hook, and <code class="cr-inline">knowledge/</code> files beside two skills. That is the "knowledge file a skill uses" step of the knowledge evolution path, in practice. Feeds maps 4 and 6.</td><td><span class="badge badge-success badge-sm">extend: read</span></td></tr>
+      <tr><td>ViViEfs ideas batches I24-I33</td><td class="text-right">10</td><td class="text-right">-</td><td>Many found part of their answer in vivief. Linking rows to them saves maps 2-6 a second search.</td><td><span class="badge badge-success badge-sm">extend: cross-link</span></td></tr>
+      <tr><td><code class="cr-inline">docs/archive/</code></td><td class="text-right">100</td><td class="text-right">~43,800</td><td>Concepts v1-v5 with their reviews (13), specs (22), brainstorms (11), foundation versions (8). Where vivief changed its mind, and why.</td><td><span class="badge badge-warning badge-sm">on demand only</span> to answer "why did vivief drop this"</td></tr>
+      <tr><td>Code: <code class="cr-inline">packages/</code> (devac-*, browser-*), <code class="cr-inline">examples/</code></td><td class="text-right">-</td><td class="text-right">-</td><td>The built DevAC. The <code class="cr-inline">fact/</code> docs track it (vivief's own review grades them A on accuracy).</td><td><span class="badge badge-ghost badge-sm">out: fact/ stands in</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="space-y-5" id="rows">
+  <h2 class="text-2xl font-bold">Seven worked rows, in the proposed shape</h2>
+  <p>A row is one <b>idea</b> (a concept, term, principle, decision or mechanism), not one file; files are its sources. Each row cites both sides, says where the idea stands, how far ViViEfs has got with it when it has it, and which later map picks it up. The inventory records; it never decides. Where a decision is due, the row asks the question for the map that owns it.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>vivief idea</th><th>Status</th><th>Level</th><th>ViViEfs</th><th>Scope</th><th>Map</th><th>Question for that map</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Datom</b>: an immutable fact, the only state<div class="cr-src">concepts v6 §2.1</div></td>
+        <td><span class="badge badge-success badge-sm">taken</span></td>
+        <td>verified (P04, P05)</td>
+        <td>D31 One datom log; D35'' adds a changeset id <code class="cr-inline">cs</code> to vivief's five fields</td>
+        <td>reference stack</td><td>2</td><td>-</td>
+      </tr>
+      <tr>
+        <td><b>Contract</b>: spec, test and runtime guard at once; Schema, Behavior, Trust<div class="cr-src">concepts v6 §2.4</div></td>
+        <td><span class="badge badge-info badge-sm">different</span></td>
+        <td>accepted (glossary)</td>
+        <td>Glossary Contract: what a part promises, an Effect service checked by suites. Same word, narrower scope; no Trust part.</td>
+        <td>reference stack</td><td>3</td><td>One word or two? (I26, I30)</td>
+      </tr>
+      <tr>
+        <td><b>Schema evolution is creation</b>: Schemas only grow; a rare breaking change runs a migration handler through the creation loop<div class="cr-src">concepts v6 §2.1</div></td>
+        <td><span class="badge badge-info badge-sm">different</span></td>
+        <td>accepted</td>
+        <td>D44 Never rename, never migrate: additive too, but no migration handler; read models are rebuilt instead</td>
+        <td>reference stack</td><td>2</td><td>Is "never migrate" the stricter form of the same idea, or a rejection of migration as creation?</td>
+      </tr>
+      <tr>
+        <td><b>Three trust strategies</b>: authoritative, gated, sandboxed<div class="cr-src">concepts v6 §3</div></td>
+        <td><span class="badge badge-error badge-sm">missing</span></td>
+        <td>-</td>
+        <td>Nearest: ADR-0025 AI-robust guardrails, a person accepting a guide (ADR-0026). No named strategy.</td>
+        <td>reference stack</td><td>6</td><td>Do agents' writes to the log need a trust strategy?</td>
+      </tr>
+      <tr>
+        <td><b>Surface</b> in six modes<div class="cr-src">concepts v6 §2.3, vision/ui-effects</div></td>
+        <td><span class="badge badge-error badge-sm">missing</span></td>
+        <td>-</td>
+        <td>Nearest: ADR-0019 UI state ownership, P12 UI on every platform. No concept for what a screen renders.</td>
+        <td>reference stack</td><td>5</td><td>Which modes does the exemplar need? (I24, I25)</td>
+      </tr>
+      <tr>
+        <td><b>Peer-to-peer sync</b> on Iroh and MoQ<div class="cr-src">contract/p2p/lean-stack-v2, intent/p2p/*</div></td>
+        <td><span class="badge badge-warning badge-sm">deferred</span></td>
+        <td>hypothesis</td>
+        <td>Not rejected: D36 is server-authoritative, and the <a class="cr-link" href="2026-09-30-communication-architecture.md">2026-09-30 communication research</a> keeps a server-independent mode as a hypothesis outside the scope freeze</td>
+        <td>product vision?</td><td>-</td><td>-</td>
+      </tr>
+      <tr>
+        <td><b>Counseling platform</b><div class="cr-src">contract/counseling/platform-v2</div></td>
+        <td><span class="badge badge-ghost badge-sm">-</span></td>
+        <td>-</td>
+        <td>No counterpart, none intended</td>
+        <td>product vision</td><td>-</td><td>-</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="alert alert-soft alert-warning"><span>The peer-to-peer row is why <b>rejected</b> needs a citation. Absence in ViViEfs is <b>missing</b>; only a decision, an ADR, a freeze entry or an issue's <code class="cr-inline">Decide when:</code> line can make an idea <b>rejected</b> or <b>deferred</b>. Without that rule an agent reading the stack would mark it rejected, and map 2 would inherit a decision nobody made.</span></div>
+</section>
+
+<section class="space-y-8" id="questions">
+  <h2 class="text-2xl font-bold">Round 1: the destination</h2>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q1'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q1 destination: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q1: ' + c, element: event.currentTarget, queueKey: 'q1', data: { question: 'q1', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q1 - What is the destination?</h3>
+      <p>Wayfinder plans by default: tickets resolve decisions, nobody does the work. An inventory is different: the record is the deliverable, and maps 2-6 are where the decisions are made. So the map's Notes would override "plan, don't do": research tickets read their slice and write it into the record.</p>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: one research record docs/research/2026-10-xx-vivief-inventory.md, all rows cited on both sides, every in-scope file accounted for; Notes override plan-don't-do so research tickets write the record; done when a final review ticket accepts it" checked><span><b>A (recommended).</b> One research record, <code class="cr-inline">docs/research/2026-10-xx-vivief-inventory.md</code>: all rows, cited on both sides, and a coverage list that accounts for every in-scope file. Tickets write it. Done when a final HITL review ticket accepts it.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: a record plus an HTML visual of it for review"><span><b>B.</b> As A, plus an HTML page in <code class="cr-inline">docs/research/</code> that shows the record visually for the final review.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="C: plan only; the map decides how the inventory is made, a later effort writes it"><span><b>C.</b> Plan only: the map decides how the inventory is to be made; writing it is a separate effort.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.getAll('q2').join('; '); const n = (d.get('notes') || '').toString().trim(); window.lavish.queuePrompt('Q2 sources: ' + (c || 'none') + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q2: ' + c, element: event.currentTarget, queueKey: 'q2', data: { question: 'q2', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q2 - Which sources are in scope?</h3>
+      <p>The table above, as choices. The defaults are my recommendation.</p>
+      <label class="flex gap-3 items-start pl-3"><input type="checkbox" class="checkbox checkbox-sm mt-1" name="q2" value="docs outside archive (read in full)" checked><span>docs outside the archive, read in full</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="checkbox" class="checkbox checkbox-sm mt-1" name="q2" value="REVIEW.md and RELEVANCE.md as starting index" checked><span>REVIEW.md and RELEVANCE.md as the starting index</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="checkbox" class="checkbox checkbox-sm mt-1" name="q2" value="plugins/devac (skills, commands, knowledge files)" checked><span>plugins/devac: skills, commands, knowledge files</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="checkbox" class="checkbox checkbox-sm mt-1" name="q2" value="cross-link I24-I33" checked><span>cross-link the ideas batches I24-I33</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="checkbox" class="checkbox checkbox-sm mt-1" name="q2" value="archive on demand only" checked><span>the archive, on demand only</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="checkbox" class="checkbox checkbox-sm mt-1" name="q2" value="archive in full"><span>the archive, read in full</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="checkbox" class="checkbox checkbox-sm mt-1" name="q2" value="vivief code packages"><span>vivief's code packages</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q3'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q3 row: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q3: ' + c, element: event.currentTarget, queueKey: 'q3', data: { question: 'q3', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q3 - What is one row?</h3>
+      <p>A file-per-row inventory is easy to check for completeness but buries the ideas: concepts v6 alone holds dozens. An idea-per-row inventory is what maps 2-6 need, but nothing proves every file was read.</p>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: one row per idea (concept, term, principle, decision, mechanism) with sources; plus a coverage list, one line per in-scope file: read, which rows it fed, or skipped and why" checked><span><b>A (recommended).</b> One row per idea, as above, plus a <b>coverage list</b>: one line per in-scope file saying which rows it fed, or that it was skipped and why (for example "DevAC parser detail").</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: one row per idea, no coverage list"><span><b>B.</b> One row per idea, no coverage list.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="C: one row per file"><span><b>C.</b> One row per file.</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q4" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q4'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q4 status: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q4: ' + c, element: event.currentTarget, queueKey: 'q4', data: { question: 'q4', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q4 - How does a row say where an idea stands?</h3>
+      <p>I34 names four statuses: taken, different, missing, rejected and why. The rows above use three columns instead of one.</p>
+      <div class="cr-table-wrap"><table class="table table-xs">
+        <tbody>
+          <tr><th>Status</th><td><b>taken</b> (same idea), <b>different</b> (same word or area, another meaning or design), <b>deferred</b> (a slot, hypothesis or <code class="cr-inline">Decide when:</code> exists), <b>missing</b> (nothing in ViViEfs), <b>rejected</b> (a decision rules it out). Deferred and rejected need a ViViEfs citation; without one the idea is missing.</td></tr>
+          <tr><th>Level</th><td>For taken and different, how far ViViEfs has got (the working agreement keeps these apart): accepted (a D-number or glossary term), proposed (an ADR, unverified), implemented, verified (the gate that passed).</td></tr>
+          <tr><th>Scope</th><td><b>reference stack</b> (a candidate for ViViEfs), <b>product vision</b> (counseling, procurement, a product's peer-to-peer), <b>DevAC tooling</b> (code analysis, LikeC4, browser automation). Only reference-stack rows get a map and a question.</td></tr>
+        </tbody>
+      </table></div>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="A: status (taken, different, deferred, missing, rejected; deferred and rejected need a ViViEfs citation) + level (accepted, proposed, implemented, verified) + scope (reference stack, product vision, DevAC tooling)" checked><span><b>A (recommended).</b> Status, level and scope as above.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="B: I34's four statuses only"><span><b>B.</b> I34's four statuses only.</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q5" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q5'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q5 reverse: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q5: ' + c, element: event.currentTarget, queueKey: 'q5', data: { question: 'q5', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q5 - Does the inventory also look the other way?</h3>
+      <p>I34 asks "what did ViViEfs learn that vivief lacked": gates and the ledger, claims, <code class="cr-inline">verify</code> and its evidence registry, delivery by guide, exercise and lesson. Map 2 needs that answer as much as the forward one.</p>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="A: yes, a short second table: one row per ViViEfs mechanism with no vivief counterpart, with its nearest vivief idea" checked><span><b>A (recommended).</b> Yes, a short second table: one row per ViViEfs mechanism with no vivief counterpart, and its nearest vivief idea (for example gates next to vivief's <code class="cr-inline">validation.md</code>).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="B: no, forward only; map 2 does the reverse"><span><b>B.</b> No, forward only; map 2 asks it.</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<section class="space-y-5" id="settled">
+  <h2 class="text-2xl font-bold">Round 1, settled</h2>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <tbody>
+      <tr><th>Destination</th><td>One research record in Markdown, with an HTML view of it for the final review (Q1 B). Research tickets write it; a final review with you accepts it.</td></tr>
+      <tr><th>Sources</th><td>vivief's docs outside the archive in full; REVIEW.md and RELEVANCE.md as the starting index; <code class="cr-inline">plugins/devac</code>; cross-links to I24-I33. The archive is out, also on demand, and so is the code. <code class="cr-inline">story/</code> stays in: its evolution logs say where vivief changed its mind.</td></tr>
+      <tr><th>Row</th><td>One idea per row, with a coverage list per in-scope file.</td></tr>
+      <tr><th>Where it stands</th><td>Status (taken, different, deferred, missing, rejected; deferred and rejected cite ViViEfs), level, scope.</td></tr>
+      <tr><th>Reverse</th><td>Yes, and as complete as the forward direction: both repositories are equally relevant.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="space-y-8" id="round2">
+  <h2 class="text-2xl font-bold">Round 2: the frontier</h2>
+  <p>Your note on Q5 changes the shape. An inventory that is complete in both directions is no longer a vivief table with an appendix; it is one table of ideas that each have two sides, and coverage on both sides. That makes ViViEfs's own ideas something to enumerate up front, not something to sweep at the end.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q6" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q6'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q6 two-way shape: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q6: ' + c, element: event.currentTarget, queueKey: 'q6', data: { question: 'q6', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q6 - One table with two sides?</h3>
+      <p>Every row is one idea with a vivief side and a ViViEfs side; either may be empty. A ViViEfs-only row gets the status <b>ViViEfs only</b> and names its nearest vivief idea. Coverage then has two lists: every in-scope vivief file, and every ViViEfs source: the 101 glossary terms, the decisions D1-D94, ADR-0001 to ADR-0031, the gates P01-P17 and the log-store guide. Issues are cross-linked, not covered.</p>
+      <div class="cr-table-wrap"><table class="table table-xs">
+        <thead><tr><th>Idea</th><th>vivief</th><th>ViViEfs</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Datom</td><td>concepts v6 §2.1</td><td>D31, glossary Datom, P04</td><td>taken</td></tr>
+          <tr><td>Trust strategies</td><td>concepts v6 §3</td><td>-</td><td>missing</td></tr>
+          <tr><td>Qualification gates with a ledger</td><td>nearest: vision/validation.md</td><td>D46, ADR-0026, P01-P17, gate-ledger.json</td><td>ViViEfs only</td></tr>
+          <tr><td>Hybrid logical clock</td><td>nearest: ADR-0047 datom store sync (version vectors, Hypercore causal ordering); no HLC anywhere outside the archive</td><td>D33', ADR-0007, P04</td><td>ViViEfs only</td></tr>
+        </tbody>
+      </table></div>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="A: one table, every idea with a vivief side and a ViViEfs side; status adds 'ViViEfs only' with the nearest vivief idea; coverage on both sides (vivief files; ViViEfs glossary terms, D1-D94, ADRs, gates P01-P17, the log-store guide); issues cross-linked" checked><span><b>A (recommended).</b> One table, two sides, coverage on both.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="B: two tables, vivief to ViViEfs and ViViEfs to vivief"><span><b>B.</b> Two tables, one per direction. Ideas that appear on both sides appear twice.</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q7" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q7'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q7 tickets: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q7: ' + c, element: event.currentTarget, queueKey: 'q7', data: { question: 'q7', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q7 - How the reading splits into tickets</h3>
+      <p>A ticket must fit one agent session of about 100K tokens. vivief's in-scope docs are about 44,000 lines, so the reading needs about eight slices, cut along vivief's own seams. Two <b>index</b> tickets come first and run side by side: one names vivief's ideas from its backbone, the other names ViViEfs's ideas from its sources. Every slice then matches against the same two indexes, so eight agents don't produce eight names for one idea.</p>
+      <div class="cr-mermaid bg-base-100 rounded-xl p-3 overflow-x-auto"><pre class="mermaid">
+flowchart LR
+  A["I35 vivief index<br/>concepts v6, quick ref, foundation<br/>~1.7k lines"]
+  B["I36 ViViEfs index<br/>glossary, D1-D94, ADRs, gates, guide"]
+  A --> S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8
+  B --> S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8
+  S1["I37 impl KB, impl guide, foundation visual<br/>~1.8k"]
+  S2["I38 the other 11 visions<br/>~1.5k"]
+  S3["I39 domain contracts: datom, p2p, counseling, procurement<br/>~4.4k"]
+  S4["I40 55 ADRs with RELEVANCE<br/>~8.2k"]
+  S5["I41 22 intents with REVIEW round 3<br/>~7.3k"]
+  S6["I42 fact/devac<br/>~7.9k"]
+  S7["I43 other fact docs, claude windows, story<br/>~9.4k"]
+  S8["I44 plugins/devac<br/>~4.6k"]
+  S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8 --> C["I45 assemble the record and its HTML view<br/>check every citation, level and coverage line"]
+  C --> R["I46 review with you<br/>grilling, HITL"]
+</pre></div>
+      <p class="text-sm opacity-80">Types: I35-I44 research (AFK), I45 task (AFK), I46 grilling (HITL). The larger slices lean on vivief's own filters: RELEVANCE marks the DevAC-only ADRs, REVIEW's round 3 marks parked and archived intents, so those get a coverage line ("DevAC tooling") rather than a close reading.</p>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="A: 12 tickets as drawn: two index tickets first and in parallel, eight slices blocked by both, assembly, then the review with the human" checked><span><b>A (recommended).</b> As drawn.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="B: no index tickets; slices name ideas as they go and assembly merges duplicates"><span><b>B.</b> No index tickets; each slice names ideas as it goes, and assembly merges the duplicates.</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q8" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q8'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q8 working files: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q8: ' + c, element: event.currentTarget, queueKey: 'q8', data: { question: 'q8', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q8 - Where each ticket writes</h3>
+      <p>Slices running side by side cannot all edit one record without conflicts, and a research record is written once and then kept as it was (D68).</p>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="A: each ticket writes docs/plan/vivief-inventory/rows/I<n>.md (rows and coverage lines); its Answer links that file; I45 assembles docs/research/2026-10-xx-vivief-inventory.md and .html; the rows files stay as the working trail" checked><span><b>A (recommended).</b> Each ticket writes its own <code class="cr-inline">docs/plan/vivief-inventory/rows/I&lt;n&gt;.md</code> (rows and coverage lines) and links it from its Answer. I45 assembles the dated record, <code class="cr-inline">.md</code> and <code class="cr-inline">.html</code>. The rows files stay with the effort as the trail.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="B: each ticket appends its rows to the record directly, one at a time"><span><b>B.</b> Each ticket appends to the record directly, and the slices run one at a time.</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q9" onsubmit="event.preventDefault(); const d = new FormData(event.currentTarget); const c = d.get('q9'); const n = (d.get('notes') || '').toString().trim(); if (!c) return; window.lavish.queuePrompt('Q9 running: ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: 'Q9: ' + c, element: event.currentTarget, queueKey: 'q9', data: { question: 'q9', answer: c, notes: n } });">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q9 - How the research tickets run</h3>
+      <p>Wayfinder starts a research subagent per research ticket when the map is charted. Only I35 and I36 are unblocked then. The eight slices could run as a swarm once both close; your standing rule is that a swarm needs your approval first, so here are the trade-offs.</p>
+      <div class="cr-table-wrap"><table class="table table-xs">
+        <thead><tr><th></th><th>Swarm of 8 subagents</th><th>One session per ticket</th></tr></thead>
+        <tbody>
+          <tr><th>Time</th><td>One sitting</td><td>Eight sittings, or several sessions you start in parallel</td></tr>
+          <tr><th>Tokens</th><td>About the same in total, about 8 x 100K, spent at once</td><td>The same, spread out</td></tr>
+          <tr><th>Consistency</th><td>Agents can't see each other; the shared indexes and I45's checks carry it</td><td>Each later session can read the rows already written</td></tr>
+          <tr><th>Your attention</th><td>Once, at I46</td><td>You can glance at each slice as it lands</td></tr>
+        </tbody>
+      </table></div>
+      <label class="flex gap-3 items-start cr-rec pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="A: this session ends charting by starting I35 and I36 as two background research subagents; the eight slices run as a swarm in the next wayfinder session, after you glance at the two indexes" checked><span><b>A (recommended).</b> This session ends by starting I35 and I36 as two background research subagents. You glance at the two indexes, because every slice inherits their names. Then one wayfinder session runs the eight slices as a swarm.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="B: start I35 and I36 now; the slices run one session per ticket"><span><b>B.</b> Start I35 and I36 now; the slices run one session per ticket.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="C: chart only; start nothing in this session"><span><b>C.</b> Chart only; start nothing in this session.</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <div class="card bg-base-200"><div class="card-body space-y-2">
+    <h3 class="text-xl font-bold">Standing rules for the map's Notes (no question, tell me if one is wrong)</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>Every row cites file and section heading on both sides, so a reader can check it in one click.</li>
+      <li><b>verified</b> names the gate and only stands if the ledger records a pass; <b>rejected</b> and <b>deferred</b> only stand with a ViViEfs citation. I45 rechecks all three.</li>
+      <li>Rows record and ask; they never decide. A recommendation belongs to the map that owns the question (2-6).</li>
+      <li>Names follow <code class="cr-inline">GLOSSARY.md</code> on the ViViEfs side and vivief's own words on the vivief side, in code font, so a reader always knows whose word it is.</li>
+    </ul>
+    <h3 class="text-xl font-bold pt-2">Fog and out of scope, as I'd write them on the map</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>Not yet specified:</b> how the HTML view is laid out (grouped by concept, by map, or by status), decided when the rows exist.</li>
+      <li><b>Out of scope:</b> deciding what ViViEfs adopts (maps 2-6); vivief's archive and code; vivief's GitHub issues.</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="space-y-5" id="settled2">
+  <h2 class="text-2xl font-bold">Round 2, settled</h2>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <tbody>
+      <tr><th>Shape</th><td>One table, two sides, coverage on both (Q6 A).</td></tr>
+      <tr><th>Tickets</th><td>I35-I46 as drawn (Q7 A).</td></tr>
+      <tr><th>Writing</th><td>Rows files per ticket in <code class="cr-inline">docs/plan/vivief-inventory/rows/</code>, assembled by I45 (Q8 A).</td></tr>
+      <tr><th>Running</th><td>I35 and I36 start now as background research subagents; the slices run one session per ticket, because of the token budget and rate limits in subagent sessions (Q9 B).</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The map: <code class="cr-inline">docs/plan/vivief-inventory/map.md</code>.</p>
+</section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+</script>
+</body>
+</html>

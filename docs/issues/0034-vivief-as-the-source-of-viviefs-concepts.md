@@ -121,3 +121,5 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 - Do the maps run one after another, or can the inventory run beside the others?
 
 ## Comments
+
+2026-10-05: map 1 (Inventory) is charted as [the vivief inventory map](../plan/vivief-inventory/map.md), with tickets I35-I46 and the charting review [2026-10-05 Charting map 1: the vivief inventory](../research/2026-10-05-vivief-inventory-charting.html). Its destination is one research record that says, for every idea in vivief and in ViViEfs, where it stands in the other.
