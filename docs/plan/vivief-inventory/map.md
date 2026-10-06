@@ -122,6 +122,23 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   test spans copied through the OpenTelemetry SDK (rejected by ADR-0018); the
   trace matching ViViEfs takes from vivief was never built there.
 
+- [I43: Inventory vivief's guides, agent windows and story](../../issues/0043-inventory-vivief-guides-windows-and-story.md):
+  19 rows from the README, the 20 agent windows, the guides, the story and
+  `agents/` ([rows](rows/I43.md)); 6 taken, 12 different, 1 missing; the
+  stacks share their agent setup (the same vendored skills and adapters, CLIs
+  first) and part on agent context (a summary window per topic against one
+  source and `llms.txt`), on how a check is phased in and on how a change of
+  mind is kept; vivief's story shows its final peer-to-peer protocol changing
+  three times.
+
+- [I44: Inventory vivief's DevAC plugin](../../issues/0044-inventory-vivief-devac-plugin.md):
+  28 rows from the 32 files of `plugins/devac/` ([rows](rows/I44.md)); 3 taken,
+  18 different, 5 missing, 2 rejected; the stacks share skills beside typed
+  commands, CLIs first and a file of things learned in practice, and part on
+  packaging (one Claude plugin with hooks and MCP, ruled out by ADR-0027) and
+  on rules kept as prose or a reported score where ViViEfs makes a failing
+  check; 13 of the reference-stack rows go to map 6.
+
 ## Not yet specified
 
 - Whether a consumer app needs ideas or features: the unit of I45's `Apps`
