@@ -12,6 +12,7 @@ records as pages and serves HTML records as they are.
 
 | Record | What it is |
 | --- | --- |
+| [2026-10-06 The vivief inventory](2026-10-06-vivief-inventory.html) | Every idea in vivief and in ViViEfs and where it stands in the other, 348 rows grouped by the map (2-6) that picks each up, with filters by status, scope, app and slice; [the record, how its rows were assembled and what the checks found](2026-10-06-vivief-inventory.md) (I45). Draft until I46. |
 | [2026-10-06 Lavish loading with several review tabs](2026-10-06-lavish-multiple-tab-loading.md) | Reproduced browser connection-pool starvation, host update from 0.1.43 to 0.1.82, and seven-tab loading validation; glossary research artifacts preserved. |
 | [2026-10-06 Combining the glossary explainers](2026-10-06-glossary-k-plex-combined.html) | Three new arrangements retaining Map, Relationships and Guided: an explainer desk, a question-led explorer and an investigation workspace; [feedback, hypotheses and checks](2026-10-06-glossary-k-plex-combined.md). Iteration 2, composition and naming pending review. |
 | [2026-10-06 Three ways to understand the glossary](2026-10-06-glossary-k-plex.html) | K-Plex-inspired comparison using the same architecture, data and identity terms: neighbourhoods, relationship sentences and guided explanations; [sources, evaluation tasks and research context](2026-10-06-glossary-k-plex.md). Iteration 1, preference pending review. |

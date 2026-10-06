@@ -139,13 +139,19 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   on rules kept as prose or a reported score where ViViEfs makes a failing
   check; 13 of the reference-stack rows go to map 6.
 
+- [I45: Assemble the vivief inventory](../../issues/0045-assemble-the-vivief-inventory.md):
+  [the record](../../research/2026-10-06-vivief-inventory.md) and its HTML
+  view, laid out by map: 348 rows (191 different, 94 missing, 14 deferred,
+  4 rejected, 33 taken, 12 ViViEfs only) after merging 89 repeated ids and
+  19 pairs that name one idea twice; unnamed practice counts as `different`;
+  the checks hold, except two citation faults and peer-to-peer deferrals
+  that rest on research alone; 36 rows name an app, none retail.
+
 ## Not yet specified
 
 - Whether a consumer app needs ideas or features: the unit of I45's `Apps`
   column. The human holds it open; I45 uses the row's idea for now. It may
   graduate to a question for I46's review or for map 4.
-- How the HTML view is laid out: grouped by concept, by the map that picks a
-  row up, or by status. Decided in I45 once the rows exist.
 
 ## Out of scope
 
