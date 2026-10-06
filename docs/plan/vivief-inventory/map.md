@@ -38,14 +38,20 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
     pass).
   - Scope: `reference stack`, `product vision` (counseling, procurement, a
     product's peer-to-peer) or `DevAC tooling`. Only reference-stack rows get a
-    map (2-6) and a question.
+    map (2-6) and a question. Product vision is not foreign: BirVana, ERP, GRC,
+    counseling, procurement and probably retail are candidate consumer apps,
+    likely to live in this repository once the exemplar matures, and an app's
+    need is the proof that a pattern is useful (I9 Comments, 2026-10-06).
+    Their product-specific decisions stay out of scope.
 - **Rows record and ask; they never decide.** Where a decision is due, the row
   asks it as a question for the map that owns it.
 - **Citations.** Every row cites file and section heading on both sides.
   ViViEfs names follow `GLOSSARY.md`; vivief's own words are written in code
   font, so a reader always knows whose word it is. vivief's ADR numbers
   collide with ViViEfs's: write `vivief ADR 0047`, never `ADR-0047`, which the
-  docs site links to ViViEfs's own ADR.
+  docs site links to ViViEfs's own ADR. In a page the docs site renders
+  (`docs/issues/`, `docs/research/`) keep it in code font: plain `ADR 0047`
+  with a space links too, and fails the build when no such ADR exists.
 - **Ids.** Ideas have readable ids: `vivief:<kebab-slug>` from I35,
   `viviefs:<kebab-slug>` from I36. A slice reuses an index id when the idea is
   already indexed and adds a new id otherwise.
@@ -74,8 +80,45 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   and the log-store guide ([rows](rows/I36.md)); 35 verified, 23 implemented,
   8 proposed, 11 accepted.
 
+- [I37: Inventory vivief's implementation path](../../issues/0037-inventory-vivief-implementation-path.md):
+  42 rows from the KB and the two foundation guides ([rows](rows/I37.md));
+  6 taken, 26 different, 9 missing, 1 deferred; ViViEfs runs vivief's decision
+  framework under other names (gates for phases, `Decide when:` for triggers,
+  `verify` for the deterministic pipeline) and parts on the order of sync and on
+  the self-improving rule loop for agents.
+
+- [I38: Inventory vivief's vision contracts](../../issues/0038-inventory-vivief-vision-contracts.md):
+  45 rows from the eleven vision contracts ([rows](rows/I38.md)); 1 taken,
+  25 different, 17 missing, 1 deferred, 1 rejected; ViViEfs shares the
+  summary-first and person-decides practice and parts on handler dispatch,
+  scored trust and self-triggered improvement, mostly for map 6.
+
+- [I39: Inventory vivief's domain contracts](../../issues/0039-inventory-vivief-domain-contracts.md):
+  38 rows from the datom, peer-to-peer, counseling and procurement contracts
+  ([rows](rows/I39.md)); 6 taken, 20 different, 7 missing, 5 deferred; the
+  stacks meet on one log with derived state kept out of it, and part on
+  peer-to-peer replication (`deferred` on the 2026-09-30 hypothesis) and on
+  rules kept as datoms at run time; counseling and procurement are product
+  vision, as candidate consumer apps.
+
+- [I40: Inventory vivief's ADRs](../../issues/0040-inventory-vivief-adrs.md):
+  53 rows from vivief's 52 ADRs ([rows](rows/I40.md)); 9 taken, 21 different,
+  17 missing, 6 deferred; the stacks meet at the datom and part on peer-to-peer
+  convergence versus server authority; the gaps are the UI layer and vivief's
+  agent practice in its DevAC ADRs.
+
+- [I41: Inventory vivief's intents](../../issues/0041-inventory-vivief-intents.md):
+  47 rows from the 23 intents and REVIEW ([rows](rows/I41.md)); 3 taken,
+  19 different, 22 missing, 2 deferred, 1 rejected; the stacks share the
+  practice of pass-or-fail checks and part where vivief puts models inside the
+  running system (Code Mode, routing, self-tuning prompts), mostly for map 6;
+  REVIEW triages only 18 of the 23 files.
+
 ## Not yet specified
 
+- Whether a consumer app needs ideas or features: the unit of I45's `Apps`
+  column. The human holds it open; I45 uses the row's idea for now. It may
+  graduate to a question for I46's review or for map 4.
 - How the HTML view is laid out: grouped by concept, by the map that picks a
   row up, or by status. Decided in I45 once the rows exist.
 

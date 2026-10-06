@@ -20,6 +20,7 @@ Is the inventory complete and correct enough to review? Assemble `docs/plan/vivi
 - Fill the vivief side of I36's rows from the slices; rows still empty there become `ViViEfs only` with the nearest vivief idea.
 - Check every `verified` against `tools/qualification/gate-ledger.json`, and every `deferred` and `rejected` against the ViViEfs source it cites.
 - Check both coverage lists: every in-scope vivief file and every ViViEfs source has a line.
+- Add an `Apps` column: for each reference-stack row, the candidate consumer apps (BirVana, ERP, GRC, counseling, procurement, retail; [I9](0009-product-apps-as-app-pairs.md) Comments) that need the idea, with the source that says so, or `-`. An app's need is the proof that a pattern is useful. The rows files stay as written; the column lives only in the record. Whether an app needs ideas or features is open (the fog on the map): use the row's idea as the unit for now and say so in the record.
 - Decide the HTML layout (by concept, by map or by status), the fog on the [map](../plan/vivief-inventory/map.md).
 
 Record what was merged and what the checks found in the answer.
