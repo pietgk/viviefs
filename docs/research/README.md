@@ -12,6 +12,7 @@ records as pages and serves HTML records as they are.
 
 | Record | What it is |
 | --- | --- |
+| [2026-10-06 K-Plex, simply explained](2026-10-06-k-plex-explained.html) | A small interactive map for engineers and non-engineers, with everyday and software examples; [summary, sources, limitations and recovery provenance](2026-10-06-k-plex-explained.md) |
 | [2026-10-02 K-Plex and concept navigation](2026-10-02-k-plex-concept-navigation.html) | Visual research and interactive repo-term navigator, comparing K-Plex and TheBrain; [primary-source findings](2026-10-02-k-plex-concept-navigation.md) |
 | [2026-09-27 P11 Q5: how a request proves who sent it](2026-09-27-p11-q5-token-transport.html) | P11 grilling explainer, token transport (Q5) |
 | [2026-09-27 P11: who can tamper with the datom log](2026-09-27-p11-log-tampering.html) | P11 grilling explainer, tampering (Q14, Q15) |
