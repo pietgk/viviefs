@@ -123,3 +123,5 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 ## Comments
 
 2026-10-05: map 1 (Inventory) is charted as [the vivief inventory map](../plan/vivief-inventory/map.md), with tickets I35-I46 and the charting review [2026-10-05 Charting map 1: the vivief inventory](../research/2026-10-05-vivief-inventory-charting.html). Its destination is one research record that says, for every idea in vivief and in ViViEfs, where it stands in the other.
+
+2026-10-06: map 1 is done. [The vivief inventory](../research/2026-10-06-vivief-inventory.md) ([HTML view](../research/2026-10-06-vivief-inventory.html)), accepted in [I46](0046-review-the-vivief-inventory.md), is where maps 2-6 start: 348 rows, each listed under the map that picks it up (map 2 101, 3 15, 4 67, 5 54, 6 82), with the question each asks. Three questions come first: map 2, where the server-independent goal is recorded; map 4, whether a consumer app needs ideas or features; map 6, whether an app on the stack calls a model at run time.

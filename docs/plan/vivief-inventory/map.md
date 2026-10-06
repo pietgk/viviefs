@@ -147,11 +147,17 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   the checks hold, except two citation faults and peer-to-peer deferrals
   that rest on research alone; 36 rows name an app, none retail.
 
+- [I46: Review the vivief inventory](../../issues/0046-review-the-vivief-inventory.md):
+  accepted as the start of maps 2-6, with eight statuses and fifteen maps
+  corrected (348 rows: 199 different, 94 missing, 31 taken, 6 ViViEfs only);
+  map 2 first asks where the server-independent goal lives, map 4 whether an
+  app needs ideas or features, map 6 whether an app calls a model at run time.
+  The map is done.
+
 ## Not yet specified
 
-- Whether a consumer app needs ideas or features: the unit of I45's `Apps`
-  column. The human holds it open; I45 uses the row's idea for now. It may
-  graduate to a question for I46's review or for map 4.
+Nothing. Whether a consumer app needs ideas or features, the unit of the
+`Apps` column, went to map 4 as an inherited question in I46.
 
 ## Out of scope
 
