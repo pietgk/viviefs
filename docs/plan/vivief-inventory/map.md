@@ -114,6 +114,14 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   running system (Code Mode, routing, self-tuning prompts), mostly for map 6;
   REVIEW triages only 18 of the 23 files.
 
+- [I42: Inventory DevAC's fact docs](../../issues/0042-inventory-devac-fact-docs.md):
+  33 rows from the 17 files of `fact/devac/` ([rows](rows/I42.md)); 4 taken,
+  14 different, 13 missing, 1 deferred, 1 rejected; the stacks share trace
+  context in the envelope and derived meaning kept apart from facts, and part
+  on code as a queried graph of effects, rules and views (absent here) and on
+  test spans copied through the OpenTelemetry SDK (rejected by ADR-0018); the
+  trace matching ViViEfs takes from vivief was never built there.
+
 ## Not yet specified
 
 - Whether a consumer app needs ideas or features: the unit of I45's `Apps`
