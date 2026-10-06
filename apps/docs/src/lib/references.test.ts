@@ -172,6 +172,11 @@ describe('finding references in prose', () => {
     ])
   })
 
+  it('reads a double prime that smartypants curled into two different quotes', () => {
+    // After a code span, `D35''` reaches the linker as `D35’‘`.
+    expect(ids('the changeset id; D31, D35’‘; ADR-0006 Design')).toEqual(['D31', "D35''", 'ADR-0006'])
+  })
+
   it('finds issue ids, not words that start with I', () => {
     expect(ids('I1 blocks audit; see I12. In 2026, I2C and iOS are not issues.')).toEqual(['I1', 'I12'])
   })

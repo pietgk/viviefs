@@ -189,11 +189,12 @@ export type Found = {
   readonly inRange: boolean
 }
 
-const PRIME = /['\u2019\u2032]/g
+/** A prime as written, or as smartypants curled it: after a code span `D35''` arrives as `D35\u2019\u2018`. */
+const PRIME = /['\u2018\u2019\u2032]/g
 /** Ends an id: no more of a word follows, or a possessive 's does. */
-const END = String.raw`(?:(?![\w'\u2019\u2032-])|(?=['\u2019]s\b))`
+const END = String.raw`(?:(?![\w'\u2018\u2019\u2032-])|(?=['\u2019]s\b))`
 const REFERENCE = new RegExp(
-  String.raw`\b(?:(P\d\d)${END}|ADR[- ](\d{4})${END}|(D\d{1,3})((?:['\u2019\u2032]{1,2})?)${END}|(I\d{1,4})${END})|\b(P\d\d|D\d{1,3})-(P\d\d|D\d{1,3})\b`,
+  String.raw`\b(?:(P\d\d)${END}|ADR[- ](\d{4})${END}|(D\d{1,3})((?:['\u2018\u2019\u2032]{1,2})?)${END}|(I\d{1,4})${END})|\b(P\d\d|D\d{1,3})-(P\d\d|D\d{1,3})\b`,
   'g',
 )
 
