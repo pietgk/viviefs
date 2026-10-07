@@ -16,3 +16,5 @@ ADR-0002 and [01-vision-and-scope](../plan/bootstrap/01-vision-and-scope.md) sti
 - The vision page's "Expo app together with its backend" wording names no topology beyond today's apps, as the glossary's ViViEfs entry now does.
 
 ## Comments
+
+- 2026-10-07: [I48](0048-where-the-server-independent-goal-is-recorded.md) settled the pair shape (D106): ADR-0002 (Design, "Product apps later occupy `apps/<product>-mobile` + `apps/<product>-server`") and 01-vision ("`apps/<product>-mobile` + `apps/<product>-server` slot later") become `<product>-client` + `<product>-server`. I48 already added the server-independent mode's Out of scope line in D100's form (D104, D105), the first such item.

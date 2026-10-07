@@ -23,8 +23,8 @@ actually happens (ADR-0032). What ViViEfs builds is the reference stack and its
 repository (ADR-0002), and the consumer apps built on it live there too (D55').
 What it is about is app creation, in one language people and agents read the
 same way: gates verify what we built, learning verifies the language (D96).
-Today its apps are an Expo app (phone and web) and a Node server; which device
-or node an app runs on is open (I48). Successor in spirit to vivief.
+Today its apps are an Expo app (phone and web) and a Node.js server, which
+holds authority for every organization (D103). Successor in spirit to vivief.
 
 **App creation**:
 Building apps, and the proven parts and tools later apps are built with, by
@@ -86,6 +86,14 @@ A program people run, such as the phone app or the server, put together from
 features and libraries. In code it is a composition root that selects features
 and provides every requirement as Layers, and it stays thin by rule.
 _Avoid_: application package, shell
+
+**Server**:
+The program that decides which changes count for an organization. It accepts
+or rejects every change, orders the accepted ones, grants membership and fences
+leases; together these duties are its authority (D103). It is a `node` like a
+device, one that holds authority. Today one server holds all of these duties
+for every organization; they could later be split across `node`s or shared by
+all (D104, I60).
 
 **Feature**:
 One piece of what the app does for its users, such as collecting evidence,
@@ -306,7 +314,8 @@ device has at most one active. The only thing called a session.
 _Avoid_: login state, identity
 
 **Device**:
-One installation of an app, on one phone or in one browser. It keeps one local
+One installation of an app, on one phone or in one browser. It is the `node`
+a person uses (D103), and it keeps one local
 replica per provider account that signed in on it; its id is chosen by the
 device and not authenticated.
 _Avoid_: client, peer

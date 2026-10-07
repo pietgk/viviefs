@@ -9,9 +9,9 @@ Date: 2026-10-07
 Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
 gate that already shows it, or names the gate to come.
 
-Related: D95, D96, D97, D98, D99, D100, D101, D102, D55'. ADR-0002 (what ViViEfs
-builds), ADR-0026 (Verify - Qualify - Teach), D93 (claims). Opened by I47;
-completed by I48-I54 and I56; accepted in I55.
+Related: D95, D96, D97, D98, D99, D100, D101, D102, D55', D103, D104, D105,
+D106. ADR-0002 (what ViViEfs builds), ADR-0026 (Verify - Qualify - Teach), D93
+(claims). Opened by I47; completed by I48-I54 and I56; accepted in I55.
 [The foundation concepts map](../plan/foundation-concepts/map.md).
 
 ## Problem
@@ -82,6 +82,22 @@ nodes is the case to protect (I48).
 **Foundation concepts.** Which of vivief's concepts become ViViEfs's
 foundation is decided by I48-I54 and I56 and recorded here; I55 accepts the
 whole.
+
+**Nodes and authority (D103-D106, I48).** An app is the program; a `node` is
+one installation of an app that keeps all or part of an organization's data
+and writes changes to it; a device is the `node` a person uses. Authority is a
+set of duties for an organization: accept or reject each change, order the
+accepted ones, grant membership, fence leases. Today one `node`, the server,
+holds all of them: client-server is the one authority model, read as a
+peer-to-peer system in which one `node` carries the server's authority. The
+server already writes into the log the way a device does; what sets it apart
+is authority, not data. Tools are apps but not `node`s. P09 (sync with
+server authority) and P11 (identity and organization isolation) show the one
+model today; the server-independent mode (I60) names its own gate when it is picked up: a
+paired exemplar doing the same operation in both modes. Until then, D105 lists
+what must stay possible. A consumer app is `<product>-client` +
+`<product>-server` (D106). `node` waits for map 3 for its glossary entry,
+because it clashes with Node.js.
 
 Revisit when a learner's failure shows the languages above are not the ones
 people and agents actually use, or when I56 finds one shape that describes

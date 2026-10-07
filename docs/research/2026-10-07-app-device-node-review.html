@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I48: what an app is to a device and a node (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I48</span>
+    <span class="badge badge-outline">2026-10-07</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">What an app is to a device and a node</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0048-where-the-server-independent-goal-is-recorded.md">I48</a> asks two things. Where the server-independent goal is recorded, so the five peer-to-peer rows of <a class="cr-link" href="2026-10-06-vivief-inventory.html">the vivief inventory</a> cite a ViViEfs source instead of <a class="cr-link" href="2026-09-30-communication-architecture.md">the 2026-09-30 communication research</a> alone. And, widened by <a class="cr-link" href="../issues/0047-what-viviefs-is-about.md">I47</a>: what an app is to a device and a node, so that D100 (out of scope means not yet) holds for a server-independent mode. Your framing: <i>client-server can be read as peer-to-peer where one or more nodes carry a server signature</i>. Below, today's four running things are worked through both readings on the real code.</p>
+</header>
+
+<section class="space-y-5" id="today">
+  <h2 class="text-2xl font-bold">Today, in the code</h2>
+  <p>Four things run. Three of them take part in sync; one does not.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>What runs</th><th>App (project)</th><th>Keeps a replica of the log?</th><th>Writes changesets?</th><th>What only it may do</th></tr></thead>
+    <tbody>
+      <tr><td><b>The Expo app on a phone</b> (iOS, Android)</td><td><code class="cr-inline">apps/evidence-mobile</code></td><td>Yes: a local replica in SQLite native, one per signed-in provider account</td><td>Yes: runs the shared command, applies optimistically, queues in the outbox (D36, <a class="cr-link" href="../adr/0017-sync-outbox-and-cursor-stream.md">ADR-0017 Sync: outbox and cursor stream</a>); HLC minted with its own device id (<a class="cr-link" href="../adr/0007-hybrid-logical-clock.md">ADR-0007 Hybrid logical clock</a>)</td><td>Nothing: every change waits for the server's acceptance</td></tr>
+      <tr><td><b>The same Expo app in a browser</b></td><td><code class="cr-inline">apps/evidence-mobile</code> (react-native-web, <code class="cr-inline">expo start --web</code>)</td><td>Yes: SQLite wasm</td><td>Yes, the same path</td><td>Nothing. The project is called <code class="cr-inline">-mobile</code> but it is also the web app</td></tr>
+      <tr><td><b>The Node server</b></td><td><code class="cr-inline">apps/evidence-server</code></td><td>Yes: the whole log of every organization it holds, in Postgres (PGlite in the lab). Its log store is opened with <code class="cr-inline">deviceId: 'evidence-server'</code></td><td>Yes: its own changesets carry <code class="cr-inline">actor: 'server'</code>, <code class="cr-inline">device: 'server'</code> (<code class="cr-inline">libs/sync/server/src/server.ts</code>)</td><td><b>Authority:</b> verifies the OIDC token, checks membership, revalidates and accepts or rejects each changeset (D36, <a class="cr-link" href="../adr/0016-commands-and-server-validation.md">ADR-0016 Commands and server validation</a>), orders accepted history (the server sequence a cursor points into), grants membership (<a class="cr-link" href="../adr/0022-identity-and-organization-isolation.md">ADR-0022 Identity and organization isolation</a>), fences leases (<a class="cr-link" href="../adr/0014-leases-fencing-and-server-authority.md">ADR-0014 Leases, fencing and server authority</a>)</td></tr>
+      <tr><td><b>A tool</b>: <code class="cr-inline">verify</code>, <code class="cr-inline">qualify</code>, on a laptop or in CI</td><td><code class="cr-inline">tools/verify</code>, <code class="cr-inline">tools/qualification</code></td><td>No. <code class="cr-inline">qualify</code> keeps its own append-only file, the gate ledger, but not a datom log</td><td>No</td><td>Not part of any organization's data at all</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><b>What this shows.</b> The server already writes into the log the way a device does: same envelope, its own device id in the clock. What sets it apart is not the data but the <b>authority</b> it holds for each organization. And the glossary's Device entry ("one installation of an app, on one phone or in one browser", <i>Avoid: client, peer</i>) describes the phone and the browser only, while the App entry ("such as the phone app or the server") and D102 (tools are apps) already reach wider.</p>
+</section>
+
+<section class="space-y-5" id="readings">
+  <h2 class="text-2xl font-bold">Two readings of the same system</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold">Client-server (today's words)</h3>
+<div class="cr-mermaid"><pre class="mermaid">
+flowchart TB
+  P[Phone: device] -->|outbox up| S[(Server)]
+  W[Browser: device] -->|outbox up| S
+  S -->|cursor stream down| P
+  S -->|cursor stream down| W
+  T[verify, qualify] -.-x|no sync| S
+</pre></div>
+      <p>Two kinds of thing: devices and the server. The server is a different kind of thing, so a word, an ADR or an attribute can quietly assume there is exactly one, and that it is not a device.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold">Nodes, some carrying authority (your framing)</h3>
+<div class="cr-mermaid"><pre class="mermaid">
+flowchart TB
+  P[Node: phone] <-->|changesets| S[Node: server<br/>holds authority for O1]
+  W[Node: browser] <-->|changesets| S
+  P <-.->|later, not yet| W
+  T[verify, qualify:<br/>apps, not nodes]
+</pre></div>
+      <p>One kind of thing: a node, a running app that keeps a replica and writes changesets. <b>Authority</b> for an organization (accept, order, grant membership, fence leases) is a role a node holds. Today exactly one node per organization holds it, and it is the server; that is client-server, unchanged. The dotted line is what must stay possible (D100).</p>
+    </div></div>
+  </div>
+  <p><b>The same code either way.</b> Nothing in today's protocol changes under the second reading: the phone still sends its outbox to the one node that holds authority, and catches up by that node's sequence. The difference is what the words let a later decision assume.</p>
+</section>
+
+<section class="space-y-5" id="scenarios">
+  <h2 class="text-2xl font-bold">Five scenarios, worked both ways</h2>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Scenario</th><th>Client-server</th><th>Nodes with authority</th></tr></thead>
+    <tbody>
+      <tr><td><b>1. Capture evidence offline, sync later</b> (P09, P11)</td><td>The device queues; the server accepts on reconnect.</td><td>Identical. The phone node queues; the node holding authority for the organization accepts.</td></tr>
+      <tr><td><b>2. Several servers</b> (<a class="cr-link" href="../issues/0058-several-servers-in-the-lab.md">I58</a>)</td><td>"Server" becomes plural; every rule written as "the server" must be re-read.</td><td>Several nodes hold authority, each for its own organizations. "The server" in a rule already means "the node holding authority for this organization".</td></tr>
+      <tr><td><b>3. A counseling practice hosts its own</b> (<code class="cr-inline">vivief:deployment-by-node-capability</code>)</td><td>The practitioner runs a copy of the server somewhere; I7.</td><td>The authority role sits on a node the practice owns: a server they run, or later the practitioner's own desktop. Same acceptance contract.</td></tr>
+      <tr><td><b>4. The operator disappears</b> (the comms research's test of server independence)</td><td>Devices stop syncing; nothing in the words says what next.</td><td>Two paths, and they differ (Q3): <b>move</b> authority to another node of the group (one acceptance contract, D36 stands), or <b>dissolve</b> it: the group reconciles with signed permission history and merge rules (a second acceptance contract, the comms "independent group").</td></tr>
+      <tr><td><b>5. <code class="cr-inline">verify</code> runs in CI</b></td><td>A tool; outside the picture.</td><td>An app (D102) that is not a node: it keeps no replica and writes no changesets. "App" and "node" come apart here.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><b>"Server signature".</b> Today authority is held by position: the device syncs with whatever URL it was given, and trusts what comes back over TLS. A <i>signature</i> would let a node prove that a changeset was accepted by the node holding authority, so a peer could relay accepted history it cannot accept itself (the comms research's "enterprise with peer exchange"). Whether acceptance is signed is <a class="cr-link" href="../issues/0015-identity-keys-and-trust.md">I15</a>'s (signed changesets, device keys). This page reads "signature" as the authority role, and leaves the cryptography to I15.</p>
+</section>
+
+<section class="space-y-5" id="words">
+  <h2 class="text-2xl font-bold">What the words would say (if Q1 is A)</h2>
+  <p>Drafts to judge Q1 by, not entries yet. The App entry stays as written; its plain sense against its in-code sense is map 3's (D102).</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold">Node (new)</h3>
+      <p>One running installation of an app that keeps a replica of an organization's data and writes changes to it: the app on a phone, in a browser, or the server. A tool such as <code class="cr-inline">verify</code> is an app but not a node.</p>
+      <p class="cr-src"><i>Avoid:</i> peer (for now), host</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold">Device (narrowed)</h3>
+      <p>A node a person uses: one installation of an app on one phone or in one browser. Unchanged in meaning; it now says what kind of thing it is.</p>
+      <p class="cr-src"><i>Avoid:</i> client, peer</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold">Server (defined by its role)</h3>
+      <p>The node that holds authority for an organization: it accepts or rejects every change, orders the accepted ones, grants membership and fences leases. Today one server holds it for every organization.</p>
+      <p class="cr-src">Whether "authority" gets its own entry is map 3's.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-5" id="rows">
+  <h2 class="text-2xl font-bold">The eight rows, provisionally</h2>
+  <p>Where each row would land if round 1 goes as recommended. Settled in a later round.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Row</th><th>Provisional disposition</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:p2p-node-architecture</code></td><td><b>adopt</b> the node reading in the words (Q1); vivief's typed nodes with capabilities and "no remote procedure calls" not adopted; the mode itself <b>defer</b>, <code class="cr-inline">Decide when:</code> the new server-independent issue</td></tr>
+      <tr><td><code class="cr-inline">vivief:datom-log-as-crdt</code></td><td><b>defer</b> to the new issue (what tells two replicas what the other lacks); whether the log names commutative assert and retract as a property, to I53 or I52</td></tr>
+      <tr><td><code class="cr-inline">vivief:moq-iroh-transport</code></td><td><b>defer</b> to the new issue; connectivity chosen apart from the acceptance contract, HTTP kept (comms §3)</td></tr>
+      <tr><td><code class="cr-inline">vivief:payload-blind-relay</code></td><td><b>defer</b> to the new issue (with I15 for keys)</td></tr>
+      <tr><td><code class="cr-inline">vivief:room-code-discovery</code></td><td><b>defer</b> to the new issue</td></tr>
+      <tr><td><code class="cr-inline">vivief:deployment-by-node-capability</code></td><td><b>defer</b>, I7 confirmed (self-hosting is a production question)</td></tr>
+      <tr><td><code class="cr-inline">vivief:deployment-level-security</code></td><td><b>defer</b>, I7 confirmed</td></tr>
+      <tr><td><code class="cr-inline">vivief:domain</code></td><td>follows the consumer app shape (round 2): likely <b>keep ours</b>, a consumer app is ViViEfs's form of a domain, attribute namespaces the line</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="space-y-5" id="round1">
+  <h2 class="text-2xl font-bold">Round 1</h2>
+  <p>Three questions with no open prerequisite. The words for Device and Node, tools, the consumer app shape, what must stay possible, and the rows wait on these.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 model')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q1 - Which reading do ViViEfs's words take?</h3>
+      <p>The question is what the glossary and the ADRs may assume, not what the code does: today's protocol is the same under A and B.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: nodes with authority as a role; app = the program, node = a running installation that keeps a replica and writes changesets (phone, browser, server), device = a node a person uses, server = the node holding authority for an organization; client-server is the one authority model today; signing acceptance is I15's" checked><span><b>A (recommended).</b> Nodes, with authority as a role. App is the program; a <b>node</b> is a running installation of an app that keeps a replica and writes changesets (phone, browser, server); a <b>device</b> is a node a person uses; the <b>server</b> is the node holding authority for an organization. Client-server is the one authority model today. Whether acceptance is signed is I15's.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: keep client-server words; record the server-independent mode as a future mode that brings its own words when it comes"><span><b>B.</b> Keep client-server words; the server-independent mode brings its own words when it comes. Least change now, but every "the server" written meanwhile is a place D100 can break.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="C: adopt vivief's typed node architecture: node types with capabilities (browser, relay, desktop, server) as the architecture, phases add node types"><span><b>C.</b> vivief's typed nodes: node types with capabilities (browser, relay, desktop, server) are the architecture, and phases add node types. Brings relays and desktops in before any app needs them.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 record')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q2 - Where is the server-independent goal recorded?</h3>
+      <p>The comms research calls it "the confirmed goal" but changes nothing: no open item, no issue, no <code class="cr-inline">Decide when:</code>. D100 says every out-of-scope item says what must stay possible; D101 says some items are learnable in the lab. The comms research names the next evidence: a paired exemplar doing the same operation in both modes.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: both an out-of-scope line in 01-vision (with what must stay possible, learnable in the lab per D101) and a new issue &quot;Server-independent mode&quot; with Decide when: a consumer app needs a group to work without its operator, or the human schedules it for learning in the lab; the peer-to-peer rows cite the issue" checked><span><b>A (recommended).</b> Both: a line in 01-vision's "Out of scope (for now)" saying what must stay possible and that it is learnable in the lab (D101), and a new issue, <i>Server-independent mode</i>, with <code class="cr-inline">Decide when:</code> a consumer app needs a group to work without its operator, or you schedule it for learning in the lab. The peer-to-peer rows cite the issue.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: only a new issue with a Decide when; 01-vision unchanged"><span><b>B.</b> Only the issue. The vision page keeps not mentioning it, so a reader of the scope would not know it is wanted.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="C: a hypothesis entry in 10-open-items-and-risks"><span><b>C.</b> A hypothesis in 10-open-items-and-risks. That list is the bootstrap freeze's; a goal beyond it fits poorly there.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="D: neither; the research record stays the only source"><span><b>D.</b> Neither: the research stays the only source and the rows keep citing it.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 independence')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q3 - What does "server-independent" mean?</h3>
+      <p>Scenario 4: the operator is gone. Your framing ("one or more nodes carry a server signature") reads as authority that can <b>move</b>. The comms research's independent group <b>dissolves</b> authority instead: signed permission history and merge rules, a second acceptance contract. The comms definition: "the original application operator is unnecessary for the agreed operations"; relays, discovery and storage replicas may help if they are replaceable and hold no authority; "no infrastructure whatsoever" stays undecided.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="C: the comms definition; authority that moves to another node is what the words must keep possible now (one acceptance contract, D36 stands); authority that dissolves (independent group, second acceptance contract) stays the open hypothesis of the new issue; no-infrastructure stays undecided there" checked><span><b>C (recommended).</b> The comms definition. Authority that <b>moves</b> to another node is what the words must keep possible now (one acceptance contract, D36 stands). Authority that <b>dissolves</b> stays the open hypothesis of the new issue, with "no infrastructure whatsoever".</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: authority moves only: server-independent means any node of the group can hold authority; no second acceptance contract is wanted"><span><b>A.</b> Moves only. Any node of the group can hold authority; no second acceptance contract is wanted. Closes the independent group, which D100 resists.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: authority dissolves: the independent group with signed permission history and merge is the goal, as the comms research states it"><span><b>B.</b> Dissolves, as the comms research states the goal. The words must then keep a second acceptance contract possible from now on.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<section class="space-y-5" id="settled">
+  <h2 class="text-2xl font-bold">Settled (rounds 1-3, in conversation)</h2>
+  <div class="cr-table-wrap"><table class="table table-sm"><tbody>
+    <tr><th>Reading</th><td>Q1 A, Q4: an app is the program; a <code class="cr-inline">node</code> keeps <b>all or part</b> of an organization's data and writes changes; a device is the <code class="cr-inline">node</code> a person uses; authority is a set of duties the server holds today, which could later be split or shared. D103.</td></tr>
+    <tr><th>The goal</th><td>Q2 A, Q3 C, Q5: an out-of-scope line in 01-vision and I60. Authority that moves is kept possible now; shared authority (the independent group, or Holochain-style validation by every <code class="cr-inline">node</code>) stays a hypothesis; Holochain as a model, not the runtime. D104.</td></tr>
+    <tr><th>Must stay possible</th><td>Q10: seven items. D105.</td></tr>
+    <tr><th>Tools</th><td>Q6 A: an app but not a <code class="cr-inline">node</code>.</td></tr>
+    <tr><th>Consumer apps</th><td>Q7 A: <code class="cr-inline">&lt;product&gt;-client</code> + <code class="cr-inline">&lt;product&gt;-server</code>; renaming <code class="cr-inline">evidence-mobile</code> is I61 (Q14 A). D106.</td></tr>
+    <tr><th>Rows</th><td>Q8, Q13: as in I48's Answer.</td></tr>
+    <tr><th>Recorded</th><td>Q9 A, Q12 A: decision log, ADR-0032 "Nodes and authority", the 01-vision line, the glossary. <b>Changed on recording:</b> <code class="cr-inline">node</code> clashes with Node.js in the docs site's term links, so it gets no glossary entry until map 3 (the human's hint: Node.js becomes <code class="cr-inline">node-js</code>); Server gets an entry, Device and ViViEfs are reworded. The drafts in "What the words would say" above are superseded.</td></tr>
+  </tbody></table></div>
+</section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+</script>
+</body>
+</html>

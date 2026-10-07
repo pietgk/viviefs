@@ -51,3 +51,8 @@ Plus: crash and resume (force-quit mid-workflow), lease handoff to another devic
 - Production hosting, deployment topology and production telemetry backends.
 - Horizontal scale-out of the workflow engine (Effect Cluster is the later path, D39).
 - Product-specific decisions of the consumer apps (for example BirVana's XState and voice ADRs).
+- A server-independent mode: a group keeps working without its original operator, with authority moved
+  to another `node` or shared by all (D104, I60). Must stay possible: authority as duties a `node` holds,
+  acceptance rules any `node` could run, partial data per `node`, catch-up by each writer's progress, signed
+  authorship, membership any member can check, and connectivity apart from acceptance (D105). Learnable in
+  the lab (D101).
