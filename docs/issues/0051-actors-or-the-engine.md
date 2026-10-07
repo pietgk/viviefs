@@ -8,7 +8,7 @@ Effort: docs/plan/foundation-concepts/
 
 Type: grilling
 
-Blocked by: I47
+Blocked by: I47, I56
 
 Found: 2026-10-07
 

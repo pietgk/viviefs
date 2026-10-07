@@ -8,7 +8,7 @@ Effort: docs/plan/foundation-concepts/
 
 Type: grilling
 
-Blocked by: I47, I48, I49, I50, I51, I52, I53, I54
+Blocked by: I47, I48, I49, I50, I51, I52, I53, I54, I56
 
 Found: 2026-10-07
 

@@ -1,6 +1,6 @@
 # I9: Product apps in this repository as app pairs
 
-Status: ready-for-human
+Status: resolved
 
 Category: enhancement
 
@@ -13,6 +13,10 @@ Whether BirVana, ERP and GRC live in this repository as `<product>-mobile` and `
 ## Direction
 
 Decide after P11-P17.
+
+## Answer
+
+Decided in [I47](0047-what-viviefs-is-about.md) on 2026-10-07 (D55'): the consumer apps live in this repository, built on the stack and improving it by using it (D95). When the first one arrives stays open, once the exemplar is more mature. Their shape, a `<product>-mobile` + `<product>-server` pair or otherwise, is not settled here: a pair assumes an app is tied to a device, and I48 asks what an app is to a device and a node.
 
 ## Comments
 

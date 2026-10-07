@@ -40,6 +40,7 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | [0029](0029-effect-reference-and-language-service.md) | Effect reference subtree and language service | Qualified | verify |
 | [0030](0030-verify-qualify-clis-as-effect-cli.md) | Verify and qualify CLIs as Effect CLI | Qualified | verify |
 | [0031](0031-typescript-strictness-flags.md) | TypeScript strictness flags from Effect, evaluated | Qualified | verify |
+| [0032](0032-what-viviefs-is-about.md) | What ViViEfs is about and its foundation concepts | Proposed, unverified | none (intent) |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. **Accepted** is a human status given on the pattern's

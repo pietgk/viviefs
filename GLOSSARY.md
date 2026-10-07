@@ -15,10 +15,26 @@ definition is the precise meaning, for people and agents who need it.
 ## Architecture
 
 **ViViEfs**:
-The project these docs describe: a worked example of how to build a phone and
-web app together with its server, so later apps can copy what is proven here.
-Vision - View - Effects; the reference stack and its repository, successor in
-spirit to vivief.
+The project these docs describe: people and AI agents building apps together,
+and the proven parts those apps are built from, where tests prove what we built
+and learners show whether we explained it well, so each new app starts from
+what is proven. Vision - View - Effects: what we intend, what we show, and what
+actually happens (ADR-0032). What ViViEfs builds is the reference stack and its
+repository (ADR-0002), and the consumer apps built on it live there too (D55').
+What it is about is app creation, in one language people and agents read the
+same way: gates verify what we built, learning verifies the language (D96).
+Today its apps are an Expo app (phone and web) and a Node server; which device
+or node an app runs on is open (I48). Successor in spirit to vivief.
+
+**App creation**:
+Building apps, and the proven parts and tools later apps are built with, by
+people and AI agents together; using a part in a real app is how it gets
+better. It is
+what ViViEfs is about (D95, ADR-0032): what we build is checked by gates, and
+how we explained it is checked by whether others can learn it. vivief's broader
+`Creation` (everything humans, AI and systems make) is not adopted. A tool,
+such as `verify`, is an app for the people and agents building apps (D102).
+_Avoid_: creation (alone, for this meaning)
 
 **Pattern**:
 A proven way to build one part of an app, written down once so every app here

@@ -43,6 +43,8 @@ decisions that chose them.
 
 ## Decisions so far
 
+- [I47](../../issues/0047-what-viviefs-is-about.md): ViViEfs is about app creation, verified by gates for what we built and by learning for the language; tools are apps too; ADR-0032 opened (D95-D102, D55'). Added I56, one shape at every level.
+
 ## Not yet specified
 
 - A prototype of what an adopted concept would look like in code, if a concept
