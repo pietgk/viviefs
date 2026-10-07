@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charting map 2: the foundation concepts (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Wayfinder - charting map 2 of I34</span>
+    <span class="badge badge-outline">2026-10-07</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Charting map 2: the foundation concepts</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../plan/vivief-inventory/map.md">Map 1, the vivief inventory</a>, is done: <a class="cr-link" href="2026-10-06-vivief-inventory.html">the record</a> lists 101 reference-stack rows under map 2. I34 calls map 2 Foundation: what ViViEfs is about, and which of vivief's concepts become ViViEfs's foundation, as glossary terms and ADRs. Before I chart tickets, this round settles the <b>destination</b>. The clusters and the worked endings below are real rows, so you can judge the shape on content.</p>
+</header>
+
+<section class="space-y-5" id="inherits">
+  <h2 class="text-2xl font-bold">What map 2 inherits: 101 rows in eight clusters</h2>
+  <p>The clusters are I46's (Review, "Map 2, accepted"); the row-to-cluster sorting is mine and is what round 2 would ticket. Two questions come first, from I46: <b>where the server-independent goal is recorded</b>, and I34's <b>what ViViEfs is about</b>.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Cluster</th><th>Where the stacks stand</th><th>The question it asks</th></tr></thead>
+    <tbody>
+<tr><td><b>What ViViEfs is about</b><div class="cr-src">12 rows</div></td><td>Creation, the five concepts as a closed set, the loop at every scale, Vision - View - Effects in our own name, a reference stack proven once.<div class="mt-1"><span class="badge badge-sm badge-ghost">5 missing</span> <span class="badge badge-sm badge-ghost">5 different</span> <span class="badge badge-sm badge-ghost">2 taken</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">creation</code>, <code class="cr-inline">five-concepts</code>, <code class="cr-inline">fractal-factory</code>, <code class="cr-inline">three-pipelines</code>, <code class="cr-inline">vision-view-loop</code>, <code class="cr-inline">reference-stack</code>, <code class="cr-inline">anti-goals</code>, <code class="cr-inline">portability</code>, <code class="cr-inline">concept-aligned-packages</code>, <code class="cr-inline">observation-apart-from-meaning</code>, <code class="cr-inline">effects-over-actions</code>, <code class="cr-inline">changeset</code></div></details></td><td>Is creation (or creation and communication, verified by teaching) the meta insight, and which of the five concepts become ours?</td></tr>
+<tr><td><b>Projection: one concept or several patterns</b><div class="cr-src">17 rows</div></td><td>The largest cluster. vivief has one concept for query, access, encryption, delivery, freshness and trust scope; ViViEfs has read models, the projector, query atoms, membership and encryption at rest.<div class="mt-1"><span class="badge badge-sm badge-ghost">11 different</span> <span class="badge badge-sm badge-ghost">4 taken</span> <span class="badge badge-sm badge-ghost">1 missing</span> <span class="badge badge-sm badge-ghost">1 deferred</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">projection</code>, <code class="cr-inline">projection-delivery</code>, <code class="cr-inline">projection-needs</code>, <code class="cr-inline">freshness</code>, <code class="cr-inline">one-query-model</code>, <code class="cr-inline">layered-query-architecture</code>, <code class="cr-inline">virtual-projection-shapes</code>, <code class="cr-inline">read-model-and-projector</code>, <code class="cr-inline">differential-dataflow</code>, <code class="cr-inline">cold-tier-indexing</code>, <code class="cr-inline">temperature-tiers</code>, <code class="cr-inline">sql-first-queries</code>, <code class="cr-inline">analytics-as-projection</code>, <code class="cr-inline">redaction</code>, <code class="cr-inline">derived-never-authoritative</code>, <code class="cr-inline">datom-indexes</code>, <code class="cr-inline">subscription-as-replication-filter</code></div></details></td><td>Does ViViEfs name the whole, and does a read carry its access rule?</td></tr>
+<tr><td><b>Contracts as data or as code</b><div class="cr-src">17 rows</div></td><td>vivief checks contracts as datoms on every effect, before and after commit; ViViEfs checks them in commands, Schema at every boundary and server revalidation.<div class="mt-1"><span class="badge badge-sm badge-ghost">11 different</span> <span class="badge badge-sm badge-ghost">3 missing</span> <span class="badge badge-sm badge-ghost">2 taken</span> <span class="badge badge-sm badge-ghost">1 rejected</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">contract-governed-handler</code>, <code class="cr-inline">contract-runtime-needs</code>, <code class="cr-inline">runtime-contract-enforcement</code>, <code class="cr-inline">schema-contract</code>, <code class="cr-inline">schema-evolution</code>, <code class="cr-inline">temporal-validation-points</code>, <code class="cr-inline">behavior-contract</code>, <code class="cr-inline">contract-modes</code>, <code class="cr-inline">contract-subtypes</code>, <code class="cr-inline">self-describing-datoms</code>, <code class="cr-inline">schema-at-every-boundary</code>, <code class="cr-inline">typescript-for-contracts</code>, <code class="cr-inline">bridge</code>, <code class="cr-inline">intake</code>, <code class="cr-inline">asserted-versus-inferred</code>, <code class="cr-inline">protocol-version-negotiation</code>, <code class="cr-inline">live-evolution</code></div></details></td><td>Do commands and server revalidation cover what a contract promises, or does the stack need post-commit checks, contract kinds and Schema as facts?</td></tr>
+<tr><td><b>Actors or the engine</b><div class="cr-src">13 rows</div></td><td>vivief runs actors with supervision; ViViEfs runs a datom-backed workflow engine with leases, resume from the journal and drain before close.<div class="mt-1"><span class="badge badge-sm badge-ghost">11 different</span> <span class="badge badge-sm badge-ghost">1 ViViEfs only</span> <span class="badge badge-sm badge-ghost">1 taken</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">actor-runtime</code>, <code class="cr-inline">handler-levels</code>, <code class="cr-inline">effect-handler-runtime-needs</code>, <code class="cr-inline">cross-cutting-needs</code>, <code class="cr-inline">event-broker</code>, <code class="cr-inline">durable-workflow</code>, <code class="cr-inline">datom-backed-engine</code>, <code class="cr-inline">lease-and-fencing</code>, <code class="cr-inline">drain-before-close</code>, <code class="cr-inline">resume-on-next-launch</code>, <code class="cr-inline">browser-engine-leader</code>, <code class="cr-inline">service-and-layer</code>, <code class="cr-inline">quarantine-after-lost-lease</code></div></details></td><td>Is a durable workflow our actor level, and is an event bus ever needed?</td></tr>
+<tr><td><b>The datom and its store</b><div class="cr-src">19 rows</div></td><td>Taken at the core (the datom, one log); different in ids, clocks, value columns and what a store owes a datom.<div class="mt-1"><span class="badge badge-sm badge-ghost">14 different</span> <span class="badge badge-sm badge-ghost">4 taken</span> <span class="badge badge-sm badge-ghost">1 ViViEfs only</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">datom</code>, <code class="cr-inline">one-datom-log</code>, <code class="cr-inline">datom-store-needs</code>, <code class="cr-inline">effect-store</code>, <code class="cr-inline">typed-value-columns</code>, <code class="cr-inline">ulid-identity</code>, <code class="cr-inline">hybrid-logical-clock</code>, <code class="cr-inline">entity-ids-and-strict-composition</code>, <code class="cr-inline">defining-attribute</code>, <code class="cr-inline">artifact</code>, <code class="cr-inline">scoped-name-entity-ids</code>, <code class="cr-inline">external-identity-as-datoms</code>, <code class="cr-inline">acknowledged-cursor-and-compaction</code>, <code class="cr-inline">sqlite-drivers</code>, <code class="cr-inline">server-on-node</code>, <code class="cr-inline">expo-platform-baseline</code>, <code class="cr-inline">typescript-toolchain</code>, <code class="cr-inline">second-language-for-a-measured-gap</code>, <code class="cr-inline">final-protocol-from-day-one</code></div></details></td><td>Is the log store contract our statement of what a datom needs, and are provenance on the transaction and a read as of a tx left out on purpose?</td></tr>
+<tr><td><b>Sync and conflict</b><div class="cr-src">5 rows</div></td><td>ViViEfs puts sync in the foundation with one authoritative server; vivief defers it and resolves by cardinality.<div class="mt-1"><span class="badge badge-sm badge-ghost">5 different</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">sync-as-datom-replication</code>, <code class="cr-inline">sync-contract</code>, <code class="cr-inline">sync-after-core</code>, <code class="cr-inline">conflict-policy</code>, <code class="cr-inline">server-authoritative-validation</code></div></details></td><td>Is sync-first a deliberate difference, and does an attribute need a cardinality?</td></tr>
+<tr><td><b>Trust, encryption and who may sign in</b><div class="cr-src">10 rows</div></td><td>Moved here from map 6 by I46: identity, organization isolation, devices, tamper evidence, beside vivief&#x27;s Trust Contract and access inside the Projection.<div class="mt-1"><span class="badge badge-sm badge-ghost">7 different</span> <span class="badge badge-sm badge-ghost">2 deferred</span> <span class="badge badge-sm badge-ghost">1 taken</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">trust-contract</code>, <code class="cr-inline">projection-access</code>, <code class="cr-inline">selective-value-encryption</code>, <code class="cr-inline">crypto-shredding</code>, <code class="cr-inline">data-at-rest</code>, <code class="cr-inline">identity-pattern</code>, <code class="cr-inline">organization-isolation-and-membership</code>, <code class="cr-inline">device-and-local-replica</code>, <code class="cr-inline">transport-identity-apart-from-authorization</code>, <code class="cr-inline">tamper-evidence</code></div></details></td><td>Does encryption serve access and consent or only erasure and data at rest?</td></tr>
+<tr><td><b>Server-independent mode (deferred)</b><div class="cr-src">8 rows</div></td><td>The peer-to-peer rows rest on the 2026-09-30 communication research alone; no open item, no issue, no Decide when.<div class="mt-1"><span class="badge badge-sm badge-ghost">8 deferred</span></div><details class="mt-1"><summary class="cr-src cursor-pointer">rows</summary><div class="cr-src"><code class="cr-inline">datom-log-as-crdt</code>, <code class="cr-inline">moq-iroh-transport</code>, <code class="cr-inline">p2p-node-architecture</code>, <code class="cr-inline">payload-blind-relay</code>, <code class="cr-inline">room-code-discovery</code>, <code class="cr-inline">deployment-by-node-capability</code>, <code class="cr-inline">deployment-level-security</code>, <code class="cr-inline">domain</code></div></details></td><td>Map 2 asks first: where is the server-independent goal recorded?</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="space-y-5" id="worked">
+  <h2 class="text-2xl font-bold">Three rows, as they would end under the recommended destination</h2>
+  <p>Illustrations of the shape, not proposed answers: each answer below is a placeholder for what a ticket would decide.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold"><code class="cr-inline">vivief:creation</code></h3>
+      <p class="cr-src">missing; asks what ViViEfs's meta insight is</p>
+      <p><b>Ticket:</b> What ViViEfs is about (grilling, first).</p>
+      <p><b>Decision log:</b> D95 "What ViViEfs is about": <i>&lt;the human's answer&gt;</i>.</p>
+      <p><b>Glossary:</b> the ViViEfs entry's plain sentence rewritten.</p>
+      <p><b>Disposition:</b> <i>adopt</i> or <i>reject</i>, citing D95.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold"><code class="cr-inline">vivief:projection</code></h3>
+      <p class="cr-src">different; one concept or several patterns</p>
+      <p><b>Ticket:</b> Projection: one concept or several patterns (grilling), blocked by the first.</p>
+      <p><b>Decision log:</b> D9x, settling this row and the five other Projection rows that ask the same thing.</p>
+      <p><b>Glossary:</b> a Projection entry if adopted, else the Read model entry names vivief's word.</p>
+      <p><b>Consequence:</b> an issue for the guides (which pattern's guide owns it, D82).</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold"><code class="cr-inline">vivief:datom-log-as-crdt</code></h3>
+      <p class="cr-src">deferred on research alone</p>
+      <p><b>Ticket:</b> Where the server-independent goal is recorded (grilling, on the frontier at once).</p>
+      <p><b>Result:</b> an open item or an issue with a <code class="cr-inline">Decide when:</code>; the five peer-to-peer rows then cite it.</p>
+      <p><b>Disposition:</b> <i>defer</i>, with that trigger.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-8" id="questions">
+  <h2 class="text-2xl font-bold">Round 1: the destination</h2>
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 destination')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q1 - What is the destination?</h3>
+      <p>Map 1 overrode "plan, don't do" because its record was the deliverable. Map 2 is the first map that decides, so the default holds: tickets end in decisions, recorded where this repo keeps decisions (<a class="cr-link" href="../agents/domain.md">domain docs</a>: the decision log first, an ADR when architectural, the glossary inline). The question is what proves the map is done.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: decisions where decisions go (decision log D95+, glossary inline, ADRs where architectural); each ticket Answer lists the inventory rows it settles with a disposition; done when a closing HITL review sees all 101 rows settled and accepts one foundation ADR stating what ViViEfs is about and its foundation concepts, linking the decisions" checked><span><b>A (recommended).</b> Decisions where decisions go. Each ticket's Answer lists the inventory rows it settles, one disposition each. Done when a closing review sees all 101 rows settled and accepts <b>one foundation ADR</b>: what ViViEfs is about and its foundation concepts, linking the decisions that chose them.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: as A without the foundation ADR; the glossary ViViEfs entry and the decision log carry it"><span><b>B.</b> As A, without the foundation ADR: the glossary's ViViEfs entry and the decision log carry the result. Lighter, but nothing a reader can open to see the foundation whole.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="C: a research record like map 1 holding all dispositions; decisions copied to the decision log only at the end"><span><b>C.</b> A record like map 1's, holding every disposition, copied into the decision log at the end. Keeps one place to look, but a decision would live in two places until then.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 rows')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q2 - Must every one of the 101 rows get an answer?</h3>
+      <p>About 40 rows ask nothing (ViViEfs mechanisms such as the hybrid logical clock or drain before close) and 14 are <code class="cr-inline">taken</code>. A cluster decision usually answers many rows at once: if Projection stays several patterns, the six Projection rows that ask "one thing or several?" are answered together.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: every row gets a disposition (adopt, keep ours, reject, defer with Decide when, hand to map N), worked per cluster; a row with no question is settled as &quot;stands&quot; unless its cluster decision touches it" checked><span><b>A (recommended).</b> Every row gets a disposition: <i>adopt</i>, <i>keep ours</i>, <i>reject</i>, <i>defer</i> (with a <code class="cr-inline">Decide when:</code>) or <i>hand to map N</i>. Tickets work per cluster; a row with no question is settled as <i>stands</i> unless its cluster's decision touches it.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: only the concept-level rows (the five concepts, creation, the loop) are decided; mechanism rows stay as the inventory left them"><span><b>B.</b> Only the concept-level rows (the five concepts, creation, the loop). Mechanism rows stay as the inventory left them, to be asked when someone touches them.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 name')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q3 - What is the map called?</h3>
+      <p><b>A clash.</b> "Foundation" already means something here: P01-P10 are the foundation gates, D46 named six foundation themes, and the foundation closed on 2026-09-26 (<a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md">qualification gates</a>, <a class="cr-link" href="../plan/bootstrap/10-open-items-and-risks.md">open items</a>). A map called Foundation, and a glossary term "foundation concept", would give the word two meanings. I34 used it before that was noticed.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: map &quot;The foundation concepts&quot;, effort docs/plan/foundation-concepts/; &quot;foundation&quot; alone keeps meaning the P01-P10 stage" checked><span><b>A (recommended).</b> "The foundation concepts", effort <code class="cr-inline">docs/plan/foundation-concepts/</code>. "Foundation" alone keeps its gate meaning; "foundation concept" is a concept the foundation stage built on, which is what map 2 decides. Map 3 may still rename.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: map &quot;What ViViEfs is about&quot;, effort docs/plan/what-viviefs-is-about/; avoids foundation entirely"><span><b>B.</b> "What ViViEfs is about", <code class="cr-inline">docs/plan/what-viviefs-is-about/</code>. Avoids the word entirely, but undersells the mechanism clusters, which are most of the rows.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="C: keep &quot;Foundation&quot;, effort docs/plan/foundation/, and accept two meanings"><span><b>C.</b> Keep "Foundation" (<code class="cr-inline">docs/plan/foundation/</code>) and accept two meanings.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q4" onsubmit="crQueue(event, 'q4', 'Q4 about')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q4 - Does map 2 decide what ViViEfs is about?</h3>
+      <p>I34 offers three readings: creation (vivief's thesis), "creation and communication, with teaching, using learning as the verification", or something narrower that fits a reference stack. Today the glossary says ViViEfs is "a worked example of how to build a phone and web app together with its server, so later apps can copy what is proven here". That answer frames everything else on the map: whether vivief's five concepts are a closed set here, whether "the loop at every scale" names our verify-gate-guide loops.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q4" value="A: yes, as map 2's first grilling ticket; every concept ticket is blocked by it; its answer rewrites the glossary ViViEfs entry and opens the foundation ADR" checked><span><b>A (recommended).</b> Yes, as the first grilling ticket; the concept tickets are blocked by it. Its answer rewrites the glossary's ViViEfs entry and opens the foundation ADR.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="B: yes, but last: decide the concepts first and read what ViViEfs is about off them"><span><b>B.</b> Yes, but last: decide the concepts first and read the meta insight off them. Lets the mechanisms speak, but each concept ticket would guess at a frame.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="C: no, it is its own map; map 2 decides concepts within today's reference-stack framing"><span><b>C.</b> No: its own map. Map 2 decides concepts inside today's "reference stack" framing.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q5" onsubmit="crQueue(event, 'q5', 'Q5 names')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q5 - Who writes the names: map 2 or map 3?</h3>
+      <p>Map 3 (Vocabulary) owns the words with two meanings (<code class="cr-inline">contract</code>, <code class="cr-inline">effectHandler</code>, intent, effect). Domain modeling writes the glossary the moment a term is resolved. If map 2 adopts vivief's <code class="cr-inline">Projection</code> as one concept, what goes in the glossary that day?</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q5" value="A: map 2 writes a glossary entry for each concept it adopts under the best ViViEfs word available; where the word clashes it records the meaning in the decision with vivief's word in code font and leaves the entry to map 3" checked><span><b>A (recommended).</b> Map 2 writes the entry for each concept it adopts, in the best word available. Where the word clashes (Contract is already ours with another scope), the decision records the meaning with vivief's word in code font, and the entry waits for map 3.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="B: map 2 writes no glossary entries; it decides meanings, map 3 names them all"><span><b>B.</b> Map 2 writes no glossary entries: it decides meanings; map 3 names everything. Clean split, but decisions sit unnamed until map 3 runs.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q6" onsubmit="crQueue(event, 'q6', 'Q6 stop')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q6 - Where does map 2 stop?</h3>
+      <p>A decision such as "Projection is one concept" has consequences: a guide restructure, a lib layout (<code class="cr-inline">vivief:concept-aligned-packages</code>), an ADR amendment with a gate. Decisions are accepted intent, unverified until their named gate.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q6" value="A: decisions only; each consequence becomes an issue (with Decide when) or a Schedule entry; an adopted concept cites the verified gates that already show it or names the gate to come; no code, no guide edits" checked><span><b>A (recommended).</b> Decisions only. Each consequence becomes an issue (with a <code class="cr-inline">Decide when:</code>) or a Schedule entry. An adopted concept cites the gates that already show it (for the datom: P04, P05) or names the gate to come. No code, no guide edits.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="B: the map also carries the changes into code and guides (Notes override plan-don't-do)"><span><b>B.</b> The map also carries the changes into code and guides, as map 1 carried its record.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<section class="space-y-5" id="settled1">
+  <h2 class="text-2xl font-bold">Round 1, settled</h2>
+  <div class="cr-table-wrap"><table class="table table-sm"><tbody>
+    <tr><th>Destination</th><td>Decisions where decisions go; each Answer lists the rows it settles; done when a closing review sees all 101 rows settled and accepts one foundation ADR (Q1 A).</td></tr>
+    <tr><th>Rows</th><td>Every row gets a disposition, worked per cluster; a row with no question settles as <i>stands</i> unless its cluster's decision touches it (Q2 A).</td></tr>
+    <tr><th>Name</th><td>"The foundation concepts", <code class="cr-inline">docs/plan/foundation-concepts/</code>; "foundation" alone keeps its gate meaning (Q3 A).</td></tr>
+    <tr><th>What ViViEfs is about</th><td>The first grilling ticket; every concept ticket waits for it (Q4 A).</td></tr>
+    <tr><th>Names</th><td>Map 2 writes an entry per adopted concept; a clashing word waits for map 3 (Q5 A).</td></tr>
+    <tr><th>Stop</th><td>Decisions only; consequences become issues or Schedule entries (Q6 A).</td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="space-y-8" id="round2">
+  <h2 class="text-2xl font-bold">Round 2: the frontier</h2>
+  <p>The clusters become tickets. "What ViViEfs is about" loses three rows to the closing review (<code class="cr-inline">five-concepts</code>, <code class="cr-inline">concept-aligned-packages</code>, <code class="cr-inline">portability</code>), which can only be answered once the concepts are chosen. No research tickets: the inventory already read both sides.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Id</th><th>Ticket</th><th>Blocked by</th><th>What it decides</th></tr></thead>
+    <tbody><tr><td><b>I47</b></td><td><b>What ViViEfs is about</b><div class="cr-src">grilling</div></td><td>-</td><td>The meta insight (creation; creation and communication, verified by teaching; or narrower), the glossary's ViViEfs entry, and whether the loop at every scale and Vision - View - Effects are ours. Opens the foundation ADR.<details class="mt-1"><summary class="cr-src cursor-pointer">9 rows</summary><div class="cr-src"><code class="cr-inline">creation</code>, <code class="cr-inline">fractal-factory</code>, <code class="cr-inline">three-pipelines</code>, <code class="cr-inline">vision-view-loop</code>, <code class="cr-inline">reference-stack</code>, <code class="cr-inline">anti-goals</code>, <code class="cr-inline">observation-apart-from-meaning</code>, <code class="cr-inline">effects-over-actions</code>, <code class="cr-inline">changeset</code></div></details></td></tr><tr><td><b>I48</b></td><td><b>Where the server-independent goal is recorded</b><div class="cr-src">grilling</div></td><td>-</td><td>Does the "confirmed goal" of the 2026-09-30 communication research get an open item or an issue with a <code class="cr-inline">Decide when:</code>? The peer-to-peer rows then cite it; the I7 and I9 deferrals are confirmed or retriggered.<details class="mt-1"><summary class="cr-src cursor-pointer">8 rows</summary><div class="cr-src"><code class="cr-inline">datom-log-as-crdt</code>, <code class="cr-inline">moq-iroh-transport</code>, <code class="cr-inline">p2p-node-architecture</code>, <code class="cr-inline">payload-blind-relay</code>, <code class="cr-inline">room-code-discovery</code>, <code class="cr-inline">deployment-by-node-capability</code>, <code class="cr-inline">deployment-level-security</code>, <code class="cr-inline">domain</code></div></details></td></tr><tr><td><b>I49</b></td><td><b>Projection: one concept or several patterns</b><div class="cr-src">grilling</div></td><td>I47</td><td>Does ViViEfs name one concept over read models, the projector, query atoms and delivery, and does a read carry a filter, freshness and a read as of a tx?<details class="mt-1"><summary class="cr-src cursor-pointer">17 rows</summary><div class="cr-src"><code class="cr-inline">projection</code>, <code class="cr-inline">projection-delivery</code>, <code class="cr-inline">projection-needs</code>, <code class="cr-inline">freshness</code>, <code class="cr-inline">one-query-model</code>, <code class="cr-inline">layered-query-architecture</code>, <code class="cr-inline">virtual-projection-shapes</code>, <code class="cr-inline">read-model-and-projector</code>, <code class="cr-inline">differential-dataflow</code>, <code class="cr-inline">cold-tier-indexing</code>, <code class="cr-inline">temperature-tiers</code>, <code class="cr-inline">sql-first-queries</code>, <code class="cr-inline">analytics-as-projection</code>, <code class="cr-inline">redaction</code>, <code class="cr-inline">derived-never-authoritative</code>, <code class="cr-inline">datom-indexes</code>, <code class="cr-inline">subscription-as-replication-filter</code></div></details></td></tr><tr><td><b>I50</b></td><td><b>Contracts checked as data or by commands</b><div class="cr-src">grilling</div></td><td>I47</td><td>Commands, Schema at every boundary and server revalidation against vivief's contracts as datoms, contract kinds and post-commit checks; whether the Schema becomes facts.<details class="mt-1"><summary class="cr-src cursor-pointer">17 rows</summary><div class="cr-src"><code class="cr-inline">contract-governed-handler</code>, <code class="cr-inline">contract-runtime-needs</code>, <code class="cr-inline">runtime-contract-enforcement</code>, <code class="cr-inline">schema-contract</code>, <code class="cr-inline">schema-evolution</code>, <code class="cr-inline">temporal-validation-points</code>, <code class="cr-inline">behavior-contract</code>, <code class="cr-inline">contract-modes</code>, <code class="cr-inline">contract-subtypes</code>, <code class="cr-inline">self-describing-datoms</code>, <code class="cr-inline">schema-at-every-boundary</code>, <code class="cr-inline">typescript-for-contracts</code>, <code class="cr-inline">bridge</code>, <code class="cr-inline">intake</code>, <code class="cr-inline">asserted-versus-inferred</code>, <code class="cr-inline">protocol-version-negotiation</code>, <code class="cr-inline">live-evolution</code></div></details></td></tr><tr><td><b>I51</b></td><td><b>Actors or the engine</b><div class="cr-src">grilling</div></td><td>I47</td><td>Is a durable workflow our actor level, does anything outside a workflow need supervision, and is an event bus ever needed?<details class="mt-1"><summary class="cr-src cursor-pointer">13 rows</summary><div class="cr-src"><code class="cr-inline">actor-runtime</code>, <code class="cr-inline">handler-levels</code>, <code class="cr-inline">effect-handler-runtime-needs</code>, <code class="cr-inline">cross-cutting-needs</code>, <code class="cr-inline">event-broker</code>, <code class="cr-inline">durable-workflow</code>, <code class="cr-inline">datom-backed-engine</code>, <code class="cr-inline">lease-and-fencing</code>, <code class="cr-inline">drain-before-close</code>, <code class="cr-inline">resume-on-next-launch</code>, <code class="cr-inline">browser-engine-leader</code>, <code class="cr-inline">service-and-layer</code>, <code class="cr-inline">quarantine-after-lost-lease</code></div></details></td></tr><tr><td><b>I52</b></td><td><b>The datom and its store</b><div class="cr-src">grilling</div></td><td>I47</td><td>What a store owes a datom (provenance on the tx, typed values, a read as of a tx), ids and the clock, and the platform choices beside them.<details class="mt-1"><summary class="cr-src cursor-pointer">19 rows</summary><div class="cr-src"><code class="cr-inline">datom</code>, <code class="cr-inline">one-datom-log</code>, <code class="cr-inline">datom-store-needs</code>, <code class="cr-inline">effect-store</code>, <code class="cr-inline">typed-value-columns</code>, <code class="cr-inline">ulid-identity</code>, <code class="cr-inline">hybrid-logical-clock</code>, <code class="cr-inline">entity-ids-and-strict-composition</code>, <code class="cr-inline">defining-attribute</code>, <code class="cr-inline">artifact</code>, <code class="cr-inline">scoped-name-entity-ids</code>, <code class="cr-inline">external-identity-as-datoms</code>, <code class="cr-inline">acknowledged-cursor-and-compaction</code>, <code class="cr-inline">sqlite-drivers</code>, <code class="cr-inline">server-on-node</code>, <code class="cr-inline">expo-platform-baseline</code>, <code class="cr-inline">typescript-toolchain</code>, <code class="cr-inline">second-language-for-a-measured-gap</code>, <code class="cr-inline">final-protocol-from-day-one</code></div></details></td></tr><tr><td><b>I53</b></td><td><b>Sync and conflict</b><div class="cr-src">grilling</div></td><td>I47, I48</td><td>Sync in the foundation as a deliberate difference from vivief's order, cardinality on attributes, and a CRDT for text.<details class="mt-1"><summary class="cr-src cursor-pointer">5 rows</summary><div class="cr-src"><code class="cr-inline">sync-as-datom-replication</code>, <code class="cr-inline">sync-contract</code>, <code class="cr-inline">sync-after-core</code>, <code class="cr-inline">conflict-policy</code>, <code class="cr-inline">server-authoritative-validation</code></div></details></td></tr><tr><td><b>I54</b></td><td><b>Trust, encryption and who may sign in</b><div class="cr-src">grilling</div></td><td>I47, I49</td><td>Encryption for access and consent or only erasure and data at rest; identity, organization isolation, devices and tamper evidence beside vivief's Trust Contract.<details class="mt-1"><summary class="cr-src cursor-pointer">10 rows</summary><div class="cr-src"><code class="cr-inline">trust-contract</code>, <code class="cr-inline">projection-access</code>, <code class="cr-inline">selective-value-encryption</code>, <code class="cr-inline">crypto-shredding</code>, <code class="cr-inline">data-at-rest</code>, <code class="cr-inline">identity-pattern</code>, <code class="cr-inline">organization-isolation-and-membership</code>, <code class="cr-inline">device-and-local-replica</code>, <code class="cr-inline">transport-identity-apart-from-authorization</code>, <code class="cr-inline">tamper-evidence</code></div></details></td></tr><tr><td><b>I55</b></td><td><b>Accept the foundation concepts</b><div class="cr-src">grilling</div></td><td>I47-I54</td><td>Which of vivief's five concepts are ViViEfs's foundation; checks every one of the 101 rows has a disposition; the human accepts the foundation ADR.<details class="mt-1"><summary class="cr-src cursor-pointer">3 rows</summary><div class="cr-src"><code class="cr-inline">five-concepts</code>, <code class="cr-inline">concept-aligned-packages</code>, <code class="cr-inline">portability</code></div></details></td></tr></tbody>
+  </table></div>
+  <form class="card bg-base-200" data-lavish-question="q7" onsubmit="crQueue(event, 'q7', 'Q7 tickets')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q7 - The tickets, one per cluster</h3>
+      <p>Nine grilling tickets, I47-I55, as in the table. The datom (19 rows) and Projection (17) are the largest; about half their rows are mechanisms that ask nothing and would settle as <i>stands</i>. Map 1 ran 40-row slices in one session each, but those were reading, not grilling.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q7" value="A: I47-I55 as drawn, one grilling ticket per cluster plus the closing review" checked><span><b>A (recommended).</b> I47-I55 as drawn: one grilling ticket per cluster, plus the closing review.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="B: split the two largest: the datom into what a store owes a datom and ids, clock and platform; Projection into reads and delivery and queries and shapes"><span><b>B.</b> Split the two largest: the datom into "what a store owes a datom" and "ids, clock and platform"; Projection into "reads and delivery" and "queries and shapes". Eleven tickets.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="C: merge Sync and conflict into The datom and its store"><span><b>C.</b> Merge Sync and conflict (5 rows) into The datom and its store.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q8" onsubmit="crQueue(event, 'q8', 'Q8 blocking')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q8 - Which blocks which</h3>
+      <p>Round 1 settled that I47 blocks every concept ticket. Two more edges are mine: Trust waits for Projection, because vivief puts access inside the read (<code class='cr-inline'>vivief:projection-access</code> sits in Trust); Sync waits for I48, because whether a server-independent mode is a goal changes what sync must allow. I48 does not wait for I47: where a goal is recorded does not depend on what ViViEfs is about.</p>
+<pre class="mermaid">
+flowchart LR
+  I47[I47 What ViViEfs is about] --> I49[I49 Projection]
+  I47 --> I50[I50 Contracts]
+  I47 --> I51[I51 Actors or the engine]
+  I47 --> I52[I52 The datom and its store]
+  I47 --> I53[I53 Sync and conflict]
+  I48[I48 Server-independent goal] --> I53
+  I52 --> I50
+  I47 --> I54[I54 Trust and encryption]
+  I49 --> I54
+  I49 & I50 & I51 & I52 & I53 & I54 --> I55[I55 Accept the foundation concepts]
+  I48 --> I55
+</pre>
+<p>Frontier at once: I47 and I48.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q8" value="A: as drawn: I47 blocks I49-I54; I48 on the frontier beside I47 and blocks I53; I49 blocks I54; everything blocks I55" checked><span><b>A (recommended).</b> As drawn.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="B: as drawn, and I50 Contracts also waits for I52 The datom and its store, since Schema as facts is a store question"><span><b>B.</b> As drawn, and Contracts also waits for the datom and its store, since "Schema as facts in the log" is a store question too.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="C: only I47 and I55 edges; the concept tickets run in any order"><span><b>C.</b> Only the I47 and I55 edges; the concept tickets run in any order.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q9" onsubmit="crQueue(event, 'q9', 'Q9 teaching evidence')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q9 - "Verified by teaching": what is the evidence, and whose question is it?</h3>
+      <p>I34 asks: if learning is the verification, what is the evidence (a learner passing an exercise, a reader test like I21, an agent that builds the next pattern from the guides alone)? It only arises if I47 adopts the proposed vision. Map 4 owns how a concept becomes an accepted pattern, the log-store guide and I21.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q9" value="A: map 4; I47 decides whether teaching verifies, map 4 decides what counts as the evidence; listed as out of scope here" checked><span><b>A (recommended).</b> Map 4: I47 decides <i>whether</i> teaching verifies; map 4, which owns accepting a pattern and I21, decides what counts as evidence. Listed under Out of scope here.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="B: fog in map 2, graduating into a ticket if I47 adopts the vision"><span><b>B.</b> Fog in map 2: it graduates into a ticket if I47 adopts the vision.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <div class="card bg-base-200"><div class="card-body space-y-2">
+  <h3 class="text-xl font-bold">Standing rules for the map's Notes (no question, tell me if one is wrong)</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Plan, don't do</b> holds (Q6): decisions, glossary entries, the foundation ADR; consequences become issues or Schedule entries.</li>
+    <li><b>Sources:</b> the inventory record and its HTML view; the rows files for full citations; vivief at <code class="cr-inline">3071cb2</code> on demand.</li>
+    <li><b>Dispositions:</b> <i>adopt</i>, <i>keep ours</i>, <i>reject</i>, <i>defer</i> (with a <code class="cr-inline">Decide when:</code>), <i>hand to map N</i>, <i>stands</i>. Each Answer lists its rows with one each.</li>
+    <li><b>Where decisions go:</b> the decision log from D95, an ADR when architectural (Proposed, unverified, with a qualifying gate), glossary entries with a plain sentence first (D94). A word that clashes is left to map 3 (Q5).</li>
+    <li><b>Citations</b> as in map 1: vivief's words in code font, <code class="cr-inline">vivief ADR 0047</code>, never ViViEfs's ADR form.</li>
+    <li><b>Skills:</b> <code class="cr-inline">grilling</code> and <code class="cr-inline">domain-modeling</code> for every ticket; a review page with worked examples before structural questions.</li>
+    <li><b>One session per ticket.</b></li>
+  </ul>
+  <h3 class="text-xl font-bold pt-2">Fog and out of scope, as I'd write them on the map</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Not yet specified:</b> a prototype of what an adopted concept would look like in code, if a concept ticket cannot decide from prose (Projection most likely); the qualifying gate for an adopted concept that no gate shows yet; which consequence issues the decisions raise.</li>
+    <li><b>Out of scope:</b> the names of words with two meanings (map 3); the rows of maps 3-6, including the six I46 moved to map 4; what counts as evidence that teaching verifies (map 4, if Q9 A); code and guide changes; product-vision and DevAC-tooling rows.</li>
+  </ul>
+</div></div>
+</section>
+
+<section class="space-y-5" id="settled2">
+  <h2 class="text-2xl font-bold">Round 2, settled</h2>
+  <div class="cr-table-wrap"><table class="table table-sm"><tbody>
+    <tr><th>Tickets</th><td>I47-I55 as drawn: one grilling ticket per cluster, plus the closing review (Q7 A).</td></tr>
+    <tr><th>Blocking</th><td>As drawn, and I50 Contracts also waits for I52 The datom and its store, since the Schema as facts in the log is a store question too (Q8 B). Frontier: I47 and I48.</td></tr>
+    <tr><th>Teaching evidence</th><td>Map 4 decides what counts as evidence; I47 decides only whether teaching verifies (Q9 A).</td></tr>
+  </tbody></table></div>
+  <p>The map: <code class="cr-inline">docs/plan/foundation-concepts/map.md</code>.</p>
+</section>
+
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+</script>
+</body>
+</html>
