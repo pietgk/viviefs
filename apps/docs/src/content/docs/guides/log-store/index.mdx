@@ -24,8 +24,8 @@ log: it appends datoms, mints the transaction id that orders them, streams
 them from a position, and compacts only what every consumer has seen. One
 `LogStore` service runs over Effect's `SqlClient`, so the same code and the
 same suite cover SQLite on iOS, Android, the web and Node, and Postgres on the
-server. Why one log: ADR-0006. Why this clock: ADR-0007. Why
-one contract with several stores: ADR-0011.
+server. Why one log: [ADR-0006 One datom log as the substrate][ADR-0006]. Why this clock: [ADR-0007 Hybrid logical clock for tx][ADR-0007]. Why
+one contract with several stores: [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011].
 
 ## When to use it
 
@@ -40,14 +40,14 @@ one contract with several stores: ADR-0011.
 ## When not to
 
 - Several facts that must become visible together: that is a changeset, built
-  on the log store (ADR-0008; the changesets guide comes next).
+  on the log store ([ADR-0008 Single-datom transactions with changesets][ADR-0008]; the changesets guide comes next).
 - A query shape for a screen: that is a read model, rebuilt from the log and
   never migrated. You may drop any read model; how one is built belongs to the
   changesets guide.
 - Analytics: project to Parquet or DuckLake and query with DuckDB. DuckDB is
-  never the durable log (ADR-0011).
+  never the durable log ([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]).
 - Telemetry storage: traces are derived from the log; a tracing backend is a
-  viewer, never a journal (ADR-0006).
+  viewer, never a journal ([ADR-0006 One datom log as the substrate][ADR-0006]).
 
 ## Status
 
@@ -64,3 +64,10 @@ one contract with several stores: ADR-0011.
   starting at [A datom is one fact](/guides/log-store/lessons/01-a-datom-is-one-fact/).
 - **Review**: [Concepts](/guides/log-store/concepts/), then
   [Review](/guides/log-store/review/).
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[ADR-0006]: ../../../../../../../docs/adr/0006-one-datom-log.md
+[ADR-0007]: ../../../../../../../docs/adr/0007-hybrid-logical-clock.md
+[ADR-0008]: ../../../../../../../docs/adr/0008-single-datom-transactions-with-changesets.md
+[ADR-0011]: ../../../../../../../docs/adr/0011-log-store-pattern.md

@@ -16,17 +16,18 @@ import GuideStatus from '../components/GuideStatus.astro'
 Every guide has the pages, `##` headings and frontmatter keys of this
 template, in this order; `verify`'s `guides` step derives its rules from these
 files, so a change here changes the rule for every guide in the same commit
-(D62). A heading in square brackets, like `## [One heading per concept]`,
+([D62 The shape of a guide][D62]). A heading in square brackets, like `## [One heading per concept]`,
 stands for one or more headings of the author's choice. The frontmatter keys
-are D63's: `pattern` is the pattern id, which is also the guide's folder;
-`adrs` are four-digit ids, each named by exactly one guide (D82); `gates` are
+are [D63 Acceptance on the guide][D63]'s: `pattern` is the pattern id, which is also the guide's folder;
+`adrs` are four-digit ids, each named by exactly one guide ([D82 Patterns build on each other][D82]); `gates` are
 the ADRs' qualifying gates; `exemplar` lists the projects whose
-`metadata.guides` names this guide (D84); `accepted` is added, with the date,
+`metadata.guides` names this guide ([D84 Exemplar of several guides][D84]); `accepted` is added, with the date,
 only in the commit that accepts the guide.
 
-Write a gate, ADR or decision by its id (`P04`, `ADR-0011`, `D37`) and a
-repository path as inline code (`libs/datom`). The site renders each id as its
-name, linked, with a preview on hover, and each path as a link (D87).
+Write a gate, ADR or decision as a named reference link
+(`[D37 Log store tables][D37]`). `pnpm refs fix` writes the link and the
+definitions block, and `verify` fails on a bare id. A repository path stays
+inline code (`libs/datom`); the site links it ([D87 References resolved when rendered][D87]).
 
 ## What it is
 
@@ -54,3 +55,11 @@ One short path per use, each a list of pages in order:
 - **Implement**: what to read before writing code that uses it.
 - **Review**: what to read before reviewing such code. Always ends with the
   review page.
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[D62]: ../../../../docs/plan/bootstrap/02-decision-log.md#d62
+[D63]: ../../../../docs/plan/bootstrap/02-decision-log.md#d63
+[D82]: ../../../../docs/plan/bootstrap/02-decision-log.md#d82
+[D84]: ../../../../docs/plan/bootstrap/02-decision-log.md#d84
+[D87]: ../../../../docs/plan/bootstrap/02-decision-log.md#d87

@@ -13,7 +13,7 @@ source:
 import ReadNext from '../../components/ReadNext.astro'
 
 A lesson is one page in `lessons/NN-name.mdx` that teaches one idea and ends
-in exercise section `NN` (D81). Keep it short enough to hold in working
+in exercise section `NN` ([D81 What a lesson is][D81]). Keep it short enough to hold in working
 memory. Frontmatter: `lesson` is `NN` as a number, `evidence` lists the
 evidence notes it cites (at least one, under `docs/evidence/`), `source` is
 its one primary source.
@@ -35,7 +35,7 @@ explains; the gate proves.
 ## Your turn
 
 What exercise `NN.MM` asks, in one or two sentences, and what passing means.
-Then the same three steps in every lesson (D91):
+Then the same three steps in every lesson ([D91 The exercise loop][D91]):
 
 1. Run it: `pnpm exercise <pattern> NN.MM`. The first run is red on purpose:
    `problem/` runs, but does not yet do what this lesson teaches, and the
@@ -52,3 +52,8 @@ others so their shape gives nothing away.
 ## Read next
 
 <ReadNext source={frontmatter.source} />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[D81]: ../../../../../docs/plan/bootstrap/02-decision-log.md#d81
+[D91]: ../../../../../docs/plan/bootstrap/02-decision-log.md#d91

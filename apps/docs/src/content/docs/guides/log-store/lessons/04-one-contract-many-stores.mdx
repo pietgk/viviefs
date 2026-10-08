@@ -50,7 +50,7 @@ it. An in-memory database, for example, passes most checks and fails
 
 ## What the gate showed
 
-P04 ran the same suite against sqlite-node, PGlite, op-sqlite on
+[P04 Log store conformance][P04] ran the same suite against sqlite-node, PGlite, op-sqlite on
 the iOS simulator and the Android emulator, and sqlite-wasm with OPFS on the
 web, and every check passed on every store. That is the claim that lets the
 rest of the stack treat them as one.
@@ -96,3 +96,7 @@ In the gate's probe on devices; `verify` typechecks and lints it.
 ## Read next
 
 <ReadNext source={frontmatter.source} />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[P04]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04

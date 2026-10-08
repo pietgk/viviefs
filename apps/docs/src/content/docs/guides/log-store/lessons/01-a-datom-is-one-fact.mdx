@@ -56,7 +56,7 @@ positions (`streamFrom(seq)`), facts are compared by `tx`.
 
 ## What the gate showed
 
-P04 ran append and duplicate append on sqlite-node, PGlite, the
+[P04 Log store conformance][P04] ran append and duplicate append on sqlite-node, PGlite, the
 iOS simulator, the Android emulator and web: appending a datom whose `tx` was
 already stored was a no-op, while a new `tx` was appended. That pair is the
 gate's positive control, so the check can tell a store that dedups from one
@@ -103,3 +103,7 @@ Three datoms: the first assert and one more for each change.
 ## Read next
 
 <ReadNext source={frontmatter.source} />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[P04]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04

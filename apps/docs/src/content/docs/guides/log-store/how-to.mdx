@@ -22,7 +22,7 @@ import Sample from '../../../../components/Sample.astro'
    `runLogStoreChecks` and tags itself with `runsSuite('log-store/conformance')`,
    as `libs/store-sqlite-node` does; `verify`'s `integration` step then runs it
    on every change. If it needs a device or a browser, add it to the
-   P04 probe instead.
+   [P04 Log store conformance][P04] probe instead.
 4. Classify the new files in `tools/verify/src/evidence-registry.ts`, run
    `pnpm verify`, then the gates: `pnpm qualify --gate P04` and `pnpm qualify --gate P05`.
 
@@ -56,4 +56,9 @@ and again after each batch it has really delivered. From then on `compact()`
 keeps every fact it has not acknowledged. The contract has no way yet to
 unregister a consumer, so one that stops for good holds the log; `heldBy`
 names it, so the hold is visible instead of silent. Exercise 03.01 walks through it. The trace projector does
-this for each sink (ADR-0018).
+this for each sink ([ADR-0018 Tracing derived from the log; telemetry sink pattern][ADR-0018]).
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[ADR-0018]: ../../../../../../../docs/adr/0018-tracing-and-telemetry-sinks.md
+[P04]: ../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04

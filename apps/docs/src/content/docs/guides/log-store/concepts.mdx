@@ -6,7 +6,7 @@ description: Datom, transaction id, envelope, the three kinds of tables, cursors
 import Sample from '../../../../components/Sample.astro'
 
 The concepts below are defined by the `LogStore` contract and checked by its
-suite, `log-store/conformance`, so this is their one page (D82). Changesets,
+suite, `log-store/conformance`, so this is their one page ([D82 Patterns build on each other][D82]). Changesets,
 conflict policies, entity ids and read models are defined by the changesets
 pattern, which builds on this one; they get a sentence here and their own
 page in the changesets guide.
@@ -17,7 +17,7 @@ A datom is one fact: entity `e`, attribute `a`, value `v`, the transaction id
 `tx` that minted it, `op` (`assert` or `retract`), and `cs`, the changeset it
 belongs to. Each datom is its own transaction, and the log only grows: a fact
 is never updated in place; a later datom asserts or retracts. The why is
-ADR-0006.
+[ADR-0006 One datom log as the substrate][ADR-0006].
 
 <Sample path="libs/datom/src/schema.ts" region="datom" />
 
@@ -31,7 +31,7 @@ log: positions differ between replicas, `tx` does not.
 Two indexes serve the two ways the log is read: EAVT (everything about an
 entity) and AEVT (every entity with an attribute). `cs` names the changeset;
 when `cs` equals `tx` the datom is a changeset of one, which is what most
-writes are (the changesets guide explains the rest, ADR-0008).
+writes are (the changesets guide explains the rest, [ADR-0008 Single-datom transactions with changesets][ADR-0008]).
 
 ## Transaction id and the hybrid logical clock
 
@@ -39,7 +39,7 @@ writes are (the changesets guide explains the rest, ADR-0008).
 corrected by the server's offset, and a counter `c` used only when `pt` would
 not advance. It is encoded as a 26-character, lexicographically sortable id
 that also holds the device's fingerprint and random bits, so two devices never
-mint the same `tx`. The why is ADR-0007.
+mint the same `tx`. The why is [ADR-0007 Hybrid logical clock for tx][ADR-0007].
 
 <Sample path="libs/datom/src/hlc.ts" region="mint" />
 
@@ -63,7 +63,7 @@ it is set once and never replaced.
 
 ## The three kinds of tables
 
-Domain truth lives only in the log (ADR-0006). Every other SQL table
+Domain truth lives only in the log ([ADR-0006 One datom log as the substrate][ADR-0006]). Every other SQL table
 is one of three kinds:
 
 | Kind | Examples | Rebuilt from the log? |
@@ -74,7 +74,7 @@ is one of three kinds:
 
 A fact that fits none of them goes into the log. Read models are the log
 store's promise to everything built on it: any read model may be dropped and
-rebuilt (ADR-0011). How they are built is the changesets guide's.
+rebuilt ([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]). How they are built is the changesets guide's.
 
 ## Log position and streaming
 
@@ -87,7 +87,7 @@ the log this way, each remembering its own position.
 ## Prefix scans
 
 Entity ids encode their parent for strict composition (`O{org}/L{list}/I{item}`,
-ADR-0010). `scanPrefix(prefix)` returns every datom of every entity
+[ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010]). `scanPrefix(prefix)` returns every datom of every entity
 under a prefix, which is how a list and everything in it are read at once.
 The id convention itself belongs to the changesets guide.
 
@@ -104,7 +104,7 @@ With no consumer registered, the horizon is 0 and nothing is removed.
 <Sample path="libs/datom/src/log-store.ts" region="compact" />
 
 Device logs compact; the server's log is never compacted, because it is the
-audit trail (ADR-0011).
+audit trail ([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]).
 
 ## Log store implementation
 
@@ -112,10 +112,20 @@ A log store implementation is a `SqlClient` Layer plus the shared `LogStore`
 Layer, its device id and its source of randomness. The SQL is the same on
 every store; only the migration has a SQLite and a Postgres dialect. An
 implementation is qualified by running `log-store/conformance` against it,
-which is what P04 did on five stores.
+which is what [P04 Log store conformance][P04] did on five stores.
 
 <Sample path="libs/store-sqlite-node/src/layer.ts" region="log-store" />
 
 The whole contract is one Effect service:
 
 <Sample path="libs/datom/src/log-store.ts" region="service" />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[ADR-0006]: ../../../../../../../docs/adr/0006-one-datom-log.md
+[ADR-0007]: ../../../../../../../docs/adr/0007-hybrid-logical-clock.md
+[ADR-0008]: ../../../../../../../docs/adr/0008-single-datom-transactions-with-changesets.md
+[ADR-0010]: ../../../../../../../docs/adr/0010-entity-ids-and-defining-attributes.md
+[ADR-0011]: ../../../../../../../docs/adr/0011-log-store-pattern.md
+[D82]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d82
+[P04]: ../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04

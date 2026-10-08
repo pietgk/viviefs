@@ -54,11 +54,11 @@ saved in `hlc_state` with every mint, and after a reboot minting starts from
 
 **Whole milliseconds only.** A fractional `pt` beats the last `pt`, resets
 the counter, and is truncated when encoded, so two values could share
-`(pt, c)`. The live server hit exactly this; see ADR-0007.
+`(pt, c)`. The live server hit exactly this; see [ADR-0007 Hybrid logical clock for tx][ADR-0007].
 
 ## What the gate showed
 
-P04 minted across a backwards wall jump, a reboot with the last
+[P04 Log store conformance][P04] minted across a backwards wall jump, a reboot with the last
 value persisted, and a remote-ahead receive, and the order held on all five
 stores. It picked the 5000 ms future-skew bound; a `tx` 5001 ms ahead was
 refused.
@@ -107,3 +107,8 @@ The last minted value and the offset, saved in `hlc_state`.
 ## Read next
 
 <ReadNext source={frontmatter.source} />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[ADR-0007]: ../../../../../../../../docs/adr/0007-hybrid-logical-clock.md
+[P04]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04

@@ -51,12 +51,12 @@ Acknowledging first and delivering after looks the same until a crash in
 between: then compaction removes facts that were never delivered.
 
 **The server never compacts.** Its log is the audit trail
-(ADR-0011); only device logs compact.
+([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]); only device logs compact.
 
 ## What the gate showed
 
-P04 checked that compaction never passed the horizon on all five
-stores. After P10, the horizon also covers trace sinks as
+[P04 Log store conformance][P04] checked that compaction never passed the horizon on all five
+stores. After [P10 Trace projection][P10], the horizon also covers trace sinks as
 `trace/<sink>`, `compact()` reports `heldBy`, and the "compaction horizon"
 check asserts both.
 
@@ -103,3 +103,9 @@ Read `heldBy` from the result that `compact()` returns to you.
 ## Read next
 
 <ReadNext source={frontmatter.source} />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[ADR-0011]: ../../../../../../../../docs/adr/0011-log-store-pattern.md
+[P04]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04
+[P10]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p10
