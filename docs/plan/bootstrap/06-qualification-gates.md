@@ -2,38 +2,38 @@
 
 The spikes are gates: retained probes with stated pass conditions and positive controls, recorded in the ledger.
 Order matters; later gates depend on earlier ones. `P` is for proof: each gate proves exactly one claim, the "Fact to
-establish" below (D93; until 2026-10-02 this line read "platform/pattern gate"; complyj uses `Q` for its own). The
+establish" below ([D93 Claims in front][D93]; until 2026-10-02 this line read "platform/pattern gate"; complyj uses `Q` for its own). The
 docs site shows each claim with its evidence under Reference > Claims.
 
-D46 named six foundation **themes**: platform, log store, engine + crash matrix, UI prototype, sync, trace
-projection. P01-P10 are those themes split so each fact can fail independently (platform → P01-P03, log store →
-P04-P05, engine → P06-P07). P11-P17 are follow-on (identity, UI on every platform, links and routing, quarantine
+[D46 Spikes are gates][D46] named six foundation **themes**: platform, log store, engine + crash matrix, UI prototype, sync, trace
+projection. [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] are those themes split so each fact can fail independently (platform → [P01][P01]-[P03 OTLP and motel][P03], log store →
+[P04 Log store conformance][P04]-[P05 Changesets and projections][P05], engine → [P06 Workflow engine crash matrix][P06]-[P07 Device resume E2E][P07]). [P11 Identity][P11]-[P17 Browser engine leader][P17] are follow-on (identity, UI on every platform, links and routing, quarantine
 after a lost lease, encrypted store, crypto-shredding, browser leader), not foundation closure.
 
-iOS, Android and web are first-class. P01, P02 and P07 fail if the Android emulator fails.
+iOS, Android and web are first-class. [P01 Platform on SDK 58][P01], [P02 SQLite drivers][P02] and [P07 Device resume E2E][P07] fail if the Android emulator fails.
 
 | Gate | Fact to establish | Pass condition | Positive control | Informs |
 |---|---|---|---|---|
-| **P01** Platform on SDK 58 | Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes, and builds with Metro | The research/02 probe (15 checks incl. `Workflow` + `Activity` on the memory engine) passes on a real iOS simulator **and** a real Android emulator with real polyfills (expo-crypto or react-native-quick-crypto for `getRandomValues` and `subtle.digest`); a bundle importing `effect/unstable/sql` builds with the Migrator babel workaround; the meaning of "iOS 27 required" is recorded; JS bundle-size baseline recorded | A bundle without the crypto polyfill fails the workflow check | D9, D22 |
-| **P02** SQLite drivers | `@effect/sql-sqlite-react-native` on op-sqlite 17.x works on RN 0.88 New Architecture (iOS and Android); `@effect/sql-sqlite-wasm` with OPFS works on web | Migrations, transactions, EAVT queries and a volume that exercises index behaviour run on iOS, Android and web; peer conflict with op-sqlite 18 resolved by pinning | Fallback probe: minimal `SqlClient` over expo-sqlite passes the same checks | D16 |
-| **P03** OTLP and motel | Effect's native OTLP exporter works on Hermes; motel receives from simulator and physical device | A known span arrives in motel from simulator; physical device path documented (LAN binding or cursor catch-up) | Export with a wrong endpoint produces no motel entry and no crash | D32, D45' |
-| **P04** Log store conformance | The datom log store contract holds on SQLite (native including Android, wasm, Node) and Postgres | Append, dedup by `tx`, HLC mint and receive rules (incl. backwards clock, reboot, remote-ahead), cursor streaming, prefix scans, compaction horizon. P04 picks the HLC future-skew bound and the append volume used in probes | Duplicate append is a no-op while a new `tx` is appended | D31, D33', D37 |
-| **P05** Changesets and projections | Changesets give atomic, deterministic visibility | Manifest gating, commit ordering, basis check per policy (LWW, write-once, human conflict), `cs == tx` shorthand, abort and expiry, defining attribute lifecycle, prefix-id cascade, orphan conflict, Reactivity keys, full rebuild equals incremental. Vocabulary pass for attribute names before any exemplar ships them (D44) | A changeset missing one member stays invisible; completing it makes all members visible at once | D34, D35'', D38, D42 |
-| **P06** Workflow engine crash matrix | The datom-backed `WorkflowEngine` resumes correctly after a kill at every boundary | Kill before an activity, during it, after it before the journal write, during a deferred wait, during a clock, during a lease handoff, and during a content-hash file upload: every case resumes, and every external effect is observable at most once thanks to idempotency keys | The same matrix on `WorkflowEngine.layerMemory` fails the durability cases | D10, D20, D39, D43 |
-| **P07** Device resume E2E | A force-quit app resumes the exemplar workflow, and a notification wakes it | Maestro via agent-device force-quits mid-upload and mid-wait on iOS simulator **and** Android emulator; relaunch resumes; a scheduled local notification tap completes a deferred; trace shows crash and resume | Without the engine sweep on launch, the workflow does not resume | D3, D20, D24 |
-| **P08** UI three-way prototype | Which interaction-state approach fits: XState v5 + Effect, `@typeonce/effect-machine`, Effect + Atom | One screen of the evidence flow built three ways with D41's three state owners and D42's query atoms. Compared on type safety, test and story ergonomics, and lines of code. All three variants must pass the same screen tests and stories; the ADR records the winner. Product-specific criteria (voice, affordance) stay out (D55) | A variant that cannot render the screen and pass those tests fails the study (the harness is broken if nothing can fail) | D12, D41 |
-| **P09** Sync | Datom replication with server authority works offline and across devices | Outbox up, one full-organization cursor stream down, Effect RPC append-and-acknowledge, server validation, typed rejection with rebuild and reapply, unknown attribute upgrade error, lease fencing across two devices, deferred completion from the server, a changeset that references a file waits until that file exists on the server | A stale-lease journal write is rejected while the current holder's write is accepted | D13-D15, D36, D40, D43, D44 |
-| **P10** Trace projection | The trace derived from the log is lossless and stable across replays | Crash-and-resume run produces one trace with deterministic span ids, no duplicate spans on replay, attempts linked; the same smoke test passes against motel, Jaeger and otel-lgtm | Disabling the trace cursor loses nothing: re-enabling exports the backlog | D32, D45' |
-| **P11** Identity | Fake and OIDC implementations satisfy one identity contract | Keycloak on Apple Container with PKCE from the iOS simulator, the Android emulator and web; membership enforced on sync, lease and commands. Checks split in [p11-design-review.md](../../evidence/p11-design-review.md) | Cross-organization access denied while same-organization access allowed | D18, D47 |
-| **P12** UI on every platform | One React Native component tree renders and passes its stories on iOS, Android and web | Set by its grilling (the app-shell step, with P13). Direction agreed 2026-09-29: components in React Native primitives, web through react-native-web; stories run in Chromium in `verify` (`@storybook/react-native-web-vite` + `@storybook/addon-vitest`) and on the iOS simulator and Android emulator in this gate (`@storybook/react-native`, driven by agent-device through the accessibility tree); IntentComposer is rewritten on it and P08 re-runs | Set by its grilling, for example a story without an accessibility label fails in both places | D41, D54 |
-| **P13** Links and routing | One URL opens the same screen and state on every platform | Set by its grilling (the app-shell step, with P12). Includes the first web E2E journey (Playwright) and the Lighthouse budgets on the served web build | Set by its grilling | - |
-| **P14** Quarantine after a lost lease | User content stranded by a lost lease is never dropped and is resolved by a human | Set by its grilling and design review. Direction agreed 2026-09-27: a human-conflict entry (D34) names the stranded content, and a command resolves it (attach to the execution, keep as standalone evidence, or discard) | Set by its grilling | D15, D34 |
-| **P15** Encrypted store | SQLCipher store passes the log store conformance suite | P04 + P05 suites green on SQLCipher with keys in Keychain/Keystore | Wrong key cannot open the database | D50 |
-| **P16** Crypto-shredding | Erased subjects are unreadable everywhere | After key destruction, personal attributes are unreadable on every replica, projection and export; the log stays intact and syncable | Non-erased subject stays readable | D51 |
-| **P17** Browser engine leader | Only one tab runs the engine | Two tabs, one engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two engines are detected running | D25 |
+| <a id="p01"></a>**P01** Platform on SDK 58 | Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes, and builds with Metro | The research/02 probe (15 checks incl. `Workflow` + `Activity` on the memory engine) passes on a real iOS simulator **and** a real Android emulator with real polyfills (expo-crypto or react-native-quick-crypto for `getRandomValues` and `subtle.digest`); a bundle importing `effect/unstable/sql` builds with the Migrator babel workaround; the meaning of "iOS 27 required" is recorded; JS bundle-size baseline recorded | A bundle without the crypto polyfill fails the workflow check | [D9 Effect v4, pinned][D9], [D22 Expo SDK 58][D22] |
+| <a id="p02"></a>**P02** SQLite drivers | `@effect/sql-sqlite-react-native` on op-sqlite 17.x works on RN 0.88 New Architecture (iOS and Android); `@effect/sql-sqlite-wasm` with OPFS works on web | Migrations, transactions, EAVT queries and a volume that exercises index behaviour run on iOS, Android and web; peer conflict with op-sqlite 18 resolved by pinning | Fallback probe: minimal `SqlClient` over expo-sqlite passes the same checks | [D16 SQLite drivers][D16] |
+| <a id="p03"></a>**P03** OTLP and motel | Effect's native OTLP exporter works on Hermes; motel receives from simulator and physical device | A known span arrives in motel from simulator; physical device path documented (LAN binding or cursor catch-up) | Export with a wrong endpoint produces no motel entry and no crash | [D32 Traces derived from the log][D32], [D45' Telemetry sink pattern][D45'] |
+| <a id="p04"></a>**P04** Log store conformance | The datom log store contract holds on SQLite (native including Android, wasm, Node) and Postgres | Append, dedup by `tx`, HLC mint and receive rules (incl. backwards clock, reboot, remote-ahead), cursor streaming, prefix scans, compaction horizon. [P04 Log store conformance][P04] picks the HLC future-skew bound and the append volume used in probes | Duplicate append is a no-op while a new `tx` is appended | [D31 One datom log][D31], [D33' Hybrid logical clock for tx][D33'], [D37 Log store tables][D37] |
+| <a id="p05"></a>**P05** Changesets and projections | Changesets give atomic, deterministic visibility | Manifest gating, commit ordering, basis check per policy (LWW, write-once, human conflict), `cs == tx` shorthand, abort and expiry, defining attribute lifecycle, prefix-id cascade, orphan conflict, Reactivity keys, full rebuild equals incremental. Vocabulary pass for attribute names before any exemplar ships them ([D44 Never rename, never migrate][D44]) | A changeset missing one member stays invisible; completing it makes all members visible at once | [D34 Per-attribute conflict policies][D34], [D35'' Single-datom transactions with changesets][D35''], [D38 Entity ids and strict composition][D38], [D42 Live reads with query atoms][D42] |
+| <a id="p06"></a>**P06** Workflow engine crash matrix | The datom-backed `WorkflowEngine` resumes correctly after a kill at every boundary | Kill before an activity, during it, after it before the journal write, during a deferred wait, during a clock, during a lease handoff, and during a content-hash file upload: every case resumes, and every external effect is observable at most once thanks to idempotency keys | The same matrix on `WorkflowEngine.layerMemory` fails the durability cases | [D10 Effect Workflow over our engine][D10], [D20 Crash matrix as the merge bar][D20], [D39 One engine everywhere][D39], [D43 Files by content hash][D43] |
+| <a id="p07"></a>**P07** Device resume E2E | A force-quit app resumes the exemplar workflow, and a notification wakes it | Maestro via agent-device force-quits mid-upload and mid-wait on iOS simulator **and** Android emulator; relaunch resumes; a scheduled local notification tap completes a deferred; trace shows crash and resume | Without the engine sweep on launch, the workflow does not resume | [D3 Resume on next launch][D3], [D20 Crash matrix as the merge bar][D20], [D24 Durable clocks and notifications][D24] |
+| <a id="p08"></a>**P08** UI three-way prototype | Which interaction-state approach fits: XState v5 + Effect, `@typeonce/effect-machine`, Effect + Atom | One screen of the evidence flow built three ways with [D41 Three state owners][D41]'s three state owners and [D42 Live reads with query atoms][D42]'s query atoms. Compared on type safety, test and story ergonomics, and lines of code. All three variants must pass the same screen tests and stories; the ADR records the winner. Product-specific criteria (voice, affordance) stay out ([D55 Exemplar first, product apps later][D55]) | A variant that cannot render the screen and pass those tests fails the study (the harness is broken if nothing can fail) | [D12 Three-way interaction-state prototype][D12], [D41 Three state owners][D41] |
+| <a id="p09"></a>**P09** Sync | Datom replication with server authority works offline and across devices | Outbox up, one full-organization cursor stream down, Effect RPC append-and-acknowledge, server validation, typed rejection with rebuild and reapply, unknown attribute upgrade error, lease fencing across two devices, deferred completion from the server, a changeset that references a file waits until that file exists on the server | A stale-lease journal write is rejected while the current holder's write is accepted | [D13 Server holds workflow state][D13]-[D15 Server authority after a lost lease][D15], [D36 Shared commands][D36], [D40 Server-side human steps][D40], [D43 Files by content hash][D43], [D44 Never rename, never migrate][D44] |
+| <a id="p10"></a>**P10** Trace projection | The trace derived from the log is lossless and stable across replays | Crash-and-resume run produces one trace with deterministic span ids, no duplicate spans on replay, attempts linked; the same smoke test passes against motel, Jaeger and otel-lgtm | Disabling the trace cursor loses nothing: re-enabling exports the backlog | [D32 Traces derived from the log][D32], [D45' Telemetry sink pattern][D45'] |
+| <a id="p11"></a>**P11** Identity | Fake and OIDC implementations satisfy one identity contract | Keycloak on Apple Container with PKCE from the iOS simulator, the Android emulator and web; membership enforced on sync, lease and commands. Checks split in [p11-design-review.md](../../evidence/p11-design-review.md) | Cross-organization access denied while same-organization access allowed | [D18 Organization isolation on the server][D18], [D47 Identity via OIDC][D47] |
+| <a id="p12"></a>**P12** UI on every platform | One React Native component tree renders and passes its stories on iOS, Android and web | Set by its grilling (the app-shell step, with [P13 Links and routing][P13]). Direction agreed 2026-09-29: components in React Native primitives, web through react-native-web; stories run in Chromium in `verify` (`@storybook/react-native-web-vite` + `@storybook/addon-vitest`) and on the iOS simulator and Android emulator in this gate (`@storybook/react-native`, driven by agent-device through the accessibility tree); IntentComposer is rewritten on it and [P08 UI three-way prototype][P08] re-runs | Set by its grilling, for example a story without an accessibility label fails in both places | [D41 Three state owners][D41], [D54 Three tag dimensions][D54] |
+| <a id="p13"></a>**P13** Links and routing | One URL opens the same screen and state on every platform | Set by its grilling (the app-shell step, with [P12 UI on every platform][P12]). Includes the first web E2E journey (Playwright) and the Lighthouse budgets on the served web build | Set by its grilling | - |
+| <a id="p14"></a>**P14** Quarantine after a lost lease | User content stranded by a lost lease is never dropped and is resolved by a human | Set by its grilling and design review. Direction agreed 2026-09-27: a human-conflict entry ([D34 Per-attribute conflict policies][D34]) names the stranded content, and a command resolves it (attach to the execution, keep as standalone evidence, or discard) | Set by its grilling | [D15 Server authority after a lost lease][D15], [D34 Per-attribute conflict policies][D34] |
+| <a id="p15"></a>**P15** Encrypted store | SQLCipher store passes the log store conformance suite | [P04 Log store conformance][P04] + [P05 Changesets and projections][P05] suites green on SQLCipher with keys in Keychain/Keystore | Wrong key cannot open the database | [D50 Data at rest on device][D50] |
+| <a id="p16"></a>**P16** Crypto-shredding | Erased subjects are unreadable everywhere | After key destruction, personal attributes are unreadable on every replica, projection and export; the log stays intact and syncable | Non-erased subject stays readable | [D51 Crypto-shredding][D51] |
+| <a id="p17"></a>**P17** Browser engine leader | Only one tab runs the engine | Two tabs, one engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two engines are detected running | [D25 Browser engine leader][D25] |
 
-Closure of the foundation stage: one sequential full run of P01-P10 on an unchanged committed tree. P11-P17 close
-before the first consumer app relies on them. P11 closed on 2026-09-28 with one sequential run of P01-P11
+Closure of the foundation stage: one sequential full run of [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] on an unchanged committed tree. [P11 Identity][P11]-[P17 Browser engine leader][P17] close
+before the first consumer app relies on them. [P11][P11] closed on 2026-09-28 with one sequential run of [P01][P01]-[P11][P11]
 ([2026-09-28-p01-p11-closure.md](../../evidence/2026-09-28-p01-p11-closure.md)).
 
 ## Names for gates, steps and other work
@@ -42,8 +42,8 @@ Agreed 2026-09-29, so that a step, a gate and a milestone never share a name.
 
 - **Gates are numbered in the order they run.** A new gate that runs before registered ones takes its place and the
   later ones move up. Only gates without a ledger entry may move.
-- **A gate step belongs to a gate** and is written `Pnn.k`: P11.7 is gate step 7 of P11. "Step 7" alone is not
-  used, and neither is "step" alone: `verify` has verify steps (D75).
+- **A gate step belongs to a gate** and is written `Pnn.k`: [P11 Identity][P11].7 is gate step 7 of [P11][P11]. "Step 7" alone is not
+  used, and neither is "step" alone: `verify` has verify steps ([D75 Evidence vocabulary][D75]).
 - **Work that is not a gate has a name, not a number**: Housekeeping, Docs and teaching. The scaffolding work order in
   [00-next-session.md](00-next-session.md) keeps its numbers as history only.
 
@@ -53,9 +53,63 @@ run before quarantine. Notes use the numbers of their date:
 
 | Gate | Earlier on 2026-09-29 | Before 2026-09-29 |
 | --- | --- | --- |
-| P12 UI on every platform | not a gate | not a gate |
-| P13 Links and routing | not a gate | not a gate |
-| P14 Quarantine after a lost lease | P12 | not a gate |
-| P15 Encrypted store | P13 | P12 |
-| P16 Crypto-shredding | P14 | P13 |
-| P17 Browser engine leader | P15 | P14 |
+| [P12 UI on every platform][P12] UI on every platform | not a gate | not a gate |
+| [P13 Links and routing][P13] Links and routing | not a gate | not a gate |
+| [P14 Quarantine after a lost lease][P14] Quarantine after a lost lease | [P12 UI on every platform][P12] | not a gate |
+| [P15 Encrypted store][P15] Encrypted store | [P13 Links and routing][P13] | [P12 UI on every platform][P12] |
+| [P16 Crypto-shredding][P16] Crypto-shredding | [P14 Quarantine after a lost lease][P14] | [P13 Links and routing][P13] |
+| [P17 Browser engine leader][P17] Browser engine leader | [P15 Encrypted store][P15] | [P14 Quarantine after a lost lease][P14] |
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D10]: 02-decision-log.md#d10
+[D12]: 02-decision-log.md#d12
+[D13]: 02-decision-log.md#d13
+[D15]: 02-decision-log.md#d15
+[D16]: 02-decision-log.md#d16
+[D18]: 02-decision-log.md#d18
+[D20]: 02-decision-log.md#d20
+[D22]: 02-decision-log.md#d22
+[D24]: 02-decision-log.md#d24
+[D25]: 02-decision-log.md#d25
+[D3]: 02-decision-log.md#d3
+[D31]: 02-decision-log.md#d31
+[D32]: 02-decision-log.md#d32
+[D33']: 02-decision-log.md#d33p
+[D34]: 02-decision-log.md#d34
+[D35'']: 02-decision-log.md#d35pp
+[D36]: 02-decision-log.md#d36
+[D37]: 02-decision-log.md#d37
+[D38]: 02-decision-log.md#d38
+[D39]: 02-decision-log.md#d39
+[D40]: 02-decision-log.md#d40
+[D41]: 02-decision-log.md#d41
+[D42]: 02-decision-log.md#d42
+[D43]: 02-decision-log.md#d43
+[D44]: 02-decision-log.md#d44
+[D45']: 02-decision-log.md#d45p
+[D46]: 02-decision-log.md#d46
+[D47]: 02-decision-log.md#d47
+[D50]: 02-decision-log.md#d50
+[D51]: 02-decision-log.md#d51
+[D54]: 02-decision-log.md#d54
+[D55]: 02-decision-log.md#d55
+[D75]: 02-decision-log.md#d75
+[D9]: 02-decision-log.md#d9
+[D93]: 02-decision-log.md#d93
+[P01]: #p01
+[P02]: #p02
+[P03]: #p03
+[P04]: #p04
+[P05]: #p05
+[P06]: #p06
+[P07]: #p07
+[P08]: #p08
+[P10]: #p10
+[P11]: #p11
+[P12]: #p12
+[P13]: #p13
+[P14]: #p14
+[P15]: #p15
+[P16]: #p16
+[P17]: #p17

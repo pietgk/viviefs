@@ -178,6 +178,11 @@ describe('the guides check', () => {
       /P04's fact to establish is not its claim/,
     )
     expect(problemsWith({ [GATE_TABLE]: "  {\n    gate: 'P04',\n    name: 'Log store conformance',\n" })).toMatch(/P04 has no claim/)
+    expect(
+      problemsWith({
+        [GATE_TABLE_DOC]: '| <a id="p04"></a>**P04** Log store conformance | The log store\'s contract holds | Append |\n',
+      }),
+    ).toBe('')
   })
 
   it("reads an ADR's Observed section up to the next heading", () => {

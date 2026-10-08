@@ -4,6 +4,8 @@
  *
  * - a gate, ADR or decision id in prose becomes a link that reads as its id
  *   and name, carrying its summary for the preview card;
+ * - a reference-style link keeps that preview; a label that starts with the
+ *   id but is not the catalog name fails the build (D86');
  * - a link whose label is only an id keeps its target and gets the name;
  * - an inline-code repository path becomes a link to its site page or to
  *   GitHub.
@@ -12,8 +14,9 @@
  * id fails the build, and so does a missing path under a checked root,
  * except in evidence notes and research records, which are kept as written.
  */
-import { fileURLToPath } from 'node:url'
 import { relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { findReferenceTokens } from '@viviefs/references'
 import type { HastPluginEntry, MdastPluginEntry } from 'satteri'
 import {
   codePath,
@@ -23,7 +26,7 @@ import {
   GLOSSARY,
   glossaryAnchor,
   glossaryTerms,
-  onlyReference,
+  lookupReference,
   referenceIndex,
   termFinder,
   type FoundTerm,
@@ -130,6 +133,38 @@ export const linkReferences = (
   return parts.some((part) => part.type === 'link') ? parts : null
 }
 
+/** Smartypants curls `'` before this plugin sees the label. The catalog keeps the source character. */
+const plainQuotes = (text: string): string => text.replace(/[\u2018\u2019\u2032]/g, "'")
+
+/**
+ * A link whose label is a reference: a bare id, or the id and its name.
+ * An unknown id fails like a bare id in prose. A name that is not the
+ * catalog's name is stale (D86'). A typographic apostrophe is the same name.
+ * Anything else is left as written.
+ */
+
+const linkedReference = (label: string, root: string, where: string, owned: boolean): Reference | undefined => {
+  const trimmed = label.trim()
+  const token = findReferenceTokens(trimmed)[0]
+  if (token === undefined || token.start !== 0) return undefined
+  const key = token.kind === 'id' ? token.id : `${token.from}-${token.to}`
+  const reference = lookupReference(root, key)
+  const rest = trimmed.slice(token.end)
+  if (reference === undefined) {
+    if (rest === '') throw new Error(`${where}: link "${trimmed}" names an unknown id (D87).`)
+    return undefined
+  }
+  const suffix = reference.label.slice(reference.id.length)
+  const named = rest === '' || plainQuotes(rest) === plainQuotes(suffix)
+  // A reference-style link is one we wrote, so a drifted name is a stale label.
+  // A URL link that merely starts with an id, such as "P10 design review", is not.
+  if (!named) {
+    if (!owned) return undefined
+    throw new Error(`${where}: link "${trimmed}" has a stale name for ${reference.id}; run \`pnpm refs fix\` (D86').`)
+  }
+  return reference
+}
+
 /** Whether a text node follows an `_Avoid_` marker in its paragraph. */
 const afterAvoid = (node: unknown, tree: Tree): boolean => {
   const parent = tree.parent(node as never) as Phrasing | undefined
@@ -185,14 +220,13 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
         if (parts !== null) context.replaceNode(node, [...parts])
       },
       link(node, context) {
-        const id = onlyReference(textOf(node))
-        if (id === null) return
-        const reference = index.get(id)
-        if (reference === undefined) {
-          throw new Error(`${repositoryPath}: link "${textOf(node)}" names an unknown id (D87).`)
-        }
-        // The reference's own page: the link's target may still be a relative
-        // file path that repo-links rewrites in the same pass.
+        const reference = linkedReference(textOf(node), repositoryRoot, repositoryPath, false)
+        if (reference === undefined) return
+        context.replaceNode(node, referenceLink(reference, reference.label))
+      },
+      linkReference(node, context) {
+        const reference = linkedReference(textOf(node), repositoryRoot, repositoryPath, true)
+        if (reference === undefined) return
         context.replaceNode(node, referenceLink(reference, reference.label))
       },
       inlineCode(node, context) {
@@ -231,7 +265,7 @@ export const glossaryAnchors = (): HastPluginEntry => ({ fileURL }) => {
   }
 }
 
-/** Gives each decision row of the decision log its anchor (`#d37`, D89). */
+/** Gives each decision row of the decision log its anchor (`#d37`, D89). A source `<a id>` is dropped so the row keeps one id. */
 export const decisionAnchors = (): HastPluginEntry => () => ({
   name: 'viviefs-decision-anchors',
   element: {
@@ -240,7 +274,23 @@ export const decisionAnchors = (): HastPluginEntry => () => ({
       const first = node.children.find((child) => child.type === 'element')
       // Typographic quotes turn D33' into D33\u2019 before this pass.
       const text = first === undefined ? '' : context.textContent(first).trim().replace(/[\u2019\u2032]/g, "'")
-      if (/^D\d+'*$/.test(text)) context.setProperty(node, 'id', decisionAnchor(text))
+      if (!/^D\d+'*$/.test(text) || first?.type !== 'element') return
+      const id = decisionAnchor(text)
+      context.setProperty(node, 'id', id)
+      // Sätteri keeps an empty `<a id>` as two raw nodes. The row carries the id.
+      for (let index = first.children.length - 1; index >= 0; index--) {
+        const child = first.children[index]
+        const previous = first.children[index - 1]
+        const value = child?.type === 'raw' && 'value' in child && typeof child.value === 'string' ? child.value : undefined
+        const before =
+          previous?.type === 'raw' && 'value' in previous && typeof previous.value === 'string' ? previous.value : undefined
+        if (value === `<a id="${id}"></a>`) context.removeChildAt(first, index)
+        else if (value === '</a>' && before === `<a id="${id}">`) {
+          context.removeChildAt(first, index)
+          context.removeChildAt(first, index - 1)
+          index -= 1
+        }
+      }
     },
   },
 })

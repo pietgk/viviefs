@@ -1,0 +1,16 @@
+{
+  "name": "@viviefs/refs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@viviefs/references": "workspace:*"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0",
+    "@viviefs/testing": "workspace:*",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}

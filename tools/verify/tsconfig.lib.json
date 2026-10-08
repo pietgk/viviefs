@@ -15,6 +15,9 @@
   ],
   "references": [
     {
+      "path": "../../libs/references/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/testing/tsconfig.lib.json"
     }
   ]

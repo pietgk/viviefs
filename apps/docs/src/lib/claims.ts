@@ -7,25 +7,14 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { GATE_TABLE, GATE_TABLE_DOC, parseGateClaims, type GateClaim } from '@viviefs/references'
 import { siteUrlFor } from './repo.ts'
 
+export { GATE_TABLE, GATE_TABLE_DOC, parseGateClaims }
+export type { GateClaim }
+
 /** The gate table in code: the one home of gate names and claims. */
-export const GATE_TABLE = 'tools/qualification/src/gates.ts'
-export const GATE_TABLE_DOC = 'docs/plan/bootstrap/06-qualification-gates.md'
 export const CLAIMS_ROUTE = 'reference/claims'
-
-const unquote = (literal: string): string => literal.slice(1, -1).replace(/\\'/g, "'")
-
-export type GateClaim = { readonly id: string; readonly name: string; readonly claim: string }
-
-/** Each gate's id, name and claim, from the gate table's source. */
-export const parseGateClaims = (source: string): ReadonlyArray<GateClaim> =>
-  source.split(/\n\s*\{\n/).flatMap((block) => {
-    const id = /gate: '(P\d\d)'/.exec(block)?.[1]
-    const name = /name: ('(?:[^'\\]|\\.)*')/.exec(block)?.[1]
-    const claim = /claim:\s*('(?:[^'\\]|\\.)*')/.exec(block)?.[1]
-    return id && name && claim ? [{ id, name: unquote(name), claim: unquote(claim) }] : []
-  })
 
 /** Pass condition and positive control per gate, from the plan's gate table. */
 export const parsePlanRows = (

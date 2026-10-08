@@ -19,7 +19,8 @@ const files: Record<string, string> = {
     "  {\n    gate: 'P04',\n    name: 'Log store conformance',\n    claim: 'The log store contract holds',\n  },\n  {\n    gate: 'P05',\n    name: 'Changesets and projections',\n    claim: 'Changesets commit atomically',\n  },",
   'docs/evidence/2026-09-20-p04.md': '# P04\n',
   'docs/adr/0005-sqlite-drivers.md': '# ADR-0005: SQLite drivers\n\nSummary: Official drivers.\n\nStatus: Qualified\n',
-  'docs/plan/bootstrap/02-decision-log.md': '| # | Name | Decision | Why |\n|---|---|---|---|\n| D37 | Log store tables | One datom table. | Speed. |\n',
+  'docs/plan/bootstrap/02-decision-log.md':
+    "| # | Name | Decision | Why |\n|---|---|---|---|\n| D37 | Log store tables | One datom table. | Speed. |\n| D38 | Reader's view | A screen. | Clarity. |\n",
   'libs/datom/src/index.ts': 'export {}\n',
   'GLOSSARY.md':
     '# Glossary\n\n**Note** the order.\n\n**Pattern**:\nA proven way to build one part of an app, with a guide.\n_Avoid_: guide template\n\n**Guide**:\nEverything about one pattern.\n',
@@ -54,6 +55,20 @@ describe('references resolved when rendered', () => {
   it('names a link whose label is only an id, and fails when the id is unknown', () => {
     expect(render('See [ADR 0005](0005-sqlite-drivers.md).')).toContain('>ADR-0005 SQLite drivers</a>')
     expect(() => render('See [D4](x.md).')).toThrow(/link "D4" names an unknown id/)
+  })
+
+  it('keeps a reference-style link, with its preview, and fails on a stale name', () => {
+    const html = render('See [D37 Log store tables][D37].\n\n[D37]: ../plan/bootstrap/02-decision-log.md#d37\n')
+    expect(html).toContain(
+      '<a href="/reference/decisions/#d37" class="ref-link" data-ref-kind="Decision" data-ref-label="D37 Log store tables" data-ref-summary="One datom table." data-ref-meta="">D37 Log store tables</a>',
+    )
+    expect(render('See [D37][D37].\n\n[D37]: #d37\n')).toContain('>D37 Log store tables</a>')
+    expect(() => render('See [D37 Wrong][D37].\n\n[D37]: #d37\n')).toThrow(/stale name for D37/)
+    expect(render("See [D38 Reader\u2019s view][D38].\n\n[D38]: #d38\n")).toContain('>D38 Reader\'s view</a>')
+    expect(render('[P04 design review](https://example.com)')).toContain(
+      '<a href="https://example.com">P04 design review</a>',
+    )
+    expect(render('[D4 notes](https://example.com)')).toContain('<a href="https://example.com">D4 notes</a>')
   })
 
   it('links both ends of a range by id alone, and an id that is the whole text', () => {
@@ -111,5 +126,16 @@ describe('references resolved when rendered', () => {
     const html = render(files['docs/plan/bootstrap/02-decision-log.md'] ?? '', 'docs/plan/bootstrap/02-decision-log.md')
     expect(html).toContain('<tr id="d37">')
     expect(html).toContain('<td>D37</td>')
+  })
+
+  it('keeps one anchor when the source row already has one', () => {
+    const html = render(
+      '| Id | Name |\n| --- | --- |\n| <a id="d37"></a>D37 | Log store tables |\n',
+      'docs/plan/bootstrap/02-decision-log.md',
+    )
+    expect(html.match(/id="d37"/g)).toHaveLength(1)
+    expect(html).toContain('<tr id="d37">')
+    expect(html).toContain('<td>D37</td>')
+    expect(html).not.toContain('<a id="d37">')
   })
 })

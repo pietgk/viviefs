@@ -3,10 +3,11 @@
  * pages, `##` headings and frontmatter keys of the guide template, which is
  * read from its files, so changing the template changes the rule. A guide's
  * ADRs, gates, exemplar projects and exercise track exist and point back; ADR
- * and guide statuses agree. References inside pages are the site build's to
- * check (D87). Pure over an injected view of the repository;
+ * and guide statuses agree. Named references in living documents are the
+ * `references` step's to check (D86'). Pure over an injected view of the repository;
  * `check-guides.ts` reads the repository and runs it.
  */
+import { GATE_TABLE, GATE_TABLE_DOC, parseGateClaims } from '@viviefs/references'
 import { parse } from 'yaml'
 
 /** Where the guide template and the guides live (as in `apps/docs/src/lib/guides.ts`). */
@@ -31,18 +32,17 @@ const TEMPLATE_ONLY_KEYS = ['slug']
 const CONDITIONAL_KEYS = ['accepted']
 
 /** The gate table in code, the one home of gate names (D86), and its table in the plan. */
-export const GATE_TABLE = 'tools/qualification/src/gates.ts'
-export const GATE_TABLE_DOC = 'docs/plan/bootstrap/06-qualification-gates.md'
+export { GATE_TABLE, GATE_TABLE_DOC }
 
 const unquote = (literal: string) => literal.slice(1, -1).replace(/\\'/g, "'")
 
-/** Each gate's id, name and claim, from the gate table's source. */
+/** Each gate's id, name and claim. A gate with no claim is kept so the check can say so (D93). */
 export const parseGateTable = (source: string): ReadonlyArray<{ gate: string; name: string; claim: string }> =>
   source.split(/\n\s*\{\n/).flatMap((block) => {
     const gate = /gate: '(P\d\d)'/.exec(block)?.[1]
     const name = /name: ('(?:[^'\\]|\\.)*')/.exec(block)?.[1]
-    const claim = /claim:\s*('(?:[^'\\]|\\.)*')/.exec(block)?.[1]
-    return gate && name ? [{ gate, name: unquote(name), claim: claim === undefined ? '' : unquote(claim) }] : []
+    if (gate === undefined || name === undefined) return []
+    return [{ gate, name: unquote(name), claim: parseGateClaims(block)[0]?.claim ?? '' }]
   })
 
 /**
@@ -52,7 +52,8 @@ export const parseGateTable = (source: string): ReadonlyArray<{ gate: string; na
  * touches only the plan.
  */
 const gateNameProblems = (repository: GuidesRepository): string[] => {
-  const table = repository.read(GATE_TABLE_DOC) ?? ''
+  // A row anchor (`<a id="p05"></a>`) sits in front of the id (D86') and is not part of the name.
+  const table = (repository.read(GATE_TABLE_DOC) ?? '').replace(/<a id="[^"]*"><\/a>/g, '')
   return parseGateTable(repository.read(GATE_TABLE) ?? '').flatMap(({ gate, name, claim }) => [
     ...(table.includes(`| **${gate}** ${name} |`) ? [] : [`${GATE_TABLE_DOC}: does not name ${gate} "${name}", as ${GATE_TABLE} does`]),
     ...(claim === ''

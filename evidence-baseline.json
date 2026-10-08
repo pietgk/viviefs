@@ -2,7 +2,7 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7437258,
+        "hbcBytes": 7437257,
         "jsBytes": 4583567,
         "packages": {
           "(unmapped)": 199230,
@@ -68,10 +68,10 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-03"
+        "recordedAt": "2026-10-08"
       },
       "ios": {
-        "hbcBytes": 5331764,
+        "hbcBytes": 5331763,
         "jsBytes": 2490142,
         "packages": {
           "(unmapped)": 197542,
@@ -130,7 +130,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-03"
+        "recordedAt": "2026-10-08"
       }
     }
   },
@@ -193,10 +193,10 @@
     },
     "unit": {
       "apps/docs/src/lib/claims.ts": {
-        "branches": "35/45",
-        "functions": "21/21",
-        "lines": "47/47",
-        "statements": "54/54"
+        "branches": "30/40",
+        "functions": "18/18",
+        "lines": "38/38",
+        "statements": "44/44"
       },
       "apps/docs/src/lib/guides.ts": {
         "branches": "14/20",
@@ -205,16 +205,16 @@
         "statements": "34/38"
       },
       "apps/docs/src/lib/reference-links.ts": {
-        "branches": "85/95",
-        "functions": "23/23",
-        "lines": "95/95",
-        "statements": "123/127"
+        "branches": "116/129",
+        "functions": "26/26",
+        "lines": "124/124",
+        "statements": "157/163"
       },
       "apps/docs/src/lib/references.ts": {
-        "branches": "111/125",
-        "functions": "40/40",
-        "lines": "156/156",
-        "statements": "184/185"
+        "branches": "69/75",
+        "functions": "34/34",
+        "lines": "103/103",
+        "statements": "128/129"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
@@ -444,6 +444,18 @@
         "lines": "4/4",
         "statements": "4/4"
       },
+      "libs/references/src/catalog.ts": {
+        "branches": "78/90",
+        "functions": "22/23",
+        "lines": "131/135",
+        "statements": "147/156"
+      },
+      "libs/references/src/rewrite.ts": {
+        "branches": "176/254",
+        "functions": "36/37",
+        "lines": "250/278",
+        "statements": "290/335"
+      },
       "libs/sync/client/src/client.ts": {
         "branches": "30/34",
         "functions": "37/46",
@@ -576,6 +588,12 @@
         "lines": "21/26",
         "statements": "21/27"
       },
+      "tools/refs/src/hook.ts": {
+        "branches": "23/25",
+        "functions": "12/12",
+        "lines": "36/36",
+        "statements": "41/41"
+      },
       "tools/verify/src/baseline.ts": {
         "branches": "10/12",
         "functions": "9/9",
@@ -627,8 +645,8 @@
       "tools/verify/src/guides.ts": {
         "branches": "164/203",
         "functions": "63/66",
-        "lines": "240/249",
-        "statements": "284/304"
+        "lines": "238/247",
+        "statements": "282/303"
       },
       "tools/verify/src/lint-scope.ts": {
         "branches": "18/18",
@@ -686,5 +704,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "dc220c0c6a977c0a795b9848f3e5046528efab1786ed8a5b26b95b5b63619c39"
+  "registryDigest": "d6d6ae586177524849ef4f640963add81b5b938cdac26e2968780979a1bb83f3"
 }

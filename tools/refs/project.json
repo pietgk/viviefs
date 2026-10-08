@@ -1,0 +1,21 @@
+{
+  "name": "refs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/refs/src",
+  "projectType": "library",
+  "tags": ["kind:tool"],
+  "metadata": {
+    "rationale": "pnpm refs rewrites living documents and checks them (D86')"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "tools/refs"
+      }
+    }
+  }
+}

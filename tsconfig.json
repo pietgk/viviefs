@@ -61,7 +61,13 @@
       "path": "./libs/testing"
     },
     {
+      "path": "./libs/references"
+    },
+    {
       "path": "./tools/verify"
+    },
+    {
+      "path": "./tools/refs"
     },
     {
       "path": "./libs/blobs"

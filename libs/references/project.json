@@ -1,0 +1,21 @@
+{
+  "name": "references",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/references/src",
+  "projectType": "library",
+  "tags": ["kind:lib", "platform:universal"],
+  "metadata": {
+    "rationale": "The reference index shared by the docs site and pnpm refs (D86', D52)"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "libs/references"
+      }
+    }
+  }
+}

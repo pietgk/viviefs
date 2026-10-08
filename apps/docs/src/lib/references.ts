@@ -1,27 +1,47 @@
 /**
- * The reference index (D86-D90): every gate, ADR and decision with the name
- * and one-line summary a reference to it renders with, and where it links.
- * Sources keep short ids (`P04`, `ADR-0011`, `D37`); the site resolves them
- * when it renders (`reference-links.ts`). An id the index does not have fails
- * the build. Gate names and summaries have one home,
- * `tools/qualification/src/gates.ts`; ADR summaries are each ADR's `Summary:`
- * line; decision names are the Name column of the decision log.
+ * Site references (D87-D94): names and paths come from `@viviefs/references`
+ * (D86'); this module adds the site URL, the glossary and repository-path
+ * links. Sources keep short ids; the site resolves them when it renders
+ * (`reference-links.ts`). An id the catalog does not have fails the build.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { claimHref, GATE_TABLE, parseGateClaims } from './claims.ts'
+import {
+  buildCatalog,
+  DECISION_LOG,
+  decisionAnchor,
+  findReferences,
+  firstSentence,
+  GATE_TABLE,
+  GLOSSARY,
+  ISSUE_STATUSES,
+  newestEvidence,
+  onlyReference,
+  parseDecisions,
+  plainText,
+  resolveKey,
+  type Catalog,
+  type Reference as CatalogReference,
+} from '@viviefs/references'
+import { claimHref } from './claims.ts'
 import { GITHUB_REPOSITORY, siteUrlFor } from './repo.ts'
-import { parseRepositoryPage } from './repo-pages.ts'
 
-export { GATE_TABLE }
-export const GLOSSARY = 'GLOSSARY.md'
-export const DECISION_LOG = 'docs/plan/bootstrap/02-decision-log.md'
+export {
+  DECISION_LOG,
+  decisionAnchor,
+  findReferences,
+  firstSentence,
+  GATE_TABLE,
+  GLOSSARY,
+  ISSUE_STATUSES,
+  newestEvidence,
+  onlyReference,
+  parseDecisions,
+  plainText,
+}
 
 export type ReferenceKind = 'Gate' | 'ADR' | 'Decision' | 'Issue' | 'Glossary'
-
-/** The statuses an issue may have (D92): the triage roles, and resolved. */
-export const ISSUE_STATUSES = ['needs-triage', 'needs-info', 'ready-for-agent', 'ready-for-human', 'wontfix', 'resolved']
 
 export type Reference = {
   /** The canonical id: `P04`, `ADR-0011`, `D37`, `D33'`, `I1`. */
@@ -36,114 +56,31 @@ export type Reference = {
   readonly meta: string
 }
 
-/** Markdown to the plain text a preview shows. */
-export const plainText = (markdown: string): string =>
-  markdown
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/`([^`]*)`/g, '$1')
-    .replace(/\\\|/g, '|')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-/** The first sentence of a text, for a one-line preview. */
-export const firstSentence = (text: string): string => {
-  const match = /^.*?[.!?](?=\s|$)/.exec(text)
-  return (match?.[0] ?? text).trim()
+const siteHref = (reference: CatalogReference): string => {
+  if (reference.kind === 'Gate') return claimHref({ id: reference.id, name: reference.label.slice(reference.id.length + 1) })
+  const page = siteUrlFor(reference.path) ?? `${GITHUB_REPOSITORY}/blob/main/${reference.path}`
+  return reference.anchor === '' ? page : `${page}#${reference.anchor}`
 }
 
-/** The newest dated evidence note of a gate (`YYYY-MM-DD-p04.md`), or null. */
-export const newestEvidence = (root: string, gate: string): string | null => {
-  const suffix = `-${gate.toLowerCase()}.md`
-  const notes = readdirSync(join(root, 'docs/evidence'))
-    .filter((name) => /^\d{4}-\d{2}-\d{2}-/.test(name) && name.endsWith(suffix))
-    .sort()
-  const newest = notes.at(-1)
-  return newest === undefined ? null : `docs/evidence/${newest}`
-}
+const toSite = (reference: CatalogReference): Reference => ({
+  id: reference.id,
+  kind: reference.kind,
+  label: reference.label,
+  href: siteHref(reference),
+  summary: reference.summary,
+  meta: reference.meta,
+})
 
-/** The anchor of a decision's row: `D37` -> `d37`, `D33'` -> `d33p`. */
-export const decisionAnchor = (id: string): string => id.toLowerCase().replace(/'/g, 'p')
-
-export type Decision = { readonly id: string; readonly name: string; readonly decision: string }
-
-/** Every decision row of the decision log: `| D37 | Name | Decision | Why |`. */
-export const parseDecisions = (source: string): ReadonlyArray<Decision> =>
-  source.split('\n').flatMap((line) => {
-    const match = /^\| (D\d+'*) \| ([^|]+) \| ((?:[^|\\]|\\.)+) \|/.exec(line)
-    if (!match) return []
-    const [, id = '', name = '', decision = ''] = match
-    return [{ id, name: name.trim(), decision: plainText(decision) }]
-  })
-
-const readIfExists = (path: string) => (existsSync(path) ? readFileSync(path, 'utf8') : '')
-
-/** Builds the index of every reference the site can resolve. */
+/** The index of every reference, with the URL the site links to. */
 export const buildReferenceIndex = (root: string): ReadonlyMap<string, Reference> => {
   const index = new Map<string, Reference>()
-  // A gate reference shows the claim it proves and links to it (D93).
-  for (const gate of parseGateClaims(readIfExists(join(root, GATE_TABLE)))) {
-    const evidence = newestEvidence(root, gate.id)
-    const date = evidence === null ? null : /(\d{4}-\d{2}-\d{2})/.exec(evidence)?.[1]
-    index.set(gate.id, {
-      id: gate.id,
-      kind: 'Gate',
-      label: `${gate.id} ${gate.name}`,
-      href: claimHref(gate),
-      summary: `Claim: ${plainText(gate.claim)}.`,
-      meta: date ? `Newest evidence ${date}` : 'Not run yet',
-    })
-  }
-  for (const file of readdirSync(join(root, 'docs/adr')).filter((name) => /^\d{4}-.+\.md$/.test(name))) {
-    const path = `docs/adr/${file}`
-    const source = readFileSync(join(root, path), 'utf8')
-    const page = parseRepositoryPage(path, source)
-    const number = file.slice(0, 4)
-    const summary = /^Summary: (.+)$/m.exec(source)?.[1]
-    if (summary === undefined) throw new Error(`${path} has no "Summary:" line (D88).`)
-    index.set(`ADR-${number}`, {
-      id: `ADR-${number}`,
-      kind: 'ADR',
-      label: page.title.replace(/^ADR-(\d{4}): /, 'ADR-$1 '),
-      href: siteUrlFor(path) ?? `${GITHUB_REPOSITORY}/blob/main/${path}`,
-      summary: plainText(summary),
-      meta: page.status ?? '',
-    })
-  }
-  for (const file of existsSync(join(root, 'docs/issues')) ? readdirSync(join(root, 'docs/issues')) : []) {
-    if (!/^\d{4}-.+\.md$/.test(file)) continue
-    const path = `docs/issues/${file}`
-    const source = readFileSync(join(root, path), 'utf8')
-    const number = Number(file.slice(0, 4))
-    const title = new RegExp(`^# I${number}: (.+)$`).exec(source.split('\n')[0] ?? '')?.[1]
-    if (title === undefined) throw new Error(`${path} must start with "# I${number}: <title>" (D92).`)
-    const status = /^Status: (.+)$/m.exec(source)?.[1]?.trim() ?? ''
-    if (!ISSUE_STATUSES.includes(status)) {
-      throw new Error(`${path}: Status "${status}" is not one of ${ISSUE_STATUSES.join(', ')} (D92).`)
-    }
-    const what = /^## What\n\n([\s\S]*?)(?:\n\n|$)/m.exec(source)?.[1]
-    if (what === undefined) throw new Error(`${path} has no "## What" section (D92).`)
-    index.set(`I${number}`, {
-      id: `I${number}`,
-      kind: 'Issue',
-      label: `I${number} ${plainText(title)}`,
-      href: siteUrlFor(path) ?? `${GITHUB_REPOSITORY}/blob/main/${path}`,
-      summary: firstSentence(plainText(what)),
-      meta: status,
-    })
-  }
-  const decisionsPage = siteUrlFor(DECISION_LOG) ?? `${GITHUB_REPOSITORY}/blob/main/${DECISION_LOG}`
-  for (const decision of parseDecisions(readIfExists(join(root, DECISION_LOG)))) {
-    index.set(decision.id, {
-      id: decision.id,
-      kind: 'Decision',
-      label: `${decision.id} ${decision.name}`,
-      href: `${decisionsPage}#${decisionAnchor(decision.id)}`,
-      summary: firstSentence(decision.decision),
-      meta: '',
-    })
-  }
+  for (const reference of buildCatalog(root).references.values()) index.set(reference.id, toSite(reference))
   return index
+}
+
+const read = (root: string, path: string) => {
+  const absolute = join(root, path)
+  return existsSync(absolute) ? readFileSync(absolute, 'utf8') : ''
 }
 
 /** When the index's sources last changed, so `docs:serve` sees an edited name. */
@@ -161,7 +98,12 @@ const sourcesVersion = (root: string): string =>
     .map((path) => (existsSync(join(root, path)) ? statSync(join(root, path)).mtimeMs : 0))
     .join()
 
-type Built = { readonly version: string; readonly index: ReadonlyMap<string, Reference>; readonly terms: ReadonlyArray<GlossaryTerm> }
+type Built = {
+  readonly version: string
+  readonly catalog: Catalog
+  readonly index: ReadonlyMap<string, Reference>
+  readonly terms: ReadonlyArray<GlossaryTerm>
+}
 
 const built = new Map<string, Built>()
 
@@ -169,7 +111,10 @@ const current = (root: string): Built => {
   const version = sourcesVersion(root)
   const cached = built.get(root)
   if (cached?.version === version) return cached
-  const fresh = { version, index: buildReferenceIndex(root), terms: parseGlossary(readIfExists(join(root, GLOSSARY))) }
+  const catalog = buildCatalog(root)
+  const index = new Map<string, Reference>()
+  for (const reference of catalog.references.values()) index.set(reference.id, toSite(reference))
+  const fresh = { version, catalog, index, terms: parseGlossary(read(root, GLOSSARY)) }
   built.set(root, fresh)
   return fresh
 }
@@ -177,50 +122,17 @@ const current = (root: string): Built => {
 /** The index of a repository, rebuilt only when one of its sources changed. */
 export const referenceIndex = (root: string): ReadonlyMap<string, Reference> => current(root).index
 
+/** The catalog, including decision sections, rebuilt with the index. */
+export const referenceCatalog = (root: string): Catalog => current(root).catalog
+
+/** A key (an id, or a section range) as the site links it, or undefined when it is not one. */
+export const lookupReference = (root: string, key: string): Reference | undefined => {
+  const reference = resolveKey(referenceCatalog(root), key)
+  return reference === undefined ? undefined : toSite(reference)
+}
+
 /** The glossary's terms, rebuilt only when one of the sources changed. */
 export const glossaryTerms = (root: string): ReadonlyArray<GlossaryTerm> => current(root).terms
-
-export type Found = {
-  readonly start: number
-  readonly end: number
-  /** The canonical id. */
-  readonly id: string
-  /** Part of a range (`P01-P11`): rendered as the id alone, since a name would break the range. */
-  readonly inRange: boolean
-}
-
-/** A prime as written, or as smartypants curled it: after a code span `D35''` arrives as `D35\u2019\u2018`. */
-const PRIME = /['\u2018\u2019\u2032]/g
-/** Ends an id: no more of a word follows, or a possessive 's does. */
-const END = String.raw`(?:(?![\w'\u2018\u2019\u2032-])|(?=['\u2019]s\b))`
-const REFERENCE = new RegExp(
-  String.raw`\b(?:(P\d\d)${END}|ADR[- ](\d{4})${END}|(D\d{1,3})((?:['\u2018\u2019\u2032]{1,2})?)${END}|(I\d{1,4})${END})|\b(P\d\d|D\d{1,3})-(P\d\d|D\d{1,3})\b`,
-  'g',
-)
-
-/** The gate, ADR, decision and issue ids in a text, in order. Ranges like `P01-P11` give both ends. */
-export const findReferences = (text: string): ReadonlyArray<Found> => {
-  const found: Found[] = []
-  for (const match of text.matchAll(REFERENCE)) {
-    const start = match.index
-    const [whole, gate, adr, decision, primes = '', issue, from, to] = match
-    if (from !== undefined && to !== undefined) {
-      found.push({ start, end: start + from.length, id: from, inRange: true })
-      found.push({ start: start + from.length + 1, end: start + whole.length, id: to, inRange: true })
-      continue
-    }
-    const id = gate ?? issue ?? (adr !== undefined ? `ADR-${adr}` : `${decision ?? ''}${primes.replace(PRIME, "'")}`)
-    found.push({ start, end: start + whole.length, id, inRange: false })
-  }
-  return found
-}
-
-/** Text that is only an id, like a link labelled `ADR 0005`. */
-export const onlyReference = (text: string): string | null => {
-  const found = findReferences(text.trim())
-  const [first] = found
-  return found.length === 1 && first && !first.inRange && first.start === 0 && first.end === text.trim().length ? first.id : null
-}
 
 /**
  * Whether a path is a file or a directory with a file somewhere under it. Git

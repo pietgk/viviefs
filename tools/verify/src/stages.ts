@@ -217,6 +217,16 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'references',
+        blurb: 'living documents name every gate, ADR, decision and issue',
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/refs/src/cli.ts', 'check'],
+          },
+        ],
+      },
+      {
         name: 'evidence',
         blurb: 'coverage, suites and stories of this run hold against the registry and the lockfile',
         invocations: [

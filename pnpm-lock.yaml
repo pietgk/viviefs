@@ -241,6 +241,9 @@ importers:
       '@astrojs/starlight':
         specifier: 0.42.4
         version: 0.42.4(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(astro@7.3.5(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))(supports-color@10.2.2)
+      '@viviefs/references':
+        specifier: workspace:*
+        version: link:../../libs/references
       astro:
         specifier: 7.3.5
         version: 7.3.5(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0)
@@ -608,6 +611,21 @@ importers:
         specifier: 58.0.0
         version: 58.0.0(expo@58.0.0-preview.3)(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))
 
+  libs/references:
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.0
+        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+      '@viviefs/testing':
+        specifier: workspace:*
+        version: link:../testing
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0)
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@types/node@22.20.4)(@vitest/coverage-istanbul@5.0.1)(jsdom@30.1.0(@noble/hashes@2.4.0))(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0))
+
   libs/store-postgres:
     dependencies:
       '@effect/sql-pglite':
@@ -923,6 +941,25 @@ importers:
         specifier: 5.0.1
         version: 5.0.1(@types/node@22.20.4)(@vitest/coverage-istanbul@5.0.1)(jsdom@30.1.0(@noble/hashes@2.4.0))(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0))
 
+  tools/refs:
+    dependencies:
+      '@viviefs/references':
+        specifier: workspace:*
+        version: link:../../libs/references
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.0
+        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+      '@viviefs/testing':
+        specifier: workspace:*
+        version: link:../../libs/testing
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0)
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@types/node@22.20.4)(@vitest/coverage-istanbul@5.0.1)(jsdom@30.1.0(@noble/hashes@2.4.0))(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0))
+
   tools/verify:
     dependencies:
       '@effect/platform-node':
@@ -931,6 +968,9 @@ importers:
       '@effect/vitest':
         specifier: 4.0.0
         version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+      '@viviefs/references':
+        specifier: workspace:*
+        version: link:../../libs/references
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../../libs/testing
