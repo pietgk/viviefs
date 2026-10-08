@@ -1,6 +1,6 @@
 # I65: Named references in markdown
 
-Status: ready-for-agent
+Status: resolved
 
 Category: enhancement
 
@@ -26,6 +26,21 @@ Decided with the human on 2026-10-08, after reading [ADR-0033 The Presenter patt
 ### Scope (D86')
 
 In: ADRs, the decision log, issues, plan pages (not `docs/plan/vivief-inventory/rows/`), GLOSSARY.md, AGENTS.md, repo-owned skills, guides. Out, kept as written: evidence notes, research records, inventory rows. Never touched: machine-written files (the gate ledger, `evidence-baseline.json`), CHANGELOGs, vendored skills (`skills-lock.json`).
+
+## Answer
+
+Built on 2026-10-08. Living documents name a gate, ADR, decision or issue as a reference link. `pnpm refs fix` writes the names; the `references` step of `pnpm verify` fails a bare id, a stale label or a broken target. The index is `@viviefs/references`, shared by the docs site and the tool, because `verify` cannot import an app ([D52 Four project kinds][D52], [D54 Three tag dimensions][D54]). Decision-log and gate-table rows carry the anchors. Claude Code, Codex and Cursor each call `pnpm refs hook` after a write. A git pre-commit hook was declined.
+
+The migration is one commit per area, and the index landed with the decision log and the gate table because those anchors need the parsers that read them:
+
+- `7a814cb3b` names the references in the ADRs.
+- `d815af2ce` names the references in the issues.
+- `d95164755` names the references in the plan pages.
+- `b5abd45fa` names the references in the glossary and the agent map.
+- `4885853b4` names the references in the guides.
+- `12e023737` shares one reference index between the site and `pnpm refs`, and names the references in the decision log and the gate table.
+
+Observed on [D86' Named references in every living document][D86']: `pnpm verify` was green, 19 checks, including the `references` step.
 
 ## Comments
 
