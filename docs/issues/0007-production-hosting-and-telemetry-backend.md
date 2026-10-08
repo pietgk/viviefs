@@ -8,10 +8,14 @@ Decide when: the first consumer app leaves the lab
 
 ## What
 
-Nothing decides yet where the server runs, which telemetry backend replaces the local lab sinks, how TLS is done, or how the web app keeps its sign-in session (P11 keeps it in memory).
+Nothing decides yet where the server runs, which telemetry backend replaces the local lab sinks, how TLS is done, or how the web app keeps its sign-in session ([P11 Identity][P11] keeps it in memory).
 
 ## Direction
 
 Decide then, together with sampling of durable spans.
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

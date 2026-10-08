@@ -34,12 +34,12 @@ Andrej Karpathy (@karpathy) on X, copied on 2026-10-03:
 
 | Idea | Already in ViViEfs | Not yet |
 | --- | --- | --- |
-| Writing in a controlled language (ASD-STE100, or "80% of the way") | The `wait-what` skill asks for a re-pitch in ASD-STE100 with the `GLOSSARY.md` terms. `GLOSSARY.md` names rejected synonyms, which is a controlled vocabulary. D94 makes every glossary definition start with one plain sentence; I21 tests that with a reader outside software. | No writing rule for docs pages, guides, ADRs, issues or agent replies. `verify` does not check style. Only one skill uses STE, and only when the human asks for it. |
-| Diagrams instead of prose | Mermaid in the docs site, with Mermaid integrity checked (D59-D61). Mermaid in the research review pages. | No rule for when a page needs a diagram. No diagram for some core concepts, for example the path claim -> gate -> run -> note -> ledger entry (see I22). |
-| Interactive HTML pages | Lavish review pages for design decisions, kept as dated research records in `docs/research/` (D68). The interactive K-Plex concept navigator (2026-10-02). Design questions get a visual review page with worked examples before the human decides. | The HTML pages are records of a decision, not a path into the repo for a newcomer. The docs site does not link them as learning material. |
+| Writing in a controlled language (ASD-STE100, or "80% of the way") | The `wait-what` skill asks for a re-pitch in ASD-STE100 with the `GLOSSARY.md` terms. `GLOSSARY.md` names rejected synonyms, which is a controlled vocabulary. [D94 A glossary a newcomer can read][D94] makes every glossary definition start with one plain sentence; [I21 Test the glossary with a reader outside software][I21] tests that with a reader outside software. | No writing rule for docs pages, guides, ADRs, issues or agent replies. `verify` does not check style. Only one skill uses STE, and only when the human asks for it. |
+| Diagrams instead of prose | Mermaid in the docs site, with Mermaid integrity checked ([D59 Starlight docs site][D59]-[D61 Repository pages rendered in place][D61]). Mermaid in the research review pages. | No rule for when a page needs a diagram. No diagram for some core concepts, for example the path claim -> gate -> run -> note -> ledger entry (see [I22 Claims and evidence show each gate three times][I22]). |
+| Interactive HTML pages | Lavish review pages for design decisions, kept as dated research records in `docs/research/` ([D68 Research records][D68]). The interactive K-Plex concept navigator (2026-10-02). Design questions get a visual review page with worked examples before the human decides. | The HTML pages are records of a decision, not a path into the repo for a newcomer. The docs site does not link them as learning material. |
 | Bespoke explainer videos (3Blue1Brown style, narrated) | Nothing. | No video for any pattern, gate or guide. The toolchain (Manim, Remotion, local or paid text-to-speech) and how to keep a video true to its source are open. |
-| Work moves up to oversight and understanding | Verify - Qualify - Teach: a pattern is delivered only with evidence, an exemplar and an accepted guide (ADR-0026). Claims and evidence pages. Lessons cite evidence. | No measure of whether a human actually understands the result. I21 is the first test of that. |
-| Large, discardable artifacts | `.lavish/` is a scratch area again (D68); research records are never the source of a claim. Exercises have problem and solution folders (D66). | No rule for which artifacts we throw away, which we keep as a record, and which we regenerate from source when the source changes. |
+| Work moves up to oversight and understanding | Verify - Qualify - Teach: a pattern is delivered only with evidence, an exemplar and an accepted guide ([ADR-0026 Verify - Qualify - Teach][ADR-0026]). Claims and evidence pages. Lessons cite evidence. | No measure of whether a human actually understands the result. [I21 Test the glossary with a reader outside software][I21] is the first test of that. |
+| Large, discardable artifacts | `.lavish/` is a scratch area again ([D68 Research records][D68]); research records are never the source of a claim. Exercises have problem and solution folders ([D66 Exercise tracks][D66]). | No rule for which artifacts we throw away, which we keep as a record, and which we regenerate from source when the source changes. |
 
 ## Questions for the brainstorm
 
@@ -50,12 +50,23 @@ The why first:
 
 Then each idea:
 
-- Writing: do we want a controlled-language rule for docs, issues and agent replies? Full ASD-STE100 or "80% of the way"? Can `verify` check some of it, the way the `guides` step checks the guide template? How does it fit `GLOSSARY.md` and D94?
+- Writing: do we want a controlled-language rule for docs, issues and agent replies? Full ASD-STE100 or "80% of the way"? Can `verify` check some of it, the way the `guides` step checks the guide template? How does it fit `GLOSSARY.md` and [D94 A glossary a newcomer can read][D94]?
 - Diagrams: which concepts need one canonical diagram on the docs site, and who owns it so it does not drift from the code?
-- Web pages: should some review pages become learning material, or stay records (D68)? Should a concept navigator like the K-Plex research become part of the docs site?
-- Videos: is a generated explainer of one guide (for example the log-store guide) worth a prototype? How does a video cite evidence (D68: research is never the source of a claim) and stay true when the guide changes?
+- Web pages: should some review pages become learning material, or stay records ([D68 Research records][D68])? Should a concept navigator like the K-Plex research become part of the docs site?
+- Videos: is a generated explainer of one guide (for example the log-store guide) worth a prototype? How does a video cite evidence ([D68 Research records][D68]: research is never the source of a claim) and stay true when the guide changes?
 - Discardable artifacts: which artifacts should we regenerate from source on demand instead of keeping them?
 
 How the batch is used: the brainstorm reads this issue with the later ideas-batch issues, and turns what it keeps into decisions (decision log, ADRs) or into new issues. This issue links them; it does not restate them.
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0026]: ../adr/0026-verify-qualify-teach.md
+[D59]: ../plan/bootstrap/02-decision-log.md#d59
+[D61]: ../plan/bootstrap/02-decision-log.md#d61
+[D66]: ../plan/bootstrap/02-decision-log.md#d66
+[D68]: ../plan/bootstrap/02-decision-log.md#d68
+[D94]: ../plan/bootstrap/02-decision-log.md#d94
+[I21]: 0021-test-the-glossary-with-a-reader.md
+[I22]: 0022-claims-and-evidence-overlap.md

@@ -8,7 +8,7 @@ Effort: docs/plan/vivief-inventory/
 
 Type: research
 
-Blocked by: I35, I36
+Blocked by: [I35 Index vivief's ideas from its backbone][I35], [I36 Index ViViEfs's ideas from its sources][I36]
 
 Found: 2026-10-05
 
@@ -16,18 +16,33 @@ Claimed: 2026-10-06
 
 ## What
 
-Which of the ideas DevAC built stand in ViViEfs? Read, under `~/ws/vivief/docs/`, `fact/devac/` (18 files, about 7,900 lines): parsing, data model, storage, federation, rules that lift effects, views, OTel integration, the eval framework. Most is `DevAC tooling`; the rows that matter are the general ideas, such as rules that lift effects, matching traces against extracted effects (named in ViViEfs's `docs/plan/bootstrap/09-sources-to-reuse.md`), the eval framework and views. Cross-link I25 and I31 where they apply.
+Which of the ideas DevAC built stand in ViViEfs? Read, under `~/ws/vivief/docs/`, `fact/devac/` (18 files, about 7,900 lines): parsing, data model, storage, federation, rules that lift effects, views, OTel integration, the eval framework. Most is `DevAC tooling`; the rows that matter are the general ideas, such as rules that lift effects, matching traces against extracted effects (named in ViViEfs's `docs/plan/bootstrap/09-sources-to-reuse.md`), the eval framework and views. Cross-link [I25 Ideas batch: understanding and maintaining code bases][I25] and [I31 Ideas batch: DataFrames as a universal data format][I31] where they apply.
 
-Write its rows file, `I42.md` in `docs/plan/vivief-inventory/rows/`, in the row format of the [map](../plan/vivief-inventory/map.md) (Notes: one table, two sides; where an idea stands; citations; ids), with a coverage line for every source listed here, and link it from the answer. Reuse the ids of I35 (vivief) and I36 (ViViEfs) where the idea is indexed; add new ids otherwise. Record and ask; do not decide what ViViEfs adopts.
+Write its rows file, `I42.md` in `docs/plan/vivief-inventory/rows/`, in the row format of the [map](../plan/vivief-inventory/map.md) (Notes: one table, two sides; where an idea stands; citations; ids), with a coverage line for every source listed here, and link it from the answer. Reuse the ids of [I35 Index vivief's ideas from its backbone][I35] (vivief) and [I36 Index ViViEfs's ideas from its sources][I36] (ViViEfs) where the idea is indexed; add new ids otherwise. Record and ask; do not decide what ViViEfs adopts.
 
 ## Answer
 
-[33 rows](../plan/vivief-inventory/rows/I42.md) and a coverage line for each of the 17 files in `fact/devac/` (the ticket says 18): 4 `taken`, 14 `different`, 13 `missing`, 1 `deferred`, 1 `rejected`. 25 rows are reference stack, 8 DevAC tooling; the reference-stack rows go mostly to map 5 (12) and map 2 (6). 17 ids are new; 16 refine an earlier row (12 from I35, 1 from I36, 1 from I37, 2 from I40), which I45 merges.
+[33 rows](../plan/vivief-inventory/rows/I42.md) and a coverage line for each of the 17 files in `fact/devac/` (the ticket says 18): 4 `taken`, 14 `different`, 13 `missing`, 1 `deferred`, 1 `rejected`. 25 rows are reference stack, 8 DevAC tooling; the reference-stack rows go mostly to map 5 (12) and map 2 (6). 17 ids are new; 16 refine an earlier row (12 from [I35 Index vivief's ideas from its backbone][I35], 1 from [I36 Index ViViEfs's ideas from its sources][I36], 1 from [I37 Inventory vivief's implementation path][I37], 2 from [I40 Inventory vivief's ADRs][I40]), which [I45 Assemble the vivief inventory][I45] merges.
 
-The two stacks meet where DevAC's ideas are general and ViViEfs already holds its own form of them: trace context carried in the envelope (D58, `taken`), implementations behind one model, a single writer that hands over when it dies (P17), observation kept apart from the meaning derived from it, and ids every copy computes the same way. They part on code itself: DevAC turns code into a graph, effects, rules that lift effects, C4 views and dynamic views that people and agents query, and ViViEfs has none of that (I25 "Not taken"). They part again on joining design to run time: vivief would copy test spans into its own query store through the OpenTelemetry SDK, where ViViEfs derives spans from the log, exports through Effect and keeps the sinks as viewers (the SDK is `rejected` by ADR-0018). DevAC's eval has a model score answers 1-5; every ViViEfs check passes or fails.
+The two stacks meet where DevAC's ideas are general and ViViEfs already holds its own form of them: trace context carried in the envelope ([D58 Envelope per changeset][D58], `taken`), implementations behind one model, a single writer that hands over when it dies ([P17 Browser engine leader][P17]), observation kept apart from the meaning derived from it, and ids every copy computes the same way. They part on code itself: DevAC turns code into a graph, effects, rules that lift effects, C4 views and dynamic views that people and agents query, and ViViEfs has none of that ([I25 Ideas batch: understanding and maintaining code bases][I25] "Not taken"). They part again on joining design to run time: vivief would copy test spans into its own query store through the OpenTelemetry SDK, where ViViEfs derives spans from the log, exports through Effect and keeps the sinks as viewers (the SDK is `rejected` by [ADR-0018 Tracing derived from the log; telemetry sink pattern][ADR-0018]). DevAC's eval has a model score answers 1-5; every ViViEfs check passes or fails.
 
 The folder is less built than its README says (`What we HAVE built`): `otel-integration.md` is a guide whose exporter is a stub, so the trace matching that ViViEfs's `09-sources-to-reuse.md` takes from vivief was never built there; `hub-ipc.md` is an analysis and `roadmap.md` a plan, which also lists the rules engine as a future phase while three other files describe it as built. The files disagree on the effect columns, the entity-id hash, the TypeScript parser (ts-morph or Babel), the hub's path and commands, and whether a repository must be registered; every link out of the folder points at vivief's old layout.
 
-Not settled, for I45: `vivief:effect-telemetry` is `missing` in I35 and `different` in I38 (this file follows I38); `vivief:content-addressed-cache` is `verified (P05)` here and `implemented` in I35; `vivief:effects-as-data` takes map 3 here for its naming part where I35 gave map 5, and may split; `vivief:performance-targets` is `deferred` on budgets "listed, not gated", which a strict reading of D70 makes `rejected`; `vivief:implementations-behind-one-model` is `taken`, though DevAC has no shared suite across languages. Further possible merges are in the rows file's Notes.
+Not settled, for [I45 Assemble the vivief inventory][I45]: `vivief:effect-telemetry` is `missing` in [I35 Index vivief's ideas from its backbone][I35] and `different` in [I38 Inventory vivief's vision contracts][I38] (this file follows [I38][I38]); `vivief:content-addressed-cache` is `verified (P05)` here and `implemented` in [I35][I35]; `vivief:effects-as-data` takes map 3 here for its naming part where [I35][I35] gave map 5, and may split; `vivief:performance-targets` is `deferred` on budgets "listed, not gated", which a strict reading of [D70 Verify versus qualify][D70] makes `rejected`; `vivief:implementations-behind-one-model` is `taken`, though DevAC has no shared suite across languages. Further possible merges are in the rows file's Notes.
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0018]: ../adr/0018-tracing-and-telemetry-sinks.md
+[D58]: ../plan/bootstrap/02-decision-log.md#d58
+[D70]: ../plan/bootstrap/02-decision-log.md#d70
+[I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
+[I31]: 0031-ideas-batch-dataframes-as-a-universal-data-format.md
+[I35]: 0035-index-vivief-ideas-from-its-backbone.md
+[I36]: 0036-index-viviefs-ideas-from-its-sources.md
+[I37]: 0037-inventory-vivief-implementation-path.md
+[I38]: 0038-inventory-vivief-vision-contracts.md
+[I40]: 0040-inventory-vivief-adrs.md
+[I45]: 0045-assemble-the-vivief-inventory.md
+[P17]: ../plan/bootstrap/06-qualification-gates.md#p17

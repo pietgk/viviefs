@@ -10,7 +10,7 @@ Series: ideas-batch, second batch: `ideas-batch-understanding-and-maintaining-co
 
 ## What
 
-Tools such as repowise, ripwire, LikeC4, archify, Bausteinsicht and draw.io help people and agents understand and maintain a code base, and this issue collects them, together with the ideas of the original vivief repo, as the starting point for a wayfinder session on how ViViEfs explains and keeps track of itself. vivief already built a part of this (DevAC: a code graph, effects extracted from code, C4 views made from those effects, an MCP server), and ViViEfs took only the datom and effect handler ideas from it so far. The issue also collects ideas on how to show what we learn: animated diagrams as a lesson viewer, notebooks, and live diagrams of a running system made from its logs, traces and metrics. A possible entry concept: design from code, truth from OTel. The scope is broad on purpose: the wayfinder session names the destination and finds the way. This issue does not decide anything. Read it with I24, the first issue in the ideas-batch series.
+Tools such as repowise, ripwire, LikeC4, archify, Bausteinsicht and draw.io help people and agents understand and maintain a code base, and this issue collects them, together with the ideas of the original vivief repo, as the starting point for a wayfinder session on how ViViEfs explains and keeps track of itself. vivief already built a part of this (DevAC: a code graph, effects extracted from code, C4 views made from those effects, an MCP server), and ViViEfs took only the datom and effect handler ideas from it so far. The issue also collects ideas on how to show what we learn: animated diagrams as a lesson viewer, notebooks, and live diagrams of a running system made from its logs, traces and metrics. A possible entry concept: design from code, truth from OTel. The scope is broad on purpose: the wayfinder session names the destination and finds the way. This issue does not decide anything. Read it with [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24], the first issue in the ideas-batch series.
 
 ## Sources
 
@@ -33,7 +33,7 @@ Copied on 2026-10-03. The three repowise blog posts are written by the repowise 
 
 [Bausteinsicht ADR-001, DSL format](https://github.com/docToolchain/Bausteinsicht/blob/main/src/docs/arc42/ADRs/ADR-001-DSL-Format.adoc) scores six formats for the model: JSONC with JSON Schema (+20, chosen), PlantUML C4 (+2), a TypeScript DSL (0), a custom Langium DSL (0, the baseline), LikeC4 (-9) and Structurizr (-10). The reasons that matter here:
 
-- **References by id.** Elements are nested, and relations name their ends by string id (`"from": "webshop.api"`). The ADR names this as a cost: no variables and no direct object references. It is also what makes the model easy to check, the way the docs site already turns `D31`, `ADR-0029`, `P05` and `I22` into named links and fails the build on an unknown id (D87). An architecture element could be one more kind of reference: named in prose, linked to its view, its code and its evidence, and checked by `verify`.
+- **References by id.** Elements are nested, and relations name their ends by string id (`"from": "webshop.api"`). The ADR names this as a cost: no variables and no direct object references. It is also what makes the model easy to check, the way the docs site already turns `D31`, `ADR-0029`, `P05` and `I22` into named links and fails the build on an unknown id ([D87 References resolved when rendered][D87]). An architecture element could be one more kind of reference: named in prose, linked to its view, its code and its evidence, and checked by `verify`.
 - **Sync in both directions.** LikeC4 and Structurizr were rejected because their DSL is the only source; draw.io edits cannot flow back. Bausteinsicht keeps one model and lets the human edit either side.
 - **Made for agents.** "LLMs generate JSON more reliably than any other format", JSON Schema gives completion and validation in every editor for free, and a compact syntax can be added later as a converter.
 
@@ -54,7 +54,7 @@ Copied on 2026-10-03. The three repowise blog posts are written by the repowise 
 | [grafana-flowcharting](https://github.com/algenty/grafana-flowcharting) | A Grafana panel that shows a draw.io diagram and colors, animates and links its shapes from live metrics, through rules that map series to shapes. | Unmaintained: last release 0.9.0 in 2020, last commit in 2023, Angular, which Grafana 12 no longer runs. Apache-2.0. The idea is what we keep. |
 | [Grafana Canvas panel](https://grafana.com/blog/canvas-panel-in-grafana-create-custom-visualizations-with-all-the-latest-features) | Built into Grafana: elements placed by hand, connections between them, colors and text bound to live queries. | Maintained. |
 | [Grafana Graphviz panel](https://grafana.com/grafana/plugins/grafana-graphviz-panel/) ([introduction](https://grafana.com/blog/how-to-visualize-workflows-and-business-processes-in-grafana-introducing-the-graphviz-panel)) | A diagram in the DOT language, laid out automatically, with node colors, labels, edge widths, tooltips and links driven by live queries from any Grafana data source. Three input modes: builder (visual, no code), code (DOT) and query (the diagram comes from a data source). Grafana names FlowCharting as no longer maintained. | Private preview: version 0.0.7 (2026-08-17), Grafana 12.3 or later, not for production, no SLA. AGPL-3.0, by Grafana Labs. |
-| Service graphs from traces | The OpenTelemetry Collector's service graph connector, Tempo's metrics generator and Jaeger's dependency view build a map of who calls whom, with rates, errors and latency, from the spans themselves. | Maintained. otel-lgtm (Grafana with Tempo) and Jaeger are already lab images here (D45'). |
+| Service graphs from traces | The OpenTelemetry Collector's service graph connector, Tempo's metrics generator and Jaeger's dependency view build a map of who calls whom, with rates, errors and latency, from the spans themselves. | Maintained. otel-lgtm (Grafana with Tempo) and Jaeger are already lab images here ([D45' Telemetry sink pattern][D45']). |
 
 ### The Graphviz panel: one picture to explain and to monitor
 
@@ -100,10 +100,10 @@ The original repo, [vivief ("Vision View Effect")](https://github.com/pietgk/viv
 
 ## What ViViEfs has today
 
-- **Taken from vivief**: the datom (D31) and a command as a pure function `(readModel, intent) -> changeset or DomainError` (D36, `GLOSSARY.md`), which is the core formula in this stack's words. Traces derived from the log (D32). `docs/plan/bootstrap/09-sources-to-reuse.md` lists vivief for concepts v6, the datom sync ADR and the idea to match traces against extracted effects later.
-- **Understanding**: `AGENTS.md` as a map, `GLOSSARY.md` with hover links (D94), guides with a fixed template, ADRs and the decision log, references resolved and checked when the site is built (D87), the generated Claims page (D93), `llms.txt` (D61), Mermaid with integrity checks, Lavish review pages as research records (D68), the K-Plex concept navigation research (2026-10-02), and the Nx project graph.
+- **Taken from vivief**: the datom ([D31 One datom log][D31]) and a command as a pure function `(readModel, intent) -> changeset or DomainError` ([D36 Shared commands][D36], `GLOSSARY.md`), which is the core formula in this stack's words. Traces derived from the log ([D32 Traces derived from the log][D32]). `docs/plan/bootstrap/09-sources-to-reuse.md` lists vivief for concepts v6, the datom sync ADR and the idea to match traces against extracted effects later.
+- **Understanding**: `AGENTS.md` as a map, `GLOSSARY.md` with hover links ([D94 A glossary a newcomer can read][D94]), guides with a fixed template, ADRs and the decision log, references resolved and checked when the site is built ([D87 References resolved when rendered][D87]), the generated Claims page ([D93 Claims in front][D93]), `llms.txt` ([D61 Repository pages rendered in place][D61]), Mermaid with integrity checks, Lavish review pages as research records ([D68 Research records][D68]), the K-Plex concept navigation research (2026-10-02), and the Nx project graph.
 - **Maintaining**: `verify` with one file treatment per production file (evidence registry), the coverage ratchet, the guide template check, gates and the ledger, and skills pinned in `skills-lock.json`.
-- **Running system**: the telemetry sink pattern with motel, Jaeger and otel-lgtm (D45'), durable spans derived from the log, and the trace projector.
+- **Running system**: the telemetry sink pattern with motel, Jaeger and otel-lgtm ([D45' Telemetry sink pattern][D45']), durable spans derived from the log, and the trace projector.
 - **Not taken**: no code graph, no effects extracted from code, no C4 or architecture model, no MCP server about the repo itself, no freshness check that a doc still matches the code, no hotspot or ownership view, no rules that lift effects into architecture, no diagram of the running system, no notebooks.
 
 ## An entry concept: design from code, truth from OTel
@@ -112,7 +112,7 @@ Two sources could meet in one model. Design comes from the code: the architectur
 
 - **Drift**: a call or an effect that runs but is not in the design, or a part of the design that never runs.
 - **A live diagram**: the design diagram as one goal picture, colored and animated by what the system does now (the grafana-flowcharting idea, on Canvas, Graphviz or a service graph), the same picture for explaining and for monitoring.
-- **A lesson**: the same diagram played step by step for one request (a draw.io page animation, or a recorded trace replayed), as the viewer that the explainer videos in I24 point at.
+- **A lesson**: the same diagram played step by step for one request (a draw.io page animation, or a recorded trace replayed), as the viewer that the explainer videos in [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24] point at.
 
 This may be the place to start the session: it ties vivief's Vision - View - Effects loop, the architecture tools above, and the observability this stack already qualifies into one question.
 
@@ -128,21 +128,38 @@ The wayfinder session names the destination first, with the human. Candidates to
 Fog to chart, in no order:
 
 - **Why.** Who loses the thread today (a newcomer, the reviewing human, an agent), where, and what it costs. This decides how much of the rest is worth it.
-- **Source of truth.** Generated from the repo, written by hand, a model checked against the repo (LikeC4 drift checks, vivief rules), or a model edited on both sides (Bausteinsicht and draw.io). How does that fit D30 (one source) and D68 (research is never the source of a claim)?
-- **References.** Should architecture elements be ids that prose, guides, views, code and evidence name, resolved and checked like D87 references? What is the id scheme, and how does it relate to entity ids and pattern names?
+- **Source of truth.** Generated from the repo, written by hand, a model checked against the repo (LikeC4 drift checks, vivief rules), or a model edited on both sides (Bausteinsicht and draw.io). How does that fit [D30 One source for humans and agents][D30] (one source) and [D68 Research records][D68] (research is never the source of a claim)?
+- **References.** Should architecture elements be ids that prose, guides, views, code and evidence name, resolved and checked like [D87 References resolved when rendered][D87] references? What is the id scheme, and how does it relate to entity ids and pattern names?
 - **Effects in code.** Can effects be extracted from Effect code (services, layers, commands, workflows, activities), where types already say a lot? Does `(Context, Intent) => (Context', [Effects])` hold for the whole stack, and should it be a glossary term?
 - **Truth from OTel.** Which signals show the running system best (durable spans from the log, live spans, metrics, service graphs), where the live diagram is shown (Grafana in otel-lgtm, the docs site, the app), and how design and run time are joined (by name, by id, or by the keys on spans and logs).
-- **Views.** C4 levels, dynamic views of a workflow, sequence diagrams of sync: which ones a reader needs, and whether they come from a model, from code, or from the datom log at run time (D32). Mermaid stays, or draw.io, LikeC4 or Graphviz join it, and for which kind of view.
+- **Views.** C4 levels, dynamic views of a workflow, sequence diagrams of sync: which ones a reader needs, and whether they come from a model, from code, or from the datom log at run time ([D32 Traces derived from the log][D32]). Mermaid stays, or draw.io, LikeC4 or Graphviz join it, and for which kind of view.
 - **One picture to explain and to monitor.** Which flows of this stack deserve one goal picture in the style of the Graphviz panel examples (for example sync from the outbox to the server and back, a durable workflow and its activities, the IntentComposer, the `verify` stages, the telemetry sinks themselves), what is live on each, and whether the same picture is shown in a lesson on the docs site and on a dashboard in otel-lgtm.
 - **Editors and viewers.** draw.io as an editor next to the code (VS Code, desktop), its embed mode and online viewer for the docs site, and what the Minimal and Sketch themes suggest for our own review and lesson surfaces: less chrome, the diagram in front, a rough style for drafts.
-- **Lessons as animated diagrams.** A lesson viewer that plays a pattern or a gate one step at a time (draw.io page animations, a replayed trace), as a cheaper and checkable step towards the explainer videos in I24. How it cites evidence, and how it stays true when the code changes.
+- **Lessons as animated diagrams.** A lesson viewer that plays a pattern or a gate one step at a time (draw.io page animations, a replayed trace), as a cheaper and checkable step towards the explainer videos in [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24]. How it cites evidence, and how it stays true when the code changes.
 - **Notebooks.** Where a notebook fits and adds value: exploring the datom log or traces, a lesson that runs its own code, a design review with live queries. Which notebook (JupyterLab, which already embeds draw.io, or a TypeScript one), and how it relates to exercises and guides.
 - **Notebook or chat.** The IntentComposer as a block in a notebook or a block in a chat, where the line between the two blurs: a chat is a notebook that grows by turns, a notebook is a chat you can rerun. What that means for the IntentComposer's three parts (composing, reviewing, submitting) and for how an agent and a human build an intent together.
 - **Agents.** An MCP server about the repo, generated short context pages like vivief's Claude windows, or the current `AGENTS.md` map and skills. How each one is kept fresh.
 - **Maintenance signals.** Hotspots, ownership, co-change, blast radius, dead code, drift. Which of them `verify` should own, and which stay advice.
-- **Build, reuse or adopt.** Reuse DevAC from vivief, use ripwire (Apache-2.0) to extract knowledge from code and documents, adopt repowise or the Graphviz panel (both AGPL-3.0: check what that means for this repo; the panel is also a private preview), LikeC4, Bausteinsicht or archify (MIT), draw.io (Apache-2.0), Graphviz (EPL-2.0), or build a small part ourselves. ADR-0029's reference subtree is one model for reading another repo.
-- **Teaching.** How architecture views link into guides, lessons and the K-Plex style concept navigation, and what I22 (claims and evidence levels) and I24 (output formats for understanding) add.
+- **Build, reuse or adopt.** Reuse DevAC from vivief, use ripwire (Apache-2.0) to extract knowledge from code and documents, adopt repowise or the Graphviz panel (both AGPL-3.0: check what that means for this repo; the panel is also a private preview), LikeC4, Bausteinsicht or archify (MIT), draw.io (Apache-2.0), Graphviz (EPL-2.0), or build a small part ourselves. [ADR-0029 Effect reference subtree and language service][ADR-0029]'s reference subtree is one model for reading another repo.
+- **Teaching.** How architecture views link into guides, lessons and the K-Plex style concept navigation, and what [I22 Claims and evidence show each gate three times][I22] (claims and evidence levels) and [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24] (output formats for understanding) add.
 
 ## Comments
 
-2026-10-08: [I52](0052-the-datom-and-its-store.md) hands `vivief:scoped-name-entity-ids` to map 5 with one rule already decided: an id is derived when every copy must compute the same one, minted otherwise (D120; glossary Derived id). Code-element ids from scoped names would be derived ids, as entity-keyed span ids and the account hash are.
+2026-10-08: [I52](0052-the-datom-and-its-store.md) hands `vivief:scoped-name-entity-ids` to map 5 with one rule already decided: an id is derived when every copy must compute the same one, minted otherwise ([D120 Minted and derived id segments][D120]; glossary Derived id). Code-element ids from scoped names would be derived ids, as entity-keyed span ids and the account hash are.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0029]: ../adr/0029-effect-reference-and-language-service.md
+[D120]: ../plan/bootstrap/02-decision-log.md#d120
+[D30]: ../plan/bootstrap/02-decision-log.md#d30
+[D31]: ../plan/bootstrap/02-decision-log.md#d31
+[D32]: ../plan/bootstrap/02-decision-log.md#d32
+[D36]: ../plan/bootstrap/02-decision-log.md#d36
+[D45']: ../plan/bootstrap/02-decision-log.md#d45p
+[D61]: ../plan/bootstrap/02-decision-log.md#d61
+[D68]: ../plan/bootstrap/02-decision-log.md#d68
+[D87]: ../plan/bootstrap/02-decision-log.md#d87
+[D93]: ../plan/bootstrap/02-decision-log.md#d93
+[D94]: ../plan/bootstrap/02-decision-log.md#d94
+[I22]: 0022-claims-and-evidence-overlap.md
+[I24]: 0024-ideas-batch-andrej-karpathy-understanding.md

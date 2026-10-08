@@ -10,7 +10,7 @@ Series: ideas-batch, fourth batch: `ideas-batch-glossary-entries-written-as-effe
 
 ## What
 
-Give each glossary term a fourth form next to its name, its one plain sentence and its paragraph: a description written as effects at a high or super-high level, which a human engineer and an LLM read the same way, and which shows what part of the term can be built deterministically and where reasoning is needed. It starts from vivief's formula, everything is an effect, `(State, Effect) => (State', [Effects'])`, whose names we have not settled yet (`State`, `Context`, `Effect`, `Intent`, `Command`). It overlaps with I29: test specs written in glossary terms that an agent runs and records as deterministic tests. This issue does not decide anything.
+Give each glossary term a fourth form next to its name, its one plain sentence and its paragraph: a description written as effects at a high or super-high level, which a human engineer and an LLM read the same way, and which shows what part of the term can be built deterministically and where reasoning is needed. It starts from vivief's formula, everything is an effect, `(State, Effect) => (State', [Effects'])`, whose names we have not settled yet (`State`, `Context`, `Effect`, `Intent`, `Command`). It overlaps with [I29 Ideas batch: agents that record a replayable run][I29]: test specs written in glossary terms that an agent runs and records as deterministic tests. This issue does not decide anything.
 
 ## Start from vivief's concepts quick reference
 
@@ -19,7 +19,7 @@ vivief's [DevAC concepts quick reference](https://github.com/pietgk/vivief/blob/
 - **The thesis first**: the formula, "deterministic-first", and what effects documentation means, before any term.
 - **A division of labour**: the system watches, validates and caches (deterministic); the LLM queries, reasons and proposes; the human decides, edits and approves. "Ask if the answer can be determined deterministically."
 - **A glossary grouped by context**: `Core`, `Architecture`, `Workflow`, `Status`, `Actor` and `UI Effect` terms, so a term is read inside its group.
-- **Names that carry their context**: `Code Diagnostics`, `Work Activity`, `Effect Telemetry` ("runtime observation converted to effect format for comparison with static analysis", the idea of I25), `A11y Edge`, `UI Effect` (I26 takes this up as a way to prevent clashes).
+- **Names that carry their context**: `Code Diagnostics`, `Work Activity`, `Effect Telemetry` ("runtime observation converted to effect format for comparison with static analysis", the idea of [I25 Ideas batch: understanding and maintaining code bases][I25]), `A11y Edge`, `UI Effect` ([I26 Glossary links on words that are not our terms][I26] takes this up as a way to prevent clashes).
 - **Deprecated terms**: each old word, what to use instead, and why (`Analyser` became `Extractor`, "clearer: it extracts data into seeds"). Our glossary has an Avoid list per term, without the reason or the history.
 
 ## The formula and its names
@@ -29,9 +29,9 @@ vivief wrote one formula for every state transition, and this repo has said it t
 | Where | Written as |
 | --- | --- |
 | vivief's foundation | `effectHandler = (state, intent) => (state', [intent'])` |
-| I25 | `(Context, Intent) => (Context', [Effects])` |
+| [I25 Ideas batch: understanding and maintaining code bases][I25] | `(Context, Intent) => (Context', [Effects])` |
 | This idea | `(State, Effect) => (State', [Effects'])` |
-| `GLOSSARY.md`, Command (D36) | `(readModel, intent) -> changeset or DomainError` |
+| `GLOSSARY.md`, Command ([D36 Shared commands][D36]) | `(readModel, intent) -> changeset or DomainError` |
 
 The names do not agree yet, and some already mean something else here:
 
@@ -45,7 +45,7 @@ vivief also grouped effects by level ([foundation](https://github.com/pietgk/viv
 
 ## What a glossary entry has today
 
-D94 gave every entry the same shape:
+[D94 A glossary a newcomer can read][D94] gave every entry the same shape:
 
 1. The **name**, in bold, which the docs site links on its first use on a page.
 2. **One plain sentence** that someone outside software understands; it is what a hover shows.
@@ -79,16 +79,16 @@ What this could give:
 
 - **One reading for people and models.** The plain sentence is for a newcomer; the effect form is for an engineer and an LLM, and leaves less room to read a name differently.
 - **A test of the name.** If a term cannot be written as effects, or its effect form needs reasoning nobody named, the name may not mean one thing yet. The fog around `State`, `Context` and `Effect` above is that test failing today.
-- **The deterministic part is visible.** The effect form says what code can do and states the reasoning part explicitly, like vivief's two worlds and its deterministic-first path (I25).
-- **Checkable.** An effect form names inputs and outputs that exist in code (Schema types, services, commands), so `verify` could check that they exist, the way it checks references (D87) and guide shapes.
+- **The deterministic part is visible.** The effect form says what code can do and states the reasoning part explicitly, like vivief's two worlds and its deterministic-first path ([I25 Ideas batch: understanding and maintaining code bases][I25]).
+- **Checkable.** An effect form names inputs and outputs that exist in code (Schema types, services, commands), so `verify` could check that they exist, the way it checks references ([D87 References resolved when rendered][D87]) and guide shapes.
 
 ## Where it overlaps
 
-- **I29.** A high-level test spec says goals in plain words; an agent runs it and records the actions as a deterministic test, which runs fast and without a model until it fails, and a new agent run then updates it. If the test spec uses glossary terms, and each term has an effect form, the spec says less that is ambiguous, the agent has a better model of the app, and the recorded test can be checked against the effects the terms promise.
-- **I26.** Names that clash with outside code, docs, lessons and other projects (`Effect`, `Worker`, `Stage`, `workflow`, `cursor`). An effect form makes our sense of a term explicit, which is what a reader needs when the same word means something else nearby.
-- **I25.** Its entry concept is design from code, truth from OTel. High-level effects are what vivief lifted from code with rules and drew as C4 views; an effect form per term could be the vocabulary of the design model and of the live picture.
-- **I28.** Another project whose names clash with ours, and which describes infrastructure as Effect programs.
-- **I21.** The plain sentence is tested with a reader outside software; the effect form could be tested with an engineer and an LLM.
+- **[I29 Ideas batch: agents that record a replayable run][I29].** A high-level test spec says goals in plain words; an agent runs it and records the actions as a deterministic test, which runs fast and without a model until it fails, and a new agent run then updates it. If the test spec uses glossary terms, and each term has an effect form, the spec says less that is ambiguous, the agent has a better model of the app, and the recorded test can be checked against the effects the terms promise.
+- **[I26 Glossary links on words that are not our terms][I26].** Names that clash with outside code, docs, lessons and other projects (`Effect`, `Worker`, `Stage`, `workflow`, `cursor`). An effect form makes our sense of a term explicit, which is what a reader needs when the same word means something else nearby.
+- **[I25 Ideas batch: understanding and maintaining code bases][I25].** Its entry concept is design from code, truth from OTel. High-level effects are what vivief lifted from code with rules and drew as C4 views; an effect form per term could be the vocabulary of the design model and of the live picture.
+- **[I28 Alchemy: infrastructure as Effects][I28].** Another project whose names clash with ours, and which describes infrastructure as Effect programs.
+- **[I21 Test the glossary with a reader outside software][I21].** The plain sentence is tested with a reader outside software; the effect form could be tested with an engineer and an LLM.
 
 ## Questions for the brainstorm
 
@@ -98,6 +98,17 @@ What this could give:
 - What is the notation: plain text like the sketches, TypeScript types, an Effect Schema, or a small DSL that `verify` can parse? Does it live in `GLOSSARY.md` or next to the code it names?
 - Which terms get an effect form: every term, or only those that are something the system does (Command, IntentComposer, Workflow, Activity, Projector), and not those that are a thing or a rule (Datom, Layer, Gate)?
 - How is an effect form checked: that its inputs and outputs exist in code, that its deterministic part has tests, that its reasoning part is named where an agent or a human decides?
-- How do test specs (I29) use it: written only in glossary terms, checked for unknown terms like D87 checks unknown ids?
+- How do test specs ([I29 Ideas batch: agents that record a replayable run][I29]) use it: written only in glossary terms, checked for unknown terms like [D87 References resolved when rendered][D87] checks unknown ids?
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D36]: ../plan/bootstrap/02-decision-log.md#d36
+[D87]: ../plan/bootstrap/02-decision-log.md#d87
+[D94]: ../plan/bootstrap/02-decision-log.md#d94
+[I21]: 0021-test-the-glossary-with-a-reader.md
+[I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
+[I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
+[I28]: 0028-alchemy-infrastructure-as-effects.md
+[I29]: 0029-ideas-batch-agents-that-record-a-replayable-run.md

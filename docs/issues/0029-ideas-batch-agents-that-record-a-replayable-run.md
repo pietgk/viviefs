@@ -10,7 +10,7 @@ Series: ideas-batch, third batch: `ideas-batch-agents-that-record-a-replayable-r
 
 ## What
 
-The e2e testing framework by TesterArmy lets an agent run a test step from a goal in plain words, records the actions it took once a check confirms the result, and replays them on the next run with no model call until the app changes. This issue keeps that as an idea for how ViViEfs organizes and runs its end-to-end tests on web and mobile, and as a more general idea: an agent does the open-ended work once and leaves a deterministic, durable version behind that runs without it. It overlaps with other ideas here (the durable workflow's journal, vivief's deterministic-first path, I24 and I25), so it goes to the same brainstorm. This issue does not decide anything.
+The e2e testing framework by TesterArmy lets an agent run a test step from a goal in plain words, records the actions it took once a check confirms the result, and replays them on the next run with no model call until the app changes. This issue keeps that as an idea for how ViViEfs organizes and runs its end-to-end tests on web and mobile, and as a more general idea: an agent does the open-ended work once and leaves a deterministic, durable version behind that runs without it. It overlaps with other ideas here (the durable workflow's journal, vivief's deterministic-first path, [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24] and [I25 Ideas batch: understanding and maintaining code bases][I25]), so it goes to the same brainstorm. This issue does not decide anything.
 
 ## Source
 
@@ -40,18 +40,18 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 
 ## Why it fits ViViEfs
 
-- **The general idea.** Open-ended work by an agent, then a durable, deterministic record that runs without it, checked on every run, and handed back to the agent only where reality changed. vivief called this the deterministic-first path: a skill that stabilizes moves to hybrid and then to code, each step raising trust, and "push as much as possible into the deterministic world" (see I25).
-- **The same shape as our durable workflow.** A workflow's body re-runs on resume and replays stored activity results from its journal (D2). e2e replays recorded actions instead of model calls. Both keep the expensive or non-deterministic part once, as data, and replay it.
+- **The general idea.** Open-ended work by an agent, then a durable, deterministic record that runs without it, checked on every run, and handed back to the agent only where reality changed. vivief called this the deterministic-first path: a skill that stabilizes moves to hybrid and then to code, each step raising trust, and "push as much as possible into the deterministic world" (see [I25 Ideas batch: understanding and maintaining code bases][I25]).
+- **The same shape as our durable workflow.** A workflow's body re-runs on resume and replays stored activity results from its journal ([D2 Temporal model][D2]). e2e replays recorded actions instead of model calls. Both keep the expensive or non-deterministic part once, as data, and replay it.
 - **The same driver as our gates.** We already drive the simulator through agent-device in `tools/qualification`, by the accessibility tree with `testID` and `accessibilityLabel` and never by screen coordinates (`AGENTS.md`). e2e's mobile driver is built on agent-device and finds controls the same way.
-- **One runner for web and mobile.** `verify`'s `e2e-web` step is a Playwright web smoke that has no tests yet, and the app shell (P12, P13) will need the same flows on iOS, Android and web (I13). One test file per flow, run on every target, fits a reference stack.
+- **One runner for web and mobile.** `verify`'s `e2e-web` step is a Playwright web smoke that has no tests yet, and the app shell ([P12 UI on every platform][P12], [P13 Links and routing][P13]) will need the same flows on iOS, Android and web ([I13 UI renders only in the DOM, never on a device][I13]). One test file per flow, run on every target, fits a reference stack.
 - **Records as evidence.** A committed recording is reviewable test data, like the ledger and evidence notes: what the agent did, why it passed, and what changed when it was handed off.
 - **Exploring before a test exists.** `e2e explore` turns a goal into findings with steps to reproduce; those could become regression tests, issues or the first draft of a gate's probe.
 
 ## Tensions to look at
 
-- **Deterministic checks.** D48' says no retries, and flakiness is a defect. `agent.assert` and the other judgments always call a model, so a run is only deterministic where it uses locators, `expect` and replayed actions. Which steps may use a live model in `verify`, and which only outside it?
+- **Deterministic checks.** [D48' Verify - Qualify - Teach][D48'] says no retries, and flakiness is a defect. `agent.assert` and the other judgments always call a model, so a run is only deterministic where it uses locators, `expect` and replayed actions. Which steps may use a live model in `verify`, and which only outside it?
 - **Cost and keys.** Model calls in CI need a key and a budget; a read-only committed recording needs none until the app changes.
-- **Telemetry.** On by default; this repo prefers local-first (D45'), so it would be switched off.
+- **Telemetry.** On by default; this repo prefers local-first ([D45' Telemetry sink pattern][D45']), so it would be switched off.
 - **Maturity.** Pre-1.0 and changing fast; a pin and an upgrade path like the other pinned tools.
 - **Skills.** `e2e init` installs its own skill; the skills tree is checked against `skills-lock.json` (`pnpm verify skills`), so it would be vendored like the others.
 
@@ -60,7 +60,18 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 - Do we organize the end-to-end tests of the app shell and the guides' exemplars with e2e, on web, iOS and Android, and what stays in Playwright, Storybook and the gates?
 - Which runs are allowed to call a model, which must replay only, and do committed recordings become part of the evidence?
 - Can a gate's probe on a device be written as an e2e test with agent-device underneath, and what would that add to or take from qualification?
-- Where else does "an agent records a durable, replayable version" apply: skills that become code, design reviews that become checks, an explored flow that becomes a lesson that plays one step at a time (I25), discardable artifacts that become kept ones (I24)?
+- Where else does "an agent records a durable, replayable version" apply: skills that become code, design reviews that become checks, an explored flow that becomes a lesson that plays one step at a time ([I25 Ideas batch: understanding and maintaining code bases][I25]), discardable artifacts that become kept ones ([I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24])?
 - How does a replay's "handed off" or "missed" result reach a human: in `verify`'s output, on the pull request, as an issue?
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D2]: ../plan/bootstrap/02-decision-log.md#d2
+[D45']: ../plan/bootstrap/02-decision-log.md#d45p
+[D48']: ../plan/bootstrap/02-decision-log.md#d48p
+[I13]: 0013-ui-on-every-platform.md
+[I24]: 0024-ideas-batch-andrej-karpathy-understanding.md
+[I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
+[P12]: ../plan/bootstrap/06-qualification-gates.md#p12
+[P13]: ../plan/bootstrap/06-qualification-gates.md#p13

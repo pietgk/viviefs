@@ -1,6 +1,6 @@
 # Issues
 
-Open issues of ViViEfs, one file each (D92). This is the tracker the
+Open issues of ViViEfs, one file each ([D92 Issues as records][D92]). This is the tracker the
 `triage`, `to-tickets` and `wayfinder` skills work against
 ([issue tracker](../agents/issue-tracker.md)); GitHub Issues are not used.
 The docs site lists them under Reference > Issues with their status, and an
@@ -27,3 +27,7 @@ issue id like `I1` anywhere in the docs renders as a named link.
 
 In conversation, "#42" means `I42`; in the docs, write `I42`, because a bare `#N`
 already names issues of other projects on GitHub.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D92]: ../plan/bootstrap/02-decision-log.md#d92

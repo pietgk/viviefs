@@ -14,4 +14,8 @@ Found: 2026-10-01
 
 2026-10-02: Unchanged after Effect 4.0.0: `effect-solutions` 0.5.3 is still the
 newest and still pins `effect` 4.0.0-beta.59. A second peer warning,
-`@typeonce/effect-machine` requiring the release candidate, is I23.
+`@typeonce/effect-machine` requiring the release candidate, is [I23 effect-machine still requires the Effect release candidate][I23].
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[I23]: 0023-effect-machine-on-stable-effect.md

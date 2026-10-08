@@ -8,10 +8,15 @@ Decide when: before the first consumer app
 
 ## What
 
-Every device run so far used simulators and emulators, and P07's visible local-notification tap still misses on both platforms: the deferred completes through the relaunch fallback (ADR-0013).
+Every device run so far used simulators and emulators, and [P07 Device resume E2E][P07]'s visible local-notification tap still misses on both platforms: the deferred completes through the relaunch fallback ([ADR-0013 Device durability][ADR-0013]).
 
 ## Direction
 
 One real-phone run on iOS and Android covering both.
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0013]: ../adr/0013-device-durability.md
+[P07]: ../plan/bootstrap/06-qualification-gates.md#p07

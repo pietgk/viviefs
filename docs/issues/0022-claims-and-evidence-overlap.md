@@ -8,7 +8,7 @@ Found: 2026-10-02
 
 ## What
 
-The docs site's Claims and evidence chapter shows each gate up to three times: its section on the generated Claims page, its row in the evidence index (`docs/evidence/README.md`), and its own dated evidence note (one per gate P01-P11), with closure notes and design reviews beside them. The overlap may confuse a reader about which one to read, and may drift, because the index and the notes are written by hand while the Claims page is generated (D93).
+The docs site's Claims and evidence chapter shows each gate up to three times: its section on the generated Claims page, its row in the evidence index (`docs/evidence/README.md`), and its own dated evidence note (one per gate [P01 Platform on SDK 58][P01]-[P11 Identity][P11]), with closure notes and design reviews beside them. The overlap may confuse a reader about which one to read, and may drift, because the index and the notes are written by hand while the Claims page is generated ([D93 Claims in front][D93]).
 
 ## Questions
 
@@ -20,3 +20,9 @@ The docs site's Claims and evidence chapter shows each gate up to three times: i
 The answer may change how the sidebar and the generated pages are built; decide it in a short design review before building.
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D93]: ../plan/bootstrap/02-decision-log.md#d93
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

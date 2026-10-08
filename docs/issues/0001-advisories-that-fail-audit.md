@@ -25,7 +25,7 @@ This is the one issue for security advisories that fail verify's audit step (`pn
 1. Read the advisory: affected versions, and that no patched version exists.
 2. `pnpm why -r <package>`: every parent, and whether any of them is something the apps ship or a server runs.
 3. Search the shipped output for the package: the mobile exports in `.artifacts/verify/evidence-mobile` and the built docs site in `apps/docs/dist`.
-4. Ask the human. If accepted: a row here and an `ignoreGhsas` entry whose comment names I1, the reason and the trigger. `pnpm audit` then prints it as ignored.
+4. Ask the human. If accepted: a row here and an `ignoreGhsas` entry whose comment names [I1 Advisories that fail audit with no fix released][I1], the reason and the trigger. `pnpm audit` then prints it as ignored.
 
 When a trigger fires: delete the `ignoreGhsas` entry, update the lockfile, run verify, and move the row to the comments with the commit that removed it. Close this issue only when the table is empty.
 
@@ -41,7 +41,7 @@ in `.artifacts/verify/evidence-mobile` contain no `node-forge`. Left to do:
 when the trigger above fires, delete the ignore entry, update the lockfile and
 resolve this issue.
 
-2026-10-03: I1 now holds every accepted advisory, so audit problems get one
+2026-10-03: [I1 Advisories that fail audit with no fix released][I1] now holds every accepted advisory, so audit problems get one
 focused place instead of one issue each (the human's choice). Two new high
 advisories, published 2026-09-18 with no patched version, failed audit:
 GHSA-ch52-4w7c-c8xp (`http-cache-semantics`) and GHSA-vfj7-8cjw-p6xm
@@ -51,3 +51,7 @@ its only parent, used by `metro-file-map`, `@expo/metro-file-map` and
 `starlight-llms-txt`, and the only "braces" in the mobile exports of
 2026-10-02 is a variable of that name in an inspect helper, not the package.
 The human accepted both; they are rows above and entries in `ignoreGhsas`.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[I1]: 0001-advisories-that-fail-audit.md

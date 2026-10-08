@@ -27,7 +27,7 @@ Around it:
 - **Agent sessions.** Astro 7 detects an agent (through `am-i-vibing`, from many environment variables) and starts `astro dev` and `astro preview` in the background, giving up after 30 seconds: "Dev server failed to start within 30s". `--ignore-lock` turns that off. When a server is already running, a second start reuses it and starts nothing on the new port.
 - **Nx reports success on failure.** After the 30 s failure, `nx run docs:serve` still prints "Successfully ran target serve for project docs".
 - **No search in development.** Starlight's `Search.astro` shows "Search is only available in production builds" whenever `import.meta.env.DEV` is set; the index is Pagefind's, written to `dist/pagefind/` by `astro build`.
-- **Search on a build works.** `pnpm docs:prod` (`nx run docs:preview`: build, then serve `dist/`) built in 2 min 15 s; "datom log" found 48 results with sections. One result showed table text as "# Name Decision Why D31", so tables may be indexed poorly.
+- **Search on a build works.** `pnpm docs:prod` (`nx run docs:preview`: build, then serve `dist/`) built in 2 min 15 s; "datom log" found 48 results with sections. One result showed table text as "# Name Decision Why [D31 One datom log][D31]", so tables may be indexed poorly.
 - **Script name.** The first script was `"docs"`, but `pnpm docs` is pnpm's own command (`pnpm docs <package>`) and never ran it; it is now `docs:dev`, with `docs:prod` beside it.
 
 ## Questions
@@ -40,3 +40,7 @@ Around it:
 - Is the table text in the search index a Pagefind setting (`data-pagefind-ignore` on table headers) or a problem of how the site renders tables?
 
 ## Comments
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D31]: ../plan/bootstrap/02-decision-log.md#d31

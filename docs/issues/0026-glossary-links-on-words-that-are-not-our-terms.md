@@ -8,11 +8,11 @@ Found: 2026-10-03
 
 ## What
 
-The docs site links a word to its glossary entry even where the page uses that word in another project's sense, so a reader who hovers it gets a wrong meaning, and there is no way to mark a passage as "not our terms". The linker (D94, `termFinder` in `apps/docs/src/lib/references.ts`, run by `apps/docs/src/lib/reference-links.ts`) links the first use of each glossary term on a page, in any case and in the plural, except in headings, code, links and a few glossary places. The `EVERYDAY_TERMS` list (`Command`, `Effect`, `Service`, ...) only links those words when they are capitalised mid-sentence. That keeps "a side effect" from linking to Effect, but it cannot tell our Workflow from another tool's workflow.
+The docs site links a word to its glossary entry even where the page uses that word in another project's sense, so a reader who hovers it gets a wrong meaning, and there is no way to mark a passage as "not our terms". The linker ([D94 A glossary a newcomer can read][D94], `termFinder` in `apps/docs/src/lib/references.ts`, run by `apps/docs/src/lib/reference-links.ts`) links the first use of each glossary term on a page, in any case and in the plural, except in headings, code, links and a few glossary places. The `EVERYDAY_TERMS` list (`Command`, `Effect`, `Service`, ...) only links those words when they are capitalised mid-sentence. That keeps "a side effect" from linking to Effect, but it cannot tell our Workflow from another tool's workflow.
 
 ## Observed
 
-Writing I25, a page about other projects (repowise, LikeC4, archify, Bausteinsicht, draw.io, Grafana, vivief), linked these words in the wrong sense before they were reworded:
+Writing [I25 Ideas batch: understanding and maintaining code bases][I25], a page about other projects (repowise, LikeC4, archify, Bausteinsicht, draw.io, Grafana, vivief), linked these words in the wrong sense before they were reworded:
 
 | Text on the page | Meant | Linked to |
 | --- | --- | --- |
@@ -25,16 +25,16 @@ Writing I25, a page about other projects (repowise, LikeC4, archify, Bausteinsic
 | `plays a pattern or a gate step by step` | one step at a time | Gate step |
 | `Vision View Effect` (vivief's name) | vivief's effect | Effect (the library) |
 | `HTTP, actors, state machines` (a vivief quote) | the `actor` model | actor (the envelope field) |
-| `ADR 0027` of vivief, as link text | vivief's ADR | ADR-0027 of this repo (D87 turned the link into a link to our ADR) |
+| `ADR 0027` of vivief, as link text | vivief's ADR | [ADR-0027 Developer experience planes][ADR-0027] of this repo ([D87 References resolved when rendered][D87] turned the link into a link to our ADR) |
 
 Each was fixed by rewording, by moving the word into a link (links are skipped), or by dropping it. Words like "pattern", "intent" and "contract" in the vivief section still link to our entries, close but not the same sense.
 
 ## Why it matters
 
-- A wrong hover is worse than no hover: the reader trusts it, because D94 makes the glossary the place where a term means one thing.
+- A wrong hover is worse than no hover: the reader trusts it, because [D94 A glossary a newcomer can read][D94] makes the glossary the place where a term means one thing.
 - Authors bend prose around the linker. The workarounds above change what a sentence says, or make a link only to switch off linking.
-- It will happen more. The ideas-batch issues (I24, I25) and research records describe other projects on purpose, and quotes from them use their words.
-- The last row is the same problem for D87 references: an id from another repo (vivief's `ADR 0027`) is read as an id of this one.
+- It will happen more. The ideas-batch issues ([I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24], [I25 Ideas batch: understanding and maintaining code bases][I25]) and research records describe other projects on purpose, and quotes from them use their words.
+- The last row is the same problem for [D87 References resolved when rendered][D87] references: an id from another repo (vivief's `ADR 0027`) is read as an id of this one.
 
 ## A way to prevent it: names that carry their context
 
@@ -45,7 +45,7 @@ This repo has the problem waiting already: the plans call vivief, complyj and we
 ## Questions
 
 - How does an author mark a passage, a quote, a table or a whole page as "not our terms": a block quote, a directive such as `:::foreign`, a comment marker, front matter, or a per-folder rule like `KEPT_AS_WRITTEN` for paths?
-- Should a mark stop glossary links only, or D87 references too (ids of another repo)?
+- Should a mark stop glossary links only, or [D87 References resolved when rendered][D87] references too (ids of another repo)?
 - Should every new glossary term name its context (`Sibling Repo`, `Code Effect`), and should existing bare terms (Workflow, Cursor, Attribute, Engine) be renamed that way, or only marked where they clash?
 - Should a source table or a quote of another project be detected without a mark, for example every block quote?
 - Should `verify` report terms linked in a marked passage, or a term whose sense is ambiguous, so a human decides?
@@ -54,9 +54,19 @@ This repo has the problem waiting already: the plans call vivief, complyj and we
 ## Comments
 
 2026-10-04: The same happens to ids. Pinot's latency figure `10ms P95` (the
-95th percentile) in I31 failed the build: `P95` reads as a gate id that does
-not exist (D87). It was rewritten as "the 95th percentile". Percentiles
+95th percentile) in [I31 Ideas batch: DataFrames as a universal data format][I31] failed the build: `P95` reads as a gate id that does
+not exist ([D87 References resolved when rendered][D87]). It was rewritten as "the 95th percentile". Percentiles
 (`P50`, `P95`, `P99`) will come back in any page about telemetry.
-A quote cannot be reworded at all: in I33, Matt Pocock's "constrain them only
+A quote cannot be reworded at all: in [I33 Ideas batch: abstractions that constrain agents][I33], Matt Pocock's "constrain them only
 to good decisions" links "decisions" to our Decision entry, and the quote has
 to stay as he wrote it.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0027]: ../adr/0027-developer-experience-planes.md
+[D87]: ../plan/bootstrap/02-decision-log.md#d87
+[D94]: ../plan/bootstrap/02-decision-log.md#d94
+[I24]: 0024-ideas-batch-andrej-karpathy-understanding.md
+[I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
+[I31]: 0031-ideas-batch-dataframes-as-a-universal-data-format.md
+[I33]: 0033-ideas-batch-abstractions-that-constrain-agents.md
