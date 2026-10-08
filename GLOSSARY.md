@@ -146,9 +146,16 @@ The thing a fact is about, such as one list or one photo. It is the subject
 `e` of datoms; its id may encode its parent for strict composition.
 _Avoid_: object, document
 
+**Derived id**:
+An id worked out from what identifies a thing, so every copy gets the same id
+without asking anyone. Used wherever every copy must compute the same id: a
+membership `M{person}`, an account `A{sha256(iss, sub)}`, journal entries,
+entity-keyed ids. Other id segments are minted by the HLC's encoder (D120).
+
 **Attribute**:
-A named kind of fact, such as "title", with a fixed type. Namespaced,
-Schema-typed, with a declared conflict policy; never renamed or retyped.
+A named kind of fact, such as "title", with a fixed type. Namespaced, typed by
+a value Schema in the catalog that each store maps to its column type
+(D121), with a declared conflict policy; never renamed or retyped.
 _Avoid_: field, column
 
 **Defining attribute**:
@@ -217,7 +224,8 @@ _Avoid_: timestamp, received time
 **HLC**:
 The clock that puts every fact in order, even on phones that are offline or
 have the wrong time. A hybrid logical clock `(pt, c)` that mints every `tx`:
-server-corrected physical time plus a tie-break counter.
+physical time corrected against the `node` holding authority (today the
+server, D119) plus a tie-break counter.
 _Avoid_: timestamp, version
 
 **Conflict policy**:
@@ -328,6 +336,13 @@ by content hash, referenced by a datom, not held in the log.
 **Personal attribute**:
 A kind of fact about a person that must be erasable on request. Marked so its
 values are encrypted per subject for crypto-shredding.
+
+**External identifier**:
+An id another system gives a thing, such as the KvK number the Dutch Chamber
+of Commerce gives a company. It belongs to its scheme, and within that scheme
+it identifies exactly one thing. Stored as an ordinary attribute that travels
+with its entity; an attribute may declare `unique: 'per-organization'`, checked
+when a changeset is accepted (D122).
 
 **Crypto-shredding**:
 Erasing someone's personal data by destroying the key that unlocks it, so the
@@ -489,7 +504,7 @@ _Avoid_: live island
 
 **Entity-keyed id**:
 An id every copy of the data can compute on its own and get the same answer.
-A hash of an entity id, so every replica and every replay derives it without
+A derived id: a hash of an entity id, so every replica and every replay derives it without
 coordination. Durable span ids hash the journal entity; the trace id hashes
 the execution entity.
 

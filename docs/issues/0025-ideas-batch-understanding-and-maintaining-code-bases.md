@@ -144,3 +144,5 @@ Fog to chart, in no order:
 - **Teaching.** How architecture views link into guides, lessons and the K-Plex style concept navigation, and what I22 (claims and evidence levels) and I24 (output formats for understanding) add.
 
 ## Comments
+
+2026-10-08: [I52](0052-the-datom-and-its-store.md) hands `vivief:scoped-name-entity-ids` to map 5 with one rule already decided: an id is derived when every copy must compute the same one, minted otherwise (D120; glossary Derived id). Code-element ids from scoped names would be derived ids, as entity-keyed span ids and the account hash are.

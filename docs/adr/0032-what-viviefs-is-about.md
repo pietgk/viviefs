@@ -10,7 +10,7 @@ Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
 gate that already shows it, or names the gate to come.
 
 Related: D95, D96, D97, D98, D99, D100, D101, D102, D55', D103, D104, D105,
-D106, D107-D117. ADR-0033 (the Presenter pattern) and ADR-0034 (origin trust),
+D106, D107-D117, D118-D123. ADR-0033 (the Presenter pattern) and ADR-0034 (origin trust),
 from I49. ADR-0002 (what ViViEfs builds), ADR-0026 (Verify - Qualify - Teach), D93
 (claims). Opened by I47; completed by I48-I54 and I56; accepted in I55.
 [The foundation concepts map](../plan/foundation-concepts/map.md).
@@ -94,6 +94,16 @@ an origin, is derived when read and can be withdrawn from an origin at once.
 vivief's `Projection` read side and trust are adopted in this form;
 [ADR-0033](0033-the-presenter-pattern.md) and
 [ADR-0034](0034-origin-trust.md) state them.
+
+**The datom and its store (D118-D123, I52).** The log store contract is what
+a datom needs from storage; provenance, the schema as data and a read as of a
+`tx` are left out on purpose. `tx` is an HLC corrected against the `node`
+holding authority, entity ids keep their path with minted or derived segments,
+every attribute carries a value Schema so implementations get real column
+types, and an external identifier is an ordinary attribute. A final choice is
+the pattern, its contract and conformance check; implementations stay free.
+[ADR-0007](0007-hybrid-logical-clock.md), [ADR-0010](0010-entity-ids-and-defining-attributes.md)
+and [ADR-0011](0011-log-store-pattern.md) carry the amendments.
 
 **Nodes and authority (D103-D106, I48).** An app is the program; a `node` is
 one installation of an app that keeps all or part of an organization's data

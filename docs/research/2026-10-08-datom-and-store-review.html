@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I52: The datom and its store (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.6rem; overflow-x: auto; line-height: 1.45; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I52</span>
+    <span class="badge badge-outline">2026-10-08</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">The datom and its store</h1>
+  <p class="text-lg opacity-80"><b>Settled: see the last section.</b> <a class="cr-link" href="../issues/0052-the-datom-and-its-store.md">I52</a> asks whether the log store contract is ViViEfs's statement of what a datom needs from storage, and whether vivief's provenance on the transaction, typed value columns and a read as of a <code class="cr-inline">tx</code> are left out on purpose. With it: ids and the clock, and the platform choices beside the store. 19 rows of <a class="cr-link" href="2026-10-06-vivief-inventory.html">the vivief inventory</a>, decided against <a class="cr-link" href="../adr/0032-what-viviefs-is-about.md">ADR-0032 What ViViEfs is about</a>, especially D105 (what must stay possible).</p>
+</header>
+
+<section class="space-y-3" id="round-1">
+  <h2 class="text-2xl font-bold">Round 1, settled in conversation</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q1</b> keep ours; schema as datoms rejected; ADR-0011 gains "Left out on purpose".</li>
+    <li><b>Q2</b> keep the HLC; ADR-0007, ADR-0011 and the glossary worded for whichever <code class="cr-inline">node</code> holds authority.</li>
+    <li><b>Q3</b> path ids stand (D38).</li>
+    <li><b>Q4</b> <code class="cr-inline">v</code> stays text, on the condition that the Schema knows each attribute's type (see Values: not met today).</li>
+    <li><b>Q5</b> external identifiers are ordinary attributes.</li>
+    <li><b>Q6</b> stands, with the human's note: the pattern is the final choice (its contract and conformance check); its implementations stay free to change (D110).</li>
+    <li><b>Q7</b> hand to map 5.</li>
+    <li><b>Q8</b> after the detail: all stand, <code class="cr-inline">effect-store</code> keep ours; the Schedule's Expo trigger made precise.</li>
+  </ul>
+  <h3 class="text-lg font-semibold">Round 2</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q9</b> entity segments minted from the clock; an entity type declares its segment minted or derived; derived where every copy must compute the same id.</li>
+    <li><b>Q10</b> each attribute carries a value Schema in the catalog; implementations map it to column types; the reference read model has typed columns from the catalog. The human's note: the layout is either one table per entity type, or one table for all types with an entity-type column, which needs a limit on the number of attributes not yet decided.</li>
+    <li><b>Q11</b> uniqueness as a declaration checked by authority; personal ids encrypted, blind index deferred. The human's note: the KvK example's wording is ambiguous, because a KvK number identifies a company, and "organization" also names ViViEfs's isolation unit.</li>
+  </ul>
+</section>
+
+<section class="space-y-5" id="settled-already">
+  <h2 class="text-2xl font-bold">Already settled by I49</h2>
+  <p>Three of vivief's store needs were decided last session; this ticket only records them on its rows.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>vivief's store need</th><th>ViViEfs</th></tr></thead>
+    <tbody>
+      <tr><td>Provenance on every transaction (<code class="cr-inline">:tx/source</code>, <code class="cr-inline">:tx/trust-score</code>)</td><td>The envelope names the <b>origin</b>, one per changeset, beside the datoms (D58'); trust is derived when read, never stored as a score (D115, <a class="cr-link" href="../adr/0034-origin-trust.md">ADR-0034 Origin trust</a>). The <code class="cr-inline">datoms</code> table does not change.</td></tr>
+      <tr><td>Queries through the Projection interface; subscriptions for live delivery</td><td>The Presenter: a query written as data, a frame, a frame subscription (D107-D109, <a class="cr-link" href="../adr/0033-the-presenter-pattern.md">ADR-0033 The Presenter pattern</a>). Queries go to read models, never to the <code class="cr-inline">datoms</code> table.</td></tr>
+      <tr><td>Replay <code class="cr-inline">from tx:0 or asOf</code></td><td>Replay is the cursor stream (<a class="cr-link" href="../adr/0017-sync-outbox-and-cursor-stream.md">ADR-0017 Sync: outbox and cursor stream</a>). A read as of a <code class="cr-inline">tx</code> is deferred to <a class="cr-link" href="../issues/0063-the-columnar-copy.md">I63 The columnar copy</a>, where row versions make it cheap.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Left open: <b>schema stored as datoms</b> (ViViEfs: the Schema is code, D8, D44) and <b>typed value columns</b>.</p>
+</section>
+
+<section class="space-y-5" id="today">
+  <h2 class="text-2xl font-bold">Today, in the code: one datom and its changeset</h2>
+<pre class="cr-code">-- libs/datom/src/migrate.ts (the same SQL on SQLite and Postgres)
+datoms(seq, e, a, v, tx UNIQUE, op, cs)        -- indexes EAVT, AEVT, cs
+changesets(cs, actor, device, lease_epoch, trace_id, span_id, sampled, command, accepted_at)
+
+-- renaming a list: one datom, its own transaction
+seq  e             a                    v       tx                           op       cs
+412  Oacme/L1      evidence/list/title  "Q3"    01JC8Z4K7M0001A3F9QX2B7KDE   assert   cs-7f2...</pre>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b><code class="cr-inline">v</code> is text.</b> The attribute's Schema decodes it at the boundary (D8, D44). Value lookups and reverse references are typed read models (D37), not value indexes on the log.</li>
+    <li><b><code class="cr-inline">tx</code> is an HLC</b>, encoded ULID-shaped (next section). Each datom is its own transaction (D35'').</li>
+    <li><b><code class="cr-inline">e</code> is a path</b> that encodes its parent only for strict composition (D38, <a class="cr-link" href="../adr/0010-entity-ids-and-defining-attributes.md">ADR-0010 Entity ids, defining attributes and strict-composition prefixes</a>).</li>
+  </ul>
+  <p class="cr-src">Shown by <a class="cr-link" href="../evidence/2026-09-20-p04.md">P04 Log store conformance</a> and <a class="cr-link" href="../evidence/2026-09-20-p05.md">P05 Changesets and projections</a>.</p>
+</section>
+
+<section class="space-y-5" id="clock">
+  <h2 class="text-2xl font-bold">The clock: vivief's ULID against our HLC</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body">
+      <h3 class="card-title">vivief: a ULID</h3>
+<pre class="cr-code">01JC8Z4K7M  7Q2V9XR4HN8B3WKD
+|-48-bit ms-| |---80 random bits---|
+device wall clock, as it is</pre>
+      <p>Coordination-free: any peer mints offline. Last-writer-wins orders by the highest ULID, so a phone whose clock is ten minutes fast wins every conflict for ten minutes.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body">
+      <h3 class="card-title">ViViEfs: an HLC, ULID-shaped</h3>
+<pre class="cr-code">01JC8Z4K7M  0001  A3F9QX2B  7KDE
+|-48-bit pt-| |c| |device| |entropy|
+pt = corrected time, never below anything seen</pre>
+      <p>Same 26 characters, same sort. The counter <code class="cr-inline">c</code> keeps order when time does not advance; a <code class="cr-inline">tx</code> more than 5 s ahead is refused (<a class="cr-link" href="../adr/0007-hybrid-logical-clock.md">ADR-0007 Hybrid logical clock</a>, P04).</p>
+    </div></div>
+  </div>
+  <h3 class="text-lg font-semibold">Worked: a phone with a clock 10 minutes fast</h3>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Step</th><th>vivief ULID</th><th>ViViEfs HLC</th></tr></thead>
+    <tbody>
+      <tr><td>Phone (fast clock) renames the list at 10:00 real time</td><td><code class="cr-inline">tx</code> says 10:10</td><td>Device time was corrected against the server at sync: <code class="cr-inline">pt</code> says 10:00</td></tr>
+      <tr><td>Laptop (correct clock) renames it at 10:05</td><td><code class="cr-inline">tx</code> says 10:05: <b>loses</b> to the earlier edit</td><td><code class="cr-inline">pt</code> says 10:05: wins, as a person expects</td></tr>
+      <tr><td>Phone offline for days, rebooted, its wall clock now 10 min fast</td><td>-</td><td>Its <code class="cr-inline">tx</code> is refused on push as future skew; the trace flags it</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="alert cr-gap bg-base-200"><div>
+    <b>A wording finding against D105 (1).</b> ADR-0007 says <i>server</i>-corrected time and "Server rejects future skew"; ADR-0011 says "the <i>server's</i> log is never compacted". D105 (1) asks that no ADR assume the holder of authority is a server process. The mechanism does not depend on it: time is corrected against whichever <code class="cr-inline">node</code> holds the ordering duty, and that <code class="cr-inline">node</code>'s log is the audit trail. Only the words change.
+  </div></div>
+</section>
+
+<section class="space-y-5" id="ids">
+  <h2 class="text-2xl font-bold">Entity ids: a path against a flat ULID</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body">
+      <h3 class="card-title">vivief: flat</h3>
+<pre class="cr-code">01JC8Z4K7M7Q2V9XR4HN8B3WKD   a todo
+:todo/list   -> 01JC8Y...    its list
+:todo/org    -> 01JC80...    its organization</pre>
+      <p>Every relation is an attribute. Nothing about the entity can be read from its id.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body">
+      <h3 class="card-title">ViViEfs: a path for strict composition</h3>
+<pre class="cr-code">Oacme/L1/I2       an item, part of list 1, can never move
+Oacme/E9          evidence; its list is a reference attribute
+Oacme/W{exec}/A{activity}#{attempt}   a journal entry
+A{sha256(iss,sub)}                    server-only account</pre>
+      <p>Prefix scans drive isolation (<code class="cr-inline">OrgMismatch</code>), tree deletes, compaction, Reactivity keys, and D114's partial sync on demand.</p>
+    </div></div>
+  </div>
+  <div class="alert cr-gap bg-base-200"><div>
+    <b>A gap: nothing decides the local segment.</b> <code class="cr-inline">listId(org, list)</code> takes the <code class="cr-inline">1</code> in <code class="cr-inline">Oacme/L1</code> as an argument; only the suites call it, with <code class="cr-inline">'1'</code>, <code class="cr-inline">'9'</code>. Two phones creating a list offline need segments that never collide. This is where vivief's ULID fits <i>inside</i> our path.
+  </div></div>
+  <h3 class="text-lg font-semibold">Three ways to mint a segment, worked</h3>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Segment</th><th>Two offline phones each create a list</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><b>Minted from the clock</b> (the HLC encoder, as <code class="cr-inline">tx</code> is)</td><td><code class="cr-inline">Oacme/L01JC8Z4K7M0001A3F9QX2B7KDE</code> and <code class="cr-inline">Oacme/L01JC8Z4K9P0000C81R5WQJ2M4</code>: the device fingerprint keeps them apart</td><td>One mint in the stack; creation order sorts across devices like <code class="cr-inline">tx</code>; 26 characters per level</td></tr>
+      <tr><td><b>A plain ULID</b> (vivief)</td><td>80 random bits keep them apart</td><td>A second id generator; order by each device's own clock, harmless for ids since ids never decide conflicts</td></tr>
+      <tr><td><b>Derived</b> from what identifies it</td><td>Not applicable to a list: nothing identifies it but its creation</td><td>Already used where every copy must compute the same id: membership <code class="cr-inline">M{person}</code>, account <code class="cr-inline">A{sha256(iss, sub)}</code>, journal entries, entity-keyed span ids</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="space-y-5" id="values">
+  <h2 class="text-2xl font-bold">Values: one text column against typed columns</h2>
+<pre class="cr-code">-- vivief (PostgreSQL design, not built)
+datoms(e, a, v_type, v_text, v_num, v_bool, v_date, v_ref, v_bytes, v_vec, tx BIGINT, op BOOLEAN, asserted_at)
+  + partial AVET indexes per type   "better than JSONB for indexed queries"
+
+-- ViViEfs: who answers "lists with title Q3"?
+query (D108)  -> a read model     (typed, rebuilt from the log)
+              -> never the log    (the log is read by e, a and cursor only)</pre>
+  <p>Typed columns pay off where values are queried: in read models and, when it is built, the columnar copy (one column per attribute, typed from the catalog, I63). The log is appended, scanned by prefix and streamed by cursor; it is never filtered by value. I19 (<code class="cr-inline">op</code> as a boolean) already waits for a storage budget. <b>Settled in round 1:</b> keep ours, on the condition that the Schema knows each attribute's type, so DuckDB and other implementations get a real SQL column type (numeric sort and filter).</p>
+  <div class="alert cr-gap bg-base-200"><div>
+    <b>Round 2 finding: that condition is not met today.</b> The glossary says an attribute is "Schema-typed", but the catalog does not carry a type:
+<pre class="cr-code">// libs/datom/src/catalog.ts
+type AttributeSpec = { name; policy: 'lww' | 'write-once' | 'human-conflict'; defining?; authority?: 'server' }
+                                          // no value Schema
+
+// libs/datom/src/read-models.ts: the one read model is generic, not typed
+projected_facts(e, a, v TEXT, op, cs, commit_tx, member_tx, commit_seq)
+
+-- so "items sorted by quantity" today sorts text:  "10" &lt; "9"</pre>
+    Every exemplar value is text or a reference, so P05 never needed a type. D37's "typed read models" and I63's "typed from the catalog" both assume a type the catalog does not have yet.
+  </div></div>
+<pre class="cr-code">// What it could look like (illustration, not a decision)
+{ name: 'acme/item/quantity', policy: 'lww', value: Schema.Int }
+//   -> SQLite INTEGER, Postgres BIGINT, DuckDB BIGINT, Parquet INT64   (each implementation maps the Schema)
+//   -> v in the log stays text: the Schema's one canonical encoding, "10"
+
+// The reference read model for a type: one typed column per attribute, from the catalog
+item(e TEXT PRIMARY KEY, title TEXT, quantity INTEGER, ...)   -- rebuilt on a new attribute, never migrated (D44)</pre>
+</section>
+
+<section class="space-y-5" id="external">
+  <h2 class="text-2xl font-bold">External identifiers</h2>
+<pre class="cr-code">Oacme/S17   acme/supplier/name        "Brouwer BV"
+Oacme/S17   acme/supplier/kvk-number  "12345678"     -- an ordinary attribute; travels with S17
+A9f3c...    viviefs/account/person    "P42"          -- server-only root; never replicated (ADR-0022)</pre>
+  <p>vivief: an entity carries several external ids as datoms, found through AVET, and they travel with the entity. ViViEfs has one external id today, the provider account, and keeps it server-only because it maps a sign-in to a person. A supplier number is not a credential, so it can be an ordinary attribute; a lookup by value is a read model. Two open points: whether "unique in the organization" is an acceptance rule (D105 (2): a rule any <code class="cr-inline">node</code> could run against a read model), and that a national id is personal data, so encrypted per subject (<a class="cr-link" href="../adr/0023-data-at-rest-and-crypto-shredding.md">ADR-0023 Data at rest and crypto-shredding</a>).</p>
+</section>
+
+<section class="space-y-5" id="stands-detail">
+  <h2 class="text-2xl font-bold">Q8 in detail: the eleven rows proposed to stand</h2>
+  <p>For each: what ViViEfs does, what vivief does, where it is decided and shown, what I47-I49 changed for it, and anything to watch.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Row</th><th>ViViEfs</th><th>vivief</th><th>Decided, shown</th><th>Since I47-I49, and to watch</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:datom</code></td>
+        <td><code class="cr-inline">[e, a, v, tx, op, cs]</code>: adds the changeset id <code class="cr-inline">cs</code>; each datom is its own transaction</td>
+        <td><code class="cr-inline">[Entity, Attribute, Value, Tx, Op]</code>, an immutable append-only fact; the log is the memory every actor reads and writes</td>
+        <td>Glossary Datom; D31, D35''; <a class="cr-link" href="../adr/0006-one-datom-log.md">ADR-0006 One datom log</a> (Qualified); P04, P05</td>
+        <td>Unchanged: the origin (D58') went into the envelope, not the datom. Taken: <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">viviefs:one-datom-log</code></td>
+        <td>One log for the workflow journal, domain data and sync; traces derived from it. Outside it on purpose: the envelope, the qualification ledger (a plain file), live spans</td>
+        <td><code class="cr-inline">datoms are the universal primitive</code> for storage, computation and communication; provenance as datoms</td>
+        <td>D31; ADR-0006; P04</td>
+        <td>Strengthened by D111: enrichments are written to the log before anything presents them. Provenance differs (envelope, D58'), already settled. <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">vivief:effect-store</code></td>
+        <td>The log is mandatory and single; read models are the accumulated state, rebuilt from it</td>
+        <td>An effect stream plus accumulated state; the stream is optional while seeds answer current-state queries</td>
+        <td>D31; ADR-0006; P04, P05</td>
+        <td>D99 (facts kept, meaning derived) rests on the log being mandatory. <b>keep ours</b></td></tr>
+      <tr><td><code class="cr-inline">viviefs:defining-attribute</code></td>
+        <td>The fact that makes a thing exist: retract it and the entity and its subtree are hidden; re-assert it and it is restored with its other attributes</td>
+        <td>Nothing: ViViEfs only. Nearest is the datom itself</td>
+        <td>D35'', D38; ADR-0010 (Qualified); P05</td>
+        <td>Unchanged. It decides visibility in the reference read model, so every Presenter implementation inherits it through the conformance check (D110). <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">vivief:artifact</code></td>
+        <td>A blob stored by content hash, referenced by a datom: bytes in object storage, provenance in the log</td>
+        <td>Content stays in its native medium; the store holds datoms about it</td>
+        <td>D43; <a class="cr-link" href="../adr/0021-files-by-content-hash.md">ADR-0021 Files by content hash</a> (Qualified); P06, P09</td>
+        <td>Strengthened by D111: outside content (mail, web pages) arrives as blobs linked from datoms. <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">viviefs:acknowledged-cursor-and-compaction</code></td>
+        <td>Each consumer acknowledges what it delivered; compaction removes only facts at or below the lowest acknowledged cursor and names the consumer holding it back; the server's log is never compacted (audit trail)</td>
+        <td>Live-persistent delivery re-snapshots a consumer after compaction</td>
+        <td>D37; <a class="cr-link" href="../adr/0011-log-store-pattern.md">ADR-0011 Log store pattern</a> (Qualified); P04, P10; log-store guide lesson 03</td>
+        <td>D109 kept cursor consumers as their own pattern. Q2's wording fix applies ("the authority's log"). A partial <code class="cr-inline">node</code> (D114) compacts like any device. <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">viviefs:sqlite-drivers</code></td>
+        <td>Effect's SQLite drivers: op-sqlite 18.2.5 on iOS and Android, sqlite-wasm with OPFS on the web, expo-sqlite kept as a fallback probe</td>
+        <td>Nearest: storage temperature tiers (hot, warm, cold); no driver choice</td>
+        <td>D16; <a class="cr-link" href="../adr/0005-sqlite-drivers.md">ADR-0005 SQLite drivers</a> (Qualified); P02</td>
+        <td>Temperature tiers were deferred to I63 last session. <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">viviefs:server-on-node</code></td>
+        <td>The server runs on Node with <code class="cr-inline">@effect/platform-node</code> 4.0.0, Effect HttpApi and RPC, Postgres or SQLite behind the log store (<code class="cr-inline">apps/evidence-server</code>)</td>
+        <td>Nearest: typed P2P <code class="cr-inline">node</code>s (deferred) and runtime permissions (missing)</td>
+        <td>D17; ADR-0022 "Boundary"; run by P09 and P11, claimed by no gate</td>
+        <td>D103: the server is a <code class="cr-inline">node</code> that holds authority; D105 (7): RPC over HTTP stays the enterprise path; D106: it becomes <code class="cr-inline">&lt;product&gt;-server</code>. Production hosting is I7. <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">viviefs:expo-platform-baseline</code></td>
+        <td>Expo SDK 58 on React Native 0.88 and Hermes, pinned, measured polyfills; iOS, Android and web first-class</td>
+        <td>Web-only UI for now; no React Native or Expo</td>
+        <td>D22; <a class="cr-link" href="../adr/0004-expo-sdk-58-platform-baseline.md">ADR-0004 Expo SDK 58 platform baseline</a> (Qualified); P01</td>
+        <td><b>To watch:</b> we pin <code class="cr-inline">expo 58.0.0-preview.3</code> and <code class="cr-inline">react-native 0.88.0-rc.0</code>. Expo 58.0.0 was published 2026-09-29 (now 58.0.6, still on npm's <code class="cr-inline">next</code> tag; <code class="cr-inline">latest</code> is 57.0.27) and bundles <code class="cr-inline">react-native 0.88.0-rc.3</code>; RN 0.88 is not stable yet (<code class="cr-inline">rc.4</code>). The Schedule's "Expo SDK 58 stable" entry is close to firing. <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">viviefs:typescript-toolchain</code></td>
+        <td>TypeScript 7 <code class="cr-inline">tsc</code> patched by <code class="cr-inline">@effect/tsgo</code>; the TypeScript 6 API for Nx, ESLint and Vite; three strictness flags</td>
+        <td>Strict TypeScript, run through Node's type stripping</td>
+        <td>D49, D60; <a class="cr-link" href="../adr/0028-typescript-7-cli-with-typescript-6-api.md">ADR-0028 TypeScript 7 CLI with TypeScript 6 API</a>, ADR-0029, ADR-0031 (Qualified by verify)</td>
+        <td>Unchanged. D95 (one language people and agents read the same way) leans on it. <b>stands</b></td></tr>
+      <tr><td><code class="cr-inline">vivief:second-language-for-a-measured-gap</code></td>
+        <td>TypeScript throughout, Effect everywhere; a tool is admitted only for a measured gap; deferred choices carry <code class="cr-inline">Decide when:</code></td>
+        <td>One language; another only for a demonstrable reason, as a stateless service behind request-reply, logged with <code class="cr-inline">Revisit when...</code></td>
+        <td>D8, D49, D92; ADR-0027 (Proposed, unverified)</td>
+        <td>Recent tests of the rule: DuckDB and Polars (I31, I63) are libraries, not a second language; Holochain is a model, not the runtime (Rust conductor, D104). <b>stands</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="space-y-5" id="rows">
+  <h2 class="text-2xl font-bold">The 19 rows, with the proposed disposition</h2>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Row</th><th>Proposed</th><th>Question</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:datom-store-needs</code></td><td>keep ours; provenance, Presenter and replay as settled by I49; schema as datoms rejected</td><td>Q1</td></tr>
+      <tr><td><code class="cr-inline">vivief:ulid-identity</code></td><td>keep ours for <code class="cr-inline">tx</code>; adopt for the id segment?</td><td>Q2, Q3, round 2</td></tr>
+      <tr><td><code class="cr-inline">viviefs:hybrid-logical-clock</code></td><td>stands, worded for any authority</td><td>Q2</td></tr>
+      <tr><td><code class="cr-inline">viviefs:entity-ids-and-strict-composition</code></td><td>stands</td><td>Q3</td></tr>
+      <tr><td><code class="cr-inline">vivief:typed-value-columns</code></td><td>keep ours; typed columns in read models and I63</td><td>Q4</td></tr>
+      <tr><td><code class="cr-inline">vivief:external-identity-as-datoms</code></td><td>adopt as ordinary attributes</td><td>Q5</td></tr>
+      <tr><td><code class="cr-inline">vivief:final-protocol-from-day-one</code></td><td>stands: a final choice is one a gate proved</td><td>Q6</td></tr>
+      <tr><td><code class="cr-inline">vivief:scoped-name-entity-ids</code></td><td>hand to map 5 (I25)</td><td>Q7</td></tr>
+      <tr><td><code class="cr-inline">vivief:datom</code>, <code class="cr-inline">viviefs:one-datom-log</code>, <code class="cr-inline">viviefs:defining-attribute</code>, <code class="cr-inline">vivief:artifact</code>, <code class="cr-inline">viviefs:acknowledged-cursor-and-compaction</code>, <code class="cr-inline">viviefs:sqlite-drivers</code>, <code class="cr-inline">viviefs:server-on-node</code>, <code class="cr-inline">viviefs:expo-platform-baseline</code>, <code class="cr-inline">viviefs:typescript-toolchain</code>, <code class="cr-inline">vivief:second-language-for-a-measured-gap</code></td><td>stands</td><td>Q8</td></tr>
+      <tr><td><code class="cr-inline">vivief:effect-store</code></td><td>keep ours: the log is mandatory and single</td><td>Q8</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+
+<section class="space-y-5" id="settled">
+  <h2 class="text-2xl font-bold">Settled (rounds 1-3, in conversation, 2026-10-08)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>D118 What a datom needs from storage.</b> The log store contract; provenance, schema as datoms and a read as of a <code class="cr-inline">tx</code> left out on purpose (ADR-0011 "Left out on purpose").</li>
+    <li><b>D119 Time corrected by authority.</b> The HLC stays, worded for the <code class="cr-inline">node</code> holding authority (ADR-0007, ADR-0011, glossary HLC).</li>
+    <li><b>D120 Minted and derived id segments.</b> Path ids stay; segments minted by the HLC's encoder or derived (ADR-0010; I67; glossary Derived id).</li>
+    <li><b>D121 Attribute value types.</b> A value Schema per attribute in the catalog; typed columns in the reference read model; layout (per type, or one table under a checked cap below 1600 columns) to I66 with I63.</li>
+    <li><b>D122 External identifiers.</b> Ordinary attributes; <code class="cr-inline">unique: 'per-organization'</code> checked on accept (I68); "organization" means only ViViEfs's isolation unit, a KvK number identifies a company; personal ones encrypted, the blind index noted on I54.</li>
+    <li><b>D123 The final choice is the pattern.</b> Its contract and conformance check are fixed by a gate; implementations stay free.</li>
+  </ul>
+  <p>Rows: see <a class="cr-link" href="../issues/0052-the-datom-and-its-store.md">I52's Answer</a>.</p>
+</section>
+
+</div>
+</body>
+</html>

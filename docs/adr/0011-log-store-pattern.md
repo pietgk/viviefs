@@ -1,6 +1,6 @@
 # ADR-0011: Log store pattern, read models, compaction and analytics
 
-Summary: One LogStore contract over SQL, many stores, one conformance suite; read models are disposable and the server log is never compacted.
+Summary: One LogStore contract over SQL, many stores, one conformance suite; read models are disposable and the log of the `node` holding authority is never compacted.
 
 Status: Qualified
 
@@ -8,7 +8,7 @@ Date: 2026-09-20
 
 Qualifying gate: P04, P05
 
-Related: D37, D44. [Architecture section 8](../plan/bootstrap/03-architecture.md),
+Related: D37, D44, D118, D119, D121. [Architecture section 8](../plan/bootstrap/03-architecture.md),
 [ADR 0005](0005-sqlite-drivers.md), [ADR 0006](0006-one-datom-log.md).
 
 ## Problem
@@ -38,7 +38,8 @@ refuses unknown attributes with a typed upgrade error.
 Snapshots and compaction only past a horizon every device has acknowledged.
 Finished workflow journals archive to the server.
 
-The server's log is never compacted (P11 grilling, 2026-09-27). It is the
+The log of the `node` holding authority, today the server, is never compacted
+(P11 grilling, 2026-09-27; worded for any `node` by D119, 2026-10-08). It is the
 audit trail, and a future hash chain over accepted changesets must be able to
 cover all of it. This holds until tamper-evidence is decided, before the first
 consumer app that makes audit claims ([ADR-0022](0022-identity-and-organization-isolation.md)).
@@ -46,6 +47,23 @@ Device compaction is unaffected.
 
 Analytics is a projection to Parquet or DuckLake queried by DuckDB. DuckDB is
 never the durable log. Effect v4 has no DuckDB `SqlClient`.
+
+**Left out on purpose** (amendment 2026-10-08, D118, I52). The contract above
+is what a datom needs from storage. Three things vivief asks of a datom store
+are not in it: provenance on the transaction (the origin is in the envelope,
+D58', D115); the schema stored as datoms (the Schema is code, D8, D44); and a
+read as of a `tx` (deferred to I63, the columnar copy). Queries and live
+delivery go through the Presenter (D107-D109, ADR-0033), never to the `datoms`
+table, so the log is never filtered by value and `v` stays text.
+
+**Typed read models** (amendment 2026-10-08, D121, I52). The typed read-model
+tables above were not built: P05 qualified the generic
+`projected_facts`, which keeps `v` as text, because every exemplar value is
+text or a reference. Every attribute gets a value Schema in the catalog, each
+implementation maps it to its column type, and the reference read model gets
+typed columns derived from the catalog; the layout (one table per entity type,
+or one table for all with an `entity_type` column under a checked cap below
+Postgres's 1600 columns) is I66's.
 
 ## Trade-offs
 

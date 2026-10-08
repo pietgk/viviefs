@@ -8,7 +8,7 @@ Date: 2026-09-20
 
 Qualifying gate: P05
 
-Related: D38. [Architecture section 5](../plan/bootstrap/03-architecture.md).
+Related: D38, D120, D122. [Architecture section 5](../plan/bootstrap/03-architecture.md).
 
 ## Problem
 
@@ -53,6 +53,19 @@ entity outside the requested organization is refused (`OrgMismatch`), and
 server-authored changeset never mixes a server-only root with organization
 entities, because `Pull` sends every member of a changeset that touches the
 organization.
+
+**Minted and derived segments** (amendment 2026-10-08, D120, I52; built with
+I67). Each segment of an id is minted or derived, declared per entity type in
+the catalog. A minted segment comes from the HLC's encoder
+([ADR-0007](0007-hybrid-logical-clock.md)): any `node` mints offline, the device fingerprint keeps
+two `node`s apart, and segments sort by creation, as `tx` does
+(`Oacme/L01JC8Z4K7M0001A3F9QX2B7KDE`). A derived segment is computed from what
+identifies the thing, wherever every copy must compute the same id: membership
+`M{person}`, the account `A{sha256(iss, sub)}`, journal entries. vivief's flat
+ULID ids are not adopted: the path carries isolation, tree deletes,
+compaction, Reactivity keys and partial sync on demand (D114). An external
+identifier, such as a company's KvK number, is an attribute, never a segment
+(D122).
 
 ## Trade-offs
 

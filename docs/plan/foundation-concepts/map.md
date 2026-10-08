@@ -46,6 +46,7 @@ decisions that chose them.
 - [I47](../../issues/0047-what-viviefs-is-about.md): ViViEfs is about app creation, verified by gates for what we built and by learning for the language; tools are apps too; ADR-0032 opened (D95-D102, D55'). Added I56, one shape at every level.
 - [I48](../../issues/0048-where-the-server-independent-goal-is-recorded.md): an app is the program, a `node` an installation keeping data, authority a set of duties the server holds today; the server-independent goal recorded in 01-vision and I60; consumer apps are `<product>-client` + `<product>-server` (D103-D106).
 - [I49](../../issues/0049-projection-one-concept-or-several-patterns.md): a screen asks a Presenter for a frame and keeps a frame subscription; a reference implementation and faster or enriching implementations; trust belongs to an origin; ADR-0033 and ADR-0034 (D107-D117, D58'). Added I62-I64.
+- [I52](../../issues/0052-the-datom-and-its-store.md): the log store contract is what a datom needs from storage; `tx` stays an HLC worded for any `node` holding authority; id segments minted or derived; every attribute carries a value Schema; external identifiers are attributes; the final choice is the pattern (D118-D123; ADR-0007, ADR-0010, ADR-0011 amended). Added I66-I68.
 
 ## Not yet specified
 

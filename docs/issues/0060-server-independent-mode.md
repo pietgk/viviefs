@@ -46,3 +46,5 @@ D105's seven items: authority as duties a `node` holds; acceptance rules any `no
 `vivief:p2p-node-architecture` (the mode; the `node` reading itself is adopted in D103), `vivief:datom-log-as-crdt`, `vivief:moq-iroh-transport`, `vivief:payload-blind-relay` (keys with I15), `vivief:room-code-discovery`.
 
 ## Comments
+
+2026-10-08: [I52](0052-the-datom-and-its-store.md) applies D105 (1) to the clock and the log store: `tx` is corrected against the `node` holding the duty to order changes, which refuses a `tx` too far ahead, and that `node`'s log is never compacted (D119; ADR-0007, ADR-0011 amended). The mechanism is unchanged. A choice of connectivity gets its own gate when this issue is picked up (D123).

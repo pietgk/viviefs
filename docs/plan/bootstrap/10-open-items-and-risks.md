@@ -84,7 +84,7 @@ as `Pnn.k`, other work by name.
 | 2, App shell | P12 UI on every platform, P13 Links and routing | One grilling for both, design review, gates; closed by one sequential run. P08 re-runs on the rewritten IntentComposer view (D72, D73) |
 | 3 | P14 Quarantine after a lost lease | Grilling, design review, gate |
 | 4 | P15 Encrypted store, P16 Crypto-shredding, P17 Browser engine leader | In that order |
-| Any time | Expo SDK 58 stable (expected October 2026) | Repin as its own change, then a sequential P01-P11 run |
+| Any time | Expo SDK 58 stable: `expo` 58 on npm's `latest` tag with a stable `react-native` 0.88 (on 2026-10-08, [I52](../../issues/0052-the-datom-and-its-store.md): `expo` 58.0.6 is on `next` and bundles `react-native` 0.88.0-rc.3; the repo pins `58.0.0-preview.3` and `0.88.0-rc.0`) | Repin as its own change, then a sequential P01-P11 run |
 | Any time | Storybook 11 stable | Repin from `11.0.0-alpha.1` as its own change, then the P12 run |
 | Before the first consumer app | Identity, keys and trust; one physical-device run; product apps as app pairs (D55); the trace projector on devices | As recorded under Deferred decisions |
 

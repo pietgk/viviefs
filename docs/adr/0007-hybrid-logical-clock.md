@@ -8,7 +8,7 @@ Date: 2026-09-20
 
 Qualifying gate: P04
 
-Related: D33'. [Architecture section 3](../plan/bootstrap/03-architecture.md).
+Related: D33', D119. [Architecture section 3](../plan/bootstrap/03-architecture.md).
 
 ## Problem
 
@@ -19,8 +19,9 @@ conflict order.
 
 ## Design
 
-`tx` is an HLC `(pt, c)`. `pt` is server-corrected time: monotonic clock
-anchored to the server offset within a boot session; wall clock plus persisted
+`tx` is an HLC `(pt, c)`. `pt` is corrected time: a monotonic clock anchored,
+within a boot session, to the offset from the `node` that holds the duty to
+order changes (today the server); wall clock plus persisted
 offset after a reboot; never below the last persisted HLC. `c` is a tie-break
 counter used only when `pt` would not advance.
 
@@ -29,8 +30,16 @@ Receive: `last = max(last, received)`. Never mint below anything seen.
 
 Encoded ULID-shaped: 48-bit ms, 16-bit counter, remaining bits random plus
 device id. Lexicographically sortable. Offset and last HLC persist in SQLite.
-Server rejects future skew and flags measured gaps. P04 picks the actual skew
+The `node` holding authority rejects future skew and flags measured gaps. P04 picks the actual skew
 bound (web-interview used 5s; that number is indicative).
+
+**Worded for any `node`** (amendment 2026-10-08, D119, I52). The clock never
+depended on a server process: time is corrected against whichever `node` holds
+the duty to order changes, and that `node` refuses a `tx` too far ahead
+(D105 (1)). The device fingerprint in every `tx` is what catch-up by
+each writer's progress would use (D105 (4)). vivief's ULID from the device's own
+clock is not adopted for `tx`, for the reason in Problem; the same encoder
+mints entity id segments ([ADR-0010](0010-entity-ids-and-defining-attributes.md), D120).
 
 ## Trade-offs
 

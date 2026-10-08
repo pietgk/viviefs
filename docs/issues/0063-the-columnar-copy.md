@@ -25,3 +25,5 @@ From [I49](0049-projection-one-concept-or-several-patterns.md) (D110-D112, [ADR-
 - **Also here:** where a DuckLake catalog would live and how its snapshots expire (`viviefs:analytics-as-projection`); a cold index and its rebuild budget (`vivief:cold-tier-indexing`, `vivief:temperature-tiers`); incremental answer maintenance (`D2TS`, differential dataflow) when a frame subscription's rerun misses its budget (`vivief:differential-dataflow`).
 
 ## Comments
+
+2026-10-08: [I52](0052-the-datom-and-its-store.md) decides that every attribute carries a value Schema in the catalog, mapped by each implementation to its column type (D121), which the wide table's "typed from the catalog" needs. The reference read model faces the same layout choice, one table per entity type or one table for all types under a checked cap below Postgres's 1600 columns; I66 decides it by measurement together with this issue, so both make the same choice. `vivief:datom-store-needs`'s read as of a `tx` stays deferred here (D118).
