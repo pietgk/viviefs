@@ -21,3 +21,5 @@ Settle each row below with one disposition (adopt, keep ours, reject, defer with
 Rows (5): `viviefs:sync-as-datom-replication`, `vivief:sync-contract`, `vivief:sync-after-core`, `viviefs:conflict-policy`, `viviefs:server-authoritative-validation`.
 
 ## Comments
+
+2026-10-08: [I49](0049-projection-one-concept-or-several-patterns.md) hands over partial sync on demand (D114): when I12's new trigger fires, the sync details (what the server sends for a Presenter's query, cursors per query or per organization, what a partial `node` may accept) are decided here.

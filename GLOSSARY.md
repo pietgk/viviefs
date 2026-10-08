@@ -56,6 +56,12 @@ SQLite or on Postgres. In code it is one Layer, qualified by running the
 pattern's suites against it.
 _Avoid_: adapter (reserved for the `layer:adapter` tag), plugin
 
+**Reference implementation**:
+The simplest way of keeping a pattern's contract, which every other way must
+agree with. For the Presenter, SQLite read models with query atoms: every
+implementation returns its frame for the same query at the same `tx` (D110).
+It changes only by decision; the default an app gets can differ.
+
 **Builds on**:
 How one pattern uses another: it relies on the other's promises instead of
 explaining them again. Patterns do not nest. A concept lives in the guide of
@@ -179,6 +185,25 @@ trace context, command name, acceptance time. Stored in the `changesets` table,
 not as datoms; a self-committed datom has its own.
 _Avoid_: headers, metadata datoms
 
+**Origin**:
+Where the content of a change came from: a person, a mail account, a website,
+a model. Named in the envelope as a reference to an origin entity, apart from
+the actor who committed the change; an enriching change also names its
+inputs' origins (D58', D115). Not the causing span, which is the step that
+caused a write.
+
+**Origin trust**:
+How far an organization trusts what came from one origin, so trust can be
+withdrawn from a source and everything it produced at once. Datoms on the
+origin entity; a value's trust is derived when it is read, the least trusted of
+its origin and its inputs' origins (D115, ADR-0034).
+
+**Trust level**:
+How far a value can be relied on, from revoked to verified. Five ordered
+levels: `revoked`, `untrusted`, `unreviewed`, `trusted`, `verified`; set per
+origin by authority, with defaults per kind of origin (D116).
+_Avoid_: trust score
+
 **actor**:
 Who made a change: a person, or the server. The envelope field naming the
 author of a changeset; a field name only, there is no Actor entity or type.
@@ -214,6 +239,29 @@ trace projector.
 A live question a screen asks of the read models, answered again when the
 answer can have changed. A reactive Effect Atom running SQL against read
 models, declaring its invalidation keys.
+
+**Presenter**:
+What a screen asks for data, and what keeps the answer up to date. A pattern:
+a query written as data goes in, a frame comes out; its implementations range
+from the reference (SQL over read models) to columnar copies and gathering
+from outside sources (D107, ADR-0033).
+_Avoid_: projection (deriving a store from the log), view
+
+**Frame**:
+The rows a screen shows, with typed columns, where each value came from and
+how fresh it is. A Presenter's result; one entity is a one-row frame, and its
+status says fresh, gathering, remote or failed (D109).
+_Avoid_: data frame, result set
+
+**Frame subscription**:
+A screen's live hold on a frame, updated as new facts are committed and ending
+when the screen closes (D109).
+_Avoid_: subscription (alone), live query
+
+**Enrichment**:
+Adding to the log what it cannot work out itself: content fetched from
+outside, or a model's judgment. Written as an ordinary changeset naming its
+origin, so a rebuild shows the same result (D111).
 
 **Screen-view selector**:
 The step that decides exactly what one screen shows, from the data and what

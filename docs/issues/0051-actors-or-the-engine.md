@@ -21,3 +21,5 @@ Settle each row below with one disposition (adopt, keep ours, reject, defer with
 Rows (13): `vivief:actor-runtime`, `vivief:handler-levels`, `vivief:effect-handler-runtime-needs`, `vivief:cross-cutting-needs`, `vivief:event-broker`, `viviefs:durable-workflow`, `viviefs:datom-backed-engine`, `viviefs:lease-and-fencing`, `viviefs:drain-before-close`, `viviefs:resume-on-next-launch`, `viviefs:browser-engine-leader`, `viviefs:service-and-layer`, `viviefs:quarantine-after-lost-lease`.
 
 ## Comments
+
+2026-10-08: [I49](0049-projection-one-concept-or-several-patterns.md) decides that model output enters the log through an activity, as an ordinary changeset naming its origin (a model and its version) and its inputs' origins (D111, D115); vivief's trust strategies become commit paths for it (D117). Whether the envelope needs an actor category for agents (`vivief:provenance`) stays here and with map 6.

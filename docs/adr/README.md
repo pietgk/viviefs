@@ -41,6 +41,8 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | [0030](0030-verify-qualify-clis-as-effect-cli.md) | Verify and qualify CLIs as Effect CLI | Qualified | verify |
 | [0031](0031-typescript-strictness-flags.md) | TypeScript strictness flags from Effect, evaluated | Qualified | verify |
 | [0032](0032-what-viviefs-is-about.md) | What ViViEfs is about and its foundation concepts | Proposed, unverified | none (intent) |
+| [0033](0033-the-presenter-pattern.md) | The Presenter pattern | Proposed, unverified | Presenter conformance gate (I62), to come |
+| [0034](0034-origin-trust.md) | Origin trust | Proposed, unverified | named when built (I64) |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. **Accepted** is a human status given on the pattern's

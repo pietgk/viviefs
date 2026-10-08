@@ -75,3 +75,5 @@ What these ideas say about this stack:
 - **A pattern or not.** If it becomes a pattern, what is its contract, which suites prove it on each platform, and which gate qualifies it?
 
 ## Comments
+
+2026-10-08: [I49](0049-projection-one-concept-or-several-patterns.md) places DataFrames (D107-D111, [ADR-0033](../adr/0033-the-presenter-pattern.md)): a screen asks a Presenter for a frame, a contract with implementations, so DuckDB, Polars, Arrow and SQLite are engines behind Presenter implementations rather than one format everywhere. Which engines, where they run and whether Arrow works on Hermes stay this issue's. The human's design of the columnar copy (one wide table per organization) is in I63.
