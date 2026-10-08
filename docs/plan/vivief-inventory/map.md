@@ -10,7 +10,7 @@ Tickets are the issues with `Effort: docs/plan/vivief-inventory/`
 
 One research record, `docs/research/<date>-vivief-inventory.md` with an HTML
 view of it, that says for every idea in vivief and in ViViEfs where it stands in
-the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
+the other, accepted by the human in a review. Maps 2-6 of [I34 vivief as the source of ViViEfs's concepts][I34] start from it.
 
 ## Notes
 
@@ -20,9 +20,9 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
 - **Sources.** vivief (`~/ws/vivief`, HEAD `3071cb2`): `docs/` outside
   `docs/archive/`, read in full; `docs/REVIEW.md` (round 3 intent triage) and
   `docs/contract/adr/RELEVANCE.md` as the index of what vivief itself still
-  holds; `plugins/devac/`. ViViEfs: `GLOSSARY.md`, the decision log D1-D94,
-  ADR-0001 to ADR-0031, the gates P01-P17, the log-store guide. The ideas
-  batches I24-I33 are cross-linked, not covered.
+  holds; `plugins/devac/`. ViViEfs: `GLOSSARY.md`, the decision log [D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94],
+  [ADR-0001 Record architectural decisions][ADR-0001] to [ADR-0031 TypeScript strictness flags from Effect, evaluated][ADR-0031], the gates [P01 Platform on SDK 58][P01]-[P17 Browser engine leader][P17], the log-store guide. The ideas
+  batches I24-[I33 Ideas batch: abstractions that constrain agents][I33] are cross-linked, not covered.
 - **One table, two sides.** A row is one idea (a concept, term, principle,
   decision or mechanism), not a file. It has a vivief side and a ViViEfs side;
   either may be empty.
@@ -41,7 +41,7 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
     map (2-6) and a question. Product vision is not foreign: BirVana, ERP, GRC,
     counseling, procurement and probably retail are candidate consumer apps,
     likely to live in this repository once the exemplar matures, and an app's
-    need is the proof that a pattern is useful (I9 Comments, 2026-10-06).
+    need is the proof that a pattern is useful ([I9 Product apps in this repository as app pairs][I9] Comments, 2026-10-06).
     Their product-specific decisions stay out of scope.
 - **Rows record and ask; they never decide.** Where a decision is due, the row
   asks it as a question for the map that owns it.
@@ -52,21 +52,21 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   docs site links to ViViEfs's own ADR. In a page the docs site renders
   (`docs/issues/`, `docs/research/`) keep it in code font: plain `ADR 0047`
   with a space links too, and fails the build when no such ADR exists.
-- **Ids.** Ideas have readable ids: `vivief:<kebab-slug>` from I35,
-  `viviefs:<kebab-slug>` from I36. A slice reuses an index id when the idea is
+- **Ids.** Ideas have readable ids: `vivief:<kebab-slug>` from [I35 Index vivief's ideas from its backbone][I35],
+  `viviefs:<kebab-slug>` from [I36 Index ViViEfs's ideas from its sources][I36]. A slice reuses an index id when the idea is
   already indexed and adds a new id otherwise.
 - **Where tickets write.** Each research ticket writes
   `docs/plan/vivief-inventory/rows/I<n>.md`: a rows table
   (`Id | Idea | vivief | ViViEfs | Status | Level | Scope | Map | Issues | Question`)
   and a coverage table (`Source | Rows | Note`, one line per source in its
   slice, saying which rows it fed or that it was skipped and why). Its Answer
-  links that file. I45 assembles the record from the rows files, which stay as
+  links that file. [I45 Assemble the vivief inventory][I45] assembles the record from the rows files, which stay as
   the trail.
-- **One session per ticket** (the human's token budget). I35 and I36 ran as
+- **One session per ticket** (the human's token budget). [I35 Index vivief's ideas from its backbone][I35] and [I36 Index ViViEfs's ideas from its sources][I36] ran as
   background research subagents from the charting session; the slices run one
   session each, and a later slice may read the rows already written.
 - Skills: `research` for research tickets; `grilling` and `domain-modeling`
-  for I46.
+  for [I46 Review the vivief inventory][I46].
 
 ## Decisions so far
 
@@ -76,7 +76,7 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   the trust model, `Surface`, the creation loop and effects as data.
 
 - [I36: Index ViViEfs's ideas from its sources](../../issues/0036-index-viviefs-ideas-from-its-sources.md):
-  77 `viviefs:` ideas covering every glossary term, D1-D94, the 31 ADRs, P01-P17
+  77 `viviefs:` ideas covering every glossary term, [D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94], the 31 ADRs, [P01 Platform on SDK 58][P01]-[P17 Browser engine leader][P17]
   and the log-store guide ([rows](rows/I36.md)); 35 verified, 23 implemented,
   8 proposed, 11 accepted.
 
@@ -119,7 +119,7 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   14 different, 13 missing, 1 deferred, 1 rejected; the stacks share trace
   context in the envelope and derived meaning kept apart from facts, and part
   on code as a queried graph of effects, rules and views (absent here) and on
-  test spans copied through the OpenTelemetry SDK (rejected by ADR-0018); the
+  test spans copied through the OpenTelemetry SDK (rejected by [ADR-0018 Tracing derived from the log; telemetry sink pattern][ADR-0018]); the
   trace matching ViViEfs takes from vivief was never built there.
 
 - [I43: Inventory vivief's guides, agent windows and story](../../issues/0043-inventory-vivief-guides-windows-and-story.md):
@@ -135,7 +135,7 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
   28 rows from the 32 files of `plugins/devac/` ([rows](rows/I44.md)); 3 taken,
   18 different, 5 missing, 2 rejected; the stacks share skills beside typed
   commands, CLIs first and a file of things learned in practice, and part on
-  packaging (one Claude plugin with hooks and MCP, ruled out by ADR-0027) and
+  packaging (one Claude plugin with hooks and MCP, ruled out by [ADR-0027 Developer experience planes][ADR-0027]) and
   on rules kept as prose or a reported score where ViViEfs makes a failing
   check; 13 of the reference-stack rows go to map 6.
 
@@ -157,12 +157,30 @@ the other, accepted by the human in a review. Maps 2-6 of I34 start from it.
 ## Not yet specified
 
 Nothing. Whether a consumer app needs ideas or features, the unit of the
-`Apps` column, went to map 4 as an inherited question in I46.
+`Apps` column, went to map 4 as an inherited question in [I46 Review the vivief inventory][I46].
 
 ## Out of scope
 
-- Deciding what ViViEfs adopts, renames or rejects: maps 2-6 of I34.
+- Deciding what ViViEfs adopts, renames or rejects: maps 2-6 of [I34 vivief as the source of ViViEfs's concepts][I34].
 - vivief's `docs/archive/` (also on demand) and its code (`packages/`,
   `examples/`): the `fact/` docs stand in for the code, `story/` for why vivief
   changed its mind.
 - vivief's GitHub issues and pull requests.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0001]: ../../adr/0001-record-architectural-decisions.md
+[ADR-0018]: ../../adr/0018-tracing-and-telemetry-sinks.md
+[ADR-0027]: ../../adr/0027-developer-experience-planes.md
+[ADR-0031]: ../../adr/0031-typescript-strictness-flags.md
+[D1]: ../bootstrap/02-decision-log.md#d1
+[D94]: ../bootstrap/02-decision-log.md#d94
+[I33]: ../../issues/0033-ideas-batch-abstractions-that-constrain-agents.md
+[I34]: ../../issues/0034-vivief-as-the-source-of-viviefs-concepts.md
+[I35]: ../../issues/0035-index-vivief-ideas-from-its-backbone.md
+[I36]: ../../issues/0036-index-viviefs-ideas-from-its-sources.md
+[I45]: ../../issues/0045-assemble-the-vivief-inventory.md
+[I46]: ../../issues/0046-review-the-vivief-inventory.md
+[I9]: ../../issues/0009-product-apps-as-app-pairs.md
+[P01]: ../bootstrap/06-qualification-gates.md#p01
+[P17]: ../bootstrap/06-qualification-gates.md#p17

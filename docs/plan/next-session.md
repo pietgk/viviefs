@@ -5,102 +5,102 @@
 > Read `AGENTS.md`, then `docs/plan/next-session.md` (this file), then
 > `docs/plan/log-store-guide/spec.md` (with its build record), the
 > "Log-store guide design review (2026-10-01)" section of
-> `docs/plan/bootstrap/02-decision-log.md` (D81-D91), and the Schedule in
+> `docs/plan/bootstrap/02-decision-log.md` ([D81 What a lesson is][D81]-[D91 The exercise loop][D91]), and the Schedule in
 > `docs/plan/bootstrap/10-open-items-and-risks.md`. If the human has reviewed
-> the log-store guide, record what they said; acceptance follows D63. Then
-> start the app shell (P12, P13) with its grilling. Ask before deviating from
+> the log-store guide, record what they said; acceptance follows [D63 Acceptance on the guide][D63]. Then
+> start the app shell ([P12 UI on every platform][P12], [P13 Links and routing][P13]) with its grilling. Ask before deviating from
 > an agreed decision and record a deviation as an ADR amendment.
 
 ## Where things stand (2026-10-01, afternoon)
 
-- **The log-store guide is built, as a draft** (D81-D91; spec and build record
+- **The log-store guide is built, as a draft** ([D81 What a lesson is][D81]-[D91 The exercise loop][D91]; spec and build record
   in [log-store-guide/spec.md](log-store-guide/spec.md); review page
   [2026-10-01-log-store-guide-review.html](../research/2026-10-01-log-store-guide-review.html)).
   `pnpm verify all` is green with 18 steps. What is new:
   - **The guide template** is a skeleton guide in `apps/docs/src/guide-template/`,
     published under Reference. `verify`'s new `guides` step derives the
     required pages, `##` headings and frontmatter keys from it, and checks
-    ADR and guide statuses (D63), exemplar links both ways (`metadata.guides`
-    is a list, D84), the exercise layout (D66), lessons paired with exercise
-    sections (D81), every ADR on one guide (D82), no bare gate or ADR id in a
-    guide's prose (D86), and that the plan names each gate as `gates.ts` does.
+    ADR and guide statuses ([D63 Acceptance on the guide][D63]), exemplar links both ways (`metadata.guides`
+    is a list, [D84 Exemplar of several guides][D84]), the exercise layout ([D66 Exercise tracks][D66]), lessons paired with exercise
+    sections ([D81 What a lesson is][D81]), every ADR on one guide ([D82 Patterns build on each other][D82]), no bare gate or ADR id in a
+    guide's prose ([D86 Named, linked references][D86]), and that the plan names each gate as `gates.ts` does.
   - **The guide** `apps/docs/src/content/docs/guides/log-store/`: index (with
     the generated status block), concepts, how-to, testing, review, four
     lessons, try-it. Samples are regions of the exemplar.
-  - **References, names, previews** (D87-D91, review round 2, the same day):
+  - **References, names, previews** ([D87-D91 References, names and the exercise loop][D87-D91], review round 2, the same day):
     every gate, ADR and decision id on every page renders as its id and
     name, linked, with a preview card on hover; inline-code repository paths
     are links; an unknown id or a stale path fails the site build. Decisions
     have names, ADRs a `Summary:` line, and the decision log is Reference >
     Decisions. `pnpm exercise` prints a learner's verdict ("not yet" or
     "done") instead of Vitest's output.
-  - **What a lesson is** (D81): one page, one idea, recall before and after,
+  - **What a lesson is** ([D81 What a lesson is][D81]): one page, one idea, recall before and after,
     the gate that showed it, its exercise section, one primary source.
-  - **Patterns build on each other** (D82): a concept lives in the guide of
+  - **Patterns build on each other** ([D82 Patterns build on each other][D82]): a concept lives in the guide of
     the pattern whose contract defines it and whose suite checks it. The
     changesets guide owns changesets, conflict policies, entity ids and read
-    models; ADR-0011 stays on the log-store guide (D83).
+    models; [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] stays on the log-store guide ([D83 The log store ADR on its guide][D83]).
   - **The exercise track** `exercises/log-store` (five exercises) runs in the
     new `exercises` step, without coverage; learners run
     `pnpm exercise log-store 02.01`. The harness is `@viviefs/testing/exercise`.
   - `metadata.guides`, a README and an entry-module TSDoc link on `libs/datom`
     and the four store projects.
-- **Round 3 of the review (2026-10-02, D92-D94)**: open issues are files in
-  `docs/issues/` (I1-I21, Reference > Issues); every gate shows the claim it
+- **Round 3 of the review (2026-10-02, [D92-D94 Claims, issues and the glossary][D92-D94])**: open issues are files in
+  `docs/issues/` (I1-[I21 Test the glossary with a reader outside software][I21], Reference > Issues); every gate shows the claim it
   proves (Reference > Claims; P is for proof); the glossary starts each
   definition with a plain sentence, and the first use of a term on a page
   links to it with a preview. The human is still reviewing the docs.
 - **For the human to decide**: the open issues, each with its options in
   its file (Reference > Issues on the docs site):
-  - I1 advisories that fail audit with no fix released: `node-forge`
+  - [I1 Advisories that fail audit with no fix released][I1] advisories that fail audit with no fix released: `node-forge`
     (2026-10-02), `http-cache-semantics` and `braces` (2026-10-03), each
     ignored with a reason until its trigger fires; every new one is decided
     there, and the issue stays open while its table has rows.
-  - I2 accepting the log-store guide (D63: P04 and P05 on that commit).
-  - I3 the API reference for Effect services (D61).
-  - I4 the `effect-solutions` peer warning, I5 the suite catalogue, I6
+  - [I2 Accept the log-store guide][I2] accepting the log-store guide ([D63 Acceptance on the guide][D63]: [P04 Log store conformance][P04] and [P05 Changesets and projections][P05] on that commit).
+  - [I3 API reference reads poorly for Effect services][I3] the API reference for Effect services ([D61 Repository pages rendered in place][D61]).
+  - [I4 effect-solutions pins an older effect and warns on install][I4] the `effect-solutions` peer warning, [I5 Confirm the suite catalogue as the one declaration place][I5] the suite catalogue, [I6 Post the two upstream issue drafts][I6]
     posting the two upstream drafts.
-  - I21 the glossary reader test.
-  - I23 `@typeonce/effect-machine` on stable Effect: a code change in a
+  - [I21 Test the glossary with a reader outside software][I21] the glossary reader test.
+  - [I23 effect-machine still requires the Effect release candidate][I23] `@typeonce/effect-machine` on stable Effect: a code change in a
     qualification input, to batch with the next qualification run.
-  - I22 the overlap in Claims and evidence (Claims page, evidence index and
+  - [I22 Claims and evidence show each gate three times][I22] the overlap in Claims and evidence (Claims page, evidence index and
     one note per gate): a short design review on how to present each level
     of detail before changing it.
-- **Gates**: P01-P11 pass on `1a5175fa2` (below).
+- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] pass on `1a5175fa2` (below).
 
 ## Effect 4.0.0 (2026-10-02)
 
-- **Effect is on the stable 4.0.0** (ADR-0003 and ADR-0029 amended): every
+- **Effect is on the stable 4.0.0** ([ADR-0003 Effect v4 as the backbone][ADR-0003] and [ADR-0029 Effect reference subtree and language service][ADR-0029] amended): every
   `effect` and `@effect/*` pin, `@effect/tsgo` 0.47.2 with `unstableApiUsage`
   off, `effect/unstable/*` imports now `effect/*`, and `repos/effect` pulled
   from the `effect@4.0.0` tag. The next Effect bump moves the pins and the
-  subtree in one change (ADR-0029 has the command).
-- **verify is green without exceptions**: I1's advisory is ignored by id with
+  subtree in one change ([ADR-0029][ADR-0029] has the command).
+- **verify is green without exceptions**: [I1 Advisories that fail audit with no fix released][I1]'s advisory is ignored by id with
   its reason in `pnpm-workspace.yaml`; uuid below 11.1.1 is overridden to
   11.1.1 (only `xcode` 3 under Expo's prebuild used it); and
-  `apps/docs/src/samples/` is a tracked directory, with the D87 path check
+  `apps/docs/src/samples/` is a tracked directory, with the [D87 References resolved when rendered][D87] path check
   counting a directory without files as missing.
-- **Closed**: P01-P11 passed in one sequential run on `1a5175fa2`, run
-  `2026-10-02T14-20-51.580Z-2ce3b275`, clean tree, about 29 minutes. P07's
+- **Closed**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `1a5175fa2`, run
+  `2026-10-02T14-20-51.580Z-2ce3b275`, clean tree, about 29 minutes. [P07 Device resume E2E][P07]'s
   notification-tap fallbacks are unchanged from 2026-10-01.
 
 ## Before this step (2026-10-01, morning)
 
-- **The Evidence ownership step is built** (D70, D71, D75-D80; spec and build
+- **The Evidence ownership step is built** ([D70 Verify versus qualify][D70], [D71 Evidence ownership][D71], [D75-D80 Evidence ownership design review][D75-D80]; spec and build
   record in [evidence-ownership/spec.md](evidence-ownership/spec.md)). Every
   production file has one file treatment in
   `tools/verify/src/evidence-registry.ts`; suites ship with their contract
-  (D80); `unit`, `integration` and `storybook` are one root Vitest run each
+  ([D80 Where tests live][D80]); `unit`, `integration` and `storybook` are one root Vitest run each
   with Istanbul coverage, judged by `evidence` against
-  `evidence-baseline.json`; Schema at every boundary is a lint rule (D79).
-- **Closed**: P01-P11 passed in one sequential run on `9716b875d`, run
-  `2026-10-01T05-58-55.362Z-02076418`. P07's visible notification tap still
+  `evidence-baseline.json`; Schema at every boundary is a lint rule ([D79 Schema at every boundary, linted][D79]).
+- **Closed**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `9716b875d`, run
+  `2026-10-01T05-58-55.362Z-02076418`. [P07 Device resume E2E][P07]'s visible notification tap still
   misses on both platforms and the relaunch fallback completes the deferred
   (open item, unchanged).
 
 ## Before 2026-10-01
 
-- **The Docs skeleton step is done** (D59-D61, D68). `apps/docs` is a
+- **The Docs skeleton step is done** ([D59 Starlight docs site][D59]-[D61 Repository pages rendered in place][D61], [D68 Research records][D68]). `apps/docs` is a
   Starlight 0.42 site on Astro 7.3. It renders `GLOSSARY.md`, the ADRs, the
   evidence notes and the research records in place through one content
   loader (`apps/docs/src/lib/repo-docs-loader.ts`), with ADR status badges in
@@ -116,11 +116,11 @@
   (`tools/verify/src/docs-only.ts`). The `.lavish/` pages moved to
   `docs/research/` with dated names; `.lavish/` is gitignored scratch.
 - **For the human to confirm** (choices made in the Docs skeleton step, not
-  grilling decisions): the glossary is rendered under Reference (D61's sidebar
+  grilling decisions): the glossary is rendered under Reference ([D61 Repository pages rendered in place][D61]'s sidebar
   does not list it); `site` is `http://localhost:4321` until deployment is
   decided (`starlight-llms-txt` needs one); the API reference and the guide
   template come with the log-store guide, because no guide names an exemplar
-  yet; `docs/evidence/**` is not docs-only, because the P03 and P09-P11 probe
+  yet; `docs/evidence/**` is not docs-only, because the [P03 OTLP and motel][P03] and [P09 Sync][P09]-[P11 Identity][P11] probe
   tests read evidence notes, and a `verify` test fails if a test names any
   other docs-only file; `astro.config.ts` and `content.config.ts` are not
   checked by `tsc` (the Starlight plugins ship TypeScript sources that do not
@@ -129,23 +129,23 @@
   web-interview. Astro pulls in `sharp`, whose macOS binary bundles libvips
   under LGPL-3.0; it runs at build time only and is never shipped.
 
-- **P01-P11 pass** in one sequential run on `54e724786`. The commit after it
+- **[P01 Platform on SDK 58][P01]-[P11 Identity][P11] pass** in one sequential run on `54e724786`. The commit after it
   renumbered the follow-on gates and touched `tools/qualification` and
   `libs/`, so every gate is stale from there on. That is expected: almost every step ahead changes
   gate inputs, and the Schedule closes them in batches.
-- **The Docs and teaching grilling is done** and recorded as D59-D74. The
+- **The Docs and teaching grilling is done** and recorded as [D59-D74 Docs and teaching][D59-D74]. The
   overview used in it, with the drift audit, the crash-matrix explainer, the
   web-interview comparison and the measured costs, is the research record
   [2026-09-29-delivery-model.html](../research/2026-09-29-delivery-model.html);
-  its lasting parts are the site's first page (D68).
-- **The Skills step is done** (D69). Every engineering and productivity skill
+  its lasting parts are the site's first page ([D68 Research records][D68]).
+- **The Skills step is done** ([D69 Matt Pocock skills][D69]). Every engineering and productivity skill
   of `mattpocock/skills` is vendored at `d81f3a18`, byte-identical and pinned
   by `ref` in `skills-lock.json`; adaptations live in `docs/agents/` and
   `AGENTS.md` ([ADR-0027](../adr/0027-developer-experience-planes.md)
   amendment). The glossary is now `GLOSSARY.md`
   ([ADR-0001](../adr/0001-record-architectural-decisions.md) amendment).
   Specs and tickets go to `docs/plan/<effort>/`. `scaffold-exercises` is a
-  repo-owned fork (D66). Codex and Cursor load the tree from `.agents/skills/`
+  repo-owned fork ([D66 Exercise tracks][D66]). Codex and Cursor load the tree from `.agents/skills/`
   (checked). The repo's `code-review` replaces Claude Code's built-in
   `/code-review` in this repo. `verify`'s `skills` step keeps the tree equal
   to the lock. Skills are not gate inputs.
@@ -155,34 +155,34 @@
 
 | Topic | Decision |
 | --- | --- |
-| Docs site | Starlight on Astro 7, MDX; ADRs and evidence rendered in place; API reference for exemplar projects only; `llms.txt`; links, Mermaid integrity, docs-only rule in `verify`; not deployed yet (D59-D61) |
-| Samples | Regions embedded from the exemplar's own source; teaching snippets in `apps/docs/src/samples/`; `tsc` 7 with `@effect/tsgo`; no Twoslash for now (D60) |
-| Guide | `guides/<pattern>/`: `index`, `concepts`, `how-to`, `testing`, `review`, `lessons/`, `try-it`; the template is a skeleton guide that a `verify` check derives its rules from (D62) |
-| Acceptance | Frontmatter status; one commit marks the guide and its ADRs Accepted after its gates pass on that commit; `verify` checks the statuses agree (D63) |
-| Agents | Read the MDX sources; one Guides line in `AGENTS.md`; skills only for real procedures (D64) |
-| Inventory | Log store, durable workflow, identity first; three non-pattern guides accept 0003-0005, 0024-0031 and 0026 (D65) |
-| Exercises | `exercises/<pattern>/NN.MM-name/{problem,solution}`; solution passes, problem fails; generator with the second track (D66) |
-| Exemplar link | `metadata.guide` plus README and TSDoc, checked both ways (D67) |
-| `.lavish/` | Moves to `docs/research/` (D68) |
-| Skills | Matt Pocock skills updated and extended after an include/adapt review (D69) |
-| Verify vs Qualify | Split by what a check needs and produces, not speed; `pnpm verify baseline`; time reported, not gated (D70, ADR-0026 amended) |
-| Evidence ownership | web-interview's per-file treatments and coverage lockfile, adapted; crash matrix into `verify`; Schema at every boundary (D71) |
-| UI on every platform | One React Native component tree; stories in Chromium (`verify`) and on the simulators (P12); Storybook 11 alpha pinned (D72) |
-| Links and routing | New pattern and gate P13, with the first Playwright journey and Lighthouse budgets (D73) |
-| Order and gates | Schedule below; P12 and P13 new, quarantine, encrypted store, crypto-shredding and browser leader move to P14-P17 (D74) |
-| Log-store guide | A lesson is one page paired with an exercise section; patterns build on each other; ADR-0011 on the log-store guide; `metadata.guides` a list; four lessons, five exercises, `pnpm exercise`; named, linked gate and ADR references (D81-D86); references, names, previews and the exercise verdict on every page (D87-D91) |
+| Docs site | Starlight on Astro 7, MDX; ADRs and evidence rendered in place; API reference for exemplar projects only; `llms.txt`; links, Mermaid integrity, docs-only rule in `verify`; not deployed yet ([D59 Starlight docs site][D59]-[D61 Repository pages rendered in place][D61]) |
+| Samples | Regions embedded from the exemplar's own source; teaching snippets in `apps/docs/src/samples/`; `tsc` 7 with `@effect/tsgo`; no Twoslash for now ([D60 Samples from the exemplar][D60]) |
+| Guide | `guides/<pattern>/`: `index`, `concepts`, `how-to`, `testing`, `review`, `lessons/`, `try-it`; the template is a skeleton guide that a `verify` check derives its rules from ([D62 The shape of a guide][D62]) |
+| Acceptance | Frontmatter status; one commit marks the guide and its ADRs Accepted after its gates pass on that commit; `verify` checks the statuses agree ([D63 Acceptance on the guide][D63]) |
+| Agents | Read the MDX sources; one Guides line in `AGENTS.md`; skills only for real procedures ([D64 Agents read the guides][D64]) |
+| Inventory | Log store, durable workflow, identity first; three non-pattern guides accept 0003-0005, 0024-0031 and 0026 ([D65 Guide inventory and order][D65]) |
+| Exercises | `exercises/<pattern>/NN.MM-name/{problem,solution}`; solution passes, problem fails; generator with the second track ([D66 Exercise tracks][D66]) |
+| Exemplar link | `metadata.guide` plus README and TSDoc, checked both ways ([D67 Exemplar links to its guide][D67]) |
+| `.lavish/` | Moves to `docs/research/` ([D68 Research records][D68]) |
+| Skills | Matt Pocock skills updated and extended after an include/adapt review ([D69 Matt Pocock skills][D69]) |
+| Verify vs Qualify | Split by what a check needs and produces, not speed; `pnpm verify baseline`; time reported, not gated ([D70 Verify versus qualify][D70], [ADR-0026 Verify - Qualify - Teach][ADR-0026] amended) |
+| Evidence ownership | web-interview's per-file treatments and coverage lockfile, adapted; crash matrix into `verify`; Schema at every boundary ([D71 Evidence ownership][D71]) |
+| UI on every platform | One React Native component tree; stories in Chromium (`verify`) and on the simulators ([P12 UI on every platform][P12]); Storybook 11 alpha pinned ([D72 UI on every platform][D72]) |
+| Links and routing | New pattern and gate [P13 Links and routing][P13], with the first Playwright journey and Lighthouse budgets ([D73 Links and routing][D73]) |
+| Order and gates | Schedule below; [P12 UI on every platform][P12] and [P13 Links and routing][P13] new, quarantine, encrypted store, crypto-shredding and browser leader move to [P14 Quarantine after a lost lease][P14]-[P17 Browser engine leader][P17] ([D74 Docs and teaching order][D74]) |
+| Log-store guide | A lesson is one page paired with an exercise section; patterns build on each other; [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] on the log-store guide; `metadata.guides` a list; four lessons, five exercises, `pnpm exercise`; named, linked gate and ADR references ([D81 What a lesson is][D81]-[D86 Named, linked references][D86]); references, names, previews and the exercise verdict on every page ([D87-D91 References, names and the exercise loop][D87-D91]) |
 
 ## Next steps (the Schedule, Docs and teaching part)
 
 1. **Docs skeleton**: done 2026-09-30.
-2. **Evidence ownership** (D70, D71, D75-D80): done 2026-10-01.
-3. **Log-store guide** (D62-D67, D81-D91): built 2026-10-01 as a draft;
+2. **Evidence ownership** ([D70 Verify versus qualify][D70], [D71 Evidence ownership][D71], [D75-D80 Evidence ownership design review][D75-D80]): done 2026-10-01.
+3. **Log-store guide** ([D62 The shape of a guide][D62]-[D67 Exemplar links to its guide][D67], [D81 What a lesson is][D81]-[D91 The exercise loop][D91]): built 2026-10-01 as a draft;
    accepted when the human accepts it (above).
-4. **App shell**: one grilling for P12 and P13, then both gates, then one
+4. **App shell**: one grilling for [P12 UI on every platform][P12] and [P13 Links and routing][P13], then both gates, then one
    sequential run.
-5. **Changesets guide** (it owns read models now, D82), **durable workflow
+5. **Changesets guide** (it owns read models now, [D82 Patterns build on each other][D82]), **durable workflow
    guide**, then **identity guide**, then the rest. The durable workflow track
-   brings the `exercise` generator (D66).
+   brings the `exercise` generator ([D66 Exercise tracks][D66]).
 
 ## Working notes
 
@@ -194,7 +194,7 @@
   minutes (three producer runs and the bundles).
 - Measured 2026-09-29 (all projects, Nx cache skipped): `verify` about 2.5
   minutes (static 23 s, unit 10 s, integration 17 s, ui 3 s, quality 79 s).
-  Qualify P01-P11 30 minutes, almost all devices and labs; P06 takes 6 s.
+  Qualify [P01 Platform on SDK 58][P01]-[P11 Identity][P11] 30 minutes, almost all devices and labs; [P06 Workflow engine crash matrix][P06] takes 6 s.
 - The ledger's input fingerprint includes the lockfile, workspace, `nx.json`,
   `tsconfig*.json`, `eslint.config.js`, `tools/qualification` and most of
   `libs/`, `apps/evidence-*` and `features/evidence/*` (Markdown excluded).
@@ -205,3 +205,60 @@
   [tools/qualification/README.md](../../tools/qualification/README.md).
 - Docs site: how to run it and how it is put together are in
   [apps/docs/README.md](../../apps/docs/README.md).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0003]: ../adr/0003-effect-v4-as-backbone.md
+[ADR-0011]: ../adr/0011-log-store-pattern.md
+[ADR-0026]: ../adr/0026-verify-qualify-teach.md
+[ADR-0029]: ../adr/0029-effect-reference-and-language-service.md
+[D59]: bootstrap/02-decision-log.md#d59
+[D59-D74]: bootstrap/02-decision-log.md#d59-d74
+[D60]: bootstrap/02-decision-log.md#d60
+[D61]: bootstrap/02-decision-log.md#d61
+[D62]: bootstrap/02-decision-log.md#d62
+[D63]: bootstrap/02-decision-log.md#d63
+[D64]: bootstrap/02-decision-log.md#d64
+[D65]: bootstrap/02-decision-log.md#d65
+[D66]: bootstrap/02-decision-log.md#d66
+[D67]: bootstrap/02-decision-log.md#d67
+[D68]: bootstrap/02-decision-log.md#d68
+[D69]: bootstrap/02-decision-log.md#d69
+[D70]: bootstrap/02-decision-log.md#d70
+[D71]: bootstrap/02-decision-log.md#d71
+[D72]: bootstrap/02-decision-log.md#d72
+[D73]: bootstrap/02-decision-log.md#d73
+[D74]: bootstrap/02-decision-log.md#d74
+[D75-D80]: bootstrap/02-decision-log.md#d75-d80
+[D79]: bootstrap/02-decision-log.md#d79
+[D80]: bootstrap/02-decision-log.md#d80
+[D81]: bootstrap/02-decision-log.md#d81
+[D82]: bootstrap/02-decision-log.md#d82
+[D83]: bootstrap/02-decision-log.md#d83
+[D84]: bootstrap/02-decision-log.md#d84
+[D86]: bootstrap/02-decision-log.md#d86
+[D87]: bootstrap/02-decision-log.md#d87
+[D87-D91]: bootstrap/02-decision-log.md#d87-d91
+[D91]: bootstrap/02-decision-log.md#d91
+[D92-D94]: bootstrap/02-decision-log.md#d92-d94
+[I1]: ../issues/0001-advisories-that-fail-audit.md
+[I2]: ../issues/0002-accept-the-log-store-guide.md
+[I21]: ../issues/0021-test-the-glossary-with-a-reader.md
+[I22]: ../issues/0022-claims-and-evidence-overlap.md
+[I23]: ../issues/0023-effect-machine-on-stable-effect.md
+[I3]: ../issues/0003-api-reference-for-effect-services.md
+[I4]: ../issues/0004-effect-solutions-peer-warning.md
+[I5]: ../issues/0005-confirm-the-suite-catalogue.md
+[I6]: ../issues/0006-post-the-upstream-issue-drafts.md
+[P01]: bootstrap/06-qualification-gates.md#p01
+[P03]: bootstrap/06-qualification-gates.md#p03
+[P04]: bootstrap/06-qualification-gates.md#p04
+[P05]: bootstrap/06-qualification-gates.md#p05
+[P06]: bootstrap/06-qualification-gates.md#p06
+[P07]: bootstrap/06-qualification-gates.md#p07
+[P09]: bootstrap/06-qualification-gates.md#p09
+[P11]: bootstrap/06-qualification-gates.md#p11
+[P12]: bootstrap/06-qualification-gates.md#p12
+[P13]: bootstrap/06-qualification-gates.md#p13
+[P14]: bootstrap/06-qualification-gates.md#p14
+[P17]: bootstrap/06-qualification-gates.md#p17

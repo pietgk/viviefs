@@ -67,7 +67,7 @@ encryption) is one line in one app.
 | Tag | Values | Allowed dependencies |
 |---|---|---|
 | `kind:` | `app`, `feature`, `lib`, `tool` | app -> feature, lib. feature -> lib (and another feature's `model` only). lib -> lib. tool -> anything it analyses. Nothing imports an app or a tool at runtime. |
-| `layer:` | `model`, `client`, `server`, `core`, `adapter`, `ui`, `testing` | model -> core. client -> model, core, ui. server -> model, core. adapter -> core. ui -> ui. testing -> anything, only from tests. Apps compose adapters as Layers; a feature must not import an adapter (D52). |
+| `layer:` | `model`, `client`, `server`, `core`, `adapter`, `ui`, `testing` | model -> core. client -> model, core, ui. server -> model, core. adapter -> core. ui -> ui. testing -> anything, only from tests. Apps compose adapters as Layers; a feature must not import an adapter ([D52 Four project kinds][D52]). |
 | `platform:` | `universal`, `client`, `server` | universal -> universal. client -> client, universal. server -> server, universal. |
 
 - Features interact through datoms, not through each other's client or server code. A feature may import another
@@ -86,7 +86,7 @@ Every `project.json` declares its tags; an untagged project fails `verify`:
 }
 ```
 
-Evidence is owned per file, not per project (D75, D76, amended 2026-09-30): the registry
+Evidence is owned per file, not per project ([D75 Evidence vocabulary][D75], [D76 Eleven file treatments][D76], amended 2026-09-30): the registry
 (`tools/verify/src/evidence-registry.ts`) gives every production file one file treatment and a rationale, and
 `verify`'s `ownership` step fails on an unclassified file. The per-project `evidenceOwner` is gone.
 
@@ -96,13 +96,13 @@ Evidence is owned per file, not per project (D75, D76, amended 2026-09-30): the 
 | --- | --- | --- |
 | Unit test | next to the code it covers | `src/x.test.ts` |
 | Integration test | next to the code, when proving it needs a real store or server | `src/x.integration.test.ts` |
-| Story | next to the component | `X.stories.test.tsx` (jsdom until P12) |
+| Story | next to the component | `X.stories.test.tsx` (jsdom until [P12 UI on every platform][P12]) |
 | Suite | in the lib that owns the contract it checks, exported as `@viviefs/<lib>/suites` | `src/suites/<aspect>.ts` |
 | Suite run | in the project of the implementation under test, tagged with the suite id | `src/<pattern>-<aspect>.integration.test.ts` |
 | Test helper | generic: `libs/testing` (no `@viviefs` dependency); one contract's: that lib's `src/suites/` | |
 | Probe, device journey | `tools/qualification/src/probes/` | `pNN*.ts` |
-| Web journey | the app's `e2e/` folder (from P13) | `e2e/x.spec.ts` |
-| Exercise test | with the exercise (D66) | `exercises/<pattern>/NN.MM-name/` |
+| Web journey | the app's `e2e/` folder (from [P13 Links and routing][P13]) | `e2e/x.spec.ts` |
+| Exercise test | with the exercise ([D66 Exercise tracks][D66]) | `exercises/<pattern>/NN.MM-name/` |
 
 The file name decides which coverage producer runs a test (`@viviefs/testing/vitest`). Only tests, suites, Vitest
 configs, `tools/` and the evidence apps may import a `suites` entry or `@viviefs/testing` (lint).
@@ -125,3 +125,12 @@ configs, `tools/` and the evidence apps may import a `suites` entry or `@viviefs
 | `nx g @viviefs/generators:workflow <feature> <name>` | versioned workflow + activities + crash-matrix test |
 | `nx g @viviefs/generators:screen <feature> <name>` | screen-view selector, query atoms with Reactivity keys, component, story |
 | `nx g @viviefs/generators:exercise <track> <name>` | exercise stub, failing test, reference solution |
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D52]: 02-decision-log.md#d52
+[D66]: 02-decision-log.md#d66
+[D75]: 02-decision-log.md#d75
+[D76]: 02-decision-log.md#d76
+[P12]: 06-qualification-gates.md#p12
+[P13]: 06-qualification-gates.md#p13

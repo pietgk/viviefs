@@ -18,7 +18,7 @@ It combines four ideas that are usually separate:
 ## Consumers
 
 Future apps built on this stack: BirVana (conversation-first Swedish learning, `~/ws/app/pietgk`), an ERP frontend,
-and a GRC frontend (complyj domain). For now only an exemplar app lives here (D55); product apps get an
+and a GRC frontend (complyj domain). For now only an exemplar app lives here ([D55 Exemplar first, product apps later][D55]); product apps get an
 `apps/<product>-mobile` + `apps/<product>-server` slot later.
 
 ## The exemplar (D23)
@@ -45,14 +45,27 @@ Plus: crash and resume (force-quit mid-workflow), lease handoff to another devic
 ## Out of scope (for now)
 
 - Code running on a guaranteed schedule while the app is closed. The OS only guarantees local notifications;
-  background tasks are opportunistic (D3, D24).
-- Several people editing the same workflow execution at once (rejected in D13).
-- Multi-writer merge of workflow executions (D14): one lease holder at a time.
+  background tasks are opportunistic ([D3 Resume on next launch][D3], [D24 Durable clocks and notifications][D24]).
+- Several people editing the same workflow execution at once (rejected in [D13 Server holds workflow state][D13]).
+- Multi-writer merge of workflow executions ([D14 Leases with fencing][D14]): one lease holder at a time.
 - Production hosting, deployment topology and production telemetry backends.
-- Horizontal scale-out of the workflow engine (Effect Cluster is the later path, D39).
+- Horizontal scale-out of the workflow engine (Effect Cluster is the later path, [D39 One engine everywhere][D39]).
 - Product-specific decisions of the consumer apps (for example BirVana's XState and voice ADRs).
 - A server-independent mode: a group keeps working without its original operator, with authority moved
-  to another `node` or shared by all (D104, I60). Must stay possible: authority as duties a `node` holds,
+  to another `node` or shared by all ([D104 The server-independent goal][D104], [I60 Server-independent mode][I60]). Must stay possible: authority as duties a `node` holds,
   acceptance rules any `node` could run, partial data per `node`, catch-up by each writer's progress, signed
-  authorship, membership any member can check, and connectivity apart from acceptance (D105). Learnable in
-  the lab (D101).
+  authorship, membership any member can check, and connectivity apart from acceptance ([D105 What must stay possible][D105]). Learnable in
+  the lab ([D101 Lab and production][D101]).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D101]: 02-decision-log.md#d101
+[D104]: 02-decision-log.md#d104
+[D105]: 02-decision-log.md#d105
+[D13]: 02-decision-log.md#d13
+[D14]: 02-decision-log.md#d14
+[D24]: 02-decision-log.md#d24
+[D3]: 02-decision-log.md#d3
+[D39]: 02-decision-log.md#d39
+[D55]: 02-decision-log.md#d55
+[I60]: ../../issues/0060-server-independent-mode.md

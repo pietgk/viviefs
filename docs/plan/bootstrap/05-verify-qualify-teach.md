@@ -10,7 +10,7 @@ teaching.
 | **Qualify** | Is this claim about the stack or a pattern true? | Numbered gates with retained probes, positive controls, fingerprinted append-only ledger, sequential full run | Before depending on a claim, and whenever its inputs change |
 | **Teach** | Can a human or an LLM learn it from what we wrote? | Concept page, exercise whose solution passes in `verify`, lesson citing gate evidence | Before a pattern counts as delivered |
 
-What separates Verify from Qualify is what a check needs and what it produces, not its speed (D70, ADR-0026 amended
+What separates Verify from Qualify is what a check needs and what it produces, not its speed ([D70 Verify versus qualify][D70], [ADR-0026 Verify - Qualify - Teach][ADR-0026] amended
 2026-09-29). Verify runs every check that needs only the host and changes no file. Qualify records claims in the
 ledger and runs the device and lab legs. A probe's host part is one function both call. There is no third mode;
 `pnpm verify baseline` is the one command that writes the lockfile.
@@ -22,25 +22,25 @@ A pattern is delivered when:
 1. its ADR is **accepted** and links **qualification** evidence,
 2. its exemplar passes **verify**,
 3. it has a guide: concept page, exercise and lesson in the guide template (**accepted** on that guide),
-4. the exemplar links to that teaching material (D29).
+4. the exemplar links to that teaching material ([D29 Teaching is a delivery gate][D29]).
 
 ADR status lifecycle: `proposed, unverified` -> `qualified` (gate evidence linked) -> `accepted`. Acceptance is given
-on the pattern's guide, the teaching material in one guide template, so "taught" is part of it (ADR-0026, amended
-2026-09-29). "Qualified" does not mean "admitted" (complyj ADR 0013).
+on the pattern's guide, the teaching material in one guide template, so "taught" is part of it ([ADR-0026 Verify - Qualify - Teach][ADR-0026], amended
+2026-09-29). "Qualified" does not mean "admitted" (complyj `ADR 0013`).
 
 ## Verify
 
 - One command, `pnpm verify`, staged: `static -> unit -> integration -> ui -> quality`. These stage names are an
-  elaboration of D48' (staged, fail-fast), not a grilling decision.
+  elaboration of [D48' Verify - Qualify - Teach][D48'] (staged, fail-fast), not a grilling decision.
   - static: typecheck (incl. docs samples), lint (boundaries, determinism rules, Schema at every boundary), lint-scope,
     ownership (project tags, one file treatment per production file), skill tree against `skills-lock.json`
-    (ADR-0027), audit.
-  - unit: one Vitest run from the root over every project's unit tests, with coverage (D77); then `exercises`: each
+    ([ADR-0027 Developer experience planes][ADR-0027]), audit.
+  - unit: one Vitest run from the root over every project's unit tests, with coverage ([D77 Coverage producers][D77]); then `exercises`: each
     exercise track's solutions pass and problems fail as expected, without coverage, because teaching material is
     not evidence of production code.
   - integration: one Vitest run over the suites and tests that need a real store or server: log-store and changesets
     suites on each store, the engine suites and the projection suite on sqlite-node and PGlite.
-  - ui: stories with play + a11y (jsdom until P12, D72), Playwright web smoke (from P13).
+  - ui: stories with play + a11y (jsdom until [P12 UI on every platform][P12], [D72 UI on every platform][D72]), Playwright web smoke (from [P13 Links and routing][P13]).
   - quality: production builds, gated JS bundle size, docs site, diagrams, `guides` (every guide in the shape of
     the guide template; ADR and guide statuses, exemplar links and exercise tracks agree), and `evidence`: this
     run's coverage, suites and stories judged against the registry and the evidence lockfile.
@@ -48,10 +48,10 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
 - "Done" is mechanical: green `verify`, with a path rule for docs-only diffs (inherited from web-interview; the
   escape hatch must stay a path rule, not judgment).
 - Never loosen a gate to make it pass. Disputes about a gate go to a human.
-- **Registry** (D75, D76): every production file has one file treatment, the verify step that produces its evidence
+- **Registry** ([D75 Evidence vocabulary][D75], [D76 Eleven file treatments][D76]): every production file has one file treatment, the verify step that produces its evidence
   and the verdict applied, with a rationale. A file is judged only by its owning producer; another producer reaching
-  it is informational. Suites are named `<pattern>/<aspect>` and live with their contract (D80, 04-repo-structure).
-- **Evidence lockfile** (`evidence-baseline.json`, D77): each owning producer's exact per-file coverage, the coverage
+  it is informational. Suites are named `<pattern>/<aspect>` and live with their contract ([D80 Where tests live][D80], 04-repo-structure).
+- **Evidence lockfile** (`evidence-baseline.json`, [D77 Coverage producers][D77]): each owning producer's exact per-file coverage, the coverage
   provider, the registry digest and the bundle-size references. It is a lockfile, not a target: a regression fails,
   and an unrecorded improvement fails until `pnpm verify baseline` records it. Baseline runs every producer three
   times and refuses to write when a tuple differs, because a varying tuple is a flaky test.
@@ -77,22 +77,49 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
 - Bulky artifacts stay out of Git; sanitized, dated evidence records go to `docs/evidence/` (complyj uses
   `docs/implementation/` for the same kind of record).
 - The ledger is a plain file, not datoms: you cannot qualify the log store with evidence stored in the log store.
-- From P09 on, the dated evidence note includes a Review section: reading order, the probe's `Effect.fn` span tree recorded with `Tracer.make`, and a state diagram taken from span attributes. The probe fails when the committed diagram differs from the run. P01-P08 notes stay as they were written. The diagram reviews the probe and is not a second source of the claim.
+- From [P09 Sync][P09] on, the dated evidence note includes a Review section: reading order, the probe's `Effect.fn` span tree recorded with `Tracer.make`, and a state diagram taken from span attributes. The probe fails when the committed diagram differs from the run. [P01 Platform on SDK 58][P01]-[P08 UI three-way prototype][P08] notes stay as they were written. The diagram reviews the probe and is not a second source of the claim.
 
 ## Teach
 
-- **Docs site** (`apps/docs`, Starlight, D59-D61) in the effect.website shape: concept pages (durability, services
+- **Docs site** (`apps/docs`, Starlight, [D59 Starlight docs site][D59]-[D61 Repository pages rendered in place][D61]) in the effect.website shape: concept pages (durability, services
   and ports, workflows vs machines, datoms, changesets, HLC), guides ("add a workflow", "add an activity", "add a
   screen"), ADRs as the why, generated API reference from TSDoc, generated llms.txt. Every sample is type-checked in
   `verify`.
-- **Guides** (D62-D65): one per pattern in `guides/<pattern>/`, in the one guide template; a pattern is accepted on
+- **Guides** ([D62 The shape of a guide][D62]-[D65 Guide inventory and order][D65]): one per pattern in `guides/<pattern>/`, in the one guide template; a pattern is accepted on
   its guide.
 - **Exercises** (`exercises/`, effect.institute spirit): a stub, a failing test, a reference solution that passes in
-  `verify`. Layout and checks in D66; learners run `pnpm exercise <pattern> <NN.MM>` (D85).
-- **Lessons** (D81): one page per idea, ending in its exercise section, with recall before and after and one primary
+  `verify`. Layout and checks in [D66 Exercise tracks][D66]; learners run `pnpm exercise <pattern> <NN.MM>` ([D85 The log-store track][D85]).
+- **Lessons** ([D81 What a lesson is][D81]): one page per idea, ending in its exercise section, with recall before and after and one primary
   source. They cite gate evidence and never become the source of a claim (complyj rule).
-- **Patterns build on each other** (D82): a concept lives in the guide of the pattern whose contract defines it and
-  whose suite checks it; every ADR is named by one guide; gates and ADRs are named, linked references (D86).
+- **Patterns build on each other** ([D82 Patterns build on each other][D82]): a concept lives in the guide of the pattern whose contract defines it and
+  whose suite checks it; every ADR is named by one guide; gates and ADRs are named, linked references ([D86 Named, linked references][D86]).
 - **One source**: docs pages are canonical; AGENTS.md is a short map; skills are thin procedures linking to guides.
 - Key lessons to plan early: the determinism rule, the basis check in changesets, HLC edge cases, "can it ever move?
   then it is a reference", deferreds vs machines, crash and resume seen in the trace.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0026]: ../../adr/0026-verify-qualify-teach.md
+[ADR-0027]: ../../adr/0027-developer-experience-planes.md
+[D29]: 02-decision-log.md#d29
+[D48']: 02-decision-log.md#d48p
+[D59]: 02-decision-log.md#d59
+[D61]: 02-decision-log.md#d61
+[D62]: 02-decision-log.md#d62
+[D65]: 02-decision-log.md#d65
+[D66]: 02-decision-log.md#d66
+[D70]: 02-decision-log.md#d70
+[D72]: 02-decision-log.md#d72
+[D75]: 02-decision-log.md#d75
+[D76]: 02-decision-log.md#d76
+[D77]: 02-decision-log.md#d77
+[D80]: 02-decision-log.md#d80
+[D81]: 02-decision-log.md#d81
+[D82]: 02-decision-log.md#d82
+[D85]: 02-decision-log.md#d85
+[D86]: 02-decision-log.md#d86
+[P01]: 06-qualification-gates.md#p01
+[P08]: 06-qualification-gates.md#p08
+[P09]: 06-qualification-gates.md#p09
+[P12]: 06-qualification-gates.md#p12
+[P13]: 06-qualification-gates.md#p13

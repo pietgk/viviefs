@@ -164,7 +164,7 @@ The fenced right of one device to run an execution, renewed while active.
 Our datom-backed implementation of Effect's `WorkflowEngine`, identical on device and server.
 
 **Worker**:
-The device or server process that runs workflow executions. Temporal vocabulary in D2; not a separate product.
+The device or server process that runs workflow executions. Temporal vocabulary in [D2 Temporal model][D2]; not a separate product.
 
 **Lease epoch**:
 The fencing counter on a lease. Stale epochs' journal writes are rejected.
@@ -194,3 +194,7 @@ Teaching material that cites gate evidence and never becomes the source of a cla
 
 **Exercise**:
 A stub, a failing test and a reference solution that passes in verify.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D2]: 02-decision-log.md#d2

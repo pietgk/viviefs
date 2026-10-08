@@ -11,55 +11,55 @@
 > complete design context for ViViEfs. Then scaffold the repository following the work order in
 > `docs/plan/bootstrap/00-next-session.md`.
 >
-> Treat grilling decisions D1-D58 as accepted design intent, unverified until the named gate passes. Ask before
+> Treat grilling decisions [D1 A reference stack][D1]-[D58 Envelope per changeset][D58] as accepted design intent, unverified until the named gate passes. Ask before
 > deviating from a grilling decision; record any deviation as an ADR amendment.
 >
-> Elaborations (fourteen numbered gates as splits of D46's six themes, verify stage names, indicative schema and
+> Elaborations (fourteen numbered gates as splits of [D46 Spikes are gates][D46]'s six themes, verify stage names, indicative schema and
 > attribute names, lib and generator names) are recorded here so scaffolding is not invented twice, but they are
 > not grilling decisions. Follow the freeze / named-slot / hypothesis split in
-> `docs/plan/bootstrap/10-open-items-and-risks.md`. Do not pin attribute names (D44).
+> `docs/plan/bootstrap/10-open-items-and-risks.md`. Do not pin attribute names ([D44 Never rename, never migrate][D44]).
 
 ## Work order
 
 Each step ends with a commit. Stop and report after step 5 before starting gate work (process suggestion, not a
 grilling decision).
 
-1. **Toolchain plane** (D49)
+1. **Toolchain plane** ([D49 Three developer-experience planes][D49])
    - `mise.toml` pinning Node (>= 22.13, required by Expo SDK 58), pnpm, Bun (for motel).
    - `.agents/skills/` vendored skills with `skills-lock.json`. Copy the mechanism from complyj. The list
      (grilling, tdd, domain-modeling, codebase-design, writing-for-agents, scaffold-exercises, motel-debug) is
-     inherited DX: only scaffold-exercises (D29) and motel-debug (D45') were named in the grilling.
-   - `AGENTS.md` as a short map pointing into docs (D30). `CLAUDE.md` pointing at `AGENTS.md` is an inherited
+     inherited DX: only scaffold-exercises ([D29 Teaching is a delivery gate][D29]) and motel-debug ([D45' Telemetry sink pattern][D45']) were named in the grilling.
+   - `AGENTS.md` as a short map pointing into docs ([D30 One source for humans and agents][D30]). `CLAUDE.md` pointing at `AGENTS.md` is an inherited
      agent convention, not a grilling decision.
-2. **Glossary and ADRs** (D27)
+2. **Glossary and ADRs** ([D27 Bootstrap output][D27])
    - `CONTEXT.md` from [07-glossary-seed.md](07-glossary-seed.md).
    - `docs/adr/` with the template from complyj (expected vs observed outcome, failure handling, evidence links)
      and the ADRs in [08-adr-backlog.md](08-adr-backlog.md). Every ADR starts as "Proposed, unverified" and names
      the gate that will qualify it.
-3. **Nx workspace skeleton** (D52-D57)
+3. **Nx workspace skeleton** ([D52 Four project kinds][D52]-[D57 Where docs and exercises live][D57])
    - pnpm workspaces + Nx current TypeScript setup (TS project references, `package.json` `exports`, no path
      aliases), Nx sync generators, inferred tasks.
    - Empty tagged projects matching [04-repo-structure.md](04-repo-structure.md), with `@nx/enforce-module-boundaries`
      rules for `kind:`, `layer:`, `platform:`. A lint-scope meta check that fails when a file escapes lint.
-   - Ownership registry: every `project.json` declares tags and its evidence owner (D48').
-4. **Verify gate** (D48')
-   - `tools/verify`: staged `static -> unit -> integration -> ui -> quality` (elaboration of D48', not a grilling
+   - Ownership registry: every `project.json` declares tags and its evidence owner ([D48' Verify - Qualify - Teach][D48']).
+4. **Verify gate** ([D48' Verify - Qualify - Teach][D48'])
+   - `tools/verify`: staged `static -> unit -> integration -> ui -> quality` (elaboration of [D48' Verify - Qualify - Teach][D48'], not a grilling
      decision), fail fast between stages, help text generated from the executed table. Adapt from web-interview
      `scripts/verify.ts`.
    - Vitest + `@effect/vitest` as the only unit and integration test runner. Storybook, Maestro and Playwright
-     remain other layers (D48'). GitHub Actions running `verify`. No retries.
-5. **Qualification harness** (D46, D48')
+     remain other layers ([D48' Verify - Qualify - Teach][D48']). GitHub Actions running `verify`. No retries.
+5. **Qualification harness** ([D46 Spikes are gates][D46], [D48' Verify - Qualify - Teach][D48'])
    - Copy and adapt `tools/qualification` from complyj: gate table as code, append-only fingerprinted ledger,
-     positive controls, sequential full run. Register gates P01-P14 from
-     [06-qualification-gates.md](06-qualification-gates.md) as "not run". P01-P10 are the foundation stage (D46's
-     six themes split into independently failable probes). P11-P14 are follow-on, not foundation closure.
-6. **Gates in order** (D46): P01-P03 platform, then P04-P05 log store, then P06-P07 engine, then P08 UI prototype, then
-   P09 sync, then P10 trace projection (then P11-P14). iOS, Android and web are first-class: P01, P02 and P07 fail
+     positive controls, sequential full run. Register gates [P01 Platform on SDK 58][P01]-[P14 Quarantine after a lost lease][P14] from
+     [06-qualification-gates.md](06-qualification-gates.md) as "not run". [P01][P01]-[P10 Trace projection][P10] are the foundation stage ([D46 Spikes are gates][D46]'s
+     six themes split into independently failable probes). [P11 Identity][P11]-[P14][P14] are follow-on, not foundation closure.
+6. **Gates in order** ([D46 Spikes are gates][D46]): [P01 Platform on SDK 58][P01]-[P03 OTLP and motel][P03] platform, then [P04 Log store conformance][P04]-[P05 Changesets and projections][P05] log store, then [P06 Workflow engine crash matrix][P06]-[P07 Device resume E2E][P07] engine, then [P08 UI three-way prototype][P08] UI prototype, then
+   [P09 Sync][P09] sync, then [P10 Trace projection][P10] trace projection (then [P11 Identity][P11]-[P14 Quarantine after a lost lease][P14]). iOS, Android and web are first-class: [P01][P01], [P02 SQLite drivers][P02] and [P07][P07] fail
    if the Android emulator fails. Each gate's probe becomes the first exemplar of its pattern.
-   Order after foundation closure (agreed 2026-09-27): P11, then step 7, then the quarantine grilling and its gate
-   (D15; see [10-open-items-and-risks.md](10-open-items-and-risks.md)), then P12-P14. A physical-device run on
+   Order after foundation closure (agreed 2026-09-27): [P11][P11], then step 7, then the quarantine grilling and its gate
+   ([D15 Server authority after a lost lease][D15]; see [10-open-items-and-risks.md](10-open-items-and-risks.md)), then [P12 UI on every platform][P12]-[P14][P14]. A physical-device run on
    iOS and Android comes before the first consumer app.
-7. **Docs and teaching skeleton** (D28, D29, D57): `apps/docs` with a static docs generator (Starlight assumed,
+7. **Docs and teaching skeleton** ([D28 Docs site like effect.website][D28], [D29 Teaching is a delivery gate][D29], [D57 Where docs and exercises live][D57]): `apps/docs` with a static docs generator (Starlight assumed,
    confirm in this step), type-checked samples, generated llms.txt, `exercises/` with the scaffold-exercises layout.
    A pattern is delivered only when it has an accepted ADR with evidence, a green exemplar, a concept page, an
    exercise, a lesson, and a link from the exemplar to that teaching material.
@@ -72,3 +72,33 @@ grilling decision).
   SDK 58 beta, then stable when it lands.
 - Keep the repo licence Apache-2.0. Check licences of everything added (derived from choosing Apache-2.0;
   PowerSync service is FSL, Inngest server is SSPL, Restate is BUSL: none of these are in the plan).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D1]: 02-decision-log.md#d1
+[D15]: 02-decision-log.md#d15
+[D27]: 02-decision-log.md#d27
+[D28]: 02-decision-log.md#d28
+[D29]: 02-decision-log.md#d29
+[D30]: 02-decision-log.md#d30
+[D44]: 02-decision-log.md#d44
+[D45']: 02-decision-log.md#d45p
+[D46]: 02-decision-log.md#d46
+[D48']: 02-decision-log.md#d48p
+[D49]: 02-decision-log.md#d49
+[D52]: 02-decision-log.md#d52
+[D57]: 02-decision-log.md#d57
+[D58]: 02-decision-log.md#d58
+[P01]: 06-qualification-gates.md#p01
+[P02]: 06-qualification-gates.md#p02
+[P03]: 06-qualification-gates.md#p03
+[P04]: 06-qualification-gates.md#p04
+[P05]: 06-qualification-gates.md#p05
+[P06]: 06-qualification-gates.md#p06
+[P07]: 06-qualification-gates.md#p07
+[P08]: 06-qualification-gates.md#p08
+[P09]: 06-qualification-gates.md#p09
+[P10]: 06-qualification-gates.md#p10
+[P11]: 06-qualification-gates.md#p11
+[P12]: 06-qualification-gates.md#p12
+[P14]: 06-qualification-gates.md#p14

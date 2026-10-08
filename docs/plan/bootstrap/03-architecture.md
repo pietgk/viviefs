@@ -36,7 +36,7 @@ flowchart TD
   API -.->|"reviewer: deferred completion (D40)"| SLOG
 ```
 
-The diagram is simplified: commands go through the shared command function and outbox (D36), not a raw write to the log. The reviewer's path is a second actor on the server that writes a deferred-completion datom (D40); it is shown as a dashed edge.
+The diagram is simplified: commands go through the shared command function and outbox ([D36 Shared commands][D36]), not a raw write to the log. The reviewer's path is a second actor on the server that writes a deferred-completion datom ([D40 Server-side human steps][D40]); it is shown as a dashed edge.
 
 ## 2. The datom
 
@@ -53,7 +53,7 @@ The diagram is simplified: commands go through the shared command function and o
 Each datom is its own transaction (one datom on the wire and in storage). Atomicity across several datoms comes
 from changesets (section 4).
 
-Every changeset has exactly one **envelope** (D58): actor, device, lease epoch (if any), `traceId` / `spanId` /
+Every changeset has exactly one **envelope** ([D58 Envelope per changeset][D58]): actor, device, lease epoch (if any), `traceId` / `spanId` /
 `sampled`, command name. The changeset is the unit of intent (one command, one actor, one trace), so the envelope is
 **keyed by `cs`, always, with one mechanism whatever the changeset size**:
 
@@ -81,7 +81,7 @@ correctedClock():
 
 - Encoding: 48-bit milliseconds, 16-bit counter, remaining bits random plus device id. Lexicographically sortable.
 - Server rejects `tx` too far in the future and flags the gap so it shows up in the trace. The skew bound is
-  indicative (web-interview used 5s); P04 picks the actual bound.
+  indicative (web-interview used 5s); [P04 Log store conformance][P04] picks the actual bound.
 - The offset and last HLC are persisted in SQLite.
 
 ## 4. Changesets (D35'')
@@ -94,12 +94,12 @@ correctedClock():
 ```
 
 - **Lifecycle**: a changeset is open until a write-once commit or abort datom (attribute names illustrative until
-  the P05 vocabulary pass), or TTL expiry. Open changesets are drafts (review-before-apply is native).
-- **Manifest**: the commit carries the member count and hash (and file references, D43). The server and every
+  the [P05 Changesets and projections][P05] vocabulary pass), or TTL expiry. Open changesets are drafts (review-before-apply is native).
+- **Manifest**: the commit carries the member count and hash (and file references, [D43 Files by content hash][D43]). The server and every
   projector apply the changeset only when the manifest is satisfied.
 - **Ordering**: conflicts use the commit `tx` (when the change took effect). Member `tx` orders within the changeset.
 - **Basis check**: the commit records the log position it was built on. For every touched attribute the server
-  checks changes after the basis and applies that attribute's policy (D34): LWW wins, write-once rejects, human
+  checks changes after the basis and applies that attribute's policy ([D34 Per-attribute conflict policies][D34]): LWW wins, write-once rejects, human
   conflict raises a conflict datom.
 - **Views**: committed (everyone) and committed + my open changesets (the author's draft view).
 - **Shorthand**: `cs == tx` is self-committed and needs no commit datom.
@@ -126,7 +126,7 @@ Declared per attribute in the feature model Schema:
 |---|---|---|
 | LWW | domain scalars (title, note, amount) | highest commit `tx` wins |
 | write-once, fenced | journal facts, deferred completions, lease grants, changeset commit/abort | first valid write under a valid lease wins, others rejected |
-| human conflict | references, evidence attachments, approvals, user content | both values kept, a conflict datom raised (attribute name illustrative until the P05 vocabulary pass), a person resolves |
+| human conflict | references, evidence attachments, approvals, user content | both values kept, a conflict datom raised (attribute name illustrative until the [P05 Changesets and projections][P05] vocabulary pass), a person resolves |
 
 ## 7. Commands and validation (D36)
 
@@ -140,26 +140,26 @@ client on reject: rebuild read models from confirmed datoms, reapply remaining o
 
 ## 8. Storage and projections (D37)
 
-- SQLite (device, Node) and Postgres (server) share one contract through Effect `SqlClient`. D58 decided a
-  `changesets` table for envelopes. Other table and column names below are **indicative** until P04 confirms them:
+- SQLite (device, Node) and Postgres (server) share one contract through Effect `SqlClient`. [D58 Envelope per changeset][D58] decided a
+  `changesets` table for envelopes. Other table and column names below are **indicative** until [P04 Log store conformance][P04] confirms them:
   - `datoms(e, a, v, tx, op, cs)` append-only, indexes EAVT and AEVT (and on `cs`).
   - `changesets(cs, state, commit_tx, basis, manifest, actor, device, lease_epoch, trace_id, span_id, sampled,
     command)`: one row per changeset, including self-committed datoms (`cs == tx`).
   - typed read-model tables per entity type, Schema-defined, updated incrementally inside the same SQL
     transaction that applies a committed changeset.
   - `sync_cursor`, `hlc_state`, `outbox`.
-- Read models are disposable: rebuild from the log at any time; never migrated (D44).
+- Read models are disposable: rebuild from the log at any time; never migrated ([D44 Never rename, never migrate][D44]).
 - Snapshots and compaction only past a horizon every device has acknowledged; finished workflow journals archived
   to the server.
 - Analytics: a projector exports to Parquet / DuckLake for DuckDB. DuckDB is never the durable log.
 - Log store is one Effect service with implementations `sqliteNative` (op-sqlite), `sqliteWasm` (OPFS),
-  `sqliteNode`, `postgres`, all passing the same conformance suite (optionally `sqlcipher`, D50).
+  `sqliteNode`, `postgres`, all passing the same conformance suite (optionally `sqlcipher`, [D50 Data at rest on device][D50]).
 
 ## 9. The durable execution engine (D10, D39, D40, D24)
 
 Our implementation of Effect's `WorkflowEngine.Encoded` interface (`register, execute, poll, interrupt, resume,
 activityExecute, deferredResult, deferredDone, scheduleClock`, see research/01 section 2) that stores everything as
-datoms. Attribute names in this table were pinned by P06 (D44: a shipped name cannot be renamed). Id shapes
+datoms. Attribute names in this table were pinned by [P06 Workflow engine crash matrix][P06] ([D44 Never rename, never migrate][D44]: a shipped name cannot be renamed). Id shapes
 (`O{org}/W{exec}`, `/A{name}#{attempt}`, `/D{name}`, `/C{name}`) were decided.
 
 | Engine fact | Datom |
@@ -172,11 +172,11 @@ datoms. Attribute names in this table were pinned by P06 (D44: a shipped name ca
 | execution result | `[O{org}/W{exec} viviefs/workflow/result <encoded Exit>]` |
 
 - **Replay**: re-run the workflow body; `activityExecute` returns the stored exit when present.
-- **Determinism**: time, randomness and ids only inside activities (lint rule D26).
+- **Determinism**: time, randomness and ids only inside activities (lint rule [D26 AI-robust guardrails][D26]).
 - **Versioning**: by workflow name; activity names unique and stable within a version.
 - **Wake-ups**: sweep due clocks and pending resumes on launch and foreground; opportunistic background task;
   notification actions complete deferreds; push from the server is only a hint.
-- **Browser**: Web Locks leader tab runs the engine (D25). Other tabs render and forward events to the leader over
+- **Browser**: Web Locks leader tab runs the engine ([D25 Browser engine leader][D25]). Other tabs render and forward events to the leader over
   BroadcastChannel. Each browser profile counts as one device for leases.
 - **Server**: same engine over Postgres; Effect Cluster is the scale-out path later.
 - **Leases**: a device must hold the execution lease to run it; the server rejects journal writes from a stale epoch.
@@ -189,22 +189,22 @@ sleeps up to 60s run in memory.
 
 - **Up**: outbox of datoms (self-committed and changeset members + commits), idempotent by `tx`.
 - **Down**: one cursor stream (server sequence) of accepted datoms for the whole organization the identity is a
-  member of. Prefix subscriptions (partial sync) are later, not part of P09.
+  member of. Prefix subscriptions (partial sync) are later, not part of [P09 Sync][P09].
 - **Server**: validates per changeset (section 7), enforces leases, rejects unknown attributes with a typed upgrade
-  error (D44). Isolation is server-authoritative (D18).
-- **Transport**: Effect RPC, append-and-acknowledge (Q21). P09 confirms this; do not list HttpApi/SSE/WebSocket as
+  error ([D44 Never rename, never migrate][D44]). Isolation is server-authoritative ([D18 Organization isolation on the server][D18]).
+- **Transport**: Effect RPC, append-and-acknowledge (Q21). [P09 Sync][P09] confirms this; do not list HttpApi/SSE/WebSocket as
   alternatives in the protocol.
-- **Later, because the replica is the whole org** (not P09): history consolidation (a device cannot keep an
-  unbounded org log; sits next to D37's compaction horizon) and client-side data access (the user must still only
+- **Later, because the replica is the whole org** (not [P09 Sync][P09]): history consolidation (a device cannot keep an
+  unbounded org log; sits next to [D37 Log store tables][D37]'s compaction horizon) and client-side data access (the user must still only
   see and do what they are allowed, on a replica that contains the org).
 - Effect EventLog informed the design (server sequence + entry-id dedup) but is not used (research/03).
 
 ## 11. Tracing (D32, D45')
 
-- Trace context (`traceId`, `spanId`, `sampled`) is stored in every changeset's envelope (D58).
+- Trace context (`traceId`, `spanId`, `sampled`) is stored in every changeset's envelope ([D58 Envelope per changeset][D58]).
 - A trace projector reads the log from its own cursor and emits spans with deterministic ids derived from
-  `executionId + activity + attempt` (D32). Extending that scheme to changeset ids for commands is new, not
-  grilled; keep it only if P10 needs command spans, otherwise drop it. Replays emit nothing new for stored results;
+  `executionId + activity + attempt` ([D32 Traces derived from the log][D32]). Extending that scheme to changeset ids for commands is new, not
+  grilled; keep it only if [P10 Trace projection][P10] needs command spans, otherwise drop it. Replays emit nothing new for stored results;
   new attempts link to previous ones.
 - Export through Effect's native OTLP exporter (`effect/observability`, JSON serialization, `fetch`), no
   `@opentelemetry/*` dependencies. Killed apps lose nothing: export resumes from the cursor.
@@ -214,7 +214,7 @@ sleeps up to 60s run in memory.
 ## 12. UI (D11, D12, D41, D42)
 
 - Three state owners: domain facts (log -> read models -> query atoms), interaction state (machine or atom, decided
-  by gate P08), in-flight text (component state until settled).
+  by gate [P08 UI three-way prototype][P08]), in-flight text (component state until settled).
 - Screens are pure views over a screen-view selector (read model + UI state + status). Storybook with fakes, scoped
   to web and shared components.
 - Query atoms declare Reactivity keys (prefixes + attributes); the projector invalidates exactly what changed.
@@ -236,4 +236,26 @@ sleeps up to 60s run in memory.
   plugin in `apps/evidence-mobile/babel.config.js` stubs it.
 - Prefer deep imports (`effect/Effect`) or Expo tree shaking: the barrel adds about 2.7 MB to an iOS bundle, deep
   imports about 0.6 MB.
-- All of this was measured on SDK 56 / RN 0.85 and must be rerun on SDK 58 (gate P01).
+- All of this was measured on SDK 56 / RN 0.85 and must be rerun on SDK 58 (gate [P01 Platform on SDK 58][P01]).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D18]: 02-decision-log.md#d18
+[D25]: 02-decision-log.md#d25
+[D26]: 02-decision-log.md#d26
+[D32]: 02-decision-log.md#d32
+[D34]: 02-decision-log.md#d34
+[D36]: 02-decision-log.md#d36
+[D37]: 02-decision-log.md#d37
+[D40]: 02-decision-log.md#d40
+[D43]: 02-decision-log.md#d43
+[D44]: 02-decision-log.md#d44
+[D50]: 02-decision-log.md#d50
+[D58]: 02-decision-log.md#d58
+[P01]: 06-qualification-gates.md#p01
+[P04]: 06-qualification-gates.md#p04
+[P05]: 06-qualification-gates.md#p05
+[P06]: 06-qualification-gates.md#p06
+[P08]: 06-qualification-gates.md#p08
+[P09]: 06-qualification-gates.md#p09
+[P10]: 06-qualification-gates.md#p10

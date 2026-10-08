@@ -68,16 +68,16 @@ Source: read-only survey of the repo.
 - ADR status is separate from verification status ("proposed, unverified" -> "selected" with evidence; "qualified
   does not mean admitted"). ADR template has expected vs observed outcome sections.
 - Lessons (`docs/teaching/L01..L07`) cite evidence and never become the source of a claim.
-- DX as architecture (ADR 0012): three planes (agent context, host toolchain, runtime), each with one source of
+- DX as architecture (`ADR 0012`): three planes (agent context, host toolchain, runtime), each with one source of
   truth; a tool is admitted only for a measured gap.
-- Apple Container 1.2.2 is the qualified local runtime (ADR 0007, 0010). Jaeger runs in it on port 31686
+- Apple Container 1.2.2 is the qualified local runtime (`ADR 0007`, 0010). Jaeger runs in it on port 31686
   (`tools/qualification/resources.ts:164`), with non-durable storage.
 
 ## 3. vivief (`~/ws/vivief`): predecessor concepts
 
 - "Vision View Effect": a working code-analysis tool (DevAC) plus a platform vision.
 - Concepts (`docs/contract/vivief-concepts-v6.md`): Datom, Projection, Surface, Contract, effectHandler.
-- Datoms `[E,A,V,Tx,Op]`, append-only, schema as datoms, provenance on the tx entity. ADR 0047 uses ULIDs for `e` and
+- Datoms `[E,A,V,Tx,Op]`, append-only, schema as datoms, provenance on the tx entity. `ADR 0047` uses ULIDs for `e` and
   `tx`, LWW on highest `tx` for scalars, `:contract/conflict` datoms for ref conflicts that need a human.
 - Effect handlers `(state, intent) => (state', [intent'])`, implemented as code, LLM, XState or hybrid, with crashes
   recorded as datoms.
@@ -89,7 +89,7 @@ Source: read-only survey of the repo.
 ## 4. BirVana (`~/ws/app/pietgk`): the app that started the question
 
 - Expo SDK 56 / RN 0.85 app, on-device LLM, expo-sqlite behind ports, XState v5 actors orchestrate sessions
-  (ADR 0014), one mic-owning voice actor (ADR 0017), agent-device drives and Maestro owns E2E (ADR 0010).
+  (`ADR 0014`), one mic-owning voice actor (`ADR 0017`), agent-device drives and Maestro owns E2E (`ADR 0010`).
 - `research/durable-execution.md` (2026-09-07) compares Temporal, Restate, DBOS, Inngest, Step Functions and Azure DF
   by how durability is achieved (replay, journaled RPC, checkpoints, memoisation, state transitions) and names the
   seam agent frameworks lack: durable timers, auto-recovery, in-flight versioning.
