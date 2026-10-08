@@ -8,7 +8,7 @@ fixes the vocabulary the stack uses. It defines terms only; scope lives in
 ADR wins and this file is corrected.
 
 Every definition starts with one plain sentence that someone outside software
-can follow (D94). The docs site shows that sentence when a term is hovered and
+can follow ([D94 A glossary a newcomer can read][D94]). The docs site shows that sentence when a term is hovered and
 links the first use of each term on a page to its entry here; the rest of a
 definition is the precise meaning, for people and agents who need it.
 
@@ -19,21 +19,21 @@ The project these docs describe: people and AI agents building apps together,
 and the proven parts those apps are built from, where tests prove what we built
 and learners show whether we explained it well, so each new app starts from
 what is proven. Vision - View - Effects: what we intend, what we show, and what
-actually happens (ADR-0032). What ViViEfs builds is the reference stack and its
-repository (ADR-0002), and the consumer apps built on it live there too (D55').
+actually happens ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]). What ViViEfs builds is the reference stack and its
+repository ([ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002]), and the consumer apps built on it live there too ([D55' Consumer apps live here][D55']).
 What it is about is app creation, in one language people and agents read the
-same way: gates verify what we built, learning verifies the language (D96).
+same way: gates verify what we built, learning verifies the language ([D96 Two verifications][D96]).
 Today its apps are an Expo app (phone and web) and a Node.js server, which
-holds authority for every organization (D103). Successor in spirit to vivief.
+holds authority for every organization ([D103 Nodes and authority][D103]). Successor in spirit to vivief.
 
 **App creation**:
 Building apps, and the proven parts and tools later apps are built with, by
 people and AI agents together; using a part in a real app is how it gets
 better. It is
-what ViViEfs is about (D95, ADR-0032): what we build is checked by gates, and
+what ViViEfs is about ([D95 App creation][D95], [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]): what we build is checked by gates, and
 how we explained it is checked by whether others can learn it. vivief's broader
 `Creation` (everything humans, AI and systems make) is not adopted. A tool,
-such as `verify`, is an app for the people and agents building apps (D102).
+such as `verify`, is an app for the people and agents building apps ([D102 Tools are apps][D102]).
 _Avoid_: creation (alone, for this meaning)
 
 **Pattern**:
@@ -59,7 +59,7 @@ _Avoid_: adapter (reserved for the `layer:adapter` tag), plugin
 **Reference implementation**:
 The simplest way of keeping a pattern's contract, which every other way must
 agree with. For the Presenter, SQLite read models with query atoms: every
-implementation returns its frame for the same query at the same `tx` (D110).
+implementation returns its frame for the same query at the same `tx` ([D110 The reference implementation][D110]).
 It changes only by decision; the default an app gets can differ.
 
 **Builds on**:
@@ -96,10 +96,10 @@ _Avoid_: application package, shell
 **Server**:
 The program that decides which changes count for an organization. It accepts
 or rejects every change, orders the accepted ones, grants membership and fences
-leases; together these duties are its authority (D103). It is a `node` like a
+leases; together these duties are its authority ([D103 Nodes and authority][D103]). It is a `node` like a
 device, one that holds authority. Today one server holds all of these duties
 for every organization; they could later be split across `node`s or shared by
-all (D104, I60).
+all ([D104 The server-independent goal][D104], [I60 Server-independent mode][I60]).
 
 **Feature**:
 One piece of what the app does for its users, such as collecting evidence,
@@ -115,7 +115,7 @@ _Avoid_: util, common, shared
 **Effect**:
 The TypeScript library this whole stack is written with; it makes errors,
 dependencies and side effects visible in the types. Effect v4, pinned to one
-exact version for `effect` and every `@effect` package (ADR-0003).
+exact version for `effect` and every `@effect` package ([ADR-0003 Effect v4 as the backbone][ADR-0003]).
 
 **Service**:
 A named capability that code asks for instead of building it itself, such as
@@ -150,12 +150,12 @@ _Avoid_: object, document
 An id worked out from what identifies a thing, so every copy gets the same id
 without asking anyone. Used wherever every copy must compute the same id: a
 membership `M{person}`, an account `A{sha256(iss, sub)}`, journal entries,
-entity-keyed ids. Other id segments are minted by the HLC's encoder (D120).
+entity-keyed ids. Other id segments are minted by the HLC's encoder ([D120 Minted and derived id segments][D120]).
 
 **Attribute**:
 A named kind of fact, such as "title", with a fixed type. Namespaced, typed by
 a value Schema in the catalog that each store maps to its column type
-(D121), with a declared conflict policy; never renamed or retyped.
+([D121 Attribute value types][D121]), with a declared conflict policy; never renamed or retyped.
 _Avoid_: field, column
 
 **Defining attribute**:
@@ -196,19 +196,19 @@ _Avoid_: headers, metadata datoms
 Where the content of a change came from: a person, a mail account, a website,
 a model. Named in the envelope as a reference to an origin entity, apart from
 the actor who committed the change; an enriching change also names its
-inputs' origins (D58', D115). Not the causing span, which is the step that
+inputs' origins ([D58' Envelope names the origin][D58'], [D115 Origin trust][D115]). Not the causing span, which is the step that
 caused a write.
 
 **Origin trust**:
 How far an organization trusts what came from one origin, so trust can be
 withdrawn from a source and everything it produced at once. Datoms on the
 origin entity; a value's trust is derived when it is read, the least trusted of
-its origin and its inputs' origins (D115, ADR-0034).
+its origin and its inputs' origins ([D115 Origin trust][D115], [ADR-0034 Origin trust][ADR-0034]).
 
 **Trust level**:
 How far a value can be relied on, from revoked to verified. Five ordered
 levels: `revoked`, `untrusted`, `unreviewed`, `trusted`, `verified`; set per
-origin by authority, with defaults per kind of origin (D116).
+origin by authority, with defaults per kind of origin ([D116 Trust levels and who sets them][D116]).
 _Avoid_: trust score
 
 **actor**:
@@ -225,7 +225,7 @@ _Avoid_: timestamp, received time
 The clock that puts every fact in order, even on phones that are offline or
 have the wrong time. A hybrid logical clock `(pt, c)` that mints every `tx`:
 physical time corrected against the `node` holding authority (today the
-server, D119) plus a tie-break counter.
+server, [D119 Time corrected by authority][D119]) plus a tie-break counter.
 _Avoid_: timestamp, version
 
 **Conflict policy**:
@@ -252,24 +252,24 @@ models, declaring its invalidation keys.
 What a screen asks for data, and what keeps the answer up to date. A pattern:
 a query written as data goes in, a frame comes out; its implementations range
 from the reference (SQL over read models) to columnar copies and gathering
-from outside sources (D107, ADR-0033).
+from outside sources ([D107 The Presenter pattern][D107], [ADR-0033 The Presenter pattern][ADR-0033]).
 _Avoid_: projection (deriving a store from the log), view
 
 **Frame**:
 The rows a screen shows, with typed columns, where each value came from and
 how fresh it is. A Presenter's result; one entity is a one-row frame, and its
-status says fresh, gathering, remote or failed (D109).
+status says fresh, gathering, remote or failed ([D109 Frame and frame subscription][D109]).
 _Avoid_: data frame, result set
 
 **Frame subscription**:
 A screen's live hold on a frame, updated as new facts are committed and ending
-when the screen closes (D109).
+when the screen closes ([D109 Frame and frame subscription][D109]).
 _Avoid_: subscription (alone), live query
 
 **Enrichment**:
 Adding to the log what it cannot work out itself: content fetched from
 outside, or a model's judgment. Written as an ordinary changeset naming its
-origin, so a rebuild shows the same result (D111).
+origin, so a rebuild shows the same result ([D111 Faster and enriching implementations][D111]).
 
 **Screen-view selector**:
 The step that decides exactly what one screen shows, from the data and what
@@ -342,7 +342,7 @@ An id another system gives a thing, such as the KvK number the Dutch Chamber
 of Commerce gives a company. It belongs to its scheme, and within that scheme
 it identifies exactly one thing. Stored as an ordinary attribute that travels
 with its entity; an attribute may declare `unique: 'per-organization'`, checked
-when a changeset is accepted (D122).
+when a changeset is accepted ([D122 External identifiers][D122]).
 
 **Crypto-shredding**:
 Erasing someone's personal data by destroying the key that unlocks it, so the
@@ -378,7 +378,7 @@ _Avoid_: login state, identity
 
 **Device**:
 One installation of an app, on one phone or in one browser. It is the `node`
-a person uses (D103), and it keeps one local
+a person uses ([D103 Nodes and authority][D103]), and it keeps one local
 replica per provider account that signed in on it; its id is chosen by the
 device and not authenticated.
 _Avoid_: client, peer
@@ -483,7 +483,7 @@ on the server. Our datom-backed implementation of Effect's `WorkflowEngine`.
 
 **Worker**:
 The phone or server program that runs workflows. The device or server process
-that runs workflow executions; Temporal vocabulary in D2, not a separate
+that runs workflow executions; Temporal vocabulary in [D2 Temporal model][D2], not a separate
 product.
 
 ## Tracing
@@ -546,7 +546,7 @@ _Avoid_: assumption, fact (for a claim not yet proven)
 
 **Gate**:
 A numbered check that proves one claim, and can fail if the claim is false. Its
-id starts with P, for proof (P04); it runs a retained, rerunnable probe.
+id starts with P, for proof ([P04 Log store conformance][P04]); it runs a retained, rerunnable probe.
 
 **Probe**:
 The program a gate runs to test its claim, kept so it can run again. Retained,
@@ -656,3 +656,32 @@ _Avoid_: module, unit (of a course)
 **Exercise**:
 A small piece of code to fix yourself, with a check that tells you when it is
 right. A stub, a failing test and a reference solution that passes in verify.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0002]: docs/adr/0002-purpose-scope-and-exemplar.md
+[ADR-0003]: docs/adr/0003-effect-v4-as-backbone.md
+[ADR-0032]: docs/adr/0032-what-viviefs-is-about.md
+[ADR-0033]: docs/adr/0033-the-presenter-pattern.md
+[ADR-0034]: docs/adr/0034-origin-trust.md
+[D102]: docs/plan/bootstrap/02-decision-log.md#d102
+[D103]: docs/plan/bootstrap/02-decision-log.md#d103
+[D104]: docs/plan/bootstrap/02-decision-log.md#d104
+[D107]: docs/plan/bootstrap/02-decision-log.md#d107
+[D109]: docs/plan/bootstrap/02-decision-log.md#d109
+[D110]: docs/plan/bootstrap/02-decision-log.md#d110
+[D111]: docs/plan/bootstrap/02-decision-log.md#d111
+[D115]: docs/plan/bootstrap/02-decision-log.md#d115
+[D116]: docs/plan/bootstrap/02-decision-log.md#d116
+[D119]: docs/plan/bootstrap/02-decision-log.md#d119
+[D120]: docs/plan/bootstrap/02-decision-log.md#d120
+[D121]: docs/plan/bootstrap/02-decision-log.md#d121
+[D122]: docs/plan/bootstrap/02-decision-log.md#d122
+[D2]: docs/plan/bootstrap/02-decision-log.md#d2
+[D55']: docs/plan/bootstrap/02-decision-log.md#d55p
+[D58']: docs/plan/bootstrap/02-decision-log.md#d58p
+[D94]: docs/plan/bootstrap/02-decision-log.md#d94
+[D95]: docs/plan/bootstrap/02-decision-log.md#d95
+[D96]: docs/plan/bootstrap/02-decision-log.md#d96
+[I60]: docs/issues/0060-server-independent-mode.md
+[P04]: docs/plan/bootstrap/06-qualification-gates.md#p04

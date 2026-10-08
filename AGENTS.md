@@ -2,7 +2,7 @@
 
 This file is a map. Canonical content lives in the linked docs. Use the terms in
 `GLOSSARY.md`; do not drift to the synonyms it rejects. Skills are thin procedures
-that link to guides, not a second copy of those guides (D30).
+that link to guides, not a second copy of those guides ([D30 One source for humans and agents][D30]).
 
 ## Read before working
 
@@ -10,15 +10,15 @@ that link to guides, not a second copy of those guides (D30).
 2. [`docs/adr/README.md`](docs/adr/README.md) - decisions. Status `Proposed, unverified`
    until the named gate qualifies them.
 3. [`docs/plan/bootstrap/README.md`](docs/plan/bootstrap/README.md) - complete design
-   context (D1-D94). Treat grilling decisions as accepted intent, unverified until
+   context ([D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94]). Treat grilling decisions as accepted intent, unverified until
    the named gate. Ask before deviating; record a deviation as an ADR amendment.
 4. [`docs/plan/bootstrap/10-open-items-and-risks.md`](docs/plan/bootstrap/10-open-items-and-risks.md) -
-   freeze / named-slot / hypothesis, and the Schedule. P05 pinned `viviefs/changeset/*` and
-   `evidence/*` names; P06 pinned `viviefs/workflow/*`, `viviefs/activity/exit`,
+   freeze / named-slot / hypothesis, and the Schedule. [P05 Changesets and projections][P05] pinned `viviefs/changeset/*` and
+   `evidence/*` names; [P06 Workflow engine crash matrix][P06] pinned `viviefs/workflow/*`, `viviefs/activity/exit`,
    `viviefs/deferred/exit`, `viviefs/clock/wake-at` and `viviefs/lease/holder`;
-   P10 pinned `viviefs/activity/started`; P11 pinned `viviefs/membership/granted`,
+   [P10 Trace projection][P10] pinned `viviefs/activity/started`; [P11 Identity][P11] pinned `viviefs/membership/granted`,
    `viviefs/account/person`, `viviefs/account/issuer` and `viviefs/account/subject`.
-   Do not rename them (D44).
+   Do not rename them ([D44 Never rename, never migrate][D44]).
 5. [`docs/plan/bootstrap/06-qualification-gates.md`](docs/plan/bootstrap/06-qualification-gates.md) -
    ordered gates and how gates, steps and other work are named. No feature code
    before its gate passes. Probes and exemplars stay.
@@ -30,7 +30,7 @@ The current handover is [`docs/plan/next-session.md`](docs/plan/next-session.md)
 ## Delivery
 
 A pattern is delivered only with qualification evidence, an exemplar that passes verify, and an
-accepted guide (ADR-0026): a concept page, an exercise, a lesson, and a link from the
+accepted guide ([ADR-0026 Verify - Qualify - Teach][ADR-0026]): a concept page, an exercise, a lesson, and a link from the
 exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05-verify-qualify-teach.md).
 
 - **Verify**: `pnpm verify` (staged `static -> unit -> integration -> ui -> quality`).
@@ -47,13 +47,13 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
 - **Teach**: docs pages are canonical. Lessons cite evidence; they never become the
   source of a claim.
 - **Guides**: [`apps/docs/src/content/docs/guides/`](apps/docs/src/content/docs/guides/index.mdx).
-  Read the MDX sources; browse with `pnpm docs:prod` (D64). Every guide
+  Read the MDX sources; browse with `pnpm docs:prod` ([D64 Agents read the guides][D64]). Every guide
   has the shape of the guide template (`apps/docs/src/guide-template/`), checked by
   `verify`'s `guides` step. Before changing code a guide names as its exemplar, read
   that guide's `review` page. Exercises: `exercises/<pattern>/`, run one with
   `pnpm exercise <pattern> <NN.MM>`.
 - **Research**: dated records in [`docs/research/`](docs/research/README.md), where the
-  `research` skill writes. Never the source of a guide's claim (D68).
+  `research` skill writes. Never the source of a guide's claim ([D68 Research records][D68]).
 
 ## Toolchain (D49)
 
@@ -64,9 +64,9 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
 | TypeScript | dual pin in root `package.json` ([ADR-0028](docs/adr/0028-typescript-7-cli-with-typescript-6-api.md)): `tsc` is TypeScript 7 (`@typescript/native`); the `typescript` package name is TypeScript 6 (`@typescript/typescript6`) for Nx, ESLint and Vite. Do not install `typescript@7` under the `typescript` name. `tsc` is patched by `@effect/tsgo` ([ADR-0029](docs/adr/0029-effect-reference-and-language-service.md)). Editor tsserver stays on TypeScript 6 until Cursor Native Preview is usable. `verbatimModuleSyntax`, `exactOptionalPropertyTypes`, and `moduleDetection: "force"` are on ([ADR-0031](docs/adr/0031-typescript-strictness-flags.md)). Do not enable `rewriteRelativeImportExtensions` or `ignoreDeprecations`. |
 | Effect reference | `repos/effect` git subtree. Read-only. Prefer it over web search and over `node_modules`. |
 | Device driving | `@expo/agent-cli` in `apps/evidence-mobile`; `agent-device` in `tools/qualification` (both MIT) |
-| Lab runtime | Apple Container image digests, admitted per measured gap: [`tools/qualification/lab-images.json`](tools/qualification/lab-images.json) (Jaeger and otel-lgtm for P10, Keycloak for P11). A probe refuses an image that is not pinned by digest. |
+| Lab runtime | Apple Container image digests, admitted per measured gap: [`tools/qualification/lab-images.json`](tools/qualification/lab-images.json) (Jaeger and otel-lgtm for [P10 Trace projection][P10], Keycloak for [P11 Identity][P11]). A probe refuses an image that is not pinned by digest. |
 
-The evidence app is a development build (`expo-dev-client`), not Expo Go. P02
+The evidence app is a development build (`expo-dev-client`), not Expo Go. [P02 SQLite drivers][P02]
 needs native modules Expo Go cannot load. Ask `@expo/agent-cli status` first,
 then `dev --ios|--android --dev-client`. Read Hermes with `runtime:eval` /
 `runtime:tree` / `runtime:errors`. Drive the accessibility tree with
@@ -74,14 +74,14 @@ then `dev --ios|--android --dev-client`. Read Hermes with `runtime:eval` /
 logs or click simulator coordinates to decide what the app is doing.
 
 Vendored skills (MIT): every engineering and productivity skill from
-`mattpocock/skills` (27, D69) and `motel-debug` from `kitlangton/motel`.
+`mattpocock/skills` (27, [D69 Matt Pocock skills][D69]) and `motel-debug` from `kitlangton/motel`.
 `skills-lock.json` pins each to an upstream commit (`ref`) with a whole-folder
 hash. They are byte-identical to upstream: never edit them; adapt on the repo
 side (`docs/agents/`, this file). `scaffold-exercises` is repo-owned, a fork
-adapted to D66, and not in the lock.
+adapted to [D66 Exercise tracks][D66], and not in the lock.
 
 To move to a newer upstream commit, read the upstream changelog since the
-pinned `ref`, review changed or new skills against D30 and `GLOSSARY.md` with
+pinned `ref`, review changed or new skills against [D30 One source for humans and agents][D30] and `GLOSSARY.md` with
 the human, then re-add them at the new commit (the CLI replaces each folder,
 the `.claude/skills/` symlink and the lock entry):
 
@@ -121,13 +121,13 @@ Single context: `GLOSSARY.md`, `docs/adr/`, the decision log. See
 ### Coding standards
 
 For `code-review` and `retro`: the working agreements below, the ADRs and
-`.agents/patterns/`; each guide's `review` page once guides exist (D62). A
+`.agents/patterns/`; each guide's `review` page once guides exist ([D62 The shape of a guide][D62]). A
 mechanical rule becomes a `verify` check, not prose.
 
 ### Teach
 
 `teach` runs in its own workspace outside this repo. Guides, lessons and
-exercises here live in the docs site (D30, D62).
+exercises here live in the docs site ([D30 One source for humans and agents][D30], [D62 The shape of a guide][D62]).
 
 ## Vendored repositories
 
@@ -145,13 +145,14 @@ External source lives under `repos/` as git subtrees ([ADR-0029](docs/adr/0029-e
 When writing Effect code, read [`repos/effect/LLMS.md`](repos/effect/LLMS.md),
 then the matching file under [`.agents/patterns/`](.agents/patterns/). Those
 pattern files are agent extracts. They cite `repos/effect` and must not become
-a second copy of the docs concept pages (D30).
+a second copy of the docs concept pages ([D30 One source for humans and agents][D30]).
 
 Field-manual topics without a pattern file: `pnpm exec effect-solutions show <topic>`.
 
 ## Working agreements
 
 - Plain dash `-`, never the em dash.
+- Name a gate, ADR, decision or issue as a reference link (`[D107 The Presenter pattern][D107]`). `pnpm refs fix` writes it; a bare id in a living document fails `verify`.
 - Never hand-edit auto-generated files (CHANGELOG, ledgers, generated docs).
 - Prefer quality, simplicity, robustness and long-term maintainability over
   development cost.
@@ -163,3 +164,21 @@ Field-manual topics without a pattern file: `pnpm exec effect-solutions show <to
 - Licence is Apache-2.0. Check licences of everything added. PowerSync service
   (FSL), Inngest server (SSPL) and Restate (BUSL) are not in the plan.
 - Never add an agent as a commit co-author.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0026]: docs/adr/0026-verify-qualify-teach.md
+[D1]: docs/plan/bootstrap/02-decision-log.md#d1
+[D30]: docs/plan/bootstrap/02-decision-log.md#d30
+[D44]: docs/plan/bootstrap/02-decision-log.md#d44
+[D62]: docs/plan/bootstrap/02-decision-log.md#d62
+[D64]: docs/plan/bootstrap/02-decision-log.md#d64
+[D66]: docs/plan/bootstrap/02-decision-log.md#d66
+[D68]: docs/plan/bootstrap/02-decision-log.md#d68
+[D69]: docs/plan/bootstrap/02-decision-log.md#d69
+[D94]: docs/plan/bootstrap/02-decision-log.md#d94
+[P02]: docs/plan/bootstrap/06-qualification-gates.md#p02
+[P05]: docs/plan/bootstrap/06-qualification-gates.md#p05
+[P06]: docs/plan/bootstrap/06-qualification-gates.md#p06
+[P10]: docs/plan/bootstrap/06-qualification-gates.md#p10
+[P11]: docs/plan/bootstrap/06-qualification-gates.md#p11

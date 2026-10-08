@@ -6,7 +6,7 @@ description: Create or renumber a pattern's exercise track under exercises/<patt
 # Scaffold Exercises
 
 Repo-owned fork of `mattpocock/skills` `scaffold-exercises` (MIT), adapted to
-D66 in [the decision log](../../../docs/plan/bootstrap/02-decision-log.md). An
+[D66 Exercise tracks][D66] in [the decision log](../../../docs/plan/bootstrap/02-decision-log.md). An
 **exercise** is a stub, a failing test and a reference solution that passes in
 `verify` (`GLOSSARY.md`). The concept it practises lives in the guide's
 `concepts` page, never in the exercise.
@@ -22,10 +22,10 @@ exercises/<pattern>/
 
 - `<pattern>` is the guide's folder name (`guides/<pattern>/`).
 - `NN` is the section, `MM` the exercise within it; names are dash-case.
-- One Nx project per track, tagged `kind:tool` (D57).
+- One Nx project per track, tagged `kind:tool` ([D57 Where docs and exercises live][D57]).
 - No `explainer/` folder, no `.gitkeep`, no `readme.md` that restates the guide.
 
-Each exercise section `NN` pairs with lesson `NN` of the guide (D81): the lesson
+Each exercise section `NN` pairs with lesson `NN` of the guide ([D81 What a lesson is][D81]): the lesson
 teaches the idea, the section is its tangible win.
 
 ## The test is the positive control
@@ -57,4 +57,10 @@ To renumber, `git mv` the folder so history follows it, then run `pnpm verify`.
 ## Not built yet
 
 The `exercise` generator in `@viviefs/generators` comes with the durable
-workflow track (D66). When it lands, replace step 2 with it.
+workflow track ([D66 Exercise tracks][D66]). When it lands, replace step 2 with it.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D57]: ../../../docs/plan/bootstrap/02-decision-log.md#d57
+[D66]: ../../../docs/plan/bootstrap/02-decision-log.md#d66
+[D81]: ../../../docs/plan/bootstrap/02-decision-log.md#d81
