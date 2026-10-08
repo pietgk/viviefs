@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P06
+Qualifying gate: [P06 Workflow engine crash matrix][P06]
 
-Related: D2, D10, D39. [Architecture section 9](../plan/bootstrap/03-architecture.md),
+Related: [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D39 One engine everywhere][D39]. [Architecture section 9](../plan/bootstrap/03-architecture.md),
 [research/01](../plan/bootstrap/research/01-effect-v4-durable-execution.md).
 
 ## Problem
@@ -32,7 +32,7 @@ until drained. Activities must not suspend (a suspending activity re-runs on
 replay). Time, randomness and ids only inside activities.
 
 Id shapes (`O{org}/W{exec}`, `/A{name}#{attempt}`, `/D{name}`, `/C{name}`) are
-decided. P06 pinned journal attributes (D44): `viviefs/workflow/started`,
+decided. [P06 Workflow engine crash matrix][P06] pinned journal attributes ([D44 Never rename, never migrate][D44]): `viviefs/workflow/started`,
 `viviefs/workflow/result`, `viviefs/activity/exit`, `viviefs/deferred/exit`,
 `viviefs/clock/wake-at`, `viviefs/lease/holder`. Lease holder is LWW; fencing is
 by epoch. Other journal facts are write-once.
@@ -40,14 +40,14 @@ by epoch. Other journal facts are write-once.
 ## Trade-offs
 
 Custom engine instead of Cluster-on-device. Cluster on a killed mobile app is
-untested territory (P07, now run). Public Effect interfaces only: no private engine
+untested territory ([P07 Device resume E2E][P07], now run). Public Effect interfaces only: no private engine
 hooks. `Workflow.intoResult` is uninterruptible, so an in-process kill is a
 self-interrupt of the interruptible child after the crash hook opens, not
 `Effect.never` plus an outer `Fiber.interrupt`.
 
 ## Failure-handling
 
-P06 is the crash matrix: kill before an activity, during it, after it before
+[P06 Workflow engine crash matrix][P06] is the crash matrix: kill before an activity, during it, after it before
 the journal write, during a deferred wait, during a clock, during a lease
 handoff, and during a content-hash file upload. Every case resumes; every
 external effect is observable at most once thanks to idempotency keys.
@@ -68,12 +68,12 @@ boundaries passed on sqlite-node and PGlite. `WorkflowEngine.layerMemory` lost
 the execution (`poll` none) and re-ran activities. `engine.ts` is 646 lines
 (estimate was 300-600). `crypto.subtle.digest` via `Effect.tryPromise` does
 not complete inside an activity fiber, so the upload check hashes `p06-file`
-before the activity and journals `blob:{sha256}`. Device force-quit is P07.
+before the activity and journals `blob:{sha256}`. Device force-quit is [P07 Device resume E2E][P07].
 Evidence:
-[2026-09-20-p06.md](../evidence/2026-09-20-p06.md). P07:
+[2026-09-20-p06.md](../evidence/2026-09-20-p06.md). [P07][P07]:
 [2026-09-21-p07.md](../evidence/2026-09-21-p07.md).
 
-2026-09-26, found after P10. Replay did not return the exit the first run
+2026-09-26, found after [P10 Trace projection][P10]. Replay did not return the exit the first run
 saw. The journal stored a failure as its printed cause, so a typed activity
 failure, a typed deferred failure or a workflow's typed result came back on
 replay as a string that the activity's error schema could not decode: a run
@@ -84,6 +84,16 @@ Defects and interruptions were flattened into failures. Exit values in
 JSON exit codec (the one its cluster engine persists); `workflow/result` is
 encoded with the workflow's own schemas, because Effect's engine contract
 hands workflow results over typed. The attribute names are unchanged and the
-old `{_tag: "Failure", error}` value still decodes (D44). P06 gained the
+old `{_tag: "Failure", error}` value still decodes ([D44 Never rename, never migrate][D44]). [P06 Workflow engine crash matrix][P06] gained the
 check "typed failures survive a kill", which fails on the old encoding.
 Evidence: [2026-09-20-p06.md](../evidence/2026-09-20-p06.md).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D10]: ../plan/bootstrap/02-decision-log.md#d10
+[D2]: ../plan/bootstrap/02-decision-log.md#d2
+[D39]: ../plan/bootstrap/02-decision-log.md#d39
+[D44]: ../plan/bootstrap/02-decision-log.md#d44
+[P06]: ../plan/bootstrap/06-qualification-gates.md#p06
+[P07]: ../plan/bootstrap/06-qualification-gates.md#p07
+[P10]: ../plan/bootstrap/06-qualification-gates.md#p10

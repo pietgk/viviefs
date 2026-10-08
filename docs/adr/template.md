@@ -8,9 +8,9 @@ Date: YYYY-MM-DD
 
 Qualifying gate: Pnn / verify / none. Named so a later session can tell what evidence
 would change this status. Status lifecycle: `Proposed, unverified` -> `Qualified`
-(gate evidence linked) -> `Accepted` (on the pattern's guide, ADR-0026). Qualified does not mean admitted.
+(gate evidence linked) -> `Accepted` (on the pattern's guide, [ADR-0026 Verify - Qualify - Teach][ADR-0026]). Qualified does not mean admitted.
 
-Related: links to relevant ADRs, plan sections, and superseding/superseded records.
+Related: named links to the ADRs, decisions and issues this one depends on or replaces. `pnpm refs fix` writes them.
 
 ## Problem
 
@@ -46,3 +46,7 @@ passes.
 
 What has actually been measured. Empty or "not yet run" until evidence exists.
 Never fill this from prose.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0026]: 0026-verify-qualify-teach.md

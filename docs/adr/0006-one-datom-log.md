@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P04
+Qualifying gate: [P04 Log store conformance][P04]
 
-Related: D31. [Architecture](../plan/bootstrap/03-architecture.md),
+Related: [D31 One datom log][D31]. [Architecture](../plan/bootstrap/03-architecture.md),
 [ADR 0008](0008-single-datom-transactions-with-changesets.md),
 [ADR 0018](0018-tracing-and-telemetry-sinks.md).
 
@@ -27,7 +27,7 @@ datom is its own transaction.
 This realises vivief's "observability is projection over effect datoms" without
 trusting a telemetry backend for durability.
 
-**Domain truth lives only in the log** (made explicit 2026-09-27, P11 grilling).
+**Domain truth lives only in the log** (made explicit 2026-09-27, [P11 Identity][P11] grilling).
 Every other SQL table is one of three kinds:
 
 | Kind | Examples | Rebuilt from the log? |
@@ -36,7 +36,7 @@ Every other SQL table is one of three kinds:
 | Read models | `projected_facts`, `projection_conflicts`, `changeset_status` | Yes: disposable, never migrated |
 | Operational state of one replica | `hlc_state`, cursors, `outbox`, `sync_cursor` | No, and it holds no domain facts |
 
-A fact that fits none of these goes into the log. P11 applied this to the
+A fact that fits none of these goes into the log. [P11 Identity][P11] applied this to the
 mapping from identity-provider accounts to people: a separate `people` table
 was proposed and rejected, because it would have been history-less and
 outside the audit trail and a future hash chain
@@ -45,13 +45,13 @@ outside the audit trail and a future hash chain
 ## Trade-offs
 
 One format and one sync protocol. The cost is that the log store must be right
-before anything else is built, which is why P04 is a foundation gate. Effect
+before anything else is built, which is why [P04 Log store conformance][P04] is a foundation gate. Effect
 EventLog was studied as a design reference and not adopted (no server rejection,
 device-clock ordering, no RN path).
 
 ## Failure-handling
 
-P04 holds the contract: append, dedup by `tx`, HLC mint and receive, cursor
+[P04 Log store conformance][P04] holds the contract: append, dedup by `tx`, HLC mint and receive, cursor
 streaming, prefix scans, compaction horizon, on SQLite (native including
 Android, wasm, Node) and Postgres. Positive control: duplicate append is a
 no-op while a new `tx` is appended.
@@ -71,3 +71,9 @@ HLC mint, backwards clock, reboot, remote-ahead, future skew, cursor streaming,
 prefix scans, compaction horizon, volume 2000) passed on sqlite-node, PGlite,
 iOS, Android and web wasm/OPFS. Duplicate append was a no-op while a new `tx`
 inserted. Evidence: [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D31]: ../plan/bootstrap/02-decision-log.md#d31
+[P04]: ../plan/bootstrap/06-qualification-gates.md#p04
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

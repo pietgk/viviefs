@@ -12,7 +12,7 @@ are qualified by the gates they name.
 
 Related: [D48'](../plan/bootstrap/02-decision-log.md),
 [Verify - Qualify - Teach](../plan/bootstrap/05-verify-qualify-teach.md),
-[ADR 0026](0026-verify-qualify-teach.md). Copied in spirit from complyj ADR 0001
+[ADR 0026](0026-verify-qualify-teach.md). Copied in spirit from complyj `ADR 0001`
 and its template (expected vs observed, failure handling, evidence links).
 
 ## Problem
@@ -30,17 +30,17 @@ Required sections: Problem, Design, Trade-offs, Failure-handling, Outcome
 gate that will qualify it.
 
 Status lifecycle: `Proposed, unverified` -> `Qualified` (gate evidence linked) ->
-`Accepted` (on the pattern's guide, ADR-0026). Qualified does not mean admitted. Preserve accepted
+`Accepted` (on the pattern's guide, [ADR-0026 Verify - Qualify - Teach][ADR-0026]). Qualified does not mean admitted. Preserve accepted
 rationale; use a superseding ADR when a decision changes.
 
 Create ADRs for consequential architectural decisions. Routine implementation
 details do not require one. A fresh session reads the plan, relevant ADRs, and
 `GLOSSARY.md` before working.
 
-**The glossary is `GLOSSARY.md`** (amendment 2026-09-29, Skills step, D69). It
-was `CONTEXT.md` (D27). `mattpocock/skills` renamed its domain-doc convention to
+**The glossary is `GLOSSARY.md`** (amendment 2026-09-29, Skills step, [D69 Matt Pocock skills][D69]). It
+was `CONTEXT.md` ([D27 Bootstrap output][D27]). `mattpocock/skills` renamed its domain-doc convention to
 `GLOSSARY.md` in v1.3, and eleven of its skills read only that name. Renaming the
-file once lets the vendored skills land unpatched (ADR-0027), instead of patching
+file once lets the vendored skills land unpatched ([ADR-0027 Developer experience planes][ADR-0027]), instead of patching
 them on every update. Dated records (the decision log, the first bootstrap
 handover, the research records in `docs/research/`) keep the old name.
 
@@ -62,7 +62,7 @@ Never mark a gate passed from prose.
 
 ### Expected
 
-Every consequential decision in the grilling (D1-D58) has a home. Agents and
+Every consequential decision in the grilling ([D1 A reference stack][D1]-[D58 Envelope per changeset][D58]) has a home. Agents and
 humans can tell intent from evidence. The template's expected/observed split
 survives later status changes.
 
@@ -70,3 +70,12 @@ survives later status changes.
 
 Not yet run. The backlog ADRs exist as Proposed, unverified. No gate has
 qualified any of them.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0026]: 0026-verify-qualify-teach.md
+[ADR-0027]: 0027-developer-experience-planes.md
+[D1]: ../plan/bootstrap/02-decision-log.md#d1
+[D27]: ../plan/bootstrap/02-decision-log.md#d27
+[D58]: ../plan/bootstrap/02-decision-log.md#d58
+[D69]: ../plan/bootstrap/02-decision-log.md#d69

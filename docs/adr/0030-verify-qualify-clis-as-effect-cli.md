@@ -8,20 +8,20 @@ Date: 2026-09-21
 
 Qualifying gate: verify
 
-Related: D26, D48', D49, [ADR-0003](0003-effect-v4-as-backbone.md),
+Related: [D26 AI-robust guardrails][D26], [D48' Verify - Qualify - Teach][D48'], [D49 Three developer-experience planes][D49], [ADR-0003](0003-effect-v4-as-backbone.md),
 [ADR-0026](0026-verify-qualify-teach.md),
 [ADR-0029](0029-effect-reference-and-language-service.md).
 
 ## Problem
 
 `pnpm verify` and `pnpm qualify` parsed `process.argv` and used `async` /
-`spawn`. That is allowed in `tools/` (D26 lint does not cover them) but it was
+`spawn`. That is allowed in `tools/` ([D26 AI-robust guardrails][D26] lint does not cover them) but it was
 the opposite of Effect as the backbone. Agents copying those entrypoints would
-learn the half-Effect idiom ADR-0003 refuses.
+learn the half-Effect idiom [ADR-0003 Effect v4 as the backbone][ADR-0003] refuses.
 
 ## Design
 
-- Pin `@effect/platform-node` at the same version as `effect` (ADR-0003).
+- Pin `@effect/platform-node` at the same version as `effect` ([ADR-0003 Effect v4 as the backbone][ADR-0003]).
 - Parse and run the CLIs with `Command` / `Argument` / `Flag` from
   `effect/cli`, `NodeRuntime.runMain`, and `NodeServices.layer`.
   Node, not Bun: verify still asserts the mise Node pin.
@@ -48,7 +48,7 @@ table, and `--gate` / `--foundation` stay locked by characterization tests.
 Characterization tests spawn the real entrypoints (`help`, unknown selector
 exit 2, usage, `--gate` unimplemented, `--foundation` accepted as a flag,
 ledger). `pnpm verify` is the qualifying gate. Unperformed: a full
-`pnpm qualify --foundation` run (that is P01-P10, not this ADR).
+`pnpm qualify --foundation` run (that is [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10], not this ADR).
 
 ## Outcome
 
@@ -67,5 +67,15 @@ hand-rolled "Unknown or incomplete argument" string.
 
 2026-09-28: `pnpm qualify --through Pnn` added, with characterization tests
 (an unimplemented gate refused, `--through` with another selector refused).
-The CLIs ran the P01-P11 closure
+The CLIs ran the [P01 Platform on SDK 58][P01]-[P11 Identity][P11] closure
 ([closure note](../evidence/2026-09-28-p01-p11-closure.md)).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0003]: 0003-effect-v4-as-backbone.md
+[D26]: ../plan/bootstrap/02-decision-log.md#d26
+[D48']: ../plan/bootstrap/02-decision-log.md#d48p
+[D49]: ../plan/bootstrap/02-decision-log.md#d49
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P10]: ../plan/bootstrap/06-qualification-gates.md#p10
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

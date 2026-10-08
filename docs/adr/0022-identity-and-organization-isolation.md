@@ -4,11 +4,11 @@ Summary: People sign in through OIDC; the server enforces organization isolation
 
 Status: Qualified
 
-Date: 2026-09-20. Amended 2026-09-27 by the P11 grilling; 2026-09-28 with how the device signs in (step 6).
+Date: 2026-09-20. Amended 2026-09-27 by the [P11 Identity][P11] grilling; 2026-09-28 with how the device signs in (step 6).
 
-Qualifying gate: P11
+Qualifying gate: [P11 Identity][P11]
 
-Related: D18, D47. complyj ADR 0005 and 0009 as lesson sources.
+Related: [D18 Organization isolation on the server][D18], [D47 Identity via OIDC][D47]. complyj `ADR 0005` and 0009 as lesson sources.
 [P11 design review](../evidence/p11-design-review.md) (grilling record, Q1-Q24).
 [ADR-0016](0016-commands-and-server-validation.md) (server validation),
 [ADR-0011](0011-log-store-pattern.md) (no server compaction),
@@ -19,7 +19,7 @@ Related: D18, D47. complyj ADR 0005 and 0009 as lesson sources.
 GRC and ERP need organization-scoped roles. A client-supplied org id is an
 attack. Early gates still need *an* identity so other probes can run.
 
-P09 left three concrete gaps: every RPC carries a client-supplied `org` that
+[P09 Sync][P09] left three concrete gaps: every RPC carries a client-supplied `org` that
 the server believes; `envelope.actor` is whatever the client wrote; and blobs
 are global, so `FileMissing` tells a caller whether another organization holds
 a file.
@@ -34,7 +34,7 @@ org id. `O{org}/` is the id-tree root and the isolation unit.
 device (`expo-auth-session`), any OIDC provider in production. The identity
 provider only authenticates. It does not hold membership.
 
-**Two services under one identity pattern** (amendment, naming only). D47 says
+**Two services under one identity pattern** (amendment, naming only). [D47 Identity via OIDC][D47] says
 "behind an `Identity` service". The pattern and `@viviefs/identity` keep that
 name; the service is split by side:
 
@@ -60,9 +60,9 @@ server-authored changesets. A person is not an entity in any organization's
 log.
 
 **Account entity.** The mapping from an identity-provider account to a person
-is datoms in the server's log, not a separate table (ADR-0006: domain truth
+is datoms in the server's log, not a separate table ([ADR-0006 One datom log as the substrate][ADR-0006]: domain truth
 lives only in the log). Entity `A{sha256(iss, sub)}` under a server-only root
-(ADR-0010), defining attribute `viviefs/account/person` (value: the person id),
+([ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010]), defining attribute `viviefs/account/person` (value: the person id),
 plus `viviefs/account/issuer` and `viviefs/account/subject`. Authentication
 reads it by entity id on the existing EAVT index; it never writes. Linking an
 account, or moving a person to a new identity provider, is history with an
@@ -81,7 +81,7 @@ every request, so revocation is immediate even while a token is valid. Roles
 are carried in the caller and not enforced (roles in use, invitations and
 self-service membership come with the first consumer app that needs them).
 
-**Handler checks**, in addition to ADR-0016's validation:
+**Handler checks**, in addition to [ADR-0016 Commands, server validation and rejection][ADR-0016]'s validation:
 
 - `org` in a payload is a selector; not a member gives `MembershipMissing`.
 - The envelope's actor must be the caller's person; otherwise `ActorMismatch`.
@@ -124,7 +124,7 @@ device deletes it.
 
 ## Trade-offs
 
-Fake-then-OIDC keeps P01-P10 unblocked. The risk is leaking fake-identity
+Fake-then-OIDC keeps [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] unblocked. The risk is leaking fake-identity
 assumptions into server checks; the fake therefore issues real signed tokens
 and one contract suite runs against both.
 
@@ -135,7 +135,7 @@ read per request.
 
 Membership in the log over provider group claims: immediate revocation and no
 coupling to Keycloak. Over a server-only table: devices see membership through
-normal sync (D31).
+normal sync ([D31 One datom log][D31]).
 
 The account-to-person mapping in the log over a `people` table: one source of
 truth, history for every link, and coverage by a future hash chain, which
@@ -153,7 +153,7 @@ iOS, Android and web.
 
 ## Failure-handling
 
-P11 checks, each able to fail on its own, are listed in the
+[P11 Identity][P11] checks, each able to fail on its own, are listed in the
 [design review](../evidence/p11-design-review.md#1-the-claim): the token
 contract on fake and Keycloak; PKCE on iOS, Android and web; membership on
 `Append`, `Pull`, `PutBlob` and `CompleteDeferred`; lease; actor; server-only
@@ -165,14 +165,14 @@ Stated limitation: stored history is trusted, not provable, against an
 operator or database administrator. Tamper-evidence (hash chain with
 device-held checkpoints; signed changesets only if a consumer needs proof
 against the operator) is decided before the first consumer app that makes
-audit claims, together with P16. Until then the server log is never compacted.
+audit claims, together with [P16 Crypto-shredding][P16]. Until then the server log is never compacted.
 
 The lab runs plain HTTP. TLS is decided with production hosting.
 
-Known limitations (P11 grilling Q23, 2026-09-28), decided in the identity,
+Known limitations ([P11 Identity][P11] grilling Q23, 2026-09-28), decided in the identity,
 keys and trust step (Q24): `envelope.device` is chosen by the device and not
 authenticated; any member of an organization may take over any execution's
-lease there by raising the epoch, which is how failover works (D15), but who
+lease there by raising the epoch, which is how failover works ([D15 Server authority after a lost lease][D15]), but who
 may take a lease is unspecified.
 
 **How a device labels its writes** (Q22). The device keeps a copy of the
@@ -191,7 +191,7 @@ accepted changeset names a verified person and a server acceptance time.
 
 ### Observed
 
-P11, 2026-09-28. Ledger pass `2026-09-28T19-38-22.564Z-0f0ac08c` on a clean tree
+[P11 Identity][P11], 2026-09-28. Ledger pass `2026-09-28T19-38-22.564Z-0f0ac08c` on a clean tree
 (`971ae6e2`), after a measurement run with the same result. Evidence: [2026-09-28-p11.md](../evidence/2026-09-28-p11.md). One token
 contract of nine checks passes on the fake issuer's verifier, on the OIDC
 verifier against a served fake, and on the OIDC verifier against Keycloak
@@ -221,11 +221,29 @@ account's replica. Three lab-only defects in the evidence app each fail
 exactly their check on web: ignoring `invalid_grant`, one shared replica,
 and web tokens in `localStorage`.
 
-P01-P11 then passed in one sequential run on a clean tree (`59b74a9a`,
+[P01 Platform on SDK 58][P01]-[P11 Identity][P11] then passed in one sequential run on a clean tree (`59b74a9a`,
 run `2026-09-28T22-40-46.395Z-cfafc842`, [closure note](../evidence/2026-09-28-p01-p11-closure.md)),
-so P11's changes to the log, the protocol and the evidence app left every
-earlier gate passing, P02, P04 and P05 on web included.
+so [P11][P11]'s changes to the log, the protocol and the evidence app left every
+earlier gate passing, [P02 SQLite drivers][P02], [P04 Log store conformance][P04] and [P05 Changesets and projections][P05] on web included.
 
 Not measured: physical devices, TLS, `EngineConfig.actor` from the
 statement, and the limitations above (stored history, device identity,
 lease authorization).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0006]: 0006-one-datom-log.md
+[ADR-0010]: 0010-entity-ids-and-defining-attributes.md
+[ADR-0016]: 0016-commands-and-server-validation.md
+[D15]: ../plan/bootstrap/02-decision-log.md#d15
+[D18]: ../plan/bootstrap/02-decision-log.md#d18
+[D31]: ../plan/bootstrap/02-decision-log.md#d31
+[D47]: ../plan/bootstrap/02-decision-log.md#d47
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P02]: ../plan/bootstrap/06-qualification-gates.md#p02
+[P04]: ../plan/bootstrap/06-qualification-gates.md#p04
+[P05]: ../plan/bootstrap/06-qualification-gates.md#p05
+[P09]: ../plan/bootstrap/06-qualification-gates.md#p09
+[P10]: ../plan/bootstrap/06-qualification-gates.md#p10
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11
+[P16]: ../plan/bootstrap/06-qualification-gates.md#p16

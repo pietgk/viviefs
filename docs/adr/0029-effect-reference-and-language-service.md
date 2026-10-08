@@ -9,7 +9,7 @@ release tag of the pinned version, not `main`.
 
 Qualifying gate: verify
 
-Related: D30, D49, [ADR-0003](0003-effect-v4-as-backbone.md),
+Related: [D30 One source for humans and agents][D30], [D49 Three developer-experience planes][D49], [ADR-0003](0003-effect-v4-as-backbone.md),
 [ADR-0025](0025-ai-robust-guardrails.md),
 [ADR-0027](0027-developer-experience-planes.md),
 [ADR-0028](0028-typescript-7-cli-with-typescript-6-api.md).
@@ -17,10 +17,10 @@ Related: D30, D49, [ADR-0003](0003-effect-v4-as-backbone.md),
 ## Problem
 
 Agents guess Effect usage from docs snippets and compiled `node_modules`.
-That is token-inefficient and drifts from v4 idioms. ADR-0025 already named
+That is token-inefficient and drifts from v4 idioms. [ADR-0025 AI-robust guardrails][ADR-0025] already named
 the Effect language service. Official v4 tooling is `@effect/tsgo` on
-TypeScript 7, which this repo dual-pinned in ADR-0028. Cloning Effect into
-`$HOME` would leave Cursor and CI without the same tree (D49).
+TypeScript 7, which this repo dual-pinned in [ADR-0028 TypeScript 7 CLI with TypeScript 6 API][ADR-0028]. Cloning Effect into
+`$HOME` would leave Cursor and CI without the same tree ([D49 Three developer-experience planes][D49]).
 
 ## Design
 
@@ -36,20 +36,20 @@ TypeScript 7, which this repo dual-pinned in ADR-0028. Cloning Effect into
 - `tsconfig.base.json` loads the plugin named `@effect/language-service`
   (the tsgo package still uses that plugin name).
 - Agent extracts live in `.agents/patterns/` and cite `repos/effect`. They
-  are not a second copy of docs concept pages (D30).
+  are not a second copy of docs concept pages ([D30 One source for humans and agents][D30]).
 - Pin `effect-solutions` as a root exact devDependency. Invoke with
   `pnpm exec effect-solutions`. No global install, no home clone.
 - `vendor/motel` stays the isolated motel runner. Do not mix it with `repos/`.
 
 Revisit the dual TypeScript pin in a new ADR when 7.1 ships a stable API
 and Nx plus typescript-eslint declare support. Revisit Oxlint / Vite Plus
-only after a measured gap (ADR-0027).
+only after a measured gap ([ADR-0027 Developer experience planes][ADR-0027]).
 
 ## Trade-offs
 
 The subtree adds tens of megabytes and a periodic `git subtree pull`. That
 is the cost of a clone-identical Effect source for humans and agents.
-Keeping ESLint is required for Nx module boundaries and D26. Effect
+Keeping ESLint is required for Nx module boundaries and [D26 AI-robust guardrails][D26]. Effect
 diagnostics ride on `tsc`, which verify already runs.
 
 ## Failure-handling
@@ -88,4 +88,14 @@ in [`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts); no existin
 its tree equals the tag's tree. `@effect/tsgo` 0.47.2 (built for 4.0's public
 module paths) adds `unstableApiUsage`, which warned on every workflow, sql,
 rpc, http and cli use and failed typecheck; it is off in `tsconfig.base.json`
-(ADR-0003). `mise exec -- pnpm verify` was green.
+([ADR-0003 Effect v4 as the backbone][ADR-0003]). `mise exec -- pnpm verify` was green.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0003]: 0003-effect-v4-as-backbone.md
+[ADR-0025]: 0025-ai-robust-guardrails.md
+[ADR-0027]: 0027-developer-experience-planes.md
+[ADR-0028]: 0028-typescript-7-cli-with-typescript-6-api.md
+[D26]: ../plan/bootstrap/02-decision-log.md#d26
+[D30]: ../plan/bootstrap/02-decision-log.md#d30
+[D49]: ../plan/bootstrap/02-decision-log.md#d49

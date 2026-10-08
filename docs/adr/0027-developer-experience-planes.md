@@ -4,12 +4,12 @@ Summary: Developer experience in three planes, one source of truth each: agent c
 
 Status: Proposed, unverified
 
-Date: 2026-09-20. Amended 2026-09-29 (Skills step of Docs and teaching, D69):
+Date: 2026-09-20. Amended 2026-09-29 (Skills step of Docs and teaching, [D69 Matt Pocock skills][D69]):
 skills are pinned by commit, byte-identical, and adapted on the repo side.
 
 Qualifying gate: none (process)
 
-Related: D49, D69. complyj ADR 0012 (adapted: mise is the chosen host toolchain,
+Related: [D49 Three developer-experience planes][D49], [D69 Matt Pocock skills][D69]. complyj `ADR 0012` (adapted: mise is the chosen host toolchain,
 not Nix).
 
 ## Problem
@@ -42,7 +42,7 @@ natively. A Claude marketplace plugin or global `npx skills add -g` of these
 names is out of scope. The repo copy wins on a name collision.
 
 **Pinned, byte-identical, adapted on the repo side** (amendment 2026-09-29,
-D69). Every engineering and productivity skill of `mattpocock/skills` is
+[D69 Matt Pocock skills][D69]). Every engineering and productivity skill of `mattpocock/skills` is
 vendored (27 at `d81f3a18`), with `motel-debug`. The `skills` CLI (MIT, run
 pinned as `skills@1.7.0` with telemetry off) writes each lock entry with the
 upstream commit as `ref` and a hash of the whole skill folder; the first lock
@@ -51,9 +51,9 @@ edited: where a skill needs this repo's shape, the adaptation lives in the
 files the skills read (`docs/agents/issue-tracker.md`, `domain.md`,
 `triage-labels.md`) and in `AGENTS.md`, so an update is a copy, not a merge.
 Where upstream and the repo disagree on a name, the repo changes when that is
-cheap (the glossary became `GLOSSARY.md`, ADR-0001). A skill that contradicts a
+cheap (the glossary became `GLOSSARY.md`, [ADR-0001 Record architectural decisions][ADR-0001]). A skill that contradicts a
 decision is forked into a repo-owned skill and leaves the lock:
-`scaffold-exercises` (D66). An update re-adds skills at a newer commit after
+`scaffold-exercises` ([D66 Exercise tracks][D66]). An update re-adds skills at a newer commit after
 the human reviews the changed ones; the command is in `AGENTS.md`.
 
 Nix is not admitted. mise matches the app repos and is lighter. Apple
@@ -101,3 +101,10 @@ every skill is locked or listed as repo-owned (`REPO_OWNED_SKILLS` in
 `tools/verify/src/skills-tree.ts`, with a reason), that `.claude/skills/` links
 each one, and that each skill is user-invoked in all three agents or in none;
 `skills-tree.test.ts` shows each rule failing.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0001]: 0001-record-architectural-decisions.md
+[D49]: ../plan/bootstrap/02-decision-log.md#d49
+[D66]: ../plan/bootstrap/02-decision-log.md#d66
+[D69]: ../plan/bootstrap/02-decision-log.md#d69

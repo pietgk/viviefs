@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P05, P08
+Qualifying gate: [P05 Changesets and projections][P05], [P08 UI three-way prototype][P08]
 
-Related: D41, D42. web-interview ADR 007.
+Related: [D41 Three state owners][D41], [D42 Live reads with query atoms][D42]. web-interview ADR 007.
 [Architecture section 12](../plan/bootstrap/03-architecture.md).
 
 ## Problem
@@ -23,13 +23,13 @@ Three state owners:
 
 1. Domain facts in the datom log, read through read models.
 2. Screen and interaction state in an IntentComposer (effect-machine;
-   ADR 0020 / P08). Query atoms stay Atom.
+   [ADR-0020 Interaction state: outcome of the three-way prototype][ADR-0020] / [P08 UI three-way prototype][P08]). Query atoms stay Atom.
 3. In-flight text in component state until it settles (idle, blur, Enter),
    which mints a datom.
 
 Components are pure views over a **screen-view selector** (read model + UI
 state + status). Storybook stories use fakes, scoped to web and shared
-components. React Native Storybook is an open item, not a P01 requirement.
+components. React Native Storybook is an open item, not a [P01 Platform on SDK 58][P01] requirement.
 
 Live reads: query atoms (`@effect/atom-react`) run SQL against read models and
 declare invalidation keys (entity prefixes plus attribute keys for
@@ -43,12 +43,12 @@ having been invalidated.
 
 Replaces web-interview's quadratic full re-projection. Suitability of
 `@effect/atom-react` and `Reactivity` for prefix/attribute invalidation is
-qualified by P05 (projector keys) and P08 (query atoms on the capture
+qualified by [P05 Changesets and projections][P05] (projector keys) and [P08 UI three-way prototype][P08] (query atoms on the capture
 screen).
 
 ## Failure-handling
 
-P05 includes Reactivity keys. P08 requires all three interaction-state
+[P05 Changesets and projections][P05] includes Reactivity keys. [P08 UI three-way prototype][P08] requires all three interaction-state
 variants to pass the same screen tests and stories using this split.
 
 ## Outcome
@@ -60,14 +60,14 @@ rebuild.
 
 ### Observed
 
-P05, 2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. After a
+[P05 Changesets and projections][P05], 2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. After a
 committed changeset the projector invalidates `prefix:{id}` and
 `attribute:{name}` keys; a `Reactivity.query` on matching keys reran, and a
 query on another organization did not. Draft view showed the author's open
 members; committed and other actors did not. Evidence:
 [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
 
-P08, 2026-09-21. Ledger pass `2026-09-21T19-08-57.550Z-921495ef`. The probe
+[P08 UI three-way prototype][P08], 2026-09-21. Ledger pass `2026-09-21T19-08-57.550Z-921495ef`. The probe
 screen keeps domain facts, interaction, and in-flight title in three
 owners. `makeEvidenceAtom` re-queries after prefix/attribute invalidation.
 Human review of the encodings (2026-09-22) copies IntentComposer in
@@ -75,11 +75,22 @@ effect-machine; query atoms stay Atom. Evidence:
 [2026-09-21-p08.md](../evidence/2026-09-21-p08.md),
 [p08-comparison.md](../evidence/p08-comparison.md).
 
-2026-09-29, Docs and teaching grilling (D72). Drift: the Design's "Storybook
+2026-09-29, Docs and teaching grilling ([D72 UI on every platform][D72]). Drift: the Design's "Storybook
 stories ... scoped to web and shared components" and "React Native Storybook
 is an open item" rested on a wrong premise. In an Expo app every component is
 a native component that also renders on web. No story runs in a real browser
 or on a device: the `ui` stage's `storybook` step is Vitest with jsdom and
-axe-core. Fixed by gate P12 (UI on every platform): one React Native
+axe-core. Fixed by gate [P12 UI on every platform][P12] (UI on every platform): one React Native
 component tree, stories in Chromium in `verify` and on the simulators in
-`qualify`. This ADR's Design is amended when P12 qualifies.
+`qualify`. This ADR's Design is amended when [P12][P12] qualifies.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0020]: 0020-interaction-state-three-way-prototype.md
+[D41]: ../plan/bootstrap/02-decision-log.md#d41
+[D42]: ../plan/bootstrap/02-decision-log.md#d42
+[D72]: ../plan/bootstrap/02-decision-log.md#d72
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P05]: ../plan/bootstrap/06-qualification-gates.md#p05
+[P08]: ../plan/bootstrap/06-qualification-gates.md#p08
+[P12]: ../plan/bootstrap/06-qualification-gates.md#p12

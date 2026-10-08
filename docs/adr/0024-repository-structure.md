@@ -9,7 +9,7 @@ tests and suites live; per-file evidence replaces the per-project evidence owner
 
 Qualifying gate: verify (boundary lint)
 
-Related: D19, D52-D57, D75-D80. [Repo structure](../plan/bootstrap/04-repo-structure.md).
+Related: [D19 pnpm and Nx][D19], [D52 Four project kinds][D52]-[D57 Where docs and exercises live][D57], [D75-D80 Evidence ownership design review][D75-D80]. [Repo structure](../plan/bootstrap/04-repo-structure.md).
 
 ## Problem
 
@@ -38,9 +38,9 @@ path aliases), Nx sync generators, inferred tasks. Free module-boundary rule
 
 Ownership: every `project.json` declares tags; unclassified projects fail
 verify. Evidence is owned per file, in the registry (amendment 2026-09-30,
-D76, ADR-0026).
+[D76 Eleven file treatments][D76], [ADR-0026 Verify - Qualify - Teach][ADR-0026]).
 
-**Where tests live** (amendment 2026-09-30, D80). A suite ships with the
+**Where tests live** (amendment 2026-09-30, [D80 Where tests live][D80]). A suite ships with the
 contract it checks: `src/suites/<aspect>.ts` in the lib that owns the
 contract, exported as `@viviefs/<lib>/suites`, importable only by tests, other
 suites, `tools/` and the evidence apps. `libs/testing` holds generic helpers
@@ -84,17 +84,27 @@ a source file no configuration covers. Each runs on a throwaway repository
 with the defect, next to one without it. `pnpm verify` is green on the repo
 (25 projects classified).
 
-2026-10-01, Evidence ownership (D75-D80). The ownership step now fails a
+2026-10-01, Evidence ownership ([D75-D80 Evidence ownership design review][D75-D80]). The ownership step now fails a
 production file without a registry entry, a stale or duplicate entry, an empty
 rationale, a shape its file treatment does not allow (a "re-export" with code,
 a "named slot" that is not `export {}`, an unknown gate or suite), and a
 `project.json` that still declares `evidenceOwner`
 ([`ownership.test.ts`](../../tools/verify/src/ownership.test.ts)). Suites moved
 to their contracts; core code may still not import `@viviefs/testing`, a suite
-may, and production code that imports a `suites` entry fails lint (D80
+may, and production code that imports a `suites` entry fails lint ([D80 Where tests live][D80]
 guardrail tests). `pnpm verify all` is green with 226 production files
 classified.
 
 Not verified: the generators (`@viviefs/generators` is an empty slot until
 Docs and teaching), and that a feature missing a Layer fails to compile (no
 feature composes Layers yet).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0026]: 0026-verify-qualify-teach.md
+[D19]: ../plan/bootstrap/02-decision-log.md#d19
+[D52]: ../plan/bootstrap/02-decision-log.md#d52
+[D57]: ../plan/bootstrap/02-decision-log.md#d57
+[D75-D80]: ../plan/bootstrap/02-decision-log.md#d75-d80
+[D76]: ../plan/bootstrap/02-decision-log.md#d76
+[D80]: ../plan/bootstrap/02-decision-log.md#d80

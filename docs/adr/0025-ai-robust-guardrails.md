@@ -8,7 +8,7 @@ Date: 2026-09-20
 
 Qualifying gate: verify
 
-Related: D26. [ADR 0012](0012-datom-backed-workflow-engine.md),
+Related: [D26 AI-robust guardrails][D26]. [ADR 0012](0012-datom-backed-workflow-engine.md),
 [ADR 0024](0024-repository-structure.md).
 
 ## Problem
@@ -28,7 +28,7 @@ without a crash-matrix test is an unverified claim about durability.
   `*.test.ts` / `*.spec.ts` (including integration). Unit tests use
   `TestClock` / `TestRandom`; `it.live` uses Effect `Clock`, not
   `Date.now()`. `new Date()` without arguments is not in this slice.
-- Nx boundary tags (ADR 0024).
+- Nx boundary tags ([ADR-0024 Repository structure][ADR-0024]).
 - Schema at every boundary including SQLite rows.
 - Exemplar-first `AGENTS.md`.
 - Every workflow ships with a crash-matrix test.
@@ -43,7 +43,7 @@ land with the workspace so new files are born inside them, not migrated later.
 ## Failure-handling
 
 verify static stage runs the lint rules. Missing crash-matrix tests fail when
-the first workflow ships (P06). Unperformed as rules until those ESLint
+the first workflow ships ([P06 Workflow engine crash matrix][P06]). Unperformed as rules until those ESLint
 configs exist.
 
 ## Outcome
@@ -67,11 +67,11 @@ code stays under the rule. In tests, `Date.now()` and `Math.random()` are
 refused and `async` is allowed.
 
 Not verified: "every workflow ships with a crash-matrix test" has no
-mechanical check (the one engine has P06's matrix); Schema at every boundary
+mechanical check (the one engine has [P06 Workflow engine crash matrix][P06]'s matrix); Schema at every boundary
 is a convention, not a rule.
 
-2026-10-01, Evidence ownership (D78, D79). Schema at every boundary is a lint
-rule ([`eslint.config.js`](../../eslint.config.js), D79): in production code
+2026-10-01, Evidence ownership ([D78 Engine suites in the engine][D78], [D79 Schema at every boundary, linted][D79]). Schema at every boundary is a lint
+rule ([`eslint.config.js`](../../eslint.config.js), [D79][D79]): in production code
 under `apps/`, `libs/` and `features/`, a `sql<T>` row type, `JSON.parse`, a
 response's `.json()` and `as unknown as` fail, each shown failing and its
 Schema form passing in [`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts).
@@ -83,6 +83,14 @@ typings); the engine's became `satisfies`.
 Correction to the line above: the engine's crash matrix has run in `verify`
 since 2026-09-20, through the store projects' integration tests. It now runs
 in `libs/workflow-engine` itself, on sqlite-node and PGlite, with the
-memory-engine positive control that only P06 ran before, and `verify`'s
+memory-engine positive control that only [P06 Workflow engine crash matrix][P06] ran before, and `verify`'s
 evidence step fails when it did not pass. What stays unverified is the
-per-workflow harness (D26), designed with the durable workflow guide.
+per-workflow harness ([D26 AI-robust guardrails][D26]), designed with the durable workflow guide.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0024]: 0024-repository-structure.md
+[D26]: ../plan/bootstrap/02-decision-log.md#d26
+[D78]: ../plan/bootstrap/02-decision-log.md#d78
+[D79]: ../plan/bootstrap/02-decision-log.md#d79
+[P06]: ../plan/bootstrap/06-qualification-gates.md#p06

@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P05
+Qualifying gate: [P05 Changesets and projections][P05]
 
-Related: D38, D120, D122. [Architecture section 5](../plan/bootstrap/03-architecture.md).
+Related: [D38 Entity ids and strict composition][D38], [D120 Minted and derived id segments][D120], [D122 External identifiers][D122]. [Architecture section 5](../plan/bootstrap/03-architecture.md).
 
 ## Problem
 
@@ -42,7 +42,7 @@ Prefix power: authorization, compaction, export and Reactivity keys all work by
 prefix. First sync is full-store per organization (one cursor), not prefix
 subscriptions.
 
-**Server-only roots** (amendment 2026-09-27, P11 grilling; qualified by P11).
+**Server-only roots** (amendment 2026-09-27, [P11 Identity][P11] grilling; qualified by [P11][P11]).
 Facts that belong to no organization live in the server's log under a root
 other than `O{org}/` and are never replicated. The first is the account
 entity `A{sha256(iss, sub)}`, which maps an identity-provider account to a
@@ -54,8 +54,8 @@ server-authored changeset never mixes a server-only root with organization
 entities, because `Pull` sends every member of a changeset that touches the
 organization.
 
-**Minted and derived segments** (amendment 2026-10-08, D120, I52; built with
-I67). Each segment of an id is minted or derived, declared per entity type in
+**Minted and derived segments** (amendment 2026-10-08, [D120 Minted and derived id segments][D120], [I52 The datom and its store][I52]; built with
+[I67 Minting entity id segments][I67]). Each segment of an id is minted or derived, declared per entity type in
 the catalog. A minted segment comes from the HLC's encoder
 ([ADR-0007](0007-hybrid-logical-clock.md)): any `node` mints offline, the device fingerprint keeps
 two `node`s apart, and segments sort by creation, as `tx` does
@@ -63,9 +63,9 @@ two `node`s apart, and segments sort by creation, as `tx` does
 identifies the thing, wherever every copy must compute the same id: membership
 `M{person}`, the account `A{sha256(iss, sub)}`, journal entries. vivief's flat
 ULID ids are not adopted: the path carries isolation, tree deletes,
-compaction, Reactivity keys and partial sync on demand (D114). An external
+compaction, Reactivity keys and partial sync on demand ([D114 Partial sync on demand][D114]). An external
 identifier, such as a company's KvK number, is an attribute, never a segment
-(D122).
+([D122 External identifiers][D122]).
 
 ## Trade-offs
 
@@ -75,8 +75,8 @@ guideline.
 
 ## Failure-handling
 
-P05: defining-attribute lifecycle, prefix-id cascade, orphan conflict.
-Positive control lives with changesets (P05).
+[P05 Changesets and projections][P05]: defining-attribute lifecycle, prefix-id cascade, orphan conflict.
+Positive control lives with changesets ([P05][P05]).
 
 ## Outcome
 
@@ -93,3 +93,14 @@ Retracting a list hid composed items; restoring the list restored them. A
 user-content write under a deleted owner raised an orphan conflict rather than
 dropping the write. Evidence:
 [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D114]: ../plan/bootstrap/02-decision-log.md#d114
+[D120]: ../plan/bootstrap/02-decision-log.md#d120
+[D122]: ../plan/bootstrap/02-decision-log.md#d122
+[D38]: ../plan/bootstrap/02-decision-log.md#d38
+[I52]: ../issues/0052-the-datom-and-its-store.md
+[I67]: ../issues/0067-minting-entity-id-segments.md
+[P05]: ../plan/bootstrap/06-qualification-gates.md#p05
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

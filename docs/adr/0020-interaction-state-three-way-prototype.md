@@ -6,37 +6,37 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P08
+Qualifying gate: [P08 UI three-way prototype][P08]
 
-Related: D12. [ADR 0015](0015-deferreds-vs-machines.md),
+Related: [D12 Three-way interaction-state prototype][D12]. [ADR 0015](0015-deferreds-vs-machines.md),
 [ADR 0019](0019-ui-state-ownership-and-query-atoms.md).
 
 ## Problem
 
 The ecosystem has not settled on XState vs Effect for interaction state.
-Argument will not pick a winner faster than real code. After D11, machines
+Argument will not pick a winner faster than real code. After [D11 Human steps as deferreds][D11], machines
 shrink to ephemeral interaction, which changes the comparison.
 
 ## Design
 
-Settle XState vs Effect by one prototype built three ways, after D11:
+Settle XState vs Effect by one prototype built three ways, after [D11 Human steps as deferreds][D11]:
 
 1. XState v5 + Effect (via `fromPromise`)
 2. `@typeonce/effect-machine`
 3. Plain Effect + Atom
 
-One screen of the evidence flow, with ADR 0019's three state owners and query
+One screen of the evidence flow, with [ADR-0019 UI state ownership and live reads with query atoms][ADR-0019]'s three state owners and query
 atoms. Compared on type safety, test and story ergonomics, and lines of code.
 All three variants must pass the same screen tests and stories. This ADR
-records the winner once P08 passes.
+records the winner once [P08 UI three-way prototype][P08] passes.
 
-Product-specific criteria (voice, affordance) stay out (D55). The probe
+Product-specific criteria (voice, affordance) stay out ([D55 Exemplar first, product apps later][D55]). The probe
 recorded Effect + Atom on file LOC and sharing query atoms. Human review
 in [p08-comparison.md](../evidence/p08-comparison.md) copies
 **IntentComposer** in **effect-machine**, on typing (illegal states
 unrepresentable, Effect errors kept) and a generated mermaid graph that
 verify can check. XState and Atom stay retained probes behind the session
-seam. Query atoms stay Atom (D42). Acceptance is a separate status.
+seam. Query atoms stay Atom ([D42 Live reads with query atoms][D42]). Acceptance is a separate status.
 
 ## Trade-offs
 
@@ -53,7 +53,7 @@ The harness is broken if nothing can fail.
 
 ### Expected
 
-One recorded winner with linked P08 evidence. Feature IntentComposer uses
+One recorded winner with linked [P08 UI three-way prototype][P08] evidence. Feature IntentComposer uses
 that winner; the other two variants remain retained probes.
 
 ### Observed
@@ -81,8 +81,19 @@ replaced `intent-composer.mmd`. Rename pass
 effect-machine 200, XState 113, Atom 77. XState and Atom remain retained
 probes. Query atoms stay Atom.
 
-2026-09-29, Docs and teaching grilling (D72). Drift: `IntentComposerView`
+2026-09-29, Docs and teaching grilling ([D72 UI on every platform][D72]). Drift: `IntentComposerView`
 renders DOM elements through `react-dom`, and `apps/evidence-mobile` does not
 use it, so the qualified pattern never ran on iOS or Android; its "stories"
 are jsdom tests. The state machine, selector and query atoms stand. The view
-is rewritten in React Native primitives under gate P12, and P08 re-runs.
+is rewritten in React Native primitives under gate [P12 UI on every platform][P12], and [P08 UI three-way prototype][P08] re-runs.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0019]: 0019-ui-state-ownership-and-query-atoms.md
+[D11]: ../plan/bootstrap/02-decision-log.md#d11
+[D12]: ../plan/bootstrap/02-decision-log.md#d12
+[D42]: ../plan/bootstrap/02-decision-log.md#d42
+[D55]: ../plan/bootstrap/02-decision-log.md#d55
+[D72]: ../plan/bootstrap/02-decision-log.md#d72
+[P08]: ../plan/bootstrap/06-qualification-gates.md#p08
+[P12]: ../plan/bootstrap/06-qualification-gates.md#p12

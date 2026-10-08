@@ -6,10 +6,10 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P02
+Qualifying gate: [P02 SQLite drivers][P02]
 
-Related: D16. [research/02](../plan/bootstrap/research/02-effect-v4-react-native.md).
-Amendment: D16 named op-sqlite 17.x; P02 measured that 17.x does not compile on
+Related: [D16 SQLite drivers][D16]. [research/02](../plan/bootstrap/research/02-effect-v4-react-native.md).
+Amendment: [D16][D16] named op-sqlite 17.x; [P02 SQLite drivers][P02] measured that 17.x does not compile on
 RN 0.88 New Architecture.
 
 ## Problem
@@ -26,7 +26,7 @@ Use Effect's official drivers: `@effect/sql-sqlite-react-native` on
 `<18`) on native, `@effect/sql-sqlite-wasm` with OPFS on web. The expo-sqlite
 `SqlClient` remains a retained fallback probe, not the shipped adapter.
 
-D16 named 17.x. 17.1.3 and 17.2.0 fail to compile on RN 0.88 because
+[D16 SQLite drivers][D16] named 17.x. 17.1.3 and 17.2.0 fail to compile on RN 0.88 because
 `RCTCxxBridge` was removed in 0.87. 18.2.5 installs JSI via `RCTBridgeProxy`.
 That pin is the P02-measured resolution of the peer conflict.
 
@@ -39,16 +39,16 @@ first attempt.
 
 ## Failure-handling
 
-P02: migrations, transactions, EAVT queries and a volume that exercises index
+[P02 SQLite drivers][P02]: migrations, transactions, EAVT queries and a volume that exercises index
 behaviour run on iOS, Android and web. Peer conflict resolved by pinning 18.2.5.
 Fallback probe: minimal `SqlClient` over expo-sqlite passes the same checks.
-P02 fails if the Android emulator fails.
+[P02][P02] fails if the Android emulator fails.
 
 ## Outcome
 
 ### Expected
 
-One `SqlClient` contract. Native uses op-sqlite (17.x in D16; 18.2.5 as
+One `SqlClient` contract. Native uses op-sqlite (17.x in [D16 SQLite drivers][D16]; 18.2.5 as
 measured). Web uses OPFS. Fallback exists as a retained probe, used only if the
 official drivers fail.
 
@@ -61,3 +61,7 @@ on iOS, Android and web for both the official driver and the expo-sqlite
 fallback. Android emulator required and green. Evidence:
 [2026-09-20-p02.md](../evidence/2026-09-20-p02.md).
 
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D16]: ../plan/bootstrap/02-decision-log.md#d16
+[P02]: ../plan/bootstrap/06-qualification-gates.md#p02

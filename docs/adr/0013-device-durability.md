@@ -2,13 +2,13 @@
 
 Summary: On a device, durable means resume on the next launch, woken by local notifications.
 
-Status: Qualified (P07 native resume). P17 (browser leader) unverified
+Status: Qualified ([P07 Device resume E2E][P07] native resume). [P17 Browser engine leader][P17] (browser leader) unverified
 
 Date: 2026-09-20
 
-Qualifying gate: P07, P17
+Qualifying gate: [P07 Device resume E2E][P07], [P17 Browser engine leader][P17]
 
-Related: D3, D24, D25. [ADR 0012](0012-datom-backed-workflow-engine.md).
+Related: [D3 Resume on next launch][D3], [D24 Durable clocks and notifications][D24], [D25 Browser engine leader][D25]. [ADR 0012](0012-datom-backed-workflow-engine.md).
 
 ## Problem
 
@@ -39,15 +39,15 @@ election the native apps do not need.
 
 ## Failure-handling
 
-P07: Maestro via agent-device force-quits mid-upload and mid-wait on iOS
+[P07 Device resume E2E][P07]: Maestro via agent-device force-quits mid-upload and mid-wait on iOS
 simulator **and** Android emulator; relaunch resumes; a scheduled local
 notification tap completes a deferred; the trace shows crash and resume.
 Positive control: without the engine sweep on launch, the workflow does not
-resume. P07 fails if the Android emulator fails.
+resume. [P07][P07] fails if the Android emulator fails.
 
-P17: two tabs, one engine; killing the leader promotes the other, which
+[P17 Browser engine leader][P17]: two tabs, one engine; killing the leader promotes the other, which
 resumes; followers render and forward. Positive control: without the lock, two
-engines are detected. P17 is follow-on, not foundation closure.
+engines are detected. [P17][P17] is follow-on, not foundation closure.
 
 ## Outcome
 
@@ -65,7 +65,15 @@ Motel showed `p07.park` and `p07.resume` for the mid-upload token on both
 platforms. Completing the `approval` deferred after relaunch finished
 `DeviceResume.v1`. Maestro YAML did not itself deliver the kill (iOS replay
 daemon had no session; Android saw the Expo developer menu); `simctl` /
-`adb force-stop` did. A SpringBoard/shade tap on "P07 approval" was not
+`adb force-stop` did. A SpringBoard/shade tap on "[P07 Device resume E2E][P07] approval" was not
 observed; the deferred completed via last-notification-response or a host
-`runtime:eval` of the in-app complete hook. P17 not run. Evidence:
+`runtime:eval` of the in-app complete hook. [P17 Browser engine leader][P17] not run. Evidence:
 [2026-09-21-p07.md](../evidence/2026-09-21-p07.md).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D24]: ../plan/bootstrap/02-decision-log.md#d24
+[D25]: ../plan/bootstrap/02-decision-log.md#d25
+[D3]: ../plan/bootstrap/02-decision-log.md#d3
+[P07]: ../plan/bootstrap/06-qualification-gates.md#p07
+[P17]: ../plan/bootstrap/06-qualification-gates.md#p17

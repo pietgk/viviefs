@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P09
+Qualifying gate: [P09 Sync][P09]
 
-Related: D36. [Architecture section 7](../plan/bootstrap/03-architecture.md).
+Related: [D36 Shared commands][D36]. [Architecture section 7](../plan/bootstrap/03-architecture.md).
 
 ## Problem
 
@@ -40,7 +40,7 @@ rebuild-on-reject is more work than "trust the client".
 
 ## Failure-handling
 
-P09: typed rejection with rebuild and reapply; unknown-attribute upgrade
+[P09 Sync][P09]: typed rejection with rebuild and reapply; unknown-attribute upgrade
 error. web-interview ADR 008 is the behavioural reference.
 
 ## Outcome
@@ -60,3 +60,8 @@ whole changeset. It does not re-execute the command. `BasisRejected` aborts
 the open changeset locally, rebuilds, and the next outbox entry is acked.
 `UnknownAttribute` is the upgrade error. Not Accepted. Evidence:
 [2026-09-22-p09.md](../evidence/2026-09-22-p09.md).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D36]: ../plan/bootstrap/02-decision-log.md#d36
+[P09]: ../plan/bootstrap/06-qualification-gates.md#p09

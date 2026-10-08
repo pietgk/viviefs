@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P01
+Qualifying gate: [P01 Platform on SDK 58][P01]
 
-Related: D22. [research/02](../plan/bootstrap/research/02-effect-v4-react-native.md),
+Related: [D22 Expo SDK 58][D22]. [research/02](../plan/bootstrap/research/02-effect-v4-react-native.md),
 [research/05](../plan/bootstrap/research/05-related-work-and-inputs.md),
 [ADR 0003](0003-effect-v4-as-backbone.md).
 
@@ -17,7 +17,7 @@ Related: D22. [research/02](../plan/bootstrap/research/02-effect-v4-react-native
 Expo SDK 58 (RN 0.88) from day one. Pin the beta; move to stable when it lands
 (expected October 2026). Rerun the RN compatibility research on SDK 58 first.
 
-Known work from SDK 56 that P01 must re-measure:
+Known work from SDK 56 that [P01 Platform on SDK 58][P01] must re-measure:
 
 - `crypto.getRandomValues` and `crypto.subtle.digest` polyfills (expo-crypto or
   react-native-quick-crypto). Hermes has neither; Workflow hashes ids with
@@ -29,7 +29,7 @@ Known work from SDK 56 that P01 must re-measure:
   about 2.7 MB to an iOS bundle on SDK 56.
 - Record what "iOS 27 required" means (deployment target vs build SDK).
 
-iOS, Android and web are first-class. P01 fails if the Android emulator fails.
+iOS, Android and web are first-class. [P01 Platform on SDK 58][P01] fails if the Android emulator fails.
 
 ## Trade-offs
 
@@ -39,7 +39,7 @@ forbidden.
 
 ## Failure-handling
 
-P01 pass condition: the research/02 probe (15 checks including Workflow +
+[P01 Platform on SDK 58][P01] pass condition: the research/02 probe (15 checks including Workflow +
 Activity on the memory engine) on a real iOS simulator and a real Android
 emulator with real polyfills; a bundle importing `effect/sql` builds
 with the Migrator babel workaround; JS bundle-size baseline recorded. Positive
@@ -61,3 +61,8 @@ no SQL import, was 3389852 bytes. "iOS 27" means the build SDK, not the
 minimum deployment target: this run used Xcode 26.6 and an iOS 26.5
 simulator. Evidence: [2026-09-20-p01.md](../evidence/2026-09-20-p01.md).
 Qualified 2026-09-22 from that record. Not Accepted.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D22]: ../plan/bootstrap/02-decision-log.md#d22
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01

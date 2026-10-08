@@ -16,10 +16,10 @@ guides.
 Qualifying gate: none (process). The pattern is the process; later ADRs are
 qualified under it.
 
-Related: D28-D30, D46, D48', D59-D94.
+Related: [D28 Docs site like effect.website][D28]-[D30 One source for humans and agents][D30], [D46 Spikes are gates][D46], [D48' Verify - Qualify - Teach][D48'], [D59 Starlight docs site][D59]-[D94 A glossary a newcomer can read][D94].
 [Verify - Qualify - Teach](../plan/bootstrap/05-verify-qualify-teach.md),
 [Gates](../plan/bootstrap/06-qualification-gates.md). Principles adapted from
-complyj ADR 0006.
+complyj `ADR 0006`.
 
 ## Problem
 
@@ -34,7 +34,7 @@ One pattern, three questions, each with its own mechanism.
 
 **Verify** (every change): staged `pnpm verify`, fail fast between stages,
 collect all failures within a stage. Stages `static -> unit -> integration ->
-ui -> quality` are an elaboration of D48', not a separate grilling answer.
+ui -> quality` are an elaboration of [D48' Verify - Qualify - Teach][D48'], not a separate grilling answer.
 Ownership registry; ratchet lockfile; mobile JS bundle-size budget gated now;
 no retries (flakiness is a defect). Vitest + `@effect/vitest` only for unit
 and integration. Storybook, Maestro and Playwright remain other layers.
@@ -45,8 +45,8 @@ is a passing verify, with a mechanical path rule for docs-only diffs.
 **Qualify** (before depending on a claim): numbered gates with retained
 probes, positive controls, fingerprinted append-only ledger, sequential full
 run. Gate table is code. Unknown gate ids fail. The ledger is a plain file,
-not datoms. P01-P10 are the foundation stage (D46's six themes split so each
-fact can fail independently). P11-P17 are follow-on, not foundation closure.
+not datoms. [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] are the foundation stage ([D46 Spikes are gates][D46]'s six themes split so each
+fact can fail independently). [P11 Identity][P11]-[P17 Browser engine leader][P17] are follow-on, not foundation closure.
 A stage closes only with one sequential full run on unchanged committed
 inputs.
 
@@ -67,15 +67,15 @@ before the guide exists reviews the wrong thing, so the lifecycle is
 status; it is part of acceptance.
 
 Every guide follows one guide template. Its shape is found in Docs and
-teaching: drafted on the log store (P04, P05), then tried on durable workflow
-(P06, P07) and identity (P11), which differ from it on purpose. When a later
+teaching: drafted on the log store ([P04 Log store conformance][P04], [P05 Changesets and projections][P05]), then tried on durable workflow
+([P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07]) and identity ([P11 Identity][P11]), which differ from it on purpose. When a later
 guide shows the template is wrong, the template changes and the guides
 already written are brought up to date in the same change, so every guide
 keeps one shape. Lessons still cite gate evidence and never become the source
 of a claim.
 
 **What separates verify from qualify** (amendment 2026-09-29, Docs and
-teaching, D70). Not speed: the crash matrix takes 6 s, a device gate
+teaching, [D70 Verify versus qualify][D70]). Not speed: the crash matrix takes 6 s, a device gate
 minutes. Verify runs every check that needs only the host (Node, jsdom or a
 headless browser, in-process SQLite or PGlite; no container, no device),
 checks the code's contract on every change, and changes no file. Qualify
@@ -86,31 +86,31 @@ verify baseline` is the one command that writes the lockfile. Time is
 reported, not gated.
 
 **Evidence is owned per file** (amendment 2026-09-30, Evidence ownership
-design review, D75-D79). The per-project evidence owner becomes a registry of
+design review, [D75 Evidence vocabulary][D75]-[D79 Schema at every boundary, linted][D79]). The per-project evidence owner becomes a registry of
 every production file, each with one **file treatment** (the verify step that
 produces its evidence and the verdict applied) and a written rationale. Which
 contract was checked is a separate axis: a **suite** checks one aspect of one
 pattern's contract (`<pattern>/<aspect>`), and a registry entry names the
-suites run against the file. This refines D71, which listed conformance,
+suites run against the file. This refines [D71 Evidence ownership][D71], which listed conformance,
 crash matrix and probe host checks among the treatments. Exact coverage is
 judged only against the file's owning producer and recorded in the evidence
 lockfile, written by `pnpm verify baseline` alone.
 
 **Guides map onto patterns without repeating each other** (amendment
-2026-10-01, Log-store guide design review, D81-D86). Patterns build on each
+2026-10-01, Log-store guide design review, [D81 What a lesson is][D81]-[D86 Named, linked references][D86]). Patterns build on each
 other; they do not nest. A concept lives in the guide of the pattern whose
 contract defines it and whose suite checks it, and every ADR is named by exactly
 one guide. A lesson is one page that teaches one idea and ends in its exercise
 section, with recall before and after and one primary source. A project's
 `metadata.guides` is a list, because one project can be the exemplar of two
-patterns (this amends D67's single guide). Gate, ADR and decision references
+patterns (this amends [D67 Exemplar links to its guide][D67]'s single guide). Gate, ADR and decision references
 read as their name and link to the evidence note, the ADR or the decision's
 row, resolved when the site renders so no author has to remember it, with a
-one-line preview on hover (D87-D90); every decision has a name and every ADR a
+one-line preview on hover ([D87 References resolved when rendered][D87]-[D90 Hover previews][D90]); every decision has a name and every ADR a
 one-line summary. A learner's `pnpm exercise` run ends in a verdict that says
-what is missing and where to edit (D91).
+what is missing and where to edit ([D91 The exercise loop][D91]).
 
-**Acceptance needs current gates** (D63). Before a guide is recorded as
+**Acceptance needs current gates** ([D63 Acceptance on the guide][D63]). Before a guide is recorded as
 accepted, its gates run and pass on that commit, and the commit names the
 ledger run. `verify` checks that guide and ADR statuses agree; it does not
 read the ledger.
@@ -138,18 +138,18 @@ delivered until its guide is accepted.
 ### Observed
 
 Verify and Qualify are in use: `pnpm verify` gates every change, and
-`pnpm qualify` recorded P01-P11 in the ledger, closed by one sequential run on
+`pnpm qualify` recorded [P01 Platform on SDK 58][P01]-[P11 Identity][P11] in the ledger, closed by one sequential run on
 2026-09-28 ([closure note](../evidence/2026-09-28-p01-p11-closure.md)). Teach
 has not started: no guide exists, so no pattern is delivered yet.
 
 2026-09-29, Docs and teaching grilling. Three places where the build does less
-than this ADR and D48' say, recorded as decisions with a place in the
+than this ADR and [D48' Verify - Qualify - Teach][D48'] say, recorded as decisions with a place in the
 Schedule: evidence owners are declared per project but not checked against
-what runs, and there is no coverage lockfile (D71); the crash matrix runs only
-in P06, not in verify (D71); the `ui` stage's `storybook` step is Vitest with
-jsdom, and no story runs in a real browser or on a device (D72).
+what runs, and there is no coverage lockfile ([D71 Evidence ownership][D71]); the crash matrix runs only
+in [P06 Workflow engine crash matrix][P06], not in verify ([D71][D71]); the `ui` stage's `storybook` step is Vitest with
+jsdom, and no story runs in a real browser or on a device ([D72 UI on every platform][D72]).
 
-2026-10-01, Evidence ownership (D75-D80). Every production file has one file
+2026-10-01, Evidence ownership ([D75-D80 Evidence ownership design review][D75-D80]). Every production file has one file
 treatment in the registry (226 files), checked by `ownership` in `static`. The
 coverage producers `unit`, `integration` and `storybook` are one root Vitest
 run each, with Istanbul coverage limited to the files they own; `evidence` in
@@ -168,3 +168,33 @@ not survive rendering. The docs-only path rule is code
 (`tools/verify/src/docs-only.ts`): without a selector, a change that touches
 only prose runs `docs` and `diagrams`; CI runs every stage. No guide exists
 yet.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D28]: ../plan/bootstrap/02-decision-log.md#d28
+[D30]: ../plan/bootstrap/02-decision-log.md#d30
+[D46]: ../plan/bootstrap/02-decision-log.md#d46
+[D48']: ../plan/bootstrap/02-decision-log.md#d48p
+[D59]: ../plan/bootstrap/02-decision-log.md#d59
+[D63]: ../plan/bootstrap/02-decision-log.md#d63
+[D67]: ../plan/bootstrap/02-decision-log.md#d67
+[D70]: ../plan/bootstrap/02-decision-log.md#d70
+[D71]: ../plan/bootstrap/02-decision-log.md#d71
+[D72]: ../plan/bootstrap/02-decision-log.md#d72
+[D75]: ../plan/bootstrap/02-decision-log.md#d75
+[D75-D80]: ../plan/bootstrap/02-decision-log.md#d75-d80
+[D79]: ../plan/bootstrap/02-decision-log.md#d79
+[D81]: ../plan/bootstrap/02-decision-log.md#d81
+[D86]: ../plan/bootstrap/02-decision-log.md#d86
+[D87]: ../plan/bootstrap/02-decision-log.md#d87
+[D90]: ../plan/bootstrap/02-decision-log.md#d90
+[D91]: ../plan/bootstrap/02-decision-log.md#d91
+[D94]: ../plan/bootstrap/02-decision-log.md#d94
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P04]: ../plan/bootstrap/06-qualification-gates.md#p04
+[P05]: ../plan/bootstrap/06-qualification-gates.md#p05
+[P06]: ../plan/bootstrap/06-qualification-gates.md#p06
+[P07]: ../plan/bootstrap/06-qualification-gates.md#p07
+[P10]: ../plan/bootstrap/06-qualification-gates.md#p10
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11
+[P17]: ../plan/bootstrap/06-qualification-gates.md#p17

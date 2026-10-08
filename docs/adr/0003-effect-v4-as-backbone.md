@@ -8,9 +8,9 @@ Date: 2026-09-20. Amended 2026-10-02 (Effect 4.0.0): pin the stable release, the
 `unstable` segment left the import paths, and the language service's
 `unstableApiUsage` rule is off.
 
-Qualifying gate: P01
+Qualifying gate: [P01 Platform on SDK 58][P01]
 
-Related: D8, D9. [Architecture](../plan/bootstrap/03-architecture.md),
+Related: [D8 Effect everywhere][D8], [D9 Effect v4, pinned][D9]. [Architecture](../plan/bootstrap/03-architecture.md),
 [research/01](../plan/bootstrap/research/01-effect-v4-durable-execution.md),
 [research/02](../plan/bootstrap/research/02-effect-v4-react-native.md).
 
@@ -33,7 +33,7 @@ Greenfield started on the v4 RC, not v3. Public interfaces only. Workflows use
 
 Workflow, sql, rpc, http, cli, reactivity and observability are still marked
 `@stability unstable` in 4.0. The language service's `unstableApiUsage` rule
-would warn on every use, and warnings fail `tsc` (ADR-0029), so
+would warn on every use, and warnings fail `tsc` ([ADR-0029 Effect reference subtree and language service][ADR-0029]), so
 `tsconfig.base.json` turns it off: depending on these modules is this decision,
 and the exact pin below is its mitigation.
 
@@ -46,7 +46,7 @@ the cost of a migration the grilling already refused.
 
 ## Failure-handling
 
-P01 must show Effect v4 running on Expo SDK 58 / RN 0.88 / Hermes with
+[P01 Platform on SDK 58][P01] must show Effect v4 running on Expo SDK 58 / RN 0.88 / Hermes with
 Workflow + Activity on the memory engine, on iOS and Android, with real
 polyfills. A bundle without the crypto polyfill is the positive control (the
 workflow check fails).
@@ -70,10 +70,19 @@ Evidence: [2026-09-20-p01.md](../evidence/2026-09-20-p01.md). Qualified
 
 2026-10-02. Moved from `4.0.0-rc.116` to `4.0.0`, with `@effect/tsgo` 0.47.2.
 The code changes were the import paths (`effect/unstable/*` became `effect/*`),
-`effect/Encoding` becoming `effect/encoding/Base64` in the P01 checks, and the
+`effect/Encoding` becoming `effect/encoding/Base64` in the [P01 Platform on SDK 58][P01] checks, and the
 Metro stub's path (`dist/sql/Migrator.js`; with the old path the iOS export
 fails on the dynamic `import()`). `verify` was green on every project.
-P01-P11 passed again in one sequential run on `1a5175fa2`, run
+[P01][P01]-[P11 Identity][P11] passed again in one sequential run on `1a5175fa2`, run
 `2026-10-02T14-20-51.580Z-2ce3b275`, clean tree, inputs unchanged during the
-run, about 29 minutes. P07's notification-tap fallbacks were the same as in the
+run, about 29 minutes. [P07 Device resume E2E][P07]'s notification-tap fallbacks were the same as in the
 run of 2026-10-01.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[ADR-0029]: 0029-effect-reference-and-language-service.md
+[D8]: ../plan/bootstrap/02-decision-log.md#d8
+[D9]: ../plan/bootstrap/02-decision-log.md#d9
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P07]: ../plan/bootstrap/06-qualification-gates.md#p07
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

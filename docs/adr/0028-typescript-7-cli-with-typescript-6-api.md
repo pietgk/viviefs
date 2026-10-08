@@ -8,7 +8,7 @@ Date: 2026-09-21
 
 Qualifying gate: verify
 
-Related: D49, [ADR-0027](0027-developer-experience-planes.md). Prepares
+Related: [D49 Three developer-experience planes][D49], [ADR-0027](0027-developer-experience-planes.md). Prepares
 `@effect/tsgo` (not admitted in this change). Microsoft dual-install:
 https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/. Nx
 guide: https://nx.dev/docs/kb/typescript-7.
@@ -72,3 +72,7 @@ unit, integration; ui/quality targets skipped as undeclared).
 must report 7.x patched by `@effect/tsgo`, `tsc6` must report 6.x, and the
 `typescript` package must be 6.x with `readConfigFile` a function. All pass
 (`7.0.2+effect-tsgo.0.45.0`, `6.0.3`).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D49]: ../plan/bootstrap/02-decision-log.md#d49

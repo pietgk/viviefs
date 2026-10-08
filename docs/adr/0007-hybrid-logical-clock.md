@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P04
+Qualifying gate: [P04 Log store conformance][P04]
 
-Related: D33', D119. [Architecture section 3](../plan/bootstrap/03-architecture.md).
+Related: [D33' Hybrid logical clock for tx][D33'], [D119 Time corrected by authority][D119]. [Architecture section 3](../plan/bootstrap/03-architecture.md).
 
 ## Problem
 
@@ -30,16 +30,16 @@ Receive: `last = max(last, received)`. Never mint below anything seen.
 
 Encoded ULID-shaped: 48-bit ms, 16-bit counter, remaining bits random plus
 device id. Lexicographically sortable. Offset and last HLC persist in SQLite.
-The `node` holding authority rejects future skew and flags measured gaps. P04 picks the actual skew
+The `node` holding authority rejects future skew and flags measured gaps. [P04 Log store conformance][P04] picks the actual skew
 bound (web-interview used 5s; that number is indicative).
 
-**Worded for any `node`** (amendment 2026-10-08, D119, I52). The clock never
+**Worded for any `node`** (amendment 2026-10-08, [D119 Time corrected by authority][D119], [I52 The datom and its store][I52]). The clock never
 depended on a server process: time is corrected against whichever `node` holds
 the duty to order changes, and that `node` refuses a `tx` too far ahead
-(D105 (1)). The device fingerprint in every `tx` is what catch-up by
-each writer's progress would use (D105 (4)). vivief's ULID from the device's own
+([D105 What must stay possible][D105] (1)). The device fingerprint in every `tx` is what catch-up by
+each writer's progress would use ([D105][D105] (4)). vivief's ULID from the device's own
 clock is not adopted for `tx`, for the reason in Problem; the same encoder
-mints entity id segments ([ADR-0010](0010-entity-ids-and-defining-attributes.md), D120).
+mints entity id segments ([ADR-0010](0010-entity-ids-and-defining-attributes.md), [D120 Minted and derived id segments][D120]).
 
 ## Trade-offs
 
@@ -49,8 +49,8 @@ clocks lose physical meaning; pure physical clocks fail on jumps.
 
 ## Failure-handling
 
-P04 includes backwards clock, reboot, and remote-ahead cases. Server-side skew
-detection is flagged in the trace. The bound and append volume are P04's to
+[P04 Log store conformance][P04] includes backwards clock, reboot, and remote-ahead cases. Server-side skew
+detection is flagged in the trace. The bound and append volume are [P04][P04]'s to
 pick, not this ADR's.
 
 ## Outcome
@@ -62,18 +62,28 @@ pick, not this ADR's.
 ### Observed
 
 2026-09-20. Ledger pass
-`2026-09-20T19-30-57.292Z-6aa3906d`. P04 picked a 5 second future-skew bound.
+`2026-09-20T19-30-57.292Z-6aa3906d`. [P04 Log store conformance][P04] picked a 5 second future-skew bound.
 Mint stayed ordered across backwards wall jumps, reboot (persisted last HLC),
 and a remote-ahead receive. Future skew of 5001 ms was rejected. Evidence:
 [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).
 
-2026-09-27, P11 step 4. The first server on Postgres with the live clock
+2026-09-27, [P11 Identity][P11] step 4. The first server on Postgres with the live clock
 failed to save `hlc_state`: physical time was fractional. After boot, mint
 time is `correctedOrigin + (monotonicMs - monotonicOrigin)`, and
 `performance.now()` has fractions. A fraction beat the last pt, reset the
 counter, and the encoder truncated it back, so two txs could share `(pt, c)`
 and order by their random bits: a later write could sort before an earlier
-one. SQLite stored the fraction silently; P04 did not see it because its
+one. SQLite stored the fraction silently; [P04 Log store conformance][P04] did not see it because its
 clock is integer. `correctedNow` now returns whole milliseconds, and
 `hlc.test.ts` mints from a fractional monotonic clock and requires strictly
-increasing `(pt, c)`. Device gates re-run in the P11 closing run.
+increasing `(pt, c)`. Device gates re-run in the [P11][P11] closing run.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D105]: ../plan/bootstrap/02-decision-log.md#d105
+[D119]: ../plan/bootstrap/02-decision-log.md#d119
+[D120]: ../plan/bootstrap/02-decision-log.md#d120
+[D33']: ../plan/bootstrap/02-decision-log.md#d33p
+[I52]: ../issues/0052-the-datom-and-its-store.md
+[P04]: ../plan/bootstrap/06-qualification-gates.md#p04
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

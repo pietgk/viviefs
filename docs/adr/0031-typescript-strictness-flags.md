@@ -8,7 +8,7 @@ Date: 2026-09-21
 
 Qualifying gate: verify
 
-Related: D49, [ADR-0028](0028-typescript-7-cli-with-typescript-6-api.md),
+Related: [D49 Three developer-experience planes][D49], [ADR-0028](0028-typescript-7-cli-with-typescript-6-api.md),
 [ADR-0029](0029-effect-reference-and-language-service.md). Effect's
 `repos/effect/tsconfig.base.json` is the source of the candidate flags, not
 a list to copy.
@@ -74,3 +74,7 @@ qualification spawn option bags accepted `| undefined`.
 2026-09-29: now a check that can fail, in `verify`'s unit stage ([`guardrails.test.ts`](../../tools/verify/src/guardrails.test.ts)): the
 three flags must be on in `tsconfig.base.json`, and
 `rewriteRelativeImportExtensions` and `ignoreDeprecations` must be absent.
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D49]: ../plan/bootstrap/02-decision-log.md#d49

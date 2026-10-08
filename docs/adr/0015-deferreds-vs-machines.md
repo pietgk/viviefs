@@ -6,9 +6,9 @@ Status: Qualified
 
 Date: 2026-09-20
 
-Qualifying gate: P06, P09
+Qualifying gate: [P06 Workflow engine crash matrix][P06], [P09 Sync][P09]
 
-Related: D11, D40. [ADR 0012](0012-datom-backed-workflow-engine.md),
+Related: [D11 Human steps as deferreds][D11], [D40 Server-side human steps][D40]. [ADR 0012](0012-datom-backed-workflow-engine.md),
 [ADR 0020](0020-interaction-state-three-way-prototype.md).
 
 ## Problem
@@ -33,13 +33,13 @@ auditable.
 
 ## Trade-offs
 
-This split shrinks machines to interaction state (input to P08) instead of
+This split shrinks machines to interaction state (input to [P08 UI three-way prototype][P08]) instead of
 competing with Effect Workflow for durable progress. The cost is that UI
 cannot stash durable progress in component state.
 
 ## Failure-handling
 
-P06 covers deferred waits in the crash matrix. P09 covers deferred completion
+[P06 Workflow engine crash matrix][P06] covers deferred waits in the crash matrix. [P09 Sync][P09] covers deferred completion
 from the server.
 
 ## Outcome
@@ -51,12 +51,20 @@ datoms.
 
 ### Observed
 
-2026-09-20. P06: kill during a deferred wait resumed at "waiting for approval";
+2026-09-20. [P06 Workflow engine crash matrix][P06]: kill during a deferred wait resumed at "waiting for approval";
 completing the deferred continued the workflow. Evidence:
 [2026-09-20-p06.md](../evidence/2026-09-20-p06.md).
 
-2026-09-22. P09: the server appends a self-committed deferred exit
+2026-09-22. [P09 Sync][P09]: the server appends a self-committed deferred exit
 (`server.deferred`, no device lease). The waiting device pulls that datom and
 `Wait` finishes `{ok: true}`. The server does not run the workflow. Not
 Accepted. Evidence:
 [2026-09-22-p09.md](../evidence/2026-09-22-p09.md).
+
+<!-- References: written by pnpm refs fix; do not edit by hand. -->
+
+[D11]: ../plan/bootstrap/02-decision-log.md#d11
+[D40]: ../plan/bootstrap/02-decision-log.md#d40
+[P06]: ../plan/bootstrap/06-qualification-gates.md#p06
+[P08]: ../plan/bootstrap/06-qualification-gates.md#p08
+[P09]: ../plan/bootstrap/06-qualification-gates.md#p09
