@@ -43,6 +43,7 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | [0032](0032-what-viviefs-is-about.md) | What ViViEfs is about and its foundation concepts | Proposed, unverified | none (intent) |
 | [0033](0033-the-presenter-pattern.md) | The Presenter pattern | Proposed, unverified | Presenter conformance gate ([I62 The Presenter conformance gate][I62]), to come |
 | [0034](0034-origin-trust.md) | Origin trust | Proposed, unverified | named when built ([I64 Build origin trust][I64]) |
+| [0035](0035-accepting-a-change.md) | Accepting a change | Proposed, unverified | [P09 Sync][P09] extended ([I69 Accept checks every change][I69]), to come |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. **Accepted** is a human status given on the pattern's
@@ -74,6 +75,7 @@ decision alone ([ADR-0026 Verify - Qualify - Teach][ADR-0026], amended 2026-09-2
 [D88]: ../plan/bootstrap/02-decision-log.md#d88
 [I62]: ../issues/0062-presenter-conformance-gate.md
 [I64]: ../issues/0064-build-origin-trust.md
+[I69]: ../issues/0069-accept-checks-every-change.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P02]: ../plan/bootstrap/06-qualification-gates.md#p02
 [P03]: ../plan/bootstrap/06-qualification-gates.md#p03

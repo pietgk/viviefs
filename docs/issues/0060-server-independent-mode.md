@@ -49,6 +49,8 @@ It sketches three deployments: an **enterprise hub** (today), **enterprise with 
 
 2026-10-08: [I52](0052-the-datom-and-its-store.md) applies [D105 What must stay possible][D105] (1) to the clock and the log store: `tx` is corrected against the `node` holding the duty to order changes, which refuses a `tx` too far ahead, and that `node`'s log is never compacted ([D119 Time corrected by authority][D119]; [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] amended). The mechanism is unchanged. A choice of connectivity gets its own gate when this issue is picked up ([D123 The final choice is the pattern][D123]).
 
+2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): acceptance rules are written against a read model so any `node` holding authority can run them ([D125 Acceptance rules][D125], [D105 What must stay possible][D105] (2)). With several `node`s an access check must not read permissions older than the change it guards, Zanzibar's new enemy problem; a `tx` could play its consistency token ("check as of at least this `tx`"). [I70 Research: access from membership to enterprise][I70] asks the question.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0007]: ../adr/0007-hybrid-logical-clock.md
@@ -60,7 +62,9 @@ It sketches three deployments: an **enterprise hub** (today), **enterprise with 
 [D105]: ../plan/bootstrap/02-decision-log.md#d105
 [D119]: ../plan/bootstrap/02-decision-log.md#d119
 [D123]: ../plan/bootstrap/02-decision-log.md#d123
+[D125]: ../plan/bootstrap/02-decision-log.md#d125
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [I15]: 0015-identity-keys-and-trust.md
 [I53]: 0053-sync-and-conflict.md
 [I58]: 0058-several-servers-in-the-lab.md
+[I70]: 0070-research-access-from-membership-to-enterprise.md

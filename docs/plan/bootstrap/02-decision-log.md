@@ -56,12 +56,14 @@ Reference > Decisions, and a reference to a decision anywhere on the site links 
 | <a id="d58"></a>D58 | Envelope per changeset | The envelope (actor, device, lease epoch, trace context, command) is one fixed-shape record per changeset, keyed by `cs`, stored in the `changesets` table (not as datoms) and sent with the commit datom, or with the datom when `cs == tx`. One mechanism for every changeset size; the commit datom carries only manifest and basis. | The changeset is the unit of intent. Uniform, keeps the one-datom shorthand, queryable by joining on `cs`. Replaces a dual mechanism (commit datom vs columns) that was never decided. |
 | <a id="d58p"></a>D58' | Envelope names the origin | The envelope gains `origin`: a reference to the origin entity the changeset's content came from (a person, a mail account or chat workspace, a website, a model and its version, a system activity), apart from the actor who committed it. An enriching changeset ([D111 Faster and enriching implementations][D111]) also names the origins of its inputs. For data a person types, the origin is that person. The `datoms` table does not change. Decided in [I49 Projection: one concept or several patterns][I49] ([D115 Origin trust][D115]); built with [I64 Build origin trust][I64]. | Trust belongs to an origin ([D115 Origin trust][D115]), so every changeset must say where its content came from; one field per changeset, not per fact, because gathering commits per batch per origin ([D109 Frame and frame subscription][D109]). |
 | <a id="d36"></a>D36 | Shared commands | Commands are shared pure Effect functions `(readModel, intent) -> changeset or DomainError`, run on client and server. The client applies optimistically and queues in an outbox; the server revalidates (Schema, membership, authorization, invariants such as independent review, lease fencing) and accepts or rejects the whole changeset with a typed error. On rejection the client rebuilds from confirmed data and reapplies its remaining outbox. | Server authoritative, offline-capable, one write path for app and engine. |
+| <a id="d36p"></a>D36' | Shared commands, as built | As [D36 Shared commands][D36], corrected by what [P09 Sync][P09] built ([ADR-0016 Commands, server validation and rejection][ADR-0016] Observed): the server does not re-execute the command. It accepts or rejects the changeset by [D124 One checkpoint][D124]'s three questions; the command runs on the device and calls the same acceptance rules ([D125 Acceptance rules][D125]), and every domain writer uses a registered command ([D127 Registered commands][D127]). | [D36 Shared commands][D36] named "invariants such as independent review" among what the server revalidates; nothing on the server checked a domain rule, so a crafted changeset with a blank title was accepted. |
 | <a id="d16"></a>D16 | SQLite drivers | SQLite drivers: Effect's official drivers, `@effect/sql-sqlite-react-native` (op-sqlite 17.x pinned) on native and `@effect/sql-sqlite-wasm` (OPFS) on web, after a gate. Fallback: our own `SqlClient` over expo-sqlite (one driver for iOS, Android, web). | Less custom code at the most failure-sensitive layer. |
 | <a id="d37"></a>D37 | Log store tables | SQLite locally: one append-only datom table with EAVT and AEVT indexes; typed read-model tables (one per entity type, Schema-defined) updated incrementally in the same SQLite transaction. Snapshots and a compaction horizon only past what every device acknowledged. The log store is a pattern with swappable implementations (SQLite device, SQLite Node, Postgres) under one conformance suite. Analytics is a projection to Parquet or DuckLake queried by DuckDB, never the durable log. | Read models are disposable projections; lock-in is avoided because the contract is tested. |
 | <a id="d38"></a>D38 | Entity ids and strict composition | Entity ids encode their parent **only for strict composition** (part of the parent, shared lifetime, can never move), declared per entity type: `O{org}/...` root, list -> todo, order -> line, execution -> journal entries. Everything else uses reference attributes. One projection rule: visible iff the defining attribute is asserted and the owner is visible. Orphaned writes to user-content types raise a conflict. Separator `/`, ids are branded Schema types. Guideline: "can it ever move? then it is a reference". | Keeps one-datom tree deletes and prefix scans, makes `O{org}/` the backbone for isolation and sync, avoids immutable ids that cannot move. |
 | <a id="d21"></a>D21 | Sync as datom replication (superseded) | Superseded by [D31 One datom log][D31] + [D35'' Single-datom transactions with changesets][D35''] + [D36 Shared commands][D36]: sync is datom replication (outbox up, cursor stream down), server-authoritative validation per changeset. Effect EventLog was studied as a design reference, not adopted (no server rejection, device-clock ordering, no RN path). | See research/03. |
 | <a id="d43"></a>D43 | Files by content hash | Files are stored by content hash (`blob:sha256...`): local file storage on device, object storage on server. A datom references the hash; the upload is an idempotent retryable activity; a changeset referencing a file commits only once the file exists on the server (manifest extends to file references). | Bytes in object storage, provenance in the log. |
 | <a id="d44"></a>D44 | Never rename, never migrate | Attributes are never renamed or retyped (new attribute + projector mapping instead). Read models are rebuilt, never migrated. Workflows versioned by name, old versions ship until drained. The server refuses unknown attributes with a typed "upgrade" error. | An append-only vocabulary keeps a log-based system migratable for years. |
+| <a id="d44p"></a>D44' | Never rename, never migrate, the RPC too | As [D44 Never rename, never migrate][D44], and the sync RPC and every HttpApi or RPC contract shared with the client ([D8 Effect everywhere][D8]) are additive too: a method or field is never renamed or removed while a client that uses it may still run. A version handshake answering an old client with a typed upgrade error is deferred, `Decide when:` the first consumer app ships to a store with old versions in the field. vivief's migration as creation is not adopted for the log; a label that changes is a translation, not a rename. | The attribute check covered data, not the calls that carry it; an old client calling a changed method gets a decode error with no way to say "upgrade". |
 | <a id="d50"></a>D50 | Data at rest on device | Data at rest on device: OS file protection as baseline; SQLCipher via op-sqlite with keys in Keychain/Keystore (expo-secure-store) as a qualified option per consumer app, passing the same conformance suite. | GRC probably needs it, BirVana does not. |
 | <a id="d51"></a>D51 | Crypto-shredding | Erasure via crypto-shredding: attributes marked `:personal` store values encrypted with a per-subject key; erasure destroys the key; projections show "erased". Bulky personal files are content-hashed blobs that can be deleted. Qualified by a gate proving unreadability on every replica and projection. | Keeps the log immutable and syncable while meeting the right to erasure. |
 
@@ -256,6 +258,24 @@ No new ADR: [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity i
 | <a id="d122"></a>D122 | External identifiers | An external identifier is an id another system gives a thing, such as the KvK number the Dutch Chamber of Commerce gives a company. It is an ordinary attribute that travels with its entity; a lookup by value is a read model. The provider account stays the exception, server-only because it maps a sign-in to a person ([ADR-0022 Identity and organization isolation][ADR-0022]). An attribute may declare `unique: 'per-organization'`: no two entities of its type in one ViViEfs organization hold the same value, checked by the `node` holding authority on accept against a read model ([D105 What must stay possible][D105] (2)), so an offline duplicate is rejected through the usual path ([D36 Shared commands][D36]). ViViEfs does not check the scheme's own uniqueness: two organizations may each hold the same company. In a declaration "organization" means only ViViEfs's isolation unit; the thing a KvK number identifies is a company. A personal external identifier (a national id) is a personal attribute, encrypted per subject ([ADR-0023 Data at rest and crypto-shredding][ADR-0023]); looking one up by value needs a blind index, deferred on [I54 Trust, encryption and who may sign in][I54]. Built with [I68 Uniqueness as an acceptance rule][I68]. | vivief's "identity is datoms" holds for every external id except the one that grants access. Uniqueness compares two entities, so it is an acceptance rule, not a conflict policy. |
 | <a id="d123"></a>D123 | The final choice is the pattern | "Start on the final choice" ([D9 Effect v4, pinned][D9], [D22 Expo SDK 58][D22]) means the pattern: its contract and conformance check are fixed once a gate proves them, and no feature code depends on a choice before its gate ([D27 Bootstrap output][D27], [D46 Spikes are gates][D46]). Implementations behind the contract stay free to change and to multiply ([D110 The reference implementation][D110], [D111 Faster and enriching implementations][D111]). A choice of connectivity (Iroh, WebRTC) gets its own gate when [I60 Server-independent mode][I60] picks it up ([D105 What must stay possible][D105] (7)). | The human's note: a pattern with several implementations is a more robust final choice than one implementation, and keeps the freedom to implement it in several ways. vivief started on its final protocol from day one and changed it three times in about two months. |
 
+<a id="d124-d129"></a>
+## Accepting a change (2026-10-09)
+
+From [I50](../../issues/0050-contracts-checked-as-data-or-by-commands.md), the fifth ticket of
+[the foundation concepts map](../foundation-concepts/map.md), grilled with the human on
+[the review page](../../research/2026-10-08-contracts-review.html) and in conversation.
+[ADR-0035](../../adr/0035-accepting-a-change.md) states [D124 One checkpoint][D124]-[D128 Rules over time][D128]; [D129 Boundaries and live change][D129], [D36' Shared commands, as built][D36'] and [D44' Never rename, never migrate, the RPC too][D44'] amend what was there.
+Checking the code found that the server does not re-execute a command ([ADR-0016 Commands, server validation and rejection][ADR-0016] Observed), so a rule that lives only in a command, such as `renameList`'s blank title, is never checked by authority.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d124"></a>D124 | One checkpoint | Authority accepts or rejects every change by asking three questions in order: **may this writer do this** (an access decision, [I54 Trust, encryption and who may sign in][I54] and [I16 Roles in use, invitations and self-service membership][I16]), **is it well formed** (the structural checks accept runs today: membership, actor, manifest, organization, catalog, files, lease, write-once), and **does the data stay valid** (acceptance rules, [D125 Acceptance rules][D125]). Each check is declared once, runs early on the device for feedback and with authority on accept as the guard, and has a positive control in a suite. Enforcement follows trust: no writer (a client, an agent, an enriching activity) is trusted to check itself, so authority always enforces. A rule broken by nothing happening is detective, after accept ([D128 Rules over time][D128]). vivief's `Contract` is adopted for its placement (one place every write passes) and for being spec, test and runtime guard at once; contracts as datoms are rejected ([D118 What a datom needs from storage][D118]). A rule that names the writer ("the reviewer is not the author") is an access decision; a rule about the data alone ("a title is not blank") is an acceptance rule. | vivief's elegance was one concept running everywhere; ours is one place every change passes, which the glossary already gives authority. AWS draws the same line between preventive controls (IAM) and detective ones (Config). The server checked structure only, and [D36 Shared commands][D36] claimed more. |
+| <a id="d125"></a>D125 | Acceptance rules | An acceptance rule is a rule about the data alone that every changeset must keep, whoever wrote it. Rules are code declared beside the catalog: the value Schema ([D121 Attribute value types][D121]), uniqueness ([D122 External identifiers][D122]), required attributes, allowed transitions of a value (vivief's state machine mode), and entity rules written against a read model so any `node` could run them ([D105 What must stay possible][D105] (2)). A rule is always a guard; vivief's aggregation mode is a projection or an enriching implementation ([D111 Faster and enriching implementations][D111]), and its closed set of six contract sub-types is not adopted: each lands on one pattern's contract, and [D82 Patterns build on each other][D82] keeps that set open. Commands call the same rules, so a device rejects early with the error authority would give. Acceptance rules are a concept of the changesets pattern ([D82][D82]), checked by the suite `changesets/acceptance`; a rule without a positive control fails `verify` (vivief's declared against verifiable). A rule that warns instead of rejecting is deferred, `Decide when:` an app needs a rule people may knowingly break. Built with [I69 Accept checks every change][I69]. | A rule bound to a command misses every changeset no command wrote, and [I49 Projection: one concept or several patterns][I49] made those normal (enriching implementations, agents). The rules have no implementation to swap, so by [D82 Patterns build on each other][D82] they are a concept, not a pattern. |
+| <a id="d126"></a>D126 | No worse | A changeset is rejected when it breaks an acceptance rule for an entity where the rule held before it, or for an entity it creates. Data accepted before a rule shipped stays editable; a one-off workflow lists it as findings ([D128 Rules over time][D128]). vivief's invariants are likewise not retroactive. | Writes never make the data worse, old data never blocks work, and the findings make the debt visible. Strict checking would freeze every old entity a new rule catches. |
+| <a id="d127"></a>D127 | Registered commands | Every domain writer uses a command: screens, agents, enriching activities and the operator. A command is registered with a name, an intent Schema, a version name and its declared writes, the attributes it may write; accept rejects an unknown command or a write outside its set, which gives an agent least privilege by command. vivief's `produces.required` becomes an acceptance rule on the entity. The one exception is the workflow engine's journal (`viviefs/workflow/*` and the lease), written by the durable-workflow pattern and checked by its own lease fencing and write-once rules ([P06 Workflow engine crash matrix][P06], [P09 Sync][P09]). Re-running a command on accept, as durable execution replays a workflow, is deferred: `Decide when:` an app needs proof that a changeset is exactly what the named command makes, with reads as of a cursor ([I63 The columnar copy as a Presenter implementation][I63]) so authority can re-run it on the data the device saw; commands stay pure with their mint passed in and versions named so it stays possible. Built with [I69 Accept checks every change][I69]. | The envelope always names a command, but only screens' writes came from one; the engine and the operator wrote with a label. One write path in fact gives "which code wrote this?" an answer and gives request rules one home. Re-running would need the intent stored, never renamed and erasable, and every command version shipped until drained, for a proof declared writes mostly give. |
+| <a id="d128"></a>D128 | Rules over time | A rule broken by nothing happening ("a high-risk client has a session within 7 days") is a workflow with a durable clock ([D24 Durable clocks and notifications][D24]) that queries through a Presenter and writes a finding as an ordinary changeset whose origin is the rule ([D58' Envelope names the origin][D58']); a screen sees findings through a frame subscription. Deferred: `Decide when:` a consumer app has such a rule. vivief's post-commit validation point maps here; its in-flight point is deferred with in-flight freshness ([D109 Frame and frame subscription][D109]). | No write breaks such a rule, so no check on accept can catch it. Built from parts that exist; a post-commit hook beside the projector would put meaning into its SQL transaction. |
+| <a id="d129"></a>D129 | Boundaries and live change | Data coming in decodes through Schema at every boundary ([D79 Schema at every boundary, linted][D79]) and names its origin ([D58' Envelope names the origin][D58']); data going out leaves through an activity; vivief's bridge is not named as one pattern. Trust at a boundary is origin trust ([D115 Origin trust][D115]): outside text comes from an origin that defaults to `unreviewed` or `untrusted`, so it stays out of an agent's context by default ([D116 Trust levels and who sets them][D116]). vivief's intake trust per source is origin trust; inferred facts name their inputs' origins ([D111 Faster and enriching implementations][D111]), and a source span (document, page, offset) is deferred, `Decide when:` an app cites a place in a document. Which code handles a request stays fixed at composition ([D52 Four project kinds][D52]); vivief's handlers as data are rejected, and feature flags are deferred, `Decide when:` a consumer app must try a change on one organization without a release, their form open. The ledger and the Schema stay out of the log ([D48' Verify - Qualify - Teach][D48'], [D118 What a datom needs from storage][D118]), and an app's own run-time evidence is that app's data. | [I49 Projection: one concept or several patterns][I49] already answered vivief's trust at the boundary; what was left was naming it. A missing Layer is a compile error only because composition is fixed. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -263,6 +283,7 @@ No new ADR: [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity i
 [ADR-0007]: ../../adr/0007-hybrid-logical-clock.md
 [ADR-0010]: ../../adr/0010-entity-ids-and-defining-attributes.md
 [ADR-0011]: ../../adr/0011-log-store-pattern.md
+[ADR-0016]: ../../adr/0016-commands-and-server-validation.md
 [ADR-0019]: ../../adr/0019-ui-state-ownership-and-query-atoms.md
 [ADR-0022]: ../../adr/0022-identity-and-organization-isolation.md
 [ADR-0023]: ../../adr/0023-data-at-rest-and-crypto-shredding.md
@@ -282,9 +303,19 @@ No new ADR: [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity i
 [D111]: #d111
 [D114]: #d114
 [D115]: #d115
+[D116]: #d116
 [D117]: #d117
+[D118]: #d118
 [D12]: #d12
+[D121]: #d121
+[D122]: #d122
+[D124]: #d124
+[D125]: #d125
+[D127]: #d127
+[D128]: #d128
+[D129]: #d129
 [D22]: #d22
+[D24]: #d24
 [D26]: #d26
 [D27]: #d27
 [D28]: #d28
@@ -294,11 +325,13 @@ No new ADR: [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity i
 [D33']: #d33p
 [D35'']: #d35pp
 [D36]: #d36
+[D36']: #d36p
 [D37]: #d37
 [D38]: #d38
 [D40]: #d40
 [D42]: #d42
 [D44]: #d44
+[D44']: #d44p
 [D46]: #d46
 [D48']: #d48p
 [D51]: #d51
@@ -315,8 +348,10 @@ No new ADR: [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity i
 [D69]: #d69
 [D71]: #d71
 [D78]: #d78
+[D79]: #d79
 [D8]: #d8
 [D80]: #d80
+[D82]: #d82
 [D86]: #d86
 [D87]: #d87
 [D88]: #d88
@@ -349,6 +384,7 @@ No new ADR: [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity i
 [I66]: ../../issues/0066-attribute-value-types.md
 [I67]: ../../issues/0067-minting-entity-id-segments.md
 [I68]: ../../issues/0068-uniqueness-as-an-acceptance-rule.md
+[I69]: ../../issues/0069-accept-checks-every-change.md
 [I8]: ../../issues/0008-engine-scale-out.md
 [I9]: ../../issues/0009-product-apps-as-app-pairs.md
 [P01]: 06-qualification-gates.md#p01

@@ -47,6 +47,7 @@ decisions that chose them.
 - [I48](../../issues/0048-where-the-server-independent-goal-is-recorded.md): an app is the program, a `node` an installation keeping data, authority a set of duties the server holds today; the server-independent goal recorded in 01-vision and [I60 Server-independent mode][I60]; consumer apps are `<product>-client` + `<product>-server` ([D103-D106 What an app is to a device and a node][D103-D106]).
 - [I49](../../issues/0049-projection-one-concept-or-several-patterns.md): a screen asks a Presenter for a frame and keeps a frame subscription; a reference implementation and faster or enriching implementations; trust belongs to an origin; [ADR-0033 The Presenter pattern][ADR-0033] and [ADR-0034 Origin trust][ADR-0034] ([D107-D117 Presenters and origin trust][D107-D117], [D58' Envelope names the origin][D58']). Added I62-[I64 Build origin trust][I64].
 - [I52](../../issues/0052-the-datom-and-its-store.md): the log store contract is what a datom needs from storage; `tx` stays an HLC worded for any `node` holding authority; id segments minted or derived; every attribute carries a value Schema; external identifiers are attributes; the final choice is the pattern ([D118-D123 The datom and its store][D118-D123]; [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010], [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] amended). Added I66-[I68 Uniqueness as an acceptance rule][I68].
+- [I50](../../issues/0050-contracts-checked-as-data-or-by-commands.md): authority accepts every change by asking may this writer do this, is it well formed, does the data stay valid; acceptance rules are code about the data alone, judged no worse; every domain writer uses a registered command that declares its writes; rules over time and re-running a command deferred; [ADR-0035](../../adr/0035-accepting-a-change.md) ([D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']). Found that the server never checked a command's rules. Added I69-[I70 Research: access from membership to enterprise][I70]; access as a pattern is a direction for [I54 Trust, encryption and who may sign in][I54].
 
 ## Not yet specified
 
@@ -76,6 +77,9 @@ decisions that chose them.
 [D103-D106]: ../bootstrap/02-decision-log.md#d103-d106
 [D107-D117]: ../bootstrap/02-decision-log.md#d107-d117
 [D118-D123]: ../bootstrap/02-decision-log.md#d118-d123
+[D124-D129]: ../bootstrap/02-decision-log.md#d124-d129
+[D36']: ../bootstrap/02-decision-log.md#d36p
+[D44']: ../bootstrap/02-decision-log.md#d44p
 [D55']: ../bootstrap/02-decision-log.md#d55p
 [D58']: ../bootstrap/02-decision-log.md#d58p
 [D94]: ../bootstrap/02-decision-log.md#d94
@@ -83,9 +87,11 @@ decisions that chose them.
 [I21]: ../../issues/0021-test-the-glossary-with-a-reader.md
 [I46]: ../../issues/0046-review-the-vivief-inventory.md
 [I47]: ../../issues/0047-what-viviefs-is-about.md
+[I54]: ../../issues/0054-trust-encryption-and-who-may-sign-in.md
 [I56]: ../../issues/0056-one-shape-at-every-level.md
 [I60]: ../../issues/0060-server-independent-mode.md
 [I64]: ../../issues/0064-build-origin-trust.md
 [I68]: ../../issues/0068-uniqueness-as-an-acceptance-rule.md
+[I70]: ../../issues/0070-research-access-from-membership-to-enterprise.md
 [P01]: ../bootstrap/06-qualification-gates.md#p01
 [P10]: ../bootstrap/06-qualification-gates.md#p10

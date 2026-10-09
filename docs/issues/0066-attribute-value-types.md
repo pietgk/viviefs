@@ -30,15 +30,20 @@ Decide by measurement together with [I63 The columnar copy as a Presenter implem
 
 ## Comments
 
+2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): the value Schema is an acceptance rule ([D125 Acceptance rules][D125]); it plugs into the rule runner [I69 Accept checks every change][I69] builds, judged no worse ([D126 No worse][D126]). `renameList`'s blank title moves into the value rule of `evidence/list-title` as [I69][I69]'s first positive control.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0010]: ../adr/0010-entity-ids-and-defining-attributes.md
 [D108]: ../plan/bootstrap/02-decision-log.md#d108
 [D110]: ../plan/bootstrap/02-decision-log.md#d110
 [D121]: ../plan/bootstrap/02-decision-log.md#d121
+[D125]: ../plan/bootstrap/02-decision-log.md#d125
+[D126]: ../plan/bootstrap/02-decision-log.md#d126
 [D37]: ../plan/bootstrap/02-decision-log.md#d37
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
 [I63]: 0063-the-columnar-copy.md
+[I69]: 0069-accept-checks-every-change.md
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P08]: ../plan/bootstrap/06-qualification-gates.md#p08
 [P12]: ../plan/bootstrap/06-qualification-gates.md#p12

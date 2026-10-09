@@ -96,7 +96,8 @@ _Avoid_: application package, shell
 **Server**:
 The program that decides which changes count for an organization. It accepts
 or rejects every change, orders the accepted ones, grants membership and fences
-leases; together these duties are its authority ([D103 Nodes and authority][D103]). It is a `node` like a
+leases; together these duties are its authority ([D103 Nodes and authority][D103]). To accept a change it asks
+may this writer do this, is it well formed, and does the data stay valid ([D124 One checkpoint][D124]). It is a `node` like a
 device, one that holds authority. Today one server holds all of these duties
 for every organization; they could later be split across `node`s or shared by
 all ([D104 The server-independent goal][D104], [I60 Server-independent mode][I60]).
@@ -288,13 +289,26 @@ membership, and the first sync protocol replicates the whole organization.
 _Avoid_: tenant, org account
 
 **Command**:
-A request to change the data, checked by the same rules on the phone and on
-the server. A pure Effect function `(readModel, intent) -> changeset or
-DomainError`, shared by client and server.
+A named kind of change, the only way people, agents and outside sources write
+data. A pure Effect function `(readModel, intent) -> changeset or
+DomainError`, registered with its intent Schema, a version name and the
+attributes it may write; it runs on the device, and authority accepts what it
+produced ([D127 Registered commands][D127], [ADR-0035 Accepting a change][ADR-0035]). The workflow engine's journal is the one writer
+that is not a command.
 
 **Intent**:
 What the user asked for, before it is checked. The input to a command; not a
 datom.
+
+**Acceptance rule**:
+A rule every change must keep, whoever made it, checked when the change is
+accepted. Written in code beside the attribute or entity type it is about: a
+value's type, uniqueness, a required attribute, an allowed transition, or a
+rule over one entity and what it refers to. A command checks it early and
+authority checks it again; a change may not break a rule that held before it
+([D125 Acceptance rules][D125], [D126 No worse][D126]). A rule about who may make a change is access, not an acceptance
+rule.
+_Avoid_: contract (for this meaning), validation (alone), invariant (alone)
 
 **IntentComposer**:
 The part of a screen that helps a user put together a request step by step
@@ -664,6 +678,7 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [ADR-0032]: docs/adr/0032-what-viviefs-is-about.md
 [ADR-0033]: docs/adr/0033-the-presenter-pattern.md
 [ADR-0034]: docs/adr/0034-origin-trust.md
+[ADR-0035]: docs/adr/0035-accepting-a-change.md
 [D102]: docs/plan/bootstrap/02-decision-log.md#d102
 [D103]: docs/plan/bootstrap/02-decision-log.md#d103
 [D104]: docs/plan/bootstrap/02-decision-log.md#d104
@@ -677,6 +692,10 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D120]: docs/plan/bootstrap/02-decision-log.md#d120
 [D121]: docs/plan/bootstrap/02-decision-log.md#d121
 [D122]: docs/plan/bootstrap/02-decision-log.md#d122
+[D124]: docs/plan/bootstrap/02-decision-log.md#d124
+[D125]: docs/plan/bootstrap/02-decision-log.md#d125
+[D126]: docs/plan/bootstrap/02-decision-log.md#d126
+[D127]: docs/plan/bootstrap/02-decision-log.md#d127
 [D2]: docs/plan/bootstrap/02-decision-log.md#d2
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
 [D58']: docs/plan/bootstrap/02-decision-log.md#d58p

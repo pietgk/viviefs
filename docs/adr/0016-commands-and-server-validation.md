@@ -8,7 +8,7 @@ Date: 2026-09-20
 
 Qualifying gate: [P09 Sync][P09]
 
-Related: [D36 Shared commands][D36]. [Architecture section 7](../plan/bootstrap/03-architecture.md).
+Related: [D36 Shared commands][D36], [D36' Shared commands, as built][D36']. [Architecture section 7](../plan/bootstrap/03-architecture.md). [ADR-0035 Accepting a change][ADR-0035] (accepting a change).
 
 ## Problem
 
@@ -31,6 +31,16 @@ models from confirmed datoms, reapplies its remaining outbox, and traces the
 rejection.
 
 One write path for app and engine.
+
+**What the server checks, as built** (amendment 2026-10-09, [D36' Shared commands, as built][D36'], [I50 Contracts checked as data or by commands][I50]). The
+server does not re-execute the command (Observed below), so "invariants such
+as independent review" were never checked by authority: a rule inside a
+command runs only on the device. [ADR-0035 Accepting a change][ADR-0035] replaces the list above: accept asks
+may this writer do this (an access decision; independent review belongs here),
+is it well formed (the structural checks above), and does the data stay valid
+(acceptance rules, judged no worse); every domain writer uses a registered
+command with declared writes, and the workflow engine's journal is checked by
+its lease and write-once rules. Built with [I69 Accept checks every change][I69].
 
 ## Trade-offs
 
@@ -63,5 +73,9 @@ the open changeset locally, rebuilds, and the next outbox entry is acked.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0035]: 0035-accepting-a-change.md
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
+[D36']: ../plan/bootstrap/02-decision-log.md#d36p
+[I50]: ../issues/0050-contracts-checked-as-data-or-by-commands.md
+[I69]: ../issues/0069-accept-checks-every-change.md
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09

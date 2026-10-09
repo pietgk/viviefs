@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I50: Contracts checked as data or by commands (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.6rem; overflow-x: auto; line-height: 1.45; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I50</span>
+    <span class="badge badge-outline">2026-10-08</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Contracts checked as data or by commands</h1>
+  <p class="text-lg opacity-80"><b>Settled: see the last section.</b> <a class="cr-link" href="../issues/0050-contracts-checked-as-data-or-by-commands.md">I50</a> asks whether commands, Schema at every boundary and server revalidation cover what ViViEfs's rules promise, or whether the stack needs what vivief checks at run time: contracts on every effect, kinds of contract, checks after commit with recorded findings, and the Schema as facts. 17 rows of <a class="cr-link" href="2026-10-06-vivief-inventory.html">the vivief inventory</a>. The word <code class="cr-inline">Contract</code> is map 3's; this ticket decides the meaning.</p>
+</header>
+
+<section class="space-y-3" id="round-1">
+  <h2 class="text-2xl font-bold">Round 1, settled in conversation</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q1</b> B: acceptance rules on the data, in code, run by authority on every changeset; commands call the same rules. The human's question that follows: must every writer use a command? (Round 2, below.) The human is intrigued by re-running the command as validation, and by its overlap with durable execution (below).</li>
+    <li><b>Q2</b> B, deferred: a rule over time is a workflow writing findings.</li>
+    <li><b>Q3</b> stands rejected. <b>Q4</b> keep ours. <b>Q5</b> as proposed. <b>Q6</b> B: D44 extended to the RPC, handshake deferred.</li>
+    <li><b>Q7</b> handlers as data rejected; feature flags deferred, with the human's note that how flags would be built is open (not assumed to be attributes).</li>
+    <li><b>Q8</b> both stand.</li>
+  </ul>
+</section>
+
+<section class="space-y-3" id="round-2">
+  <h2 class="text-2xl font-bold">Round 2, settled in conversation</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q9</b> B: every domain writer uses a command; the engine's journal is the durable-workflow pattern's own.</li>
+    <li><b>Q10</b> and <b>Q11</b> agreed, to be confirmed after the overview of vivief's Contract below, so no elegant idea is lost.</li>
+    <li><b>Q12</b> A: a concept of the changesets pattern, suite <code class="cr-inline">changesets/acceptance</code>, P09 extended.</li>
+    <li>The human's thought: this overlaps AWS IAM's policies, access and identity; what can we learn, what do we miss, where is the rabbit hole? (Section below.)</li>
+  </ul>
+</section>
+
+<section class="space-y-5" id="vivief-contract">
+  <h2 class="text-2xl font-bold">vivief's Contract in one page</h2>
+  <p class="cr-src">vivief <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> §2.4 Contract, §2.5 effectHandler, §8, §11; <code class="cr-inline">docs/contract/counseling/platform-v2.md</code> §11. HEAD <code class="cr-inline">3071cb2</code>.</p>
+  <p><b>The core idea:</b> a Contract is a declared constraint that is "simultaneously spec, test, and runtime guard". It is the one concept that runs across the other four (Datom, Projection, Surface, effectHandler).</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief</th><th>What it is</th><th>Where it lands in ViViEfs</th></tr></thead>
+    <tbody>
+      <tr><th colspan="3" class="bg-base-200">Three modes</th></tr>
+      <tr><td>Guard</td><td>Reject invalid state ("a recap produces themes, never a diagnosis")</td><td>Acceptance rule (Q1)</td></tr>
+      <tr><td>Aggregation</td><td>Derive higher-level facts ("HTTP calls aggregate into IO.HTTP")</td><td>Projection or enriching implementation (D111); for code understanding, map 5</td></tr>
+      <tr><td>StateMachine</td><td>Valid transitions; the XState definition is the handler</td><td>Allowed transitions as an acceptance rule (Q10); a screen's machine stays IntentComposer (ADR-0020)</td></tr>
+      <tr><th colspan="3" class="bg-base-200">Three moments</th></tr>
+      <tr><td>Pre-commit</td><td>Datoms about to commit</td><td>Acceptance rules on accept</td></tr>
+      <tr><td>In-flight</td><td>Streamed tokens ("no diagnosis language")</td><td>Deferred with in-flight freshness (D109)</td></tr>
+      <tr><td>Post-commit</td><td>Cross-entity invariants ("a session within 7 days")</td><td>A rule over time: a workflow writing findings (Q2)</td></tr>
+      <tr><th colspan="3" class="bg-base-200">Six sub-types, a closed set ("a seventh signals a missing concept")</th></tr>
+      <tr><td>Schema</td><td>What facts may exist: types, required, enums</td><td>Value Schema in the catalog (D121), required attributes (Q10)</td></tr>
+      <tr><td>Projection</td><td>Who may query what, redaction</td><td>Access: I54; trust filtering: D115; redaction deferred (I49)</td></tr>
+      <tr><td>Render</td><td>a11y, required or forbidden display, trust signals, stories</td><td>The UI patterns' contracts (P12) and a guide's review page</td></tr>
+      <tr><td>Trust</td><td>Key derivation, roles, consent</td><td>I54, I15, I16</td></tr>
+      <tr><td>Sync</td><td>Conflict resolution per attribute, push and pull scope, claims</td><td>Conflict policy (D34), partial sync (D114), the lease (P06); I53</td></tr>
+      <tr><td>Behavior</td><td>Accepted and produced effects (required, forbidden attributes), state machine, aggregation</td><td>Commands; declared writes (Q14)</td></tr>
+    </tbody>
+  </table></div>
+  <p>Each vivief sub-type lands on one ViViEfs pattern's contract. That is D82's rule ("a candidate is a pattern when it has a contract, a suite and a gate") doing the job of vivief's closed set: our set is open, one contract per pattern, and the test for a missing concept is a missing suite.</p>
+  <h3 class="text-lg font-semibold">The ideas worth keeping, and what they become</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief idea</th><th>Proposed</th></tr></thead>
+    <tbody>
+      <tr class="cr-rec"><td><b>Spec, test and runtime guard at once</b></td><td><b>Adopt.</b> One rule declaration runs in three places: the command (early feedback on the device), accept (the guard), and the <code class="cr-inline">changesets/acceptance</code> suite, where every rule has a positive control that must fail it. vivief's "declared vs verifiable" coverage becomes: a rule without a positive control fails <code class="cr-inline">verify</code>.</td></tr>
+      <tr class="cr-rec"><td><b>Enforcement follows trust</b> (external when the writer is less trusted than what the rule protects)</td><td><b>Adopt as the principle behind Q1:</b> no client, agent or enriching activity is trusted to check itself, so authority always enforces; the device's check is only for early feedback. vivief's "internal, externalizable" path for written rules is map 4's knowledge path.</td></tr>
+      <tr class="cr-rec"><td><b>Not retroactive</b> (an invariant applies from the contract's <code class="cr-inline">tx</code>)</td><td><b>A real gap here (Q16):</b> what a new rule does to data accepted before it shipped.</td></tr>
+      <tr><td><b>Graduated enforcement</b>: explain, warn, block</td><td>Acceptance rules only block. A warning is the command's or the screen's. <b>Defer</b> a "warn" rule, <code class="cr-inline">Decide when:</code> an app needs a rule people may knowingly break.</td></tr>
+      <tr><td><b>Trust over structure</b> (access wins when it hides something the Schema requires)</td><td><b>Note on I54:</b> a rule can only judge a value its checker can read; a rule on an encrypted attribute checks presence and shape, not content.</td></tr>
+      <tr><td><b>Defaults lifecycle</b>: default, domain-refined, experience-refined, locked</td><td>Already our shape for trust: defaults per kind in the catalog, an organization's override as a datom (D116). Stands.</td></tr>
+      <tr><td>Contracts as datoms: lifecycle (asserted, active, superseded, conflicted), a lock as a contract on a contract</td><td>Rejected with rules as data (D118): a rule ships with a release, its history is git and the decision log.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5" id="iam">
+  <h2 class="text-2xl font-bold">The IAM thought: what AWS learned, and where the rabbit hole is</h2>
+  <p>A first sketch from what is well known about these systems, not yet a research record.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>AWS and friends</th><th>What it is</th><th>Ours</th></tr></thead>
+    <tbody>
+      <tr><td><b>Preventive controls</b> (IAM policies, Service Control Policies)</td><td>Checked before an action happens</td><td>Acceptance rules (Q1), membership, <code class="cr-inline">authority: 'server'</code></td></tr>
+      <tr><td><b>Detective controls</b> (AWS Config rules, Security Hub findings)</td><td>Evaluate resource state after the fact, on change or on a schedule, and record findings</td><td>Rules over time writing findings (Q2): the same split, reached independently</td></tr>
+      <tr><td><b>Audit trail</b> (CloudTrail)</td><td>Who did what, when, from where</td><td>The log and the envelope (actor, device, command, origin)</td></tr>
+      <tr><td><b>Policy as data</b> (IAM JSON; Cedar, AWS's open policy language behind Verified Permissions)</td><td>Allow and deny statements over principal, action, resource and condition; explicit deny wins, default deny</td><td>Nothing yet: who may do what is code (membership, server-only attributes); roles are I16</td></tr>
+      <tr><td><b>Policy analysis</b> (IAM Access Analyzer, built on an SMT solver)</td><td>Answers "can anyone outside my organization read this?" without running anything, because policies are data in a decidable language</td><td>Nothing: code cannot be asked that</td></tr>
+      <tr><td><b>Relationships</b> (Google Zanzibar, OpenFGA, SpiceDB)</td><td>Permissions as tuples <code class="cr-inline">object#relation@subject</code>, checked by graph walks</td><td>Tuples look like datoms; membership already is one (<code class="cr-inline">viviefs/membership/granted</code>)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5">
+      <h3 class="font-semibold">What we might learn</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li><b>Data rules and access rules are different things.</b> AWS keeps "may this principal do this action" (IAM) apart from "is this resource state allowed" (Config). Our Q1 rules are the second; who may write is the first, and belongs with I54 and I16.</li>
+        <li><b>The case for policy as data is analysis, not change at run time.</b> D118 rejected rules as datoms because vivief wanted to change them live. Cedar's reason is different: you can prove what a policy allows. That is a real argument for access policies, and it is not answered yet.</li>
+        <li><b>Explicit deny, default deny</b> is the evaluation rule every one of these systems converged on.</li>
+      </ul>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5">
+      <h3 class="font-semibold">The rabbit hole</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>IAM serves thousands of services and millions of accounts; permission boundaries, session policies, SCPs and resource policies each exist because of a scale we do not have. Copying its shape gives an app builder a policy language before they have two roles.</li>
+        <li>Designing our own policy language is the deepest part. If one is ever needed, Cedar exists, is open source and is typed against a schema.</li>
+        <li>The boundary: I50 decides data rules. Access is I54 (who may read), I16 (roles in use) and I15 (identity and keys).</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-3" id="round-3">
+  <h2 class="text-2xl font-bold">Round 3, settled in conversation</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q13</b> Q10 and Q11 stand; spec, test and guard at once (a rule without a positive control fails <code class="cr-inline">verify</code>); enforcement follows trust; a warn rule deferred; a note on I54; the lifecycle rejected.</li>
+    <li><b>Q14</b> declared writes adopted. <b>Q15</b> re-running deferred. <b>Q16</b> no worse.</li>
+    <li><b>Q17</b> A: a research record, input to I54 and I16. The human's addition: keep vivief's elegance; IAM is overkill now, but could access be a pattern whose first implementation is minimal and whose later implementations grow to enterprise level inside the same contract? (Below.)</li>
+  </ul>
+</section>
+
+<section class="space-y-5" id="one-checkpoint">
+  <h2 class="text-2xl font-bold">Round 4: one checkpoint, and access as a pattern</h2>
+  <h3 class="text-lg font-semibold">The elegance, in our words</h3>
+  <p>vivief got its elegance from one concept that runs everywhere. We can get the same from one place every change passes, which the glossary already names: authority "accepts or rejects every change".</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  W["Any writer: screen, agent, enriching activity, operator"] -- "command + intent" --> CS[Changeset]
+  CS -- "early, on the device: same checks" --> CS
+  CS --> A1{"1. May this writer do this? (access decision: I54, I16)"}
+  A1 -- yes --> A2{"2. Is it well formed? (structural: today's accept)"}
+  A2 -- yes --> A3{"3. Does the data stay valid? (acceptance rules, no worse)"}
+  A3 -- yes --> L[(Log)]
+  A1 & A2 & A3 -- no --> R[Typed rejection]
+  L --> D["Detective: rules over time write findings (deferred)"]
+</pre></div>
+  <p>Every check is declared once, runs early on the device and with authority on accept, and has a positive control in a suite. Preventive on accept, detective after it: the split AWS draws between IAM and Config.</p>
+
+  <h3 class="text-lg font-semibold">Access as a pattern: minimal now, enterprise later, one contract</h3>
+  <p>Not crazy: it is how I49 treated the Presenter (a reference implementation, then others checked against it) and what D123 says (the pattern is the final choice; implementations stay free). And unlike acceptance rules, access has real implementations to swap, so by D82 it would be a pattern.</p>
+  <pre class="cr-code">// the contract (sketch): one question, asked by accept and by sync
+decide({ subject, action, resource, context }) -&gt; Allow | Deny(reason)
+// subject:  the person or agent in the envelope, with their memberships and roles
+// action:   the command's name (Q9: every domain write names one)
+// resource: the entities the changeset touches, with their attributes
+// context:  organization, device, origin, time
+
+// implementations, one conformance suite (a decision table every one must answer the same)
+1. reference   code: membership, authority: 'server', declared writes (Q14)      today
+2. roles       code plus role datoms in the organization                        I16, first role
+3. relations   tuples as datoms, Zanzibar-style (membership already is one)      when sharing is per entity
+4. policies    Cedar (open source, typed by a schema, provable by analysis)     enterprise</pre>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5">
+      <h3 class="font-semibold">Why it could work</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>The four-part request (subject, action, resource, context) is the common shape of Cedar, OPA and OpenFGA checks, and of the OpenID AuthZEN Authorization API, a standard for exactly this separation. To be confirmed by the research record.</li>
+        <li>Q9 gives every write an action name, Q14 a declared set of attributes: the reference implementation is mostly already there.</li>
+        <li>D105 (2): the check must run on any <code class="cr-inline">node</code>; code runs anywhere, and Cedar has a WebAssembly build.</li>
+      </ul>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5">
+      <h3 class="font-semibold">Where it could go wrong</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>The contract is fixed once a gate proves it (D123). Shaped too small, Cedar does not fit later; shaped for Cedar, the reference carries fields nobody uses.</li>
+        <li>Analysis ("who can approve?") exists only in declarative implementations; the contract cannot promise it.</li>
+        <li>Reads: what a replica receives is also an access decision (I54), so the same contract must serve sync's filter, not only accept.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-3" id="round-4">
+  <h2 class="text-2xl font-bold">Round 4, settled in conversation</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q18</b> one checkpoint adopted, the core of a new ADR.</li>
+    <li><b>Q19</b> A: access as a pattern is a direction for I54, with the research record first. The human's note: I50 needs explainers of Zanzibar-style relations and of Cedar to set the stage (below).</li>
+    <li><b>Q20</b> one consequence issue, "Accept checks every change".</li>
+  </ul>
+</section>
+
+<section class="space-y-5" id="explainers">
+  <h2 class="text-2xl font-bold">Setting the stage: four ways to answer "may this writer do this?"</h2>
+  <p>All four answer the same request. The OpenID AuthZEN Authorization API 1.0, a Final Specification since 2026-01-12, standardizes its shape: <code class="cr-inline">subject</code> (type, id), <code class="cr-inline">action</code> (name), <code class="cr-inline">resource</code> (type, id), optional <code class="cr-inline">context</code>, answered with a boolean <code class="cr-inline">decision</code>. The checker is the policy decision point (PDP); the code that asks and enforces is the policy enforcement point (PEP). In ViViEfs, accept and sync would be the PEPs.</p>
+  <pre class="cr-code">{ "subject":  { "type": "person", "id": "P42" },
+  "action":   { "name": "evidence.approveItem" },
+  "resource": { "type": "item", "id": "O1/L1/I7" },
+  "context":  { "org": "O1", "device": "D3", "origin": "P42" } }
+-&gt; { "decision": false, "context": { "reason": "reviewer is the author" } }</pre>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">1. Code (our reference, today)</h3>
+    <p class="text-sm">Membership, <code class="cr-inline">authority: 'server'</code> and, with Q14, a command's declared writes. Fast, typed, runs on any <code class="cr-inline">node</code>. Nobody can ask it "who may approve?" without reading the code.</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">2. Roles (I16)</h3>
+    <p class="text-sm">A person holds a role in an organization ("reviewer"); a command names the roles that may run it. Still code, plus role datoms beside the membership datom.</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">3. Relations, Zanzibar-style</h3>
+    <p class="text-sm">Google's Zanzibar (USENIX ATC 2019) stores every permission as a <b>relation tuple</b>, <code class="cr-inline">object#relation@user</code>, where the user may itself be a set: <code class="cr-inline">object#relation</code>. Its paper's examples: <code class="cr-inline">doc:readme#owner@10</code>, <code class="cr-inline">group:eng#member@11</code>, <code class="cr-inline">doc:readme#viewer@group:eng#member</code> ("members of group:eng are viewers of doc:readme"). A per-namespace configuration adds <b>userset rewrites</b>: "every editor is also a viewer", "a document's viewers include its folder's viewers". A check asks "does user U have relation R to object O?" by walking those sets. OpenFGA and SpiceDB are open-source systems in this style.</p>
+    <pre class="cr-code">In our domain, a tuple is nearly a datom [e a v]:
+  item:O1/L1/I7#reviewer@person:P42           reviewer of one item
+  list:O1/L1#editor@org:O1#member              every member of O1 edits list L1
+  O1/membership/P42  viviefs/membership/granted  ...   (already one, today)</pre>
+    <p class="text-sm"><b>The lesson for us, from the paper:</b> the <b>new enemy problem</b>. Alice removes Bob from a document, then adds new content; a check that reads an access list older than the content lets Bob see it. Zanzibar's answer is a consistency token, the <i>zookie</i>, stored with the content, so a check is never older than the change it guards. Today our one authority orders membership and content in one log, so accept always checks against current state and the problem cannot arise. With several <code class="cr-inline">node</code>s (I60) it can, and the zookie's role would be played by a <code class="cr-inline">tx</code>: "check as of at least this <code class="cr-inline">tx</code>".</p>
+    <p class="text-sm"><b>When it pays:</b> sharing per entity (this list with that person, that folder with a group), nested groups, and "list everything P42 can see".</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">4. Policies, Cedar</h3>
+    <p class="text-sm">Cedar is AWS's open-source policy language (behind Amazon Verified Permissions). A request has a <b>principal</b>, an <b>action</b>, a <b>resource</b> and a <b>context</b>; policies are <code class="cr-inline">permit</code> or <code class="cr-inline">forbid</code> with optional <code class="cr-inline">when</code> conditions over entity attributes. Its rules, from its documentation: <b>default deny</b> ("no request is authorized unless there is a specific permit policy that grants it"), <b>forbid overrides permit</b>, and a policy whose evaluation errors is skipped. An optional <b>schema</b> types entities and actions so policies are validated against the app's data, and because the language is small and decidable, tools can prove what a set of policies allows. A WebAssembly build (<code class="cr-inline">@cedar-policy/cedar-wasm</code>) runs it in JavaScript.</p>
+    <pre class="cr-code">// independent review, in our domain (sketch)
+permit (
+  principal in Role::"reviewer",
+  action == Action::"evidence.approveItem",
+  resource
+) when { resource.author != principal };
+
+// no agent grants membership, whatever its role
+forbid (principal is Agent, action == Action::"membership.grant", resource);</pre>
+    <p class="text-sm"><b>When it pays:</b> many roles and conditions, auditors who must see the rules apart from the code, and questions like "can anyone outside O1 read this?" answered by analysis.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="text-lg font-semibold">What the explainers changed: where independent review belongs</h3>
+    <p class="text-sm">The Q1 sketch put independent review among acceptance rules. Cedar writes it as an access policy, and that is the better line: <b>a rule that names the writer ("the reviewer is not the author") answers question 1, may this writer do this; a rule about the data alone ("a title is not blank") answers question 3.</b> Both are code in the reference implementation, so nothing is built twice; the line only decides which pattern owns a rule and which suite checks it (Q21).</p>
+  </div></div>
+</section>
+
+<section class="space-y-5" id="write-up">
+  <h2 class="text-2xl font-bold">Proposed write-up (for the human's check before any file changes)</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td><b>D124 One checkpoint</b></td><td>Authority accepts or rejects every change by asking, in order: may this writer do this (access), is it well formed (structure), does the data stay valid (acceptance rules). Each check is declared once, runs early on the device and with authority on accept, and has a positive control in a suite. Enforcement follows trust: no writer checks itself. vivief's Contract: placement and "spec, test and guard at once" adopted, contracts as datoms rejected (D118). Q1, Q13, Q18.</td></tr>
+      <tr><td><b>D125 Acceptance rules</b></td><td>Rules about the data alone, code beside the catalog: value Schema (D121), uniqueness (D122), required attributes, allowed transitions, entity rules against a read model (D105 (2)). Always a guard; aggregation is a projection or enrichment; vivief's closed six sub-types rejected for D82's one contract per pattern. A concept of the changesets pattern, suite <code class="cr-inline">changesets/acceptance</code>; a rule without a positive control fails <code class="cr-inline">verify</code>. A warn rule deferred. Q1, Q10-Q13, Q21.</td></tr>
+      <tr><td><b>D126 No worse</b></td><td>A changeset is rejected if it breaks a rule for an entity where the rule held before, or for a new entity; a one-off workflow lists old violators as findings. Q16.</td></tr>
+      <tr><td><b>D127 Registered commands</b></td><td>Every domain writer uses a command (screens, agents, enriching activities, the operator); the engine's journal is the durable-workflow pattern's own. A command is registered with a name, an intent Schema, a version name and its declared writes; accept rejects an unknown command or a write outside its set. Re-running a command on accept deferred, <code class="cr-inline">Decide when:</code> an app needs proof that a changeset is exactly what the named command makes, with reads as of a cursor (I63). Q9, Q14, Q15.</td></tr>
+      <tr><td><b>D128 Rules over time</b></td><td>A rule broken by nothing happening is a workflow with a durable clock writing a finding, origin the rule; deferred, <code class="cr-inline">Decide when:</code> a consumer app has one. Q2.</td></tr>
+      <tr><td><b>D129 Boundaries and live change</b></td><td>In: Schema at every boundary and the origin; out: an activity; no bridge pattern; outside text defaults to a low trust level (D116). Inferred facts name their inputs' origins; a source span deferred. Handlers as data rejected (D52); feature flags deferred, their form open. The ledger and the Schema stay out of the log (D48', D118). Q3, Q5, Q7.</td></tr>
+      <tr><td><b>D44'</b></td><td>Never rename, never migrate, now also the RPC: methods and fields additive while an old client ships; a version handshake deferred, <code class="cr-inline">Decide when:</code> the first consumer app ships to a store. Q4, Q6.</td></tr>
+      <tr><td><b>D36'</b></td><td>Shared commands, corrected: the server does not re-execute the command; it accepts by D124.</td></tr>
+      <tr><td><b>ADR-0035 Accepting a change</b></td><td>New, <code class="cr-inline">Proposed, unverified</code>, qualified by P09 extended. ADR-0016 amended to point to it; ADR-0032 links it.</td></tr>
+      <tr><td><b>Glossary</b></td><td>New: <b>Acceptance rule</b> ("A rule every change must keep, whoever made it, checked when the change is accepted."). Reworded: <b>Command</b> (registered, declares what it writes, used by every domain writer), <b>Authority</b> (the three questions).</td></tr>
+      <tr><td><b>I50 Answer</b></td><td>The 17 dispositions, a short "Setting the stage" (the four ways, linking these explainers), and the access-as-a-pattern direction.</td></tr>
+      <tr><td><b>New issues</b></td><td><b>I69 Accept checks every change</b> (Q20, with the blank-title gap as first positive control). <b>I70 Research: access from membership to enterprise</b> (IAM, Cedar, Zanzibar, OpenFGA, AuthZEN, AWS Config; central question: can access be one pattern from membership to Cedar, and what is the smallest contract Cedar still fits?). I54 gains Blocked by I70.</td></tr>
+      <tr><td><b>Comments</b></td><td>I54 (access is question 1; trust over structure; the direction), I16 (roles are implementation 2), I60 (the new enemy problem with several <code class="cr-inline">node</code>s), I63 (re-running waits on reads as of a cursor), I66 and I68 (they plug into I69's runner). Map 2's "Decisions so far"; research README.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5" id="writers">
+  <h2 class="text-2xl font-bold">Round 2: who writes, and must it be a command?</h2>
+  <p>Never decided. D36 and ADR-0016 say "one write path for app and engine"; no decision says whether a changeset may come from anything other than a command. Today four kinds of writer exist or are decided:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Writer</th><th>How it writes today</th><th>Envelope <code class="cr-inline">command</code></th><th>Checked by <code class="cr-inline">accept</code></th></tr></thead>
+    <tbody>
+      <tr><td>A screen (<code class="cr-inline">renameList</code>, <code class="cr-inline">sealItem</code>)</td><td>Command function, outbox, Append RPC</td><td><code class="cr-inline">evidence.renameList</code>: real code</td><td>Yes</td></tr>
+      <tr><td>The workflow engine (journal facts)</td><td><code class="cr-inline">store.append</code> directly on the device (<code class="cr-inline">libs/workflow-engine/src/engine.ts</code>), then sync</td><td><code class="cr-inline">workflow.engine</code>: a label, no function</td><td>On sync: lease fencing, write-once</td></tr>
+      <tr><td>The operator (membership grant, revoke)</td><td>Written by the server itself with <code class="cr-inline">serverEnvelope</code></td><td>A label</td><td>No: it is the authority</td></tr>
+      <tr><td>An enriching implementation (D111, not built)</td><td>"An ordinary changeset that names its origin"</td><td>Not decided</td><td>Will be, with Q1's rules</td></tr>
+    </tbody>
+  </table></div>
+  <p>So every changeset already names a <code class="cr-inline">command</code>, but only some are produced by one.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">A. Every writer uses a command</h3>
+      <p class="text-sm">A changeset is always a registered command applied to an intent: screens, agents, enriching activities, the operator. An activity produces an intent ("gathered message M from origin O"), and a command turns it into datoms.</p>
+      <p class="text-sm"><b>For:</b> one write path in fact, not just in the ADR; the envelope's <code class="cr-inline">command</code> always names real code, so "which code wrote this?" has an answer; agents and people use the same verbs (D95); rules about the request (who may approve, unchanged title) have one home; it is what re-running needs.</p>
+      <p class="text-sm"><b>Against:</b> the engine's journal is infrastructure with no domain rule, so wrapping each fact is ceremony; every enriching source needs an intent Schema and a command; commands alone still do not protect the data (a crafted client skips them), so Q1's rules are needed anyway.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5">
+      <h3 class="font-semibold">B. Every domain writer uses a command; the engine's journal is the durable-workflow pattern's own</h3>
+      <p class="text-sm">As A, with one named exception: journal facts (<code class="cr-inline">viviefs/workflow/*</code> and the lease) are written by the engine and checked by its own rules (lease fencing, write-once), which its gate already proves (P06, P09).</p>
+      <p class="text-sm"><b>For:</b> A's benefits for everything that carries meaning; no ceremony where there is no meaning; the exception is one pattern, with a suite.</p>
+      <p class="text-sm"><b>Against:</b> one exception to teach; D36 and ADR-0016's "one write path for app and engine" is reworded.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5">
+      <h3 class="font-semibold">C. Commands serve screens only</h3>
+      <p class="text-sm">Anything may write a changeset; acceptance rules (Q1) are the only guarantee. Commands are a convenience for user requests.</p>
+      <p class="text-sm"><b>For:</b> least to build; enriching activities write batches freely.</p>
+      <p class="text-sm"><b>Against:</b> the envelope's <code class="cr-inline">command</code> becomes a free label; request rules (who may approve) have no home outside screens; an agent's writes are whatever it assembles; re-running is impossible for most writes.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-5" id="rerun">
+  <h2 class="text-2xl font-bold">Re-running the command: valid or crazy?</h2>
+  <p><b>Valid, and well known.</b> It is the same move as durable execution's replay, and as systems that log commands and re-execute them on every replica.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th></th><th>Durable execution (D2, D10)</th><th>A command, re-run by authority</th></tr></thead>
+    <tbody>
+      <tr><th>Deterministic code</th><td>The workflow body</td><td>The command: pure, its mint passed in (<code class="cr-inline">CommandMint</code> already)</td></tr>
+      <tr><th>Recorded inputs</th><td>Activity results in the journal</td><td>The intent, and the read model it saw (confirmed data at the basis)</td></tr>
+      <tr><th>Recorded output</th><td>The commands the workflow issued</td><td>The changeset</td></tr>
+      <tr><th>The check</th><td>On replay the code must issue the same commands, or it is a non-determinism error</td><td>Authority runs it again; a different changeset is a rejection</td></tr>
+      <tr><th>Versions</th><td>Workflows versioned by name, old versions ship until drained (D10, D44)</td><td>The same: authority must run the version the client ran</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cr-src">Elsewhere: Ethereum validators re-execute every transaction rather than trust its result; VoltDB and Calvin log commands, not results, and replay them on replicas.</p>
+  <h3 class="text-lg font-semibold">What it would buy</h3>
+  <ol class="list-decimal pl-6 space-y-1">
+    <li><b>Proof the changeset is what the named code makes</b> from that intent: a client cannot claim <code class="cr-inline">renameList</code> and also write a seal. (Most of this, cheaper: a command declares which attributes it may write, and authority checks that.)</li>
+    <li><b>Re-validation after a rule changes</b>: replay kept intents through the new code to find accepted changesets it would now reject, written as findings (Q2). This is vivief's "tests that never stop running" in our terms.</li>
+    <li><b>Debugging</b>: why did this changeset look like this? Run it again.</li>
+  </ol>
+  <h3 class="text-lg font-semibold">What it would cost</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Two meanings, pick one.</b> <i>Verify</i>: re-run on authority's read model as of the client's basis and compare; concurrency stays with basis and conflict policies (D34, D35''). Needs a read as of a cursor, deferred to I63. <i>Rebase</i>: re-run on today's data; equal is accepted, different is rejected. Needs no history, but replaces per-attribute conflict policy with the command's own reads, and a human-conflict attribute (both values kept) no longer behaves as D34 says. Verify keeps the conflict model; rebase changes it.</li>
+    <li><b>The intent becomes stored data</b>: never renamed (D44 extends to intents), erasable when personal (ADR-0023 crypto-shredding covers it).</li>
+    <li><b>Command versions ship until drained</b>, exactly as workflow versions do.</li>
+  </ul>
+  <p>It only applies to writes that come from a command, so it waits for the question above.</p>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">Already settled</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>The Schema stays code, not datoms.</b> <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d118">D118 What a datom needs from storage</a> (I52): one Schema per attribute that people, agents and the compiler read the same way. So vivief's "contracts as datoms" is already answered for the Schema part.</li>
+    <li><b>Every attribute gets a value Schema</b> in the catalog (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d121">D121 Attribute value types</a>, built in I66), and <b>uniqueness is an acceptance rule</b> checked by the <code class="cr-inline">node</code> holding authority (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d122">D122 External identifiers</a>, I68).</li>
+    <li><b>Acceptance rules must be able to run on any <code class="cr-inline">node</code></b> against a read model (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d105">D105 What must stay possible</a> (2)).</li>
+    <li><b>Where content came from is the origin</b> in the envelope, and its trust is origin trust (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d58p">D58' Envelope names the origin</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d115">D115 Origin trust</a>, I49). This answers most of vivief's intake and asserted-versus-inferred rows.</li>
+    <li><b>Aggregation</b> (deriving higher-level facts) is a projection or an enriching implementation (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d111">D111 Faster and enriching implementations</a>).</li>
+  </ul>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">Today, in the code: who checks what</h2>
+  <div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  I[Intent] --> C["Command renameList (client only)"]
+  C -- "DomainError: blank title" --> X[Screen shows error]
+  C -- changeset --> O[Outbox]
+  O -- Append RPC --> A["Server accept"]
+  A -- typed rejection --> O
+  A -- append --> L[(Log)]
+</pre></div>
+  <p><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d36">D36 Shared commands</a> says commands run on client and server, and the server revalidates "Schema, membership, authorization, invariants such as independent review, lease fencing". <a class="cr-link" href="../adr/0016-commands-and-server-validation.md">ADR-0016 Commands, server validation and rejection</a>'s Observed section says what P09 built: the server "does not re-execute the command".</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5">
+      <h3 class="font-semibold">What <code class="cr-inline">accept</code> checks (<code class="cr-inline">libs/sync/server/src/server.ts</code>)</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>membership in the organization (<code class="cr-inline">MembershipMissing</code>)</li>
+        <li>the envelope's actor is the caller (<code class="cr-inline">ActorMismatch</code>)</li>
+        <li>manifest: count, hash, one <code class="cr-inline">cs</code>, committed (<code class="cr-inline">ManifestRejected</code>)</li>
+        <li>server-only attributes (<code class="cr-inline">ServerOnlyAttribute</code>)</li>
+        <li>entity inside the organization (<code class="cr-inline">OrgMismatch</code>)</li>
+        <li>attribute in the catalog (<code class="cr-inline">UnknownAttribute</code>, the upgrade error)</li>
+        <li>referenced files uploaded (<code class="cr-inline">FileMissing</code>)</li>
+        <li>lease fencing for the journal (<code class="cr-inline">StaleLease</code>)</li>
+        <li>write-once attributes (<code class="cr-inline">BasisRejected</code>)</li>
+      </ul>
+      <p class="text-sm">All structural: true of any changeset, whatever wrote it.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5">
+      <h3 class="font-semibold">What nothing on the server checks</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>a value against its type: there is no value Schema yet (D121, I66)</li>
+        <li>a domain rule: <code class="cr-inline">renameList</code>'s "blank title" lives only in the command, on the client</li>
+        <li>a rule across entities, such as independent review (not built; no exemplar needs it yet)</li>
+        <li>anything after commit</li>
+      </ul>
+      <p class="text-sm">A client that skips the command (an old build, a bug, an agent writing directly, a crafted request) can commit <code class="cr-inline">evidence/list-title = ""</code>, and accept appends it.</p>
+    </div></div>
+  </div>
+  <pre class="cr-code">// features/evidence/model/src/command.ts (today)
+export const renameList = (read, intent, mint) => {
+  if (intent.title.trim().length === 0) {
+    return Effect.fail(new DomainError({ message: 'blank title' }))   // client only
+  }
+  ...
+}</pre>
+  <p>So the first decision is not "data or commands" in the abstract. It is: <b>where does a rule live so that the <code class="cr-inline">node</code> holding authority checks it on every changeset</b>, including changesets no command wrote (an enriching implementation's, a workflow activity's, an agent's).</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">vivief: contracts as datoms, checked by the dispatcher</h2>
+  <p class="cr-src">vivief <code class="cr-inline">docs/contract/counseling/platform-v2.md</code> §11.1-11.2, HEAD <code class="cr-inline">3071cb2</code></p>
+  <pre class="cr-code">;; Schema contract: on every write for a :client entity
+[:contract/schema-client  :contract/entity-type  :client]
+[:contract/schema-client  :contract/requires     :client/name]
+
+;; Effect contract: on every dispatch of :session/recap-requested
+[:contract/recap  :contract/effect-type  :session/recap-requested]
+[:contract/recap  :contract/requires     :session/themes]
+[:contract/recap  :contract/forbids      :session/diagnosis]
+
+;; Invariant contract: on every session commit and daily
+[:contract/high-risk  :contract/condition  {attribute: ':client/risk-level', where: eq 'high'}]
+[:contract/high-risk  :contract/requires   {attribute: ':schedule/date', where: within 7d future}]
+
+;; A violation is a datom; nothing from the effect commits
+[:violation/v1  :violation/contract  :contract/recap]
+[:violation/v1  :violation/reason    "Missing required: :session/themes"]</pre>
+  <p>Three ideas are in there, and they come apart:</p>
+  <ol class="list-decimal pl-6 space-y-1">
+    <li><b>Placement</b>: rules are checked by the one place every write passes through, whatever handler produced it.</li>
+    <li><b>Representation</b>: rules are datoms, queryable and changed without a release.</li>
+    <li><b>Time</b>: some rules are not about one write but about absence over time ("a session within 7 days"), checked later, with findings recorded.</li>
+  </ol>
+  <p>D118 already rejected (2) for the Schema. The proposal below adopts (1) with rules as code, and handles (3) as an ordinary workflow.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">Q1 worked: acceptance rules beside the catalog</h2>
+  <p>A sketch, not a design of the API. Rules are code, declared with the attribute or entity type they constrain, and run by <code class="cr-inline">accept</code> on every changeset against the authority's read model. The command calls the same rules, so a client rejects early with the same error the server would give.</p>
+  <pre class="cr-code">// libs/datom catalog entry (sketch)
+{ name: Attr.listTitle, policy: 'lww', value: NonBlankText }          // D121 value Schema: "blank title" moves here
+{ name: Attr.supplierKvk, policy: 'lww', value: KvkNumber,
+  unique: 'per-organization' }                                         // D122 / I68
+
+// an entity-level rule (sketch): read model in, changeset in, finding out
+const independentReview: AcceptanceRule = (read, changeset) =&gt;
+  approvalIn(changeset)?.reviewer === read.authorOf(approvalIn(changeset).item)
+    ? Option.some(new RuleBroken({ rule: 'independent-review' }))
+    : Option.none()
+
+// the command keeps only what is specific to the request
+export const renameList = (read, intent, mint) =&gt;
+  read.title === intent.title
+    ? Effect.fail(new DomainError({ message: 'unchanged title' }))    // about the request, not the data
+    : finish(..., members)                                             // accept runs the rules on members</pre>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Option</th><th>What the authority checks</th><th>Covers writes no command made</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td><b>A. Re-run the command</b></td><td>The request carries the intent; authority runs the named command on its read model and accepts only its own result</td><td>No: an enriching changeset or an activity has no command to re-run</td><td>Intent on the wire, deterministic mint, one more thing per command</td></tr>
+      <tr class="bg-base-200"><td><b>B. Acceptance rules on the data</b> (recommended)</td><td>Value Schemas, uniqueness, required attributes, allowed transitions and entity rules declared in the catalog, run generically</td><td>Yes: rules hold whatever wrote the changeset</td><td>A rule runner in accept; rules written against a read model (D105 (2))</td></tr>
+      <tr><td><b>C. Both</b></td><td>A and B</td><td>Yes</td><td>Two places a rule can live; agents must learn which</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">Q2 worked: a rule over time is a workflow, not a check on write</h2>
+  <p>"A high-risk client must have a session within 7 days" cannot be broken by one write: it is broken by nothing happening. A write-time rule cannot catch it. In ViViEfs's terms:</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  L[(Log)] -- "client marked high risk" --> W["Workflow: a durable wake-at clock (D24)"]
+  W -- "after 7 days: query via a Presenter" --> Q{Session scheduled?}
+  Q -- yes --> E[Done]
+  Q -- no --> F["Changeset: a finding, origin = the rule"]
+  F --> L
+  F -.-> S["Screen: findings, a frame subscription"]
+</pre></div>
+  <p>The finding is an ordinary changeset with the rule as its origin (D58'), seen through a Presenter, and a person can act on it. Nothing new: a workflow, a durable clock, a changeset. What would be new is a name for the kind of thing ("a standing rule"?) and a guide page; that waits until a consumer app has such a rule.</p>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">The 17 rows, with the proposed disposition</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>Proposed</th><th>Q</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:runtime-contract-enforcement</code></td><td>adopt the placement (every changeset checked by authority whatever wrote it) as acceptance rules in code; reject rules as datoms; invariants over time to Q2</td><td>Q1, Q2</td></tr>
+      <tr><td><code class="cr-inline">vivief:contract-runtime-needs</code></td><td>pre-commit: acceptance rules; post-commit: workflows; in-flight: defer with freshness (D109); state machine engine and aggregation pipeline: round 2</td><td>Q1, Q2, R2</td></tr>
+      <tr><td><code class="cr-inline">vivief:temporal-validation-points</code></td><td>pre-commit and post-commit as above; in-flight deferred</td><td>Q1, Q2</td></tr>
+      <tr><td><code class="cr-inline">vivief:schema-contract</code></td><td>keep ours: the value Schema in the catalog (D121); as datoms rejected (D118)</td><td>settled</td></tr>
+      <tr><td><code class="cr-inline">vivief:self-describing-datoms</code></td><td>stands rejected (D48', D118)</td><td>Q3</td></tr>
+      <tr><td><code class="cr-inline">vivief:schema-evolution</code></td><td>keep ours (D44, stricter); a display label is a translation, not a rename</td><td>Q4</td></tr>
+      <tr><td><code class="cr-inline">vivief:bridge</code></td><td>keep ours: in is Schema at every boundary plus the origin; out is an activity; trust at the boundary is origin trust</td><td>Q5</td></tr>
+      <tr><td><code class="cr-inline">vivief:intake</code></td><td>adopt as origin trust (D115); per-source scores at ingestion not adopted (D115)</td><td>Q5</td></tr>
+      <tr><td><code class="cr-inline">vivief:asserted-versus-inferred</code></td><td>adopt as origin plus inputs' origins (D58', D111); a source span defer, <code class="cr-inline">Decide when:</code> an app cites a place in a document</td><td>Q5</td></tr>
+      <tr><td><code class="cr-inline">vivief:protocol-version-negotiation</code></td><td>D44 extended to the RPC (additive only); a version handshake deferred</td><td>Q6</td></tr>
+      <tr><td><code class="cr-inline">vivief:live-evolution</code></td><td>reject handlers as data (D52); feature flags defer</td><td>Q7</td></tr>
+      <tr><td><code class="cr-inline">viviefs:schema-at-every-boundary</code></td><td>stands</td><td>Q8</td></tr>
+      <tr><td><code class="cr-inline">vivief:typescript-for-contracts</code></td><td>stands</td><td>Q8</td></tr>
+      <tr><td><code class="cr-inline">vivief:contract-governed-handler</code></td><td>round 2, after Q1: preconditions and postconditions</td><td>R2</td></tr>
+      <tr><td><code class="cr-inline">vivief:behavior-contract</code></td><td>round 2, after Q1: does a command declare what it may write</td><td>R2</td></tr>
+      <tr><td><code class="cr-inline">vivief:contract-modes</code></td><td>round 2, after Q1: guard, state machine, aggregation</td><td>R2</td></tr>
+      <tr><td><code class="cr-inline">vivief:contract-subtypes</code></td><td>round 2, after Q1</td><td>R2</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-4" id="settled">
+  <h2 class="text-2xl font-bold">Settled (rounds 1-5, in conversation, 2026-10-08 and 2026-10-09)</h2>
+  <p><b>Q21</b> agreed: a rule that names the writer is an access decision; a rule about the data alone is an acceptance rule. The human confirmed the shared understanding and the write-up above.</p>
+  <div class="cr-table-wrap"><table class="table table-sm"><tbody>
+    <tr><th>One checkpoint</th><td>Authority accepts every change by asking may this writer do this, is it well formed, does the data stay valid; each check declared once, run early on the device and with authority, with a positive control. D124.</td></tr>
+    <tr><th>Acceptance rules</th><td>Code about the data alone, beside the catalog; a concept of the changesets pattern, suite <code class="cr-inline">changesets/acceptance</code>; a warning rule deferred. D125.</td></tr>
+    <tr><th>No worse</th><td>A changeset may not break a rule that held before it; old violators are findings. D126.</td></tr>
+    <tr><th>Registered commands</th><td>Every domain writer uses one, with declared writes; the engine's journal is the exception; re-running deferred. D127.</td></tr>
+    <tr><th>Deferred</th><td>Rules over time (D128); a source span, feature flags (D129); a version handshake (D44').</td></tr>
+    <tr><th>Records</th><td><a class="cr-link" href="../adr/0035-accepting-a-change.md">ADR-0035 Accepting a change</a>; ADR-0016 amended (D36'); ADR-0032 links them. Glossary: Acceptance rule; Command and Server reworded.</td></tr>
+    <tr><th>Consequences</th><td><a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a>; <a class="cr-link" href="../issues/0070-research-access-from-membership-to-enterprise.md">I70 Research: access from membership to enterprise</a>, which now blocks I54.</td></tr>
+  </tbody></table></div>
+</section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+</script>
+</body>
+</html>

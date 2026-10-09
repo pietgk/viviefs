@@ -10,8 +10,8 @@ Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
 gate that already shows it, or names the gate to come.
 
 Related: [D95 App creation][D95], [D96 Two verifications][D96], [D97 Our languages by type][D97], [D98 Vision - View - Effects][D98], [D99 Facts kept, meaning derived][D99], [D100 Out of scope means not yet][D100], [D101 Lab and production][D101], [D102 Tools are apps][D102], [D55' Consumer apps live here][D55'], [D103 Nodes and authority][D103], [D104 The server-independent goal][D104], [D105 What must stay possible][D105],
-[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123]. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
-from [I49 Projection: one concept or several patterns][I49]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
+[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
+from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
 (claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54 Trust, encryption and who may sign in][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
 [The foundation concepts map](../plan/foundation-concepts/map.md).
 
@@ -105,6 +105,19 @@ the pattern, its contract and conformance check; implementations stay free.
 [ADR-0007](0007-hybrid-logical-clock.md), [ADR-0010](0010-entity-ids-and-defining-attributes.md)
 and [ADR-0011](0011-log-store-pattern.md) carry the amendments.
 
+**Accepting a change ([D124-D129 Accepting a change][D124-D129], [I50 Contracts checked as data or by commands][I50]).** Authority accepts or rejects every
+change by asking may this writer do this, is it well formed, and does the data
+stay valid; each check is declared once, runs early on the device and with
+authority, and has a positive control in a suite. Acceptance rules are rules
+about the data alone, code beside the catalog, judged no worse so old data
+stays editable; every domain writer uses a registered command that declares
+what it writes. vivief's `Contract` is adopted for its placement and for being
+spec, test and guard at once; contracts as datoms are not. A rule broken by
+nothing happening is a workflow writing findings, deferred. Access as a pattern
+that grows from membership to enterprise policies is a direction for [I54 Trust, encryption and who may sign in][I54]
+([I70 Research: access from membership to enterprise][I70]). [ADR-0035](0035-accepting-a-change.md) states it; [ADR-0016 Commands, server validation and rejection][ADR-0016] and [D44 Never rename, never migrate][D44] are
+amended ([D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']).
+
 **Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
 one installation of an app that keeps all or part of an organization's data
 and writes changes to it; a device is the `node` a person uses. Authority is a
@@ -165,9 +178,11 @@ Not yet run.
 
 [ADR-0002]: 0002-purpose-scope-and-exemplar.md
 [ADR-0006]: 0006-one-datom-log.md
+[ADR-0016]: 0016-commands-and-server-validation.md
 [ADR-0026]: 0026-verify-qualify-teach.md
 [ADR-0033]: 0033-the-presenter-pattern.md
 [ADR-0034]: 0034-origin-trust.md
+[ADR-0035]: 0035-accepting-a-change.md
 [D1]: ../plan/bootstrap/02-decision-log.md#d1
 [D100]: ../plan/bootstrap/02-decision-log.md#d100
 [D101]: ../plan/bootstrap/02-decision-log.md#d101
@@ -179,9 +194,13 @@ Not yet run.
 [D106]: ../plan/bootstrap/02-decision-log.md#d106
 [D107-D117]: ../plan/bootstrap/02-decision-log.md#d107-d117
 [D118-D123]: ../plan/bootstrap/02-decision-log.md#d118-d123
+[D124-D129]: ../plan/bootstrap/02-decision-log.md#d124-d129
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
+[D36']: ../plan/bootstrap/02-decision-log.md#d36p
 [D37]: ../plan/bootstrap/02-decision-log.md#d37
+[D44]: ../plan/bootstrap/02-decision-log.md#d44
+[D44']: ../plan/bootstrap/02-decision-log.md#d44p
 [D52]: ../plan/bootstrap/02-decision-log.md#d52
 [D55']: ../plan/bootstrap/02-decision-log.md#d55p
 [D68]: ../plan/bootstrap/02-decision-log.md#d68
@@ -195,6 +214,7 @@ Not yet run.
 [I47]: ../issues/0047-what-viviefs-is-about.md
 [I48]: ../issues/0048-where-the-server-independent-goal-is-recorded.md
 [I49]: ../issues/0049-projection-one-concept-or-several-patterns.md
+[I50]: ../issues/0050-contracts-checked-as-data-or-by-commands.md
 [I52]: ../issues/0052-the-datom-and-its-store.md
 [I54]: ../issues/0054-trust-encryption-and-who-may-sign-in.md
 [I55]: ../issues/0055-accept-the-foundation-concepts.md
@@ -202,6 +222,7 @@ Not yet run.
 [I57]: ../issues/0057-out-of-scope-items-in-adr-trade-offs.md
 [I58]: ../issues/0058-several-servers-in-the-lab.md
 [I60]: ../issues/0060-server-independent-mode.md
+[I70]: ../issues/0070-research-access-from-membership-to-enterprise.md
 [I8]: ../issues/0008-engine-scale-out.md
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06

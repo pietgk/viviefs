@@ -24,10 +24,15 @@ Not here: the scheme's own uniqueness (ViViEfs does not check that a KvK number 
 
 ## Comments
 
+2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): uniqueness is an acceptance rule ([D125 Acceptance rules][D125]), run by [I69 Accept checks every change][I69]'s rule runner and judged no worse ([D126 No worse][D126]), so an old duplicate stays editable and is listed as a finding.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D105]: ../plan/bootstrap/02-decision-log.md#d105
 [D122]: ../plan/bootstrap/02-decision-log.md#d122
+[D125]: ../plan/bootstrap/02-decision-log.md#d125
+[D126]: ../plan/bootstrap/02-decision-log.md#d126
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [I54]: 0054-trust-encryption-and-who-may-sign-in.md
 [I66]: 0066-attribute-value-types.md
+[I69]: 0069-accept-checks-every-change.md

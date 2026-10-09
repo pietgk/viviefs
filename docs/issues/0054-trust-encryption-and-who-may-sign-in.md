@@ -8,7 +8,7 @@ Effort: docs/plan/foundation-concepts/
 
 Type: grilling
 
-Blocked by: [I47 What ViViEfs is about][I47], [I49 Projection: one concept or several patterns][I49]
+Blocked by: [I47 What ViViEfs is about][I47], [I49 Projection: one concept or several patterns][I49], [I70 Research: access from membership to enterprise][I70]
 
 Found: 2026-10-07
 
@@ -26,16 +26,21 @@ Rows (10): `vivief:trust-contract`, `vivief:projection-access`, `vivief:selectiv
 
 2026-10-08: [I52](0052-the-datom-and-its-store.md) adds the **blind index** ([D122 External identifiers][D122]). A personal external identifier, such as a national id, is a personal attribute, so it is encrypted per subject and cannot be searched: each person's values use a different key, and the same value encrypts to different bytes each time. Looking one up by value needs a keyed hash of the plain value beside it, made with a secret key, so the same value always gives the same hash. Because a national id has few possible values, anyone holding the hash key can hash them all and reverse the index, so the index must go when the person is erased: it is a read model built from decrypted values on a `node` that holds the keys, and cannot be rebuilt once the person's key is destroyed ([D112 Intermediate presentations][D112]). Deferred, `Decide when:` an app looks up a personal external identifier by value.
 
+2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md) leaves inputs here. **Access is the first question of accepting a change** ([D124 One checkpoint][D124], [ADR-0035 Accepting a change][ADR-0035]): may this writer do this, asked before structure and acceptance rules; a rule that names the writer, such as independent review, is an access decision, not an acceptance rule. **Access as a pattern** is the human's direction: a reference implementation in code (membership, `authority: 'server'`, a command's declared writes) and later implementations (roles, relations as datoms, Cedar policies) answering one request, the subject, action, resource and context of the OpenID AuthZEN Authorization API; [I70 Research: access from membership to enterprise][I70] researches it first, and this ticket decides it. **Trust over structure** (vivief): a rule can only judge a value its checker can read, so a rule on an encrypted attribute checks presence and shape, not content.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0035]: ../adr/0035-accepting-a-change.md
 [D107]: ../plan/bootstrap/02-decision-log.md#d107
 [D112]: ../plan/bootstrap/02-decision-log.md#d112
 [D115]: ../plan/bootstrap/02-decision-log.md#d115
 [D117]: ../plan/bootstrap/02-decision-log.md#d117
 [D122]: ../plan/bootstrap/02-decision-log.md#d122
+[D124]: ../plan/bootstrap/02-decision-log.md#d124
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I12]: 0012-partial-sync-and-history.md
 [I15]: 0015-identity-keys-and-trust.md
 [I46]: 0046-review-the-vivief-inventory.md
 [I47]: 0047-what-viviefs-is-about.md
 [I49]: 0049-projection-one-concept-or-several-patterns.md
+[I70]: 0070-research-access-from-membership-to-enterprise.md

@@ -28,6 +28,8 @@ From [I49](0049-projection-one-concept-or-several-patterns.md) ([D110 The refere
 
 2026-10-08: [I52](0052-the-datom-and-its-store.md) decides that every attribute carries a value Schema in the catalog, mapped by each implementation to its column type ([D121 Attribute value types][D121]), which the wide table's "typed from the catalog" needs. The reference read model faces the same layout choice, one table per entity type or one table for all types under a checked cap below Postgres's 1600 columns; [I66 Attribute value types and the typed reference read model][I66] decides it by measurement together with this issue, so both make the same choice. `vivief:datom-store-needs`'s read as of a `tx` stays deferred here ([D118 What a datom needs from storage][D118]).
 
+2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): re-running a command on accept is deferred until an app needs proof that a changeset is exactly what its command makes, and needs a read as of a cursor so authority can re-run it on the data the device saw ([D127 Registered commands][D127]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0023]: ../adr/0023-data-at-rest-and-crypto-shredding.md
@@ -38,6 +40,7 @@ From [I49](0049-projection-one-concept-or-several-patterns.md) ([D110 The refere
 [D112]: ../plan/bootstrap/02-decision-log.md#d112
 [D118]: ../plan/bootstrap/02-decision-log.md#d118
 [D121]: ../plan/bootstrap/02-decision-log.md#d121
+[D127]: ../plan/bootstrap/02-decision-log.md#d127
 [D18]: ../plan/bootstrap/02-decision-log.md#d18
 [D37]: ../plan/bootstrap/02-decision-log.md#d37
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
