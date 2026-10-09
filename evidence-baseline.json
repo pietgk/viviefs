@@ -207,14 +207,14 @@
       "apps/docs/src/lib/reference-links.ts": {
         "branches": "116/129",
         "functions": "26/26",
-        "lines": "124/124",
-        "statements": "157/163"
+        "lines": "125/125",
+        "statements": "158/164"
       },
       "apps/docs/src/lib/references.ts": {
-        "branches": "69/75",
-        "functions": "34/34",
-        "lines": "103/103",
-        "statements": "128/129"
+        "branches": "83/89",
+        "functions": "36/36",
+        "lines": "124/124",
+        "statements": "155/156"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",

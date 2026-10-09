@@ -237,6 +237,15 @@ describe('code spans as repository paths', () => {
       }
       expect(codePath(repository, 'apps/docs/dist')).toEqual({ _tag: 'NotAPath' })
       expect(codePath(repository, '.artifacts/verify/evidence-mobile')).toEqual({ _tag: 'NotAPath' })
+      // Before the first build: `dist/` matches only a directory, and Git
+      // cannot tell that a path that does not exist would be one.
+      expect(codePath(repository, 'apps/web/dist')).toEqual({ _tag: 'NotAPath' })
+      // Asked again, the kept answer.
+      expect(codePath(repository, 'apps/web/dist')).toEqual({ _tag: 'NotAPath' })
+      // A missing path Git does not ignore is still missing.
+      expect(codePath(repository, 'apps/docs/src/gone.ts')).toEqual({ _tag: 'Missing', path: 'apps/docs/src/gone.ts' })
+      // A directory whose files are all further down holds a file.
+      expect(codePath(repository, 'apps/')).toEqual({ _tag: 'Link', href: 'https://github.com/pietgk/viviefs/tree/main/apps' })
       expect(codePath(repository, 'apps/docs/src/index.ts')).toEqual({
         _tag: 'Link',
         href: 'https://github.com/pietgk/viviefs/blob/main/apps/docs/src/index.ts',

@@ -42,7 +42,6 @@
     },
     "preview": {
       "executor": "nx:run-commands",
-      "continuous": true,
       "dependsOn": ["build"],
       "options": {
         "command": "pnpm exec astro preview stop && pnpm exec astro preview",
@@ -52,7 +51,6 @@
     },
     "serve": {
       "executor": "nx:run-commands",
-      "continuous": true,
       "options": {
         "command": "pnpm exec astro dev stop && pnpm exec astro dev",
         "cwd": "apps/docs",

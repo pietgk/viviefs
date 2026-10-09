@@ -16,7 +16,7 @@
  */
 import { relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { findReferenceTokens } from '@viviefs/references'
+import { findReferenceTokens, type Catalog } from '@viviefs/references'
 import type { HastPluginEntry, MdastPluginEntry } from 'satteri'
 import {
   codePath,
@@ -27,6 +27,7 @@ import {
   glossaryAnchor,
   glossaryTerms,
   lookupReference,
+  referenceCatalog,
   referenceIndex,
   termFinder,
   type FoundTerm,
@@ -143,12 +144,12 @@ const plainQuotes = (text: string): string => text.replace(/[\u2018\u2019\u2032]
  * Anything else is left as written.
  */
 
-const linkedReference = (label: string, root: string, where: string, owned: boolean): Reference | undefined => {
+const linkedReference = (label: string, catalog: Catalog, where: string, owned: boolean): Reference | undefined => {
   const trimmed = label.trim()
   const token = findReferenceTokens(trimmed)[0]
   if (token === undefined || token.start !== 0) return undefined
   const key = token.kind === 'id' ? token.id : `${token.from}-${token.to}`
-  const reference = lookupReference(root, key)
+  const reference = lookupReference(catalog, key)
   const rest = trimmed.slice(token.end)
   if (reference === undefined) {
     if (rest === '') throw new Error(`${where}: link "${trimmed}" names an unknown id (D87).`)
@@ -188,6 +189,7 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
     const sourceFile = fileURLToPath(fileURL)
     const repositoryPath = relative(repositoryRoot, sourceFile).split('\\').join('/')
     const index = referenceIndex(repositoryRoot)
+    const catalog = referenceCatalog(repositoryRoot)
     const isDecisionLog = repositoryPath === DECISION_LOG
     const isGlossary = repositoryPath === GLOSSARY
     const find = termFinder(glossaryTerms(repositoryRoot))
@@ -220,12 +222,12 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
         if (parts !== null) context.replaceNode(node, [...parts])
       },
       link(node, context) {
-        const reference = linkedReference(textOf(node), repositoryRoot, repositoryPath, false)
+        const reference = linkedReference(textOf(node), catalog, repositoryPath, false)
         if (reference === undefined) return
         context.replaceNode(node, referenceLink(reference, reference.label))
       },
       linkReference(node, context) {
-        const reference = linkedReference(textOf(node), repositoryRoot, repositoryPath, true)
+        const reference = linkedReference(textOf(node), catalog, repositoryPath, true)
         if (reference === undefined) return
         context.replaceNode(node, referenceLink(reference, reference.label))
       },

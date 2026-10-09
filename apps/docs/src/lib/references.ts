@@ -125,9 +125,12 @@ export const referenceIndex = (root: string): ReadonlyMap<string, Reference> => 
 /** The catalog, including decision sections, rebuilt with the index. */
 export const referenceCatalog = (root: string): Catalog => current(root).catalog
 
-/** A key (an id, or a section range) as the site links it, or undefined when it is not one. */
-export const lookupReference = (root: string, key: string): Reference | undefined => {
-  const reference = resolveKey(referenceCatalog(root), key)
+/**
+ * A key (an id, or a section range) as the site links it, or undefined when
+ * it is not one. Takes the catalog, so a page reads it once, not once per link.
+ */
+export const lookupReference = (catalog: Catalog, key: string): Reference | undefined => {
+  const reference = resolveKey(catalog, key)
   return reference === undefined ? undefined : toSite(reference)
 }
 
@@ -139,30 +142,80 @@ export const glossaryTerms = (root: string): ReadonlyArray<GlossaryTerm> => curr
  * cannot hold an empty directory, so one that exists only in a working tree
  * is missing from every fresh clone and from GitHub.
  */
-const holdsAFile = (absolute: string): boolean =>
-  !statSync(absolute).isDirectory() ||
-  readdirSync(absolute, { recursive: true, withFileTypes: true }).some((entry) => entry.isFile())
+const holdsAFile = (absolute: string): boolean => {
+  if (!statSync(absolute).isDirectory()) return true
+  // Stops at the first file: reading a whole tree such as `apps/docs`, with its
+  // `node_modules`, took minutes over every page (I27). Git holds a symbolic
+  // link like a file.
+  const directories = [absolute]
+  for (let directory = directories.pop(); directory !== undefined; directory = directories.pop()) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (!entry.isDirectory()) return true
+      directories.push(join(directory, entry.name))
+    }
+  }
+  return false
+}
 
-const ignoredPaths = new Map<string, boolean>()
+const ignoredEntries = new Map<string, ReadonlySet<string> | null>()
+
+/**
+ * The ignored files and directories of a working tree (directories end in
+ * `/`), listed by Git once per process: asking per path spawned Git
+ * hundreds of times on every start of the site (I27). Null outside a Git
+ * repository.
+ */
+const ignoredIn = (root: string): ReadonlySet<string> | null => {
+  if (ignoredEntries.has(root)) return ignoredEntries.get(root) ?? null
+  let entries: ReadonlySet<string> | null
+  try {
+    const listed = execFileSync('git', ['ls-files', '-z', '--others', '--ignored', '--exclude-standard', '--directory'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      maxBuffer: 64 * 1024 * 1024,
+    })
+    entries = new Set(listed.split('\0').filter((entry) => entry !== ''))
+  } catch {
+    entries = null
+  }
+  ignoredEntries.set(root, entries)
+  return entries
+}
+
+const ignoredMissing = new Map<string, boolean>()
 
 /**
  * Whether Git ignores a path, as for a build output (`apps/docs/dist`) or a
  * local artifact (`.artifacts/`). It exists only where it was made, so it is
- * neither linked nor reported missing. Outside a Git repository nothing is
- * ignored.
+ * neither linked nor reported missing. A path that exists is ignored when it
+ * or a directory above it is listed. One not made yet, such as `dist` before
+ * the first build, is asked of Git as a file and as a directory, since a
+ * pattern such as `dist/` matches only a directory. Outside a Git repository
+ * nothing is ignored.
  */
 const isIgnored = (root: string, path: string): boolean => {
+  const entries = ignoredIn(root)
+  if (entries === null) return false
+  if (existsSync(join(root, path))) {
+    const parts = path.split('/')
+    return parts.some((_, index) => {
+      const prefix = parts.slice(0, index + 1).join('/')
+      return entries.has(prefix) || entries.has(`${prefix}/`)
+    })
+  }
   const key = `${root}\0${path}`
-  const known = ignoredPaths.get(key)
+  const known = ignoredMissing.get(key)
   if (known !== undefined) return known
   let ignored: boolean
   try {
-    execFileSync('git', ['check-ignore', '--quiet', path], { cwd: root, stdio: 'ignore' })
+    // Exits 0 when either form is ignored.
+    execFileSync('git', ['check-ignore', path, `${path}/`], { cwd: root, stdio: 'ignore' })
     ignored = true
   } catch {
     ignored = false
   }
-  ignoredPaths.set(key, ignored)
+  ignoredMissing.set(key, ignored)
   return ignored
 }
 
@@ -188,11 +241,13 @@ export const codePath = (root: string, value: string): CodePath => {
   const isRootFile = !path.includes('/') && /\.\w+$/.test(path)
   if (!path.includes('/') && !isRootFile) return { _tag: 'NotAPath' }
   const bare = path.replace(/\/$/, '')
-  if (isIgnored(root, bare)) return { _tag: 'NotAPath' }
   const absolute = join(root, bare)
   if (!existsSync(absolute) || !holdsAFile(absolute)) {
-    return CHECKED_ROOTS.test(path) ? { _tag: 'Missing', path } : { _tag: 'NotAPath' }
+    // Most such spans are code (`Effect.fn`, `@effect/vitest`), so Git is
+    // asked only about a path that would otherwise fail.
+    return CHECKED_ROOTS.test(path) && !isIgnored(root, bare) ? { _tag: 'Missing', path } : { _tag: 'NotAPath' }
   }
+  if (isIgnored(root, bare)) return { _tag: 'NotAPath' }
   const site = siteUrlFor(bare)
   if (site) return { _tag: 'Link', href: site }
   const kind = statSync(absolute).isDirectory() ? 'tree' : 'blob'

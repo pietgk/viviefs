@@ -26,8 +26,8 @@ detects an agent session, and then reuses a server that is already running.
 A port in use moves the server to the next free one (4322 next to a running
 `docs:dev`).
 
-Astro and Nx each guard against a second server, so starting and stopping go
-through Astro's own lock file (`.astro/dev.json`, `.astro/preview.json`):
+Starting and stopping go through Astro's own lock file (`.astro/dev.json`,
+`.astro/preview.json`):
 
 - Astro refuses to start a second dev or preview server while its lock file
   names a live one. `docs:serve` and `docs:preview` therefore run `astro dev
@@ -36,23 +36,25 @@ through Astro's own lock file (`.astro/dev.json`, `.astro/preview.json`):
   the lock file is still Astro, stops it with SIGTERM (SIGKILL after five
   seconds) and removes the lock. `astro preview --force`, which the refusal
   suggests, only works with `--background` in Astro 7.3.5.
-- Nx shares a running continuous task between Nx processes: a second
-  `docs:dev` or `docs:prod` while the first still runs in another terminal
-  prints "Waiting for docs:preview in another nx process" and uses that
-  server instead of starting its own. To replace it, run `pnpm docs:stop`
-  first; the other terminal's command then ends with exit code 130.
+- So a second `docs:dev` or `docs:prod` replaces the server of the first,
+  and the first terminal's command ends with a non-zero exit code.
 - `pnpm docs:stop` stops both servers through the lock files. It cannot stop
   a server started with `--ignore-lock`, which writes no lock file; stop that
   one with Ctrl-C.
+- `serve` and `preview` are not Nx continuous tasks: Nx reports a
+  continuous task that nothing depends on as successful whatever its exit
+  code, so a server that failed to start printed "Successfully ran target"
+  (I27). As plain tasks, a failed start fails the command, in a terminal and
+  in an agent session ("Dev server process exited before becoming ready";
+  the reason is in `apps/docs/.astro/dev.log`).
 
-The development server needs about 100 seconds before it answers, while the
-content layer reads the repository's Markdown, and it does not always come
-up (I27): a start that takes longer than 60 seconds can fail inside Vite
-("transport invoke timed out after 60000ms"), and the server then says it is
-ready but never answers. In an agent session Astro 7 gives up on it after 30
-seconds ("Dev server failed to start within 30s") while Nx still reports the
-target as successful; `pnpm docs:dev --ignore-lock` keeps it in the
-foreground.
+The development server is ready in about 3 seconds and `docs:prod` in about
+15 seconds, or 3 from the Nx cache when nothing changed (I27). The content
+layer renders every repository page on every start, and a changed page
+again: a page links names, glossary terms and paths taken from other files,
+so its cached render cannot be trusted. Keep that render cheap; a start that
+takes longer than 60 seconds fails inside Vite ("transport invoke timed out
+after 60000ms") and leaves a server that says it is ready but never answers.
 
 ## How it is put together
 
@@ -80,10 +82,12 @@ foreground.
 - References are resolved when a page renders (D87, `src/lib/reference-links.ts`):
   every gate, ADR and decision id in prose becomes a link that reads as its id
   and name, and every inline-code repository path a link; an unknown id or a
-  stale path fails the build. Names and summaries come from
-  `tools/qualification/src/gates.ts`, each ADR's `Summary:` line and the Name
-  column of the decision log (`src/lib/references.ts`). The decision log is
-  rendered as Reference > Decisions, a row anchor per decision.
+  stale path fails the build. Names and summaries come from the reference
+  catalog in `libs/references` (D86'), which `pnpm refs fix` also writes into
+  the markdown as named reference-style links; `src/lib/references.ts` adds
+  the site URLs, the glossary and the path links. A reference-style link keeps
+  its preview card. The decision log is rendered as Reference > Decisions, a
+  row anchor per decision.
 - Issues (`docs/issues/`, D92) render as Reference > Issues with a status
   badge, and `I<n>` resolves like the other ids. Reference > Claims (D93) is
   generated (`src/lib/claims.ts`) from `gates.ts`, the plan's gate table, the
