@@ -18,6 +18,8 @@ Do it with the next change that reruns qualification anyway, and in the same cha
 
 ## Comments
 
+2026-10-09: Unchanged with Effect 4.0.2: `@typeonce/effect-machine` 0.40.0 is still the newest and peers `effect` ^4.0.0, so the bump to it is still a code change (`Machine.targets` became dotted state paths in 0.39.0), batched with the next qualification run.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01

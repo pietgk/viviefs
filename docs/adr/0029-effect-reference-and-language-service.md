@@ -4,7 +4,7 @@ Summary: Effect's source is vendored read-only under repos/effect as the referen
 
 Status: Qualified
 
-Date: 2026-09-21. Amended 2026-10-02 (Effect 4.0.0): the subtree follows the
+Date: 2026-09-21. Amended 2026-10-09 (Effect 4.0.2, the subtree moved with the pin). Amended 2026-10-02 (Effect 4.0.0): the subtree follows the
 release tag of the pinned version, not `main`.
 
 Qualifying gate: verify
@@ -25,7 +25,7 @@ TypeScript 7, which this repo dual-pinned in [ADR-0028 TypeScript 7 CLI with Typ
 ## Design
 
 - Vendor Effect v4 source at `repos/effect` with `git subtree`, squashed, at
-  the `Effect-TS/effect` tag of the version pnpm pins (`effect@4.0.0`), so the
+  the `Effect-TS/effect` tag of the version pnpm pins (`effect@4.0.2` since 2026-10-09), so the
   reference is the code the apps run. Read-only reference. Application code
   still imports `effect` and `@effect/*` from pnpm. Move both in one change:
   `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git effect@<version> --squash`.
@@ -89,6 +89,10 @@ its tree equals the tag's tree. `@effect/tsgo` 0.47.2 (built for 4.0's public
 module paths) adds `unstableApiUsage`, which warned on every workflow, sql,
 rpc, http and cli use and failed typecheck; it is off in `tsconfig.base.json`
 ([ADR-0003 Effect v4 as the backbone][ADR-0003]). `mise exec -- pnpm verify` was green.
+
+2026-10-09: Effect 4.0.2. `repos/effect` was pulled from the `effect@4.0.2`
+tag in the change after the pins moved; its tree equals the tag's tree
+(`700d799f2`). `@effect/tsgo` stays at 0.47.2 for now (0.51.1 is out).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

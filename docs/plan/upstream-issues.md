@@ -15,7 +15,7 @@ one is posted or fixed, and drop the workaround in the same change as the fix.
 
 **Body:**
 
-Version: `effect` and `@effect/sql-sqlite-wasm` 4.0.0 (the same code is on `main` on 2026-10-02).
+Version: `effect` and `@effect/sql-sqlite-wasm` 4.0.2 (first seen in 4.0.0; rechecked against the `effect@4.0.2` tag on 2026-10-09).
 
 If the OPFS worker fails before it posts `["ready"]`, building the `SqliteClient` layer never completes and
 never fails. We hit it in a browser with a database name longer than wa-sqlite's 64-character path limit
@@ -48,7 +48,7 @@ the worker's `error` event fires; and bound the client's open to 30 s.
 
 **Body:**
 
-Still present in 4.0.0 and on `main`: `effect/sql/Migrator` has
+Still present in 4.0.2 (rechecked against the `effect@4.0.2` tag on 2026-10-09): `effect/sql/Migrator` has
 `import(url.href)` in `fromFileSystem`. On Expo SDK 58 / React Native 0.88, Metro fails the whole bundle
 at that line (`SyntaxError ... Migrator.js: Invalid call ... import(...)`) as soon as anything imports the
 module, even `fromRecord`. `SqliteMigrator` re-exports `effect/sql/Migrator`, and the cluster

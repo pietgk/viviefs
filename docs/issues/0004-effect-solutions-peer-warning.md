@@ -16,6 +16,8 @@ Found: 2026-10-01
 newest and still pins `effect` 4.0.0-beta.59. A second peer warning,
 `@typeonce/effect-machine` requiring the release candidate, is [I23 effect-machine still requires the Effect release candidate][I23].
 
+2026-10-09: Rechecked after Effect moved to 4.0.2 (the human asked to upgrade first): `effect-solutions` 0.5.3 is still the newest and still depends on `effect` 4.0.0-beta.59 and `@effect/platform-bun` 4.0.0-beta.59, so the warning is unchanged by our pin. Proposed with the human (phase 0): accept it, `Decide when:` a release peers `effect` ^4.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [I23]: 0023-effect-machine-on-stable-effect.md
