@@ -2,10 +2,10 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7437257,
-        "jsBytes": 4583567,
+        "hbcBytes": 7456060,
+        "jsBytes": 4591362,
         "packages": {
-          "(unmapped)": 199230,
+          "(unmapped)": 199942,
           "@babel/runtime": 2100,
           "@effect/sql-sqlite-react-native": 2909,
           "@expo/cli": 2348,
@@ -27,7 +27,7 @@
           "abort-controller": 1719,
           "await-lock": 1503,
           "base64-js": 1401,
-          "effect": 1084312,
+          "effect": 1091395,
           "event-target-shim": 6391,
           "expo": 96374,
           "expo-application": 2587,
@@ -68,13 +68,13 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-08"
+        "recordedAt": "2026-10-09"
       },
       "ios": {
-        "hbcBytes": 5331763,
-        "jsBytes": 2490142,
+        "hbcBytes": 5350618,
+        "jsBytes": 2497934,
         "packages": {
-          "(unmapped)": 197542,
+          "(unmapped)": 198251,
           "@babel/runtime": 2100,
           "@effect/sql-sqlite-react-native": 2909,
           "@expo/cli": 2348,
@@ -89,7 +89,7 @@
           "abort-controller": 1719,
           "await-lock": 1503,
           "base64-js": 1401,
-          "effect": 1084312,
+          "effect": 1091395,
           "event-target-shim": 6391,
           "expo": 96370,
           "expo-application": 2624,
@@ -130,7 +130,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-08"
+        "recordedAt": "2026-10-09"
       }
     }
   },
@@ -565,10 +565,10 @@
         "statements": "48/48"
       },
       "tools/qualification/src/probes/p11-spans.ts": {
-        "branches": "62/71",
-        "functions": "26/26",
-        "lines": "105/105",
-        "statements": "122/123"
+        "branches": "64/73",
+        "functions": "27/27",
+        "lines": "107/107",
+        "statements": "124/125"
       },
       "tools/qualification/src/probes/report-server.ts": {
         "branches": "17/23",

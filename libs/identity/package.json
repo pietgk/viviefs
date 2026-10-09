@@ -33,11 +33,11 @@
   },
   "dependencies": {
     "@viviefs/testing": "workspace:*",
-    "effect": "4.0.0",
+    "effect": "4.0.2",
     "jose": "6.2.12"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0",
+    "@effect/vitest": "4.0.2",
     "vite": "8.3.0",
     "vitest": "5.0.1"
   }

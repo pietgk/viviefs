@@ -179,8 +179,8 @@ importers:
         specifier: 0.47.2
         version: 0.47.2
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@eslint/js':
         specifier: 10.0.1
         version: 10.0.1(eslint@10.11.0(supports-color@7.2.0))
@@ -203,8 +203,8 @@ importers:
         specifier: 5.0.1
         version: 5.0.1(vitest@5.0.1)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
       effect-solutions:
         specifier: 0.5.3
         version: 0.5.3
@@ -264,8 +264,8 @@ importers:
         version: 0.12.0(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@astrojs/markdown-satteri@0.4.2)(@astrojs/starlight@0.42.4(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(astro@7.3.5(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))(supports-color@10.2.2))(astro@7.3.5(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))(supports-color@10.2.2)
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@types/mdast':
         specifier: 4.0.4
         version: 4.0.4
@@ -273,8 +273,8 @@ importers:
         specifier: workspace:*
         version: link:../../libs/testing
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
       vite:
         specifier: 8.3.0
         version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0)
@@ -285,11 +285,11 @@ importers:
   apps/evidence-mobile:
     dependencies:
       '@effect/sql-sqlite-react-native':
-        specifier: 4.0.0
-        version: 4.0.0(@op-engineering/op-sqlite@18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(effect@4.0.0)
+        specifier: 4.0.2
+        version: 4.0.2(@op-engineering/op-sqlite@18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(effect@4.0.2)
       '@effect/sql-sqlite-wasm':
-        specifier: 4.0.0
-        version: 4.0.0(@effect/wa-sqlite@0.1.2)(effect@4.0.0)
+        specifier: 4.0.2
+        version: 4.0.2(@effect/wa-sqlite@0.1.2)(effect@4.0.2)
       '@expo/metro-runtime':
         specifier: 58.0.3
         version: 58.0.3(@expo/log-box@58.0.3)(expo@58.0.0-preview.3)(react-dom@19.2.3(react@19.2.3))(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
@@ -327,8 +327,8 @@ importers:
         specifier: workspace:*
         version: link:../../libs/workflow-engine
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
       expo:
         specifier: 58.0.0-preview.3
         version: 58.0.0-preview.3(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@58.0.0)(@expo/metro-runtime@58.0.3)(@typescript/typescript6@6.0.2)(react-dom@19.2.3(react@19.2.3))(react-native-web@0.21.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)
@@ -379,8 +379,8 @@ importers:
   apps/evidence-server:
     dependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(redis@6.2.1)
       '@viviefs/blobs':
         specifier: workspace:*
         version: link:../../libs/blobs
@@ -400,12 +400,12 @@ importers:
         specifier: workspace:*
         version: link:../../libs/sync/server
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/evidence-model':
         specifier: workspace:*
         version: link:../../features/evidence/model
@@ -434,12 +434,12 @@ importers:
         specifier: workspace:*
         version: link:../../libs/testing
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       vite:
         specifier: 8.3.0
         version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0)
@@ -450,11 +450,11 @@ importers:
   features/evidence/client:
     dependencies:
       '@effect/atom-react':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(react@19.2.3)(scheduler@0.26.0)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(react@19.2.3)(scheduler@0.26.0)
       '@typeonce/effect-machine':
         specifier: 0.38.0
-        version: 0.38.0(effect@4.0.0)
+        version: 0.38.0(effect@4.0.2)
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../../../libs/datom
@@ -465,8 +465,8 @@ importers:
         specifier: workspace:*
         version: link:../../../libs/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -481,8 +481,8 @@ importers:
         version: 5.33.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@testing-library/dom':
         specifier: 10.4.1
         version: 10.4.1
@@ -517,8 +517,8 @@ importers:
         specifier: workspace:*
         version: link:../../../libs/datom
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
 
   features/evidence/server: {}
 
@@ -528,8 +528,8 @@ importers:
         specifier: workspace:*
         version: link:../datom
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
 
   libs/crypto-shred: {}
 
@@ -539,12 +539,12 @@ importers:
         specifier: workspace:*
         version: link:../testing
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       vite:
         specifier: 8.3.0
         version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0)
@@ -558,15 +558,15 @@ importers:
         specifier: workspace:*
         version: link:../testing
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
       jose:
         specifier: 6.2.12
         version: 6.2.12
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       vite:
         specifier: 8.3.0
         version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0)
@@ -592,8 +592,8 @@ importers:
         specifier: workspace:*
         version: link:../workflow-engine
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       expo-auth-session:
         specifier: 58.0.2
@@ -614,8 +614,8 @@ importers:
   libs/references:
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../testing
@@ -629,8 +629,8 @@ importers:
   libs/store-postgres:
     dependencies:
       '@effect/sql-pglite':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)
       '@electric-sql/pglite':
         specifier: 0.5.8
         version: 0.5.8
@@ -638,12 +638,12 @@ importers:
         specifier: workspace:*
         version: link:../datom
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../testing
@@ -657,8 +657,8 @@ importers:
   libs/store-sqlite-native:
     dependencies:
       '@effect/sql-sqlite-react-native':
-        specifier: 4.0.0
-        version: 4.0.0(@op-engineering/op-sqlite@18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(effect@4.0.0)
+        specifier: 4.0.2
+        version: 4.0.2(@op-engineering/op-sqlite@18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(effect@4.0.2)
       '@op-engineering/op-sqlite':
         specifier: 18.2.5
         version: 18.2.5(react-native@0.88.0-rc.0(@babel/core@8.0.6)(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
@@ -666,24 +666,24 @@ importers:
         specifier: workspace:*
         version: link:../datom
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
 
   libs/store-sqlite-node:
     dependencies:
       '@effect/sql-sqlite-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)
       '@viviefs/datom':
         specifier: workspace:*
         version: link:../datom
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../testing
@@ -697,8 +697,8 @@ importers:
   libs/store-sqlite-wasm:
     dependencies:
       '@effect/sql-sqlite-wasm':
-        specifier: 4.0.0
-        version: 4.0.0(@effect/wa-sqlite@0.1.2)(effect@4.0.0)
+        specifier: 4.0.2
+        version: 4.0.2(@effect/wa-sqlite@0.1.2)(effect@4.0.2)
       '@effect/wa-sqlite':
         specifier: 0.1.2
         version: 0.1.2
@@ -706,8 +706,8 @@ importers:
         specifier: workspace:*
         version: link:../datom
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
 
   libs/sync/client:
     dependencies:
@@ -724,8 +724,8 @@ importers:
         specifier: workspace:*
         version: link:../protocol
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
 
   libs/sync/protocol:
     dependencies:
@@ -736,8 +736,8 @@ importers:
         specifier: workspace:*
         version: link:../../identity
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
 
   libs/sync/server:
     dependencies:
@@ -757,8 +757,8 @@ importers:
         specifier: workspace:*
         version: link:../../workflow-engine
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
 
   libs/telemetry:
     dependencies:
@@ -772,12 +772,12 @@ importers:
         specifier: workspace:*
         version: link:../workflow-engine
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/store-postgres':
         specifier: workspace:*
         version: link:../store-postgres
@@ -794,12 +794,12 @@ importers:
   libs/testing:
     dependencies:
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       vite:
         specifier: 8.3.0
         version: 8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0)
@@ -814,8 +814,8 @@ importers:
         version: 19.2.3
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@testing-library/dom':
         specifier: 10.4.1
         version: 10.4.1
@@ -856,12 +856,12 @@ importers:
         specifier: workspace:*
         version: link:../testing
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/store-postgres':
         specifier: workspace:*
         version: link:../store-postgres
@@ -884,11 +884,11 @@ importers:
         version: link:../../libs/identity
     devDependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(redis@6.2.1)
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/blobs':
         specifier: workspace:*
         version: link:../../libs/blobs
@@ -929,8 +929,8 @@ importers:
         specifier: 0.21.6
         version: 0.21.6
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
       playwright:
         specifier: 1.55.1
         version: 1.55.1
@@ -948,8 +948,8 @@ importers:
         version: link:../../libs/references
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../../libs/testing
@@ -963,11 +963,11 @@ importers:
   tools/verify:
     dependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(redis@6.2.1)
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.1)
+        specifier: 4.0.2
+        version: 4.0.2(effect@4.0.2)(vitest@5.0.1)
       '@viviefs/references':
         specifier: workspace:*
         version: link:../../libs/references
@@ -975,8 +975,8 @@ importers:
         specifier: workspace:*
         version: link:../../libs/testing
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.0.2
+        version: 4.0.2
       eslint:
         specifier: 10.11.0
         version: 10.11.0(supports-color@7.2.0)
@@ -1907,10 +1907,10 @@ packages:
     resolution: {integrity: sha512-Vh5uy9Y1JBMId6J1f68TMXnZrTCvNdo9Fu2k0d1YnJngR+sM5kWTKl441c/3TFs+cG0NWOjRWgQ/iaWhbYx+7A==}
     engines: {node: '>=14'}
 
-  '@effect/atom-react@4.0.0':
-    resolution: {integrity: sha512-VPP2oOjj56iwOpL5aIGbu7Qhb4+1sFNdU16aI5of3JqToqWWX9eJPBfeiPyQ1eTYof1hnNX1auyRiTORSfLT6g==}
+  '@effect/atom-react@4.0.2':
+    resolution: {integrity: sha512-rg9xnPHzjURhKhOm+bKnYitPPQC02m6R7ZmJLNdxtrNCgDQ9fSOPqZHN5W/GzUw+OsvplKSvaBe/JSQejeYKYA==}
     peerDependencies:
-      effect: ^4.0.0
+      effect: ^4.0.2
       react: '>=19.0.0 <20.0.0'
       scheduler: '>=0.25.0 <0.28.0'
 
@@ -1919,46 +1919,46 @@ packages:
     peerDependencies:
       effect: ^4.0.0-beta.59
 
-  '@effect/platform-node-shared@4.0.0':
-    resolution: {integrity: sha512-VBXHJU9UXVZPdQGGDRjGXpo+TpOzRwZuMrdKAtIxi1qwcRftmacZ1zTgIrzBa0Z2RA2KVkoOecQUsTlt/nJZhw==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      effect: ^4.0.0
-
   '@effect/platform-node-shared@4.0.0-rc.116':
     resolution: {integrity: sha512-4FB6UriGqArWFUaFqVchhfCRmmtOVzmD/k/bH6LErlKY8a9amt5dk6c3Arsi7AvUpChsdO+3jsG+P85HsxMkNA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       effect: ^4.0.0-rc.116
 
-  '@effect/platform-node@4.0.0':
-    resolution: {integrity: sha512-/L+4MUbl8FejPKLHLROYSOebvHnfixkP8KiblSD/DE5uH5xENZBHaux4nH6XMnRP+lr8ajpEJFS8sUrmmxFJeQ==}
+  '@effect/platform-node-shared@4.0.2':
+    resolution: {integrity: sha512-xn8aDw9p/QUPt1Yi0C3HUMcycT+MjHfAe19FDUDrUuzcwq0xxskkamVSqbdykF/Dsuus4aZTsCBZA/vkhHIfbQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0
+      effect: ^4.0.2
+
+  '@effect/platform-node@4.0.2':
+    resolution: {integrity: sha512-RWesXBQStnFHdD465gR5thFKgXO7FSyCKRZ56nWXB7PedNVzr8vV0nb/3MULLdri493sMz/b/pmGBTb6K8cBjQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      effect: ^4.0.2
       redis: '>=5.0.0 <7.0.0'
 
-  '@effect/sql-pglite@4.0.0':
-    resolution: {integrity: sha512-BTlCPSipKMHZJEoJ94rR4f8Gx8cv8tLpZeHc3sajg2ko/2GY8s6CyycSra3Z6GLFUhcivRTYQ9Zc5LThz64qfQ==}
+  '@effect/sql-pglite@4.0.2':
+    resolution: {integrity: sha512-WVuNSNSsYsY/tG0ZKIuG1GeHjTIo8clqdZG/kUGDBfBldtTKfHgmq/pOI5zidWif9n4BaW4gB8DwJR3P8rtmkw==}
     peerDependencies:
-      effect: ^4.0.0
+      effect: ^4.0.2
 
-  '@effect/sql-sqlite-node@4.0.0':
-    resolution: {integrity: sha512-xyUSLY7v55iMgGxrjFrTo5ngixgQ3jLmOQ+AX8CCazO/caxuMM0oq8zb974FAcvQHRrpMEWU7Vnoo+rxct7PAQ==}
+  '@effect/sql-sqlite-node@4.0.2':
+    resolution: {integrity: sha512-QjhQ6yetczGE08ZV/05Y4Cj7GNGswloRZuk2cZ4tl84C91398Ho0PhDLexihO2RHBTE1YjpUW8Mdl4KH41I/LQ==}
     peerDependencies:
-      effect: ^4.0.0
+      effect: ^4.0.2
 
-  '@effect/sql-sqlite-react-native@4.0.0':
-    resolution: {integrity: sha512-JENeDL2uX9WX6wwtLGKKK4NCdov6kpIaMwwwBY+xLqizRtNSvu6c8GMpaRSwYIcEbCxSA4r2zeCtxdmq7QeSRA==}
+  '@effect/sql-sqlite-react-native@4.0.2':
+    resolution: {integrity: sha512-R/3YrqfuUO7SgcXrvXnRXphT2G9KrcI1eo4pgeDtobkx31UO6516e5xo8ms39OINjrX16NE+1KsN/eAqQSpzPg==}
     peerDependencies:
       '@op-engineering/op-sqlite': 18.2.5
-      effect: ^4.0.0
+      effect: ^4.0.2
 
-  '@effect/sql-sqlite-wasm@4.0.0':
-    resolution: {integrity: sha512-kYnf0wSDrm1BHnQJl9GGkJPtX1UGmZuvHPQPxvyvumTT7uwp3zV47CVdBR/YOPMVRdgsnIHFaPDtk3O32/QbAw==}
+  '@effect/sql-sqlite-wasm@4.0.2':
+    resolution: {integrity: sha512-RoWRlWHtGn0gm8tt7FFD9hQw/qoSvvORk0JqUoJKOcwOnt64+N7cHw3NYIKX14j4oMwvt4WI7NHUb2WxIlMFdA==}
     peerDependencies:
       '@effect/wa-sqlite': '>=0.1.2 <0.2.0'
-      effect: ^4.0.0
+      effect: ^4.0.2
 
   '@effect/tsgo-darwin-arm64@0.47.2':
     resolution: {integrity: sha512-sLYKt201VdTjSHG3rbyIdpLMNGEMiArm0OgO7kYfnA0yRV0ux0blgcucf97bx90gIvDJFSSL17QCSDPGs9jsKQ==}
@@ -1999,10 +1999,10 @@ packages:
     resolution: {integrity: sha512-mGIelPZhTJg8g+RgiAe7wrB8NLw/lOzPGntAYBBqEJS0/I8ir1/ULKcpFQyuAfPjwkDYrg93KWv1PDGwgsgBIA==}
     hasBin: true
 
-  '@effect/vitest@4.0.0':
-    resolution: {integrity: sha512-kGElCPFGtP+CgMCwV/HjJWqtE3zYo6I1+8MSA54l+EI24lPU9p2Efa+TBp1jfkg9j711KKzEqgSAy3VzTsb76Q==}
+  '@effect/vitest@4.0.2':
+    resolution: {integrity: sha512-Zb72nu7iUy3rNdBp9J1Xu5oUQGwJ8cOYsUwmYgujj88aqyvASRDjOS01SjlcPViqf77csduetKdCJTVndMNfzw==}
     peerDependencies:
-      effect: ^4.0.0
+      effect: ^4.0.2
       vitest: '>=5.0.0 <6.0.0'
 
   '@effect/wa-sqlite@0.1.2':
@@ -3424,6 +3424,9 @@ packages:
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
+  '@types/ws@8.18.2':
+    resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
+
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
 
@@ -4514,11 +4517,11 @@ packages:
     engines: {bun: '>=1.1.0'}
     hasBin: true
 
-  effect@4.0.0:
-    resolution: {integrity: sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ==}
-
   effect@4.0.0-beta.59:
     resolution: {integrity: sha512-xyUDLeHSe8d6lWGOvR6Fgn2HL6gYeTZ/S4Jzk9uc4ZUxMPPsNZlNXrvk0C7/utQFzeX7uAWcVnG2BjbA0SRoAA==}
+
+  effect@4.0.2:
+    resolution: {integrity: sha512-YeYnLqSFrL4+tCOXRrfNP03w8FILoF/wDl+ukraJAGzXrjcS383W7LAAvGBbLatEyktmLxRq+9xJinx7QzXW5A==}
 
   ejs@5.0.1:
     resolution: {integrity: sha512-COqBPFMxuPTPspXl2DkVYaDS3HtrD1GpzOGkNTJ1IYkifq/r9h8SVEFrjA3D9/VJGOEoMQcrlhpntcSUrM8k6A==}
@@ -8884,9 +8887,9 @@ snapshots:
 
   '@ctrl/tinycolor@4.2.1': {}
 
-  '@effect/atom-react@4.0.0(effect@4.0.0)(react@19.2.3)(scheduler@0.26.0)':
+  '@effect/atom-react@4.0.2(effect@4.0.2)(react@19.2.3)(scheduler@0.26.0)':
     dependencies:
-      effect: 4.0.0
+      effect: 4.0.2
       react: 19.2.3
       scheduler: 0.26.0
 
@@ -8894,15 +8897,6 @@ snapshots:
     dependencies:
       '@effect/platform-node-shared': 4.0.0-rc.116(effect@4.0.0-beta.59)
       effect: 4.0.0-beta.59
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
-  '@effect/platform-node-shared@4.0.0(effect@4.0.0)':
-    dependencies:
-      '@types/ws': 8.18.1
-      effect: 4.0.0
-      ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -8916,34 +8910,43 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0(effect@4.0.0)(redis@6.2.1)':
+  '@effect/platform-node-shared@4.0.2(effect@4.0.2)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0(effect@4.0.0)
-      effect: 4.0.0
+      '@types/ws': 8.18.2
+      effect: 4.0.2
+      ws: 8.22.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@effect/platform-node@4.0.2(effect@4.0.2)(redis@6.2.1)':
+    dependencies:
+      '@effect/platform-node-shared': 4.0.2(effect@4.0.2)
+      effect: 4.0.2
       redis: 6.2.1
       undici: 8.11.2
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/sql-pglite@4.0.0(effect@4.0.0)':
+  '@effect/sql-pglite@4.0.2(effect@4.0.2)':
     dependencies:
       '@electric-sql/pglite': 0.5.8
-      effect: 4.0.0
+      effect: 4.0.2
 
-  '@effect/sql-sqlite-node@4.0.0(effect@4.0.0)':
+  '@effect/sql-sqlite-node@4.0.2(effect@4.0.2)':
     dependencies:
-      effect: 4.0.0
+      effect: 4.0.2
 
-  '@effect/sql-sqlite-react-native@4.0.0(@op-engineering/op-sqlite@18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(effect@4.0.0)':
+  '@effect/sql-sqlite-react-native@4.0.2(@op-engineering/op-sqlite@18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3))(effect@4.0.2)':
     dependencies:
       '@op-engineering/op-sqlite': 18.2.5(react-native@0.88.0-rc.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.2)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
-      effect: 4.0.0
+      effect: 4.0.2
 
-  '@effect/sql-sqlite-wasm@4.0.0(@effect/wa-sqlite@0.1.2)(effect@4.0.0)':
+  '@effect/sql-sqlite-wasm@4.0.2(@effect/wa-sqlite@0.1.2)(effect@4.0.2)':
     dependencies:
       '@effect/wa-sqlite': 0.1.2
-      effect: 4.0.0
+      effect: 4.0.2
 
   '@effect/tsgo-darwin-arm64@0.47.2':
     optional: true
@@ -8976,9 +8979,9 @@ snapshots:
       '@effect/tsgo-win32-arm64': 0.47.2
       '@effect/tsgo-win32-x64': 0.47.2
 
-  '@effect/vitest@4.0.0(effect@4.0.0)(vitest@5.0.1)':
+  '@effect/vitest@4.0.2(effect@4.0.2)(vitest@5.0.1)':
     dependencies:
-      effect: 4.0.0
+      effect: 4.0.2
       vitest: 5.0.1(@types/node@22.20.4)(@vitest/coverage-istanbul@5.0.1)(jsdom@30.1.0(@noble/hashes@2.4.0))(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.0))
 
   '@effect/wa-sqlite@0.1.2': {}
@@ -10289,9 +10292,9 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@typeonce/effect-machine@0.38.0(effect@4.0.0)':
+  '@typeonce/effect-machine@0.38.0(effect@4.0.2)':
     dependencies:
-      effect: 4.0.0
+      effect: 4.0.2
 
   '@types/aria-query@5.0.4': {}
 
@@ -10510,6 +10513,10 @@ snapshots:
   '@types/unist@3.0.3': {}
 
   '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 22.20.4
+
+  '@types/ws@8.18.2':
     dependencies:
       '@types/node': 22.20.4
 
@@ -11728,8 +11735,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  effect@4.0.0: {}
-
   effect@4.0.0-beta.59:
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -11742,6 +11747,8 @@ snapshots:
       toml: 4.3.0
       uuid: 13.0.2
       yaml: 2.9.0
+
+  effect@4.0.2: {}
 
   ejs@5.0.1: {}
 

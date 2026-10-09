@@ -22,6 +22,14 @@ const text = (span: Tracer.Span, key: string): string | undefined => {
 
 const deviceOf = (span: Tracer.Span) => text(span, 'sync.device')
 
+/**
+ * One side of an Effect RPC call, told by its OpenTelemetry span kind and
+ * `rpc.system.name`, not by its name: since Effect 4.0.2 the span is named
+ * after the method alone (`Append`), without `RpcClient.` or `RpcServer.`.
+ */
+const rpcSide = (span: Tracer.Span, kind: 'client' | 'server') =>
+  span.kind === kind && text(span, 'rpc.system.name') === 'effect_rpc'
+
 // Server-side handler spans (`SyncRpc.Append`) carry no device and stay out.
 const keep = (span: Tracer.Span) =>
   span.name.startsWith('P11 ') ||
@@ -79,13 +87,13 @@ const arrowsOf = (
   // A request reached the server when a server span continues its trace.
   const served = new Set(
     spans
-      .filter((span) => span.name.startsWith('RpcServer.'))
+      .filter((span) => rpcSide(span, 'server'))
       .map((span) => Option.getOrUndefined(span.parent)?.spanId),
   )
   const reachedServer = (step: Tracer.NativeSpan) =>
     spans.some(
       (span) =>
-        span.name.startsWith('RpcClient.') && below(span, step) && served.has(span.spanId),
+        rpcSide(span, 'client') && below(span, step) && served.has(span.spanId),
     )
   for (const step of steps) {
     const failed = refusal(step)

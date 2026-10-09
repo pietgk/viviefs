@@ -4,7 +4,7 @@ Summary: Effect v4 is the backbone everywhere, one exactly pinned version for ef
 
 Status: Qualified
 
-Date: 2026-09-20. Amended 2026-10-02 (Effect 4.0.0): pin the stable release, the
+Date: 2026-09-20. Amended 2026-10-09 (Effect 4.0.2, the pin moved). Amended 2026-10-02 (Effect 4.0.0): pin the stable release, the
 `unstable` segment left the import paths, and the language service's
 `unstableApiUsage` rule is off.
 
@@ -25,7 +25,7 @@ boundary let agents slop past them. Effect v3 is the line being replaced; its
 
 Effect is the backbone everywhere: services and Layers are the ports, Schema at
 every boundary (including SQLite rows), typed errors, HttpApi and RPC contracts
-shared with the client. Pin `effect` exactly (`4.0.0`, the first stable v4); every
+shared with the client. Pin `effect` exactly (`4.0.2` since 2026-10-09; `4.0.0` was the first stable v4); every
 `@effect/*` package is at the same version (they release together).
 
 Greenfield started on the v4 RC, not v3. Public interfaces only. Workflows use
@@ -77,6 +77,16 @@ fails on the dynamic `import()`). `verify` was green on every project.
 `2026-10-02T14-20-51.580Z-2ce3b275`, clean tree, inputs unchanged during the
 run, about 29 minutes. [P07 Device resume E2E][P07]'s notification-tap fallbacks were the same as in the
 run of 2026-10-01.
+
+2026-10-09: Effect 4.0.2, every `effect` and `@effect/*` pin moved in one
+change, with `repos/effect` pulled from the `effect@4.0.2` tag
+([ADR-0029 Effect reference subtree and language service][ADR-0029]). One behaviour change reached us: RPC spans follow the
+OpenTelemetry RPC conventions (Effect-TS/effect#8867), so they are named after
+the method alone (`Append`, no longer `RpcServer.Append`) and carry a span kind
+and `rpc.system.name`. The [P11 Identity][P11] span review told the server's spans by the old
+prefix and drew every call as staying on the device; it now tells them by kind
+and `rpc.system.name`, and draws the recorded picture again. The app bundles
+grew by about 7 KB of Effect code. `mise exec -- pnpm verify` was green.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
