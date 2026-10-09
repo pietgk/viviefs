@@ -1,8 +1,10 @@
 # I24: Ideas batch: understanding LLM output (Andrej Karpathy)
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
+
+Decide when: map 6 is charted
 
 Found: 2026-10-03
 
@@ -59,6 +61,8 @@ Then each idea:
 How the batch is used: the brainstorm reads this issue with the later ideas-batch issues, and turns what it keeps into decisions (decision log, ADRs) or into new issues. This issue links them; it does not restate them.
 
 ## Comments
+
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is map 6 (agents and models at run time).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

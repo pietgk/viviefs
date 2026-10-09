@@ -1,8 +1,10 @@
 # I25: Ideas batch: understanding and maintaining code bases
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
+
+Decide when: map 5 is charted; this issue is its starting point
 
 Found: 2026-10-03
 
@@ -146,6 +148,8 @@ Fog to chart, in no order:
 ## Comments
 
 2026-10-08: [I52](0052-the-datom-and-its-store.md) hands `vivief:scoped-name-entity-ids` to map 5 with one rule already decided: an id is derived when every copy must compute the same one, minted otherwise ([D120 Minted and derived id segments][D120]; glossary Derived id). Code-element ids from scoped names would be derived ids, as entity-keyed span ids and the account hash are.
+
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is map 5 (understanding and maintaining code).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

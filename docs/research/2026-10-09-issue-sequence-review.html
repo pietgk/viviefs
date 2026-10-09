@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A sequence for the open issues (planning review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Planning review</span>
+    <span class="badge badge-outline">2026-10-09</span>
+    <span class="badge badge-soft badge-info">A proposal, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">A sequence for the open issues</h1>
+  <p class="text-lg opacity-80">51 issues are open: 33 <code class="cr-inline">ready-for-human</code>, 6 <code class="cr-inline">ready-for-agent</code>, 12 <code class="cr-inline">needs-triage</code> (I34 among them, the umbrella). Read together with the Schedule (<code class="cr-inline">docs/plan/bootstrap/10-open-items-and-risks.md</code>) and I34's plan for maps 3-6. The handover, <code class="cr-inline">docs/plan/next-session.md</code>, still describes 2026-10-01 and predates the vivief review.</p>
+</header>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">What the whole picture shows</h2>
+  <ul class="list-disc pl-6 space-y-2">
+    <li><b>Two plans are interleaved.</b> The Schedule (2026-09-29) runs Docs and teaching, then the app shell (P12, P13), then P14-P17. The vivief review (I34, from 2026-10-05) paused it: map 1 is done, map 2 is in progress, maps 3-6 are not charted. Nothing says yet when the Schedule resumes.</li>
+    <li><b>Map 2 is two-thirds done.</b> I47-I50 and I52 are resolved; I51, I53, I54, I56 and I55 remain, plus I70 before I54.</li>
+    <li><b>Map 2's grillings will touch many deferred issues.</b> I54 overlaps I10, I15, I16, I17, I18; I53 overlaps I11, I12; I51 overlaps I8, I29; I56 overlaps I30, I33.</li>
+    <li><b>Some issues are already partly addressed:</b>
+      <ul class="list-disc pl-6">
+        <li>I53's <code class="cr-inline">server-authoritative-validation</code> and <code class="cr-inline">sync-contract</code> rows were largely answered by I49 (commit paths, D117) and I50 (one checkpoint, D124; vivief's Sync sub-type mapped to D34, D114 and the lease).</li>
+        <li>I57: four ADRs (0032-0035) already have the out-of-scope line; only the template lacks it.</li>
+        <li>I31: I49 already placed DataFrames as engines behind Presenter implementations; what is left is which engines run where.</li>
+        <li>I12: its new trigger and direction came from I49 (D114); the sync details are I53's.</li>
+      </ul>
+    </li>
+    <li><b>The map-2 build issues have an order among themselves:</b> I69's first positive control is a value rule on <code class="cr-inline">evidence/list-title</code>, which needs I66's value Schemas; I68 plugs into I69's runner. And I66, I67 and I69 all trigger "at the latest the app shell".</li>
+    <li><b>Nothing upstream has moved:</b> Expo 58 is still on <code class="cr-inline">next</code> (58.0.6), Storybook 11 is <code class="cr-inline">11.0.0-alpha.4</code>, <code class="cr-inline">effect-solutions</code> 0.5.3 still pins a beta (I4), <code class="cr-inline">@typeonce/effect-machine</code> 0.40.0 is unchanged (I23), and Effect-TS/effect#6347 is open (I6). One new item: Effect 4.0.2 is out, while the repo pins 4.0.0.</li>
+  </ul>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">The proposed sequence</h2>
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+    <div class="card bg-base-200 "><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">0. The small ones</h3>
+      <ol class="list-decimal pl-5 text-sm space-y-1"><li>Triage the 11 untriaged issues</li><li>Quick calls: I3, I4, I5, I6</li><li>I57 template line (agent)</li></ol>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">1. Finish map 2</h3>
+      <ol class="list-decimal pl-5 text-sm space-y-1"><li>I56 one shape</li><li>I51 actors or the engine</li><li>I53 sync and conflict</li><li>I54 trust, sign-in (after I70, researched in the background from the start)</li><li>I59 ADR-0002 and the vision</li><li>I55 accept the foundation concepts</li></ol>
+    </div></div>
+    <div class="card bg-base-200 "><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">2. Words</h3>
+      <ol class="list-decimal pl-5 text-sm space-y-1"><li>Map 3 (15 rows)</li><li>I26 the linker, with it</li></ol>
+    </div></div>
+    <div class="card bg-base-200 "><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">3. Build, then the app shell</h3>
+      <ol class="list-decimal pl-5 text-sm space-y-1"><li>Qualification batch: I61, I23, Effect 4.0.2</li><li>I66 value types</li><li>I69 accept checks every change</li><li>I67 minting ids</li><li>App shell P12, P13, with I13</li></ol>
+    </div></div>
+    <div class="card bg-base-200 "><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">4. Then</h3>
+      <ol class="list-decimal pl-5 text-sm space-y-1"><li>Map 4, with I2, I22, I21</li><li>The durable workflow and identity guides</li><li>P14-P17</li><li>Maps 5 and 6, or when needed</li></ol>
+    </div></div>
+</div>
+  <p class="cr-src">Phases 2-4 are the decision in Q1 below; phase 1's order is Q2.</p>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">Every open issue, placed</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Issue</th><th>Status</th><th>Placed</th><th>Why, and what overlaps</th></tr></thead>
+    <tbody>
+      <tr class="bg-base-200"><th colspan="4">Phase 0: clear the small ones</th></tr>
+      <tr><td>I57 Out-of-scope line in the ADR template</td><td>agent</td><td>0</td><td>One line in <code class="cr-inline">docs/adr/template.md</code>; four ADRs already follow it. The remaining map-2 tickets use it.</td></tr>
+      <tr><td>I5 Confirm the suite catalogue</td><td>human</td><td>0</td><td>I69 adds <code class="cr-inline">changesets/acceptance</code> and I62 a Presenter suite; confirm where suites are declared before they arrive.</td></tr>
+      <tr><td>I3 API reference for Effect services</td><td>human</td><td>0</td><td>A three-way choice, waiting since 2026-10-01.</td></tr>
+      <tr><td>I4 effect-solutions peer warning</td><td>human</td><td>0</td><td>Unchanged upstream; confirm it is acceptable.</td></tr>
+      <tr><td>I6 Post the two upstream drafts</td><td>human</td><td>0</td><td>Outward-facing, five minutes; #6347 still open.</td></tr>
+      <tr><td>I24, I25, I29, I30, I31, I32, I33 Ideas batches; I26, I27, I28</td><td>needs-triage</td><td>0 (triage only)</td><td>Each gets a home and a <code class="cr-inline">Decide when:</code>, not an answer: I30 and I33 are inputs to I56, then map 3; I25 is map 5; I24 and I29 are map 6 (agents) with I51 reading I29; I31 is partly settled by I49, the rest goes with I63; I26 is phase 2 with map 3; I27 and I32 go with the docs site, I32 after I26; I28 goes with I7.</td></tr>
+      <tr><td>I22 Claims and evidence shown three times</td><td>needs-triage</td><td>0 (triage only), then 4</td><td>A question about evidence presentation, so map 4.</td></tr>
+      <tr class="bg-base-200"><th colspan="4">Phase 1: finish map 2</th></tr>
+      <tr><td>I70 Research: access from membership to enterprise</td><td>agent</td><td>1, background</td><td>Runs while I56 is grilled; blocks I54.</td></tr>
+      <tr><td>I56 One shape at every level?</td><td>human</td><td>1.1</td><td>Blocks I51; I47 deferred <code class="cr-inline">viviefs:changeset</code> and <code class="cr-inline">fractal-factory</code> to it. Reads I30 and I33 as inputs.</td></tr>
+      <tr><td>I51 Actors or the engine</td><td>human</td><td>1.2</td><td>Also reviews I8 (scale-out) and I29 (a replayable agent run looks like the journal). D127's engine-journal exception is an input.</td></tr>
+      <tr><td>I53 Sync and conflict</td><td>human</td><td>1.3</td><td>Two rows largely answered by I49 and I50, so a short session. Also reviews I11 (quarantine is a human-conflict entry) and I12 (partial sync details).</td></tr>
+      <tr><td>I54 Trust, encryption and who may sign in</td><td>human</td><td>1.4</td><td>After I70. The hub: also disposes or narrows I10 (data at rest per app), I15 (identity, keys and trust), I16 (roles, the access direction), I17 (deletion after revocation, "decide with erasure") and I18 (provider migration).</td></tr>
+      <tr><td>I59 ADR-0002 and the vision page</td><td>human review</td><td>1.5</td><td>I55 walks the foundation ADR; ADR-0002 still says the old scope.</td></tr>
+      <tr><td>I55 Accept the foundation concepts</td><td>human</td><td>1.6</td><td>Closes map 2.</td></tr>
+      <tr class="bg-base-200"><th colspan="4">Phase 2: words</th></tr>
+      <tr><td>Map 3 (15 rows; not charted)</td><td>-</td><td>2</td><td>Words left waiting: <code class="cr-inline">Contract</code>, <code class="cr-inline">effectHandler</code>, intent, effect, <code class="cr-inline">node</code>, Tool, Vision, View and Effects, Frame, the lab qualifier, the formula's names (I30). Before the app shell, because guides and screens are written in these words.</td></tr>
+      <tr><td>I26 Glossary links on words that are not ours</td><td>needs-triage</td><td>2</td><td>Map 3 needs the linker to tell <code class="cr-inline">node</code> from Node.js and Frame from frame.</td></tr>
+      <tr class="bg-base-200"><th colspan="4">Phase 3: build the foundation, then the app shell</th></tr>
+      <tr><td>I61 Rename to <code class="cr-inline">evidence-client</code>, I23 effect-machine bump, Effect 4.0.2</td><td>agent</td><td>3.1</td><td>All change qualification inputs: one batch, one sequential P01-P11 run. The rename goes before the app shell rewrites the app.</td></tr>
+      <tr><td>I66 Attribute value types</td><td>human</td><td>3.2</td><td>The layout choice is measured together with I63's wide table. I69's first rule needs it.</td></tr>
+      <tr><td>I69 Accept checks every change</td><td>human</td><td>3.3</td><td>Closes today's blank-title gap; extends P09.</td></tr>
+      <tr><td>I67 Minting entity id segments</td><td>human</td><td>3.4</td><td>The first screen that creates an entity is in the app shell.</td></tr>
+      <tr><td>I13 UI renders only in the DOM; App shell P12, P13</td><td>agent</td><td>3.5</td><td>The Schedule's next step, with its own grilling and design review.</td></tr>
+      <tr class="bg-base-200"><th colspan="4">Phase 4: maps 4-6, guides, the Schedule's gates</th></tr>
+      <tr><td>Map 4 (67 rows), with I2, I22, I21</td><td>-</td><td>4</td><td>Map 4 owns accepting a pattern and what counts as evidence, so I2 (accept the log-store guide), I22 and the glossary reader test (I21, after map 3's words) follow it.</td></tr>
+      <tr><td>Maps 5 and 6</td><td>-</td><td>4, or when needed</td><td>Map 5: code understanding (I25, DevAC). Map 6: agents and models at run time (I24, I29).</td></tr>
+      <tr><td>I11 (P14), I10 and I17 (P15-P17)</td><td>human</td><td>4</td><td>The Schedule's gates, as planned.</td></tr>
+      <tr class="bg-base-200"><th colspan="4">Parked on a trigger (no slot; each is picked up when its <code class="cr-inline">Decide when:</code> fires)</th></tr>
+      <tr><td>I1, I7 with I28, I8, I12, I14, I15, I16, I18, I19, I20, I58, I60, I62, I63, I64, I68</td><td>-</td><td>trigger</td><td>Most trigger on "before the first consumer app" or on a measured need. I15 and I16 are reviewed in I54 but stay trigger-based. I68 follows I69 once an app declares an external identifier.</td></tr>
+      <tr><td>I34 vivief as the source of ViViEfs's concepts</td><td>needs-triage</td><td>umbrella</td><td>Stays open as the umbrella until map 6 is done.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">Questions for the human</h2>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-1">
+    <h3 class="font-semibold">Q1. After map 2: map 3, then the build and the app shell, then maps 4-6?</h3>
+    <p class="text-sm">The alternatives: chart all of maps 3-6 before building anything (the vivief review finishes first, but the app shell waits weeks longer); or build first and leave the words for later (guides and screens get written in words that may change).</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-1">
+    <h3 class="font-semibold">Q2. Map 2's order: I56, I51, I53, then I54 (after I70), I59, I55?</h3>
+    <p class="text-sm">I56 first, because it is existential and frames I51 and the changeset deferral. I53 could also go first: it is unblocked and short.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-1">
+    <h3 class="font-semibold">Q3. Should each map-2 grilling also review its overlapping deferred issues?</h3>
+    <p class="text-sm">Review here means confirm or narrow the trigger with a comment, not resolve: I54 with I10, I15, I16, I17, I18; I53 with I11, I12; I51 with I8, I29; I56 with I30, I33.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-1">
+    <h3 class="font-semibold">Q4. Phase 0 now: a triage pass, your quick calls, and I57?</h3>
+    <p class="text-sm">The agent proposes a home and a <code class="cr-inline">Decide when:</code> for each of the 11 untriaged issues (I34 stays the umbrella), and you confirm in one sitting. I70 starts in the background at the same time.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-1">
+    <h3 class="font-semibold">Q5. Where should the sequence live?</h3>
+    <p class="text-sm">Proposed: rewrite the stale <code class="cr-inline">docs/plan/next-session.md</code> as this sequence, and add a Schedule row that says the vivief review (maps 2-3) runs before the app shell.</p>
+  </div></div>
+</section>
+
+</div>
+</body>
+</html>

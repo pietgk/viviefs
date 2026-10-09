@@ -1,262 +1,119 @@
-# Next session: Docs and teaching, accepting the log-store guide, then the app shell
+# Next session: finish map 2, then the words, then build and the app shell
 
 ## Prompt to start the session
 
 > Read `AGENTS.md`, then `docs/plan/next-session.md` (this file), then
-> `docs/plan/log-store-guide/spec.md` (with its build record), the
-> "Log-store guide design review (2026-10-01)" section of
-> `docs/plan/bootstrap/02-decision-log.md` ([D81 What a lesson is][D81]-[D91 The exercise loop][D91]), and the Schedule in
-> `docs/plan/bootstrap/10-open-items-and-risks.md`. If the human has reviewed
-> the log-store guide, record what they said; acceptance follows [D63 Acceptance on the guide][D63]. Then
-> start the app shell ([P12 UI on every platform][P12], [P13 Links and routing][P13]) with its grilling. Ask before deviating from
-> an agreed decision and record a deviation as an ADR amendment.
+> [the foundation concepts map](foundation-concepts/map.md) and the issue named
+> below as the next step. Follow the sequence; each map-2 ticket is one
+> grilling session with a review page (skills `grilling` and
+> `domain-modeling`). Ask before deviating from an agreed decision and record
+> a deviation as an ADR amendment.
 
-## Where things stand (2026-10-01, afternoon)
+## Where things stand (2026-10-09)
 
-- **The log-store guide is built, as a draft** ([D81 What a lesson is][D81]-[D91 The exercise loop][D91]; spec and build record
-  in [log-store-guide/spec.md](log-store-guide/spec.md); review page
-  [2026-10-01-log-store-guide-review.html](../research/2026-10-01-log-store-guide-review.html)).
-  `pnpm verify all` is green with 18 steps. What is new:
-  - **The guide template** is a skeleton guide in `apps/docs/src/guide-template/`,
-    published under Reference. `verify`'s new `guides` step derives the
-    required pages, `##` headings and frontmatter keys from it, and checks
-    ADR and guide statuses ([D63 Acceptance on the guide][D63]), exemplar links both ways (`metadata.guides`
-    is a list, [D84 Exemplar of several guides][D84]), the exercise layout ([D66 Exercise tracks][D66]), lessons paired with exercise
-    sections ([D81 What a lesson is][D81]), every ADR on one guide ([D82 Patterns build on each other][D82]), no bare gate or ADR id in a
-    guide's prose ([D86 Named, linked references][D86]), and that the plan names each gate as `gates.ts` does.
-  - **The guide** `apps/docs/src/content/docs/guides/log-store/`: index (with
-    the generated status block), concepts, how-to, testing, review, four
-    lessons, try-it. Samples are regions of the exemplar.
-  - **References, names, previews** ([D87-D91 References, names and the exercise loop][D87-D91], review round 2, the same day):
-    every gate, ADR and decision id on every page renders as its id and
-    name, linked, with a preview card on hover; inline-code repository paths
-    are links; an unknown id or a stale path fails the site build. Decisions
-    have names, ADRs a `Summary:` line, and the decision log is Reference >
-    Decisions. `pnpm exercise` prints a learner's verdict ("not yet" or
-    "done") instead of Vitest's output.
-  - **What a lesson is** ([D81 What a lesson is][D81]): one page, one idea, recall before and after,
-    the gate that showed it, its exercise section, one primary source.
-  - **Patterns build on each other** ([D82 Patterns build on each other][D82]): a concept lives in the guide of
-    the pattern whose contract defines it and whose suite checks it. The
-    changesets guide owns changesets, conflict policies, entity ids and read
-    models; [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] stays on the log-store guide ([D83 The log store ADR on its guide][D83]).
-  - **The exercise track** `exercises/log-store` (five exercises) runs in the
-    new `exercises` step, without coverage; learners run
-    `pnpm exercise log-store 02.01`. The harness is `@viviefs/testing/exercise`.
-  - `metadata.guides`, a README and an entry-module TSDoc link on `libs/datom`
-    and the four store projects.
-- **Round 3 of the review (2026-10-02, [D92-D94 Claims, issues and the glossary][D92-D94])**: open issues are files in
-  `docs/issues/` (I1-[I21 Test the glossary with a reader outside software][I21], Reference > Issues); every gate shows the claim it
-  proves (Reference > Claims; P is for proof); the glossary starts each
-  definition with a plain sentence, and the first use of a term on a page
-  links to it with a preview. The human is still reviewing the docs.
-- **For the human to decide**: the open issues, each with its options in
-  its file (Reference > Issues on the docs site):
-  - [I1 Advisories that fail audit with no fix released][I1] advisories that fail audit with no fix released: `node-forge`
-    (2026-10-02), `http-cache-semantics` and `braces` (2026-10-03), each
-    ignored with a reason until its trigger fires; every new one is decided
-    there, and the issue stays open while its table has rows.
-  - [I2 Accept the log-store guide][I2] accepting the log-store guide ([D63 Acceptance on the guide][D63]: [P04 Log store conformance][P04] and [P05 Changesets and projections][P05] on that commit).
-  - [I3 API reference reads poorly for Effect services][I3] the API reference for Effect services ([D61 Repository pages rendered in place][D61]).
-  - [I4 effect-solutions pins an older effect and warns on install][I4] the `effect-solutions` peer warning, [I5 Confirm the suite catalogue as the one declaration place][I5] the suite catalogue, [I6 Post the two upstream issue drafts][I6]
-    posting the two upstream drafts.
-  - [I21 Test the glossary with a reader outside software][I21] the glossary reader test.
-  - [I23 effect-machine still requires the Effect release candidate][I23] `@typeonce/effect-machine` on stable Effect: a code change in a
-    qualification input, to batch with the next qualification run.
-  - [I22 Claims and evidence show each gate three times][I22] the overlap in Claims and evidence (Claims page, evidence index and
-    one note per gate): a short design review on how to present each level
-    of detail before changing it.
-- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] pass on `1a5175fa2` (below).
+- **The vivief review paused the Schedule.** [I34 vivief as the source of ViViEfs's concepts][I34] (2026-10-05) set out to take
+  vivief's ideas into ViViEfs in six wayfinder maps. Map 1, the inventory, is
+  done (I35-[I46 Review the vivief inventory][I46]). Map 2, the foundation concepts, has I47-[I50 Contracts checked as data or by commands][I50] and [I52 The datom and its store][I52] resolved:
+  what ViViEfs is about ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]), what an app is to a device and a node, the
+  Presenter pattern and origin trust ([ADR-0033 The Presenter pattern][ADR-0033], [ADR-0034 Origin trust][ADR-0034]), the datom and its
+  store, and accepting a change ([ADR-0035 Accepting a change][ADR-0035]). Maps 3-6 are not charted.
+- **The Schedule's next step is still the app shell** ([P12 UI on every platform][P12], [P13 Links and routing][P13]). The log-store
+  guide is built as a draft; the human judged it not yet good enough to accept
+  ([I34 vivief as the source of ViViEfs's concepts][I34]), and accepting a pattern is map 4's.
+- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `1a5175fa2`
+  (2026-10-02). Phase 3 below changes gate inputs and closes with a sequential
+  run.
+- **Found while deciding [I50 Contracts checked as data or by commands][I50]**: the server never re-executes a command, so a
+  crafted changeset with a blank list title is accepted today ([I69 Accept checks every change][I69]).
 
-## Effect 4.0.0 (2026-10-02)
+## The sequence (agreed 2026-10-09)
 
-- **Effect is on the stable 4.0.0** ([ADR-0003 Effect v4 as the backbone][ADR-0003] and [ADR-0029 Effect reference subtree and language service][ADR-0029] amended): every
-  `effect` and `@effect/*` pin, `@effect/tsgo` 0.47.2 with `unstableApiUsage`
-  off, `effect/unstable/*` imports now `effect/*`, and `repos/effect` pulled
-  from the `effect@4.0.0` tag. The next Effect bump moves the pins and the
-  subtree in one change ([ADR-0029][ADR-0029] has the command).
-- **verify is green without exceptions**: [I1 Advisories that fail audit with no fix released][I1]'s advisory is ignored by id with
-  its reason in `pnpm-workspace.yaml`; uuid below 11.1.1 is overridden to
-  11.1.1 (only `xcode` 3 under Expo's prebuild used it); and
-  `apps/docs/src/samples/` is a tracked directory, with the [D87 References resolved when rendered][D87] path check
-  counting a directory without files as missing.
-- **Closed**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `1a5175fa2`, run
-  `2026-10-02T14-20-51.580Z-2ce3b275`, clean tree, about 29 minutes. [P07 Device resume E2E][P07]'s
-  notification-tap fallbacks are unchanged from 2026-10-01.
+Reasoning and every issue's place:
+[2026-10-09 A sequence for the open issues](../research/2026-10-09-issue-sequence-review.html).
+An issue not named here is parked until its `Decide when:` fires.
 
-## Before this step (2026-10-01, morning)
+| Phase | Work | Notes |
+| --- | --- | --- |
+| 0 | Triage (done 2026-10-09); [I5 Confirm the suite catalogue as the one declaration place][I5] and [I3 API reference reads poorly for Effect services][I3] resolved ([D61' Service regions instead of a generated API reference][D61']); [I57 Out-of-scope items in an ADR's trade-offs][I57] resolved; Effect 4.0.0 to 4.0.2 with the `repos/effect` subtree (the human, 2026-10-09: upgrade first), then recheck [I4 effect-solutions pins an older effect and warns on install][I4], [I6 Post the two upstream issue drafts][I6] and [I23 effect-machine still requires the Effect release candidate][I23] on it; [I27 The docs development server does not come up reliably, and has no search][I27] being fixed by an agent in a worktree | [I31 Ideas batch: DataFrames as a universal data format][I31] merged into [I63 The columnar copy as a Presenter implementation][I63]. [I6 Post the two upstream issue drafts][I6]'s drafts are posted only after they are rechecked against 4.0.2. |
+| 0, background | [I70 Research: access from membership to enterprise][I70] research: access from membership to enterprise | Done 2026-10-09 ([the record](../research/2026-10-09-access-from-membership-to-enterprise.md)); [I54 Trust, encryption and who may sign in][I54] reads it. It found [I71 An append can land after a revocation][I71], a possible race between an append and a revocation, to triage with the rest. |
+| 1 | Finish map 2, in this order: [I56 One shape at every level?][I56], [I51 Actors or the engine][I51], [I53 Sync and conflict][I53], [I54 Trust, encryption and who may sign in][I54], [I59 Bring ADR-0002 and the vision page in line with I47][I59], [I55 Accept the foundation concepts][I55] | Each grilling also reviews its overlapping deferred issues with a comment that confirms or narrows the trigger: [I56 One shape at every level?][I56] with [I30 Ideas batch: glossary entries written as effects][I30], [I33 Ideas batch: abstractions that constrain agents][I33]; [I51 Actors or the engine][I51] with [I8 Engine scale-out and a multi-runner server][I8], [I29 Ideas batch: agents that record a replayable run][I29]; [I53 Sync and conflict][I53] with [I11 Quarantine of user content after a lost lease][I11], [I12 Partial sync, history consolidation and client data access][I12]; [I54 Trust, encryption and who may sign in][I54] with [I10 Encryption at rest per consumer app][I10], [I15 Identity, keys and trust][I15], [I16 Roles in use, invitations and self-service membership][I16], [I17 Local deletion after a revoked membership][I17], [I18 Identity provider migration][I18]. [I53][I53]'s server-validation and sync-contract rows were largely answered by [I49 Projection: one concept or several patterns][I49] and [I50 Contracts checked as data or by commands][I50]. |
+| 2 | Map 3, the words, with [I26 Glossary links on words that are not our terms][I26] | Chart it first. Words waiting: `Contract`, `effectHandler`, intent, effect, `node`, Tool, Vision, View and Effects, Frame, the lab qualifier, the formula's names ([I30 Ideas batch: glossary entries written as effects][I30]). [I26 Glossary links on words that are not our terms][I26] lets the linker tell `node` from Node.js. |
+| 3 | Build, then the app shell | A qualification batch first ([I61 Rename evidence-mobile to evidence-client][I61] rename, [I23 effect-machine still requires the Effect release candidate][I23] effect-machine bump), then [I66 Attribute value types and the typed reference read model][I66], [I69 Accept checks every change][I69] (needs [I66][I66]'s value Schemas), [I67 Minting entity id segments][I67], then the app shell [P12 UI on every platform][P12], [P13 Links and routing][P13] with [I13 UI renders only in the DOM, never on a device][I13], closed by one sequential run. |
+| 4 | Map 4 with [I2 Accept the log-store guide][I2], [I22 Claims and evidence show each gate three times][I22], [I21 Test the glossary with a reader outside software][I21]; the changesets, durable workflow and identity guides; [P14 Quarantine after a lost lease][P14]-[P17 Browser engine leader][P17]; maps 5 and 6 | Map 4 owns accepting a pattern and what counts as evidence; [I21 Test the glossary with a reader outside software][I21] waits for map 3's words. Maps 5 ([I25 Ideas batch: understanding and maintaining code bases][I25]) and 6 ([I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24], [I29 Ideas batch: agents that record a replayable run][I29]) when needed. |
 
-- **The Evidence ownership step is built** ([D70 Verify versus qualify][D70], [D71 Evidence ownership][D71], [D75-D80 Evidence ownership design review][D75-D80]; spec and build
-  record in [evidence-ownership/spec.md](evidence-ownership/spec.md)). Every
-  production file has one file treatment in
-  `tools/verify/src/evidence-registry.ts`; suites ship with their contract
-  ([D80 Where tests live][D80]); `unit`, `integration` and `storybook` are one root Vitest run each
-  with Istanbul coverage, judged by `evidence` against
-  `evidence-baseline.json`; Schema at every boundary is a lint rule ([D79 Schema at every boundary, linted][D79]).
-- **Closed**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `9716b875d`, run
-  `2026-10-01T05-58-55.362Z-02076418`. [P07 Device resume E2E][P07]'s visible notification tap still
-  misses on both platforms and the relaunch fallback completes the deferred
-  (open item, unchanged).
-
-## Before 2026-10-01
-
-- **The Docs skeleton step is done** ([D59 Starlight docs site][D59]-[D61 Repository pages rendered in place][D61], [D68 Research records][D68]). `apps/docs` is a
-  Starlight 0.42 site on Astro 7.3. It renders `GLOSSARY.md`, the ADRs, the
-  evidence notes and the research records in place through one content
-  loader (`apps/docs/src/lib/repo-docs-loader.ts`), with ADR status badges in
-  the sidebar. Relative file links in any rendered Markdown become site or
-  GitHub links, and a link to a missing file fails the build
-  (`repo-links.ts`); `starlight-links-validator` checks site paths and
-  anchors. `<Sample path region>` embeds a `// #region` from source and fails
-  on a missing region; the first page embeds `datom` from
-  `libs/datom/src/schema.ts`. `llms.txt` is generated. The first page is "How
-  a pattern is delivered", rewritten from the grilling overview. `verify`
-  gained `docs` (the site build) and `diagrams` (Mermaid edge integrity,
-  adapted from web-interview) in `quality`, and the docs-only rule
-  (`tools/verify/src/docs-only.ts`). The `.lavish/` pages moved to
-  `docs/research/` with dated names; `.lavish/` is gitignored scratch.
-- **For the human to confirm** (choices made in the Docs skeleton step, not
-  grilling decisions): the glossary is rendered under Reference ([D61 Repository pages rendered in place][D61]'s sidebar
-  does not list it); `site` is `http://localhost:4321` until deployment is
-  decided (`starlight-llms-txt` needs one); the API reference and the guide
-  template come with the log-store guide, because no guide names an exemplar
-  yet; `docs/evidence/**` is not docs-only, because the [P03 OTLP and motel][P03] and [P09 Sync][P09]-[P11 Identity][P11] probe
-  tests read evidence notes, and a `verify` test fails if a test names any
-  other docs-only file; `astro.config.ts` and `content.config.ts` are not
-  checked by `tsc` (the Starlight plugins ship TypeScript sources that do not
-  compile under this repo's settings), the build checks them; Mermaid renders
-  in the browser (`astro-mermaid`), so `diagrams` checks the source, as in
-  web-interview. Astro pulls in `sharp`, whose macOS binary bundles libvips
-  under LGPL-3.0; it runs at build time only and is never shipped.
-
-- **[P01 Platform on SDK 58][P01]-[P11 Identity][P11] pass** in one sequential run on `54e724786`. The commit after it
-  renumbered the follow-on gates and touched `tools/qualification` and
-  `libs/`, so every gate is stale from there on. That is expected: almost every step ahead changes
-  gate inputs, and the Schedule closes them in batches.
-- **The Docs and teaching grilling is done** and recorded as [D59-D74 Docs and teaching][D59-D74]. The
-  overview used in it, with the drift audit, the crash-matrix explainer, the
-  web-interview comparison and the measured costs, is the research record
-  [2026-09-29-delivery-model.html](../research/2026-09-29-delivery-model.html);
-  its lasting parts are the site's first page ([D68 Research records][D68]).
-- **The Skills step is done** ([D69 Matt Pocock skills][D69]). Every engineering and productivity skill
-  of `mattpocock/skills` is vendored at `d81f3a18`, byte-identical and pinned
-  by `ref` in `skills-lock.json`; adaptations live in `docs/agents/` and
-  `AGENTS.md` ([ADR-0027](../adr/0027-developer-experience-planes.md)
-  amendment). The glossary is now `GLOSSARY.md`
-  ([ADR-0001](../adr/0001-record-architectural-decisions.md) amendment).
-  Specs and tickets go to `docs/plan/<effort>/`. `scaffold-exercises` is a
-  repo-owned fork ([D66 Exercise tracks][D66]). Codex and Cursor load the tree from `.agents/skills/`
-  (checked). The repo's `code-review` replaces Claude Code's built-in
-  `/code-review` in this repo. `verify`'s `skills` step keeps the tree equal
-  to the lock. Skills are not gate inputs.
-- **No ADR is Accepted, no pattern is delivered.**
-
-## The grilling in one table
-
-| Topic | Decision |
-| --- | --- |
-| Docs site | Starlight on Astro 7, MDX; ADRs and evidence rendered in place; API reference for exemplar projects only; `llms.txt`; links, Mermaid integrity, docs-only rule in `verify`; not deployed yet ([D59 Starlight docs site][D59]-[D61 Repository pages rendered in place][D61]) |
-| Samples | Regions embedded from the exemplar's own source; teaching snippets in `apps/docs/src/samples/`; `tsc` 7 with `@effect/tsgo`; no Twoslash for now ([D60 Samples from the exemplar][D60]) |
-| Guide | `guides/<pattern>/`: `index`, `concepts`, `how-to`, `testing`, `review`, `lessons/`, `try-it`; the template is a skeleton guide that a `verify` check derives its rules from ([D62 The shape of a guide][D62]) |
-| Acceptance | Frontmatter status; one commit marks the guide and its ADRs Accepted after its gates pass on that commit; `verify` checks the statuses agree ([D63 Acceptance on the guide][D63]) |
-| Agents | Read the MDX sources; one Guides line in `AGENTS.md`; skills only for real procedures ([D64 Agents read the guides][D64]) |
-| Inventory | Log store, durable workflow, identity first; three non-pattern guides accept 0003-0005, 0024-0031 and 0026 ([D65 Guide inventory and order][D65]) |
-| Exercises | `exercises/<pattern>/NN.MM-name/{problem,solution}`; solution passes, problem fails; generator with the second track ([D66 Exercise tracks][D66]) |
-| Exemplar link | `metadata.guide` plus README and TSDoc, checked both ways ([D67 Exemplar links to its guide][D67]) |
-| `.lavish/` | Moves to `docs/research/` ([D68 Research records][D68]) |
-| Skills | Matt Pocock skills updated and extended after an include/adapt review ([D69 Matt Pocock skills][D69]) |
-| Verify vs Qualify | Split by what a check needs and produces, not speed; `pnpm verify baseline`; time reported, not gated ([D70 Verify versus qualify][D70], [ADR-0026 Verify - Qualify - Teach][ADR-0026] amended) |
-| Evidence ownership | web-interview's per-file treatments and coverage lockfile, adapted; crash matrix into `verify`; Schema at every boundary ([D71 Evidence ownership][D71]) |
-| UI on every platform | One React Native component tree; stories in Chromium (`verify`) and on the simulators ([P12 UI on every platform][P12]); Storybook 11 alpha pinned ([D72 UI on every platform][D72]) |
-| Links and routing | New pattern and gate [P13 Links and routing][P13], with the first Playwright journey and Lighthouse budgets ([D73 Links and routing][D73]) |
-| Order and gates | Schedule below; [P12 UI on every platform][P12] and [P13 Links and routing][P13] new, quarantine, encrypted store, crypto-shredding and browser leader move to [P14 Quarantine after a lost lease][P14]-[P17 Browser engine leader][P17] ([D74 Docs and teaching order][D74]) |
-| Log-store guide | A lesson is one page paired with an exercise section; patterns build on each other; [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] on the log-store guide; `metadata.guides` a list; four lessons, five exercises, `pnpm exercise`; named, linked gate and ADR references ([D81 What a lesson is][D81]-[D86 Named, linked references][D86]); references, names, previews and the exercise verdict on every page ([D87-D91 References, names and the exercise loop][D87-D91]) |
-
-## Next steps (the Schedule, Docs and teaching part)
-
-1. **Docs skeleton**: done 2026-09-30.
-2. **Evidence ownership** ([D70 Verify versus qualify][D70], [D71 Evidence ownership][D71], [D75-D80 Evidence ownership design review][D75-D80]): done 2026-10-01.
-3. **Log-store guide** ([D62 The shape of a guide][D62]-[D67 Exemplar links to its guide][D67], [D81 What a lesson is][D81]-[D91 The exercise loop][D91]): built 2026-10-01 as a draft;
-   accepted when the human accepts it (above).
-4. **App shell**: one grilling for [P12 UI on every platform][P12] and [P13 Links and routing][P13], then both gates, then one
-   sequential run.
-5. **Changesets guide** (it owns read models now, [D82 Patterns build on each other][D82]), **durable workflow
-   guide**, then **identity guide**, then the rest. The durable workflow track
-   brings the `exercise` generator ([D66 Exercise tracks][D66]).
+**Next step:** phase 0's triage and quick calls, then [I56 One shape at every level?][I56].
 
 ## Working notes
 
 - Run Node through mise: `mise exec -- pnpm verify`; `mise exec -- pnpm
-  qualify --through P11` for a sequential run on a committed tree.
-- Measured 2026-10-01 afternoon: `exercises` 3 s, `guides` under 1 s; the docs build 4 s.
-- Measured 2026-10-01 with coverage: `unit` 9 s, `integration` 14 s,
-  `storybook` 2 s, `evidence` under 1 s; `pnpm verify baseline` about 2.5
-  minutes (three producer runs and the bundles).
-- Measured 2026-09-29 (all projects, Nx cache skipped): `verify` about 2.5
-  minutes (static 23 s, unit 10 s, integration 17 s, ui 3 s, quality 79 s).
-  Qualify [P01 Platform on SDK 58][P01]-[P11 Identity][P11] 30 minutes, almost all devices and labs; [P06 Workflow engine crash matrix][P06] takes 6 s.
+  qualify --through P11` for a sequential run on a committed tree. Never run
+  `pnpm qualify` as a quick check: every run appends to the ledger.
+- `pnpm refs fix` names gate, ADR, decision and issue references in living
+  documents ([D86' Named references in every living document][D86']); agents' write-time hooks run it.
+- Measured 2026-10-09: `pnpm verify` 19 checks green; its `build` step took
+  about 2.3 minutes.
+- Measured 2026-09-29: qualify [P01 Platform on SDK 58][P01]-[P11 Identity][P11] about 30 minutes, almost all devices
+  and labs; [P06 Workflow engine crash matrix][P06] takes 6 s.
 - The ledger's input fingerprint includes the lockfile, workspace, `nx.json`,
   `tsconfig*.json`, `eslint.config.js`, `tools/qualification` and most of
   `libs/`, `apps/evidence-*` and `features/evidence/*` (Markdown excluded).
-- Facts for the app shell: `@storybook/addon-vitest` supports Vitest 5 only
-  from `11.0.0-alpha.1`; `@storybook/react-native` 10.6 needs Reanimated 4.5.1,
-  gesture-handler, bottom-sheet and safe-area-context 5.8.
-- Device runs: how to run a probe alone and the lab facts are in
-  [tools/qualification/README.md](../../tools/qualification/README.md).
-- Docs site: how to run it and how it is put together are in
-  [apps/docs/README.md](../../apps/docs/README.md).
+- Upstream on 2026-10-09: Expo 58 is on `next` (58.0.6), Storybook 11 is
+  `11.0.0-alpha.4`, Effect 4.0.2 is `latest`; Effect-TS/effect#6347 is open.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
-[ADR-0003]: ../adr/0003-effect-v4-as-backbone.md
-[ADR-0011]: ../adr/0011-log-store-pattern.md
-[ADR-0026]: ../adr/0026-verify-qualify-teach.md
-[ADR-0029]: ../adr/0029-effect-reference-and-language-service.md
-[D59]: bootstrap/02-decision-log.md#d59
-[D59-D74]: bootstrap/02-decision-log.md#d59-d74
-[D60]: bootstrap/02-decision-log.md#d60
-[D61]: bootstrap/02-decision-log.md#d61
-[D62]: bootstrap/02-decision-log.md#d62
-[D63]: bootstrap/02-decision-log.md#d63
-[D64]: bootstrap/02-decision-log.md#d64
-[D65]: bootstrap/02-decision-log.md#d65
-[D66]: bootstrap/02-decision-log.md#d66
-[D67]: bootstrap/02-decision-log.md#d67
-[D68]: bootstrap/02-decision-log.md#d68
-[D69]: bootstrap/02-decision-log.md#d69
-[D70]: bootstrap/02-decision-log.md#d70
-[D71]: bootstrap/02-decision-log.md#d71
-[D72]: bootstrap/02-decision-log.md#d72
-[D73]: bootstrap/02-decision-log.md#d73
-[D74]: bootstrap/02-decision-log.md#d74
-[D75-D80]: bootstrap/02-decision-log.md#d75-d80
-[D79]: bootstrap/02-decision-log.md#d79
-[D80]: bootstrap/02-decision-log.md#d80
-[D81]: bootstrap/02-decision-log.md#d81
-[D82]: bootstrap/02-decision-log.md#d82
-[D83]: bootstrap/02-decision-log.md#d83
-[D84]: bootstrap/02-decision-log.md#d84
-[D86]: bootstrap/02-decision-log.md#d86
-[D87]: bootstrap/02-decision-log.md#d87
-[D87-D91]: bootstrap/02-decision-log.md#d87-d91
-[D91]: bootstrap/02-decision-log.md#d91
-[D92-D94]: bootstrap/02-decision-log.md#d92-d94
-[I1]: ../issues/0001-advisories-that-fail-audit.md
+[ADR-0032]: ../adr/0032-what-viviefs-is-about.md
+[ADR-0033]: ../adr/0033-the-presenter-pattern.md
+[ADR-0034]: ../adr/0034-origin-trust.md
+[ADR-0035]: ../adr/0035-accepting-a-change.md
+[D61']: bootstrap/02-decision-log.md#d61p
+[D86']: bootstrap/02-decision-log.md#d86p
+[I10]: ../issues/0010-encryption-at-rest-per-app.md
+[I11]: ../issues/0011-quarantine-after-a-lost-lease.md
+[I12]: ../issues/0012-partial-sync-and-history.md
+[I13]: ../issues/0013-ui-on-every-platform.md
+[I15]: ../issues/0015-identity-keys-and-trust.md
+[I16]: ../issues/0016-roles-and-self-service-membership.md
+[I17]: ../issues/0017-local-deletion-after-revoked-membership.md
+[I18]: ../issues/0018-identity-provider-migration.md
 [I2]: ../issues/0002-accept-the-log-store-guide.md
 [I21]: ../issues/0021-test-the-glossary-with-a-reader.md
 [I22]: ../issues/0022-claims-and-evidence-overlap.md
 [I23]: ../issues/0023-effect-machine-on-stable-effect.md
+[I24]: ../issues/0024-ideas-batch-andrej-karpathy-understanding.md
+[I25]: ../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md
+[I26]: ../issues/0026-glossary-links-on-words-that-are-not-our-terms.md
+[I27]: ../issues/0027-docs-dev-server-unreliable-and-without-search.md
+[I29]: ../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md
 [I3]: ../issues/0003-api-reference-for-effect-services.md
+[I30]: ../issues/0030-ideas-batch-glossary-entries-written-as-effects.md
+[I31]: ../issues/0031-ideas-batch-dataframes-as-a-universal-data-format.md
+[I33]: ../issues/0033-ideas-batch-abstractions-that-constrain-agents.md
+[I34]: ../issues/0034-vivief-as-the-source-of-viviefs-concepts.md
 [I4]: ../issues/0004-effect-solutions-peer-warning.md
+[I46]: ../issues/0046-review-the-vivief-inventory.md
+[I49]: ../issues/0049-projection-one-concept-or-several-patterns.md
 [I5]: ../issues/0005-confirm-the-suite-catalogue.md
+[I50]: ../issues/0050-contracts-checked-as-data-or-by-commands.md
+[I51]: ../issues/0051-actors-or-the-engine.md
+[I52]: ../issues/0052-the-datom-and-its-store.md
+[I53]: ../issues/0053-sync-and-conflict.md
+[I54]: ../issues/0054-trust-encryption-and-who-may-sign-in.md
+[I55]: ../issues/0055-accept-the-foundation-concepts.md
+[I56]: ../issues/0056-one-shape-at-every-level.md
+[I57]: ../issues/0057-out-of-scope-items-in-adr-trade-offs.md
+[I59]: ../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md
 [I6]: ../issues/0006-post-the-upstream-issue-drafts.md
+[I61]: ../issues/0061-rename-evidence-mobile-to-evidence-client.md
+[I63]: ../issues/0063-the-columnar-copy.md
+[I66]: ../issues/0066-attribute-value-types.md
+[I67]: ../issues/0067-minting-entity-id-segments.md
+[I69]: ../issues/0069-accept-checks-every-change.md
+[I70]: ../issues/0070-research-access-from-membership-to-enterprise.md
+[I71]: ../issues/0071-an-append-can-land-after-a-revocation.md
+[I8]: ../issues/0008-engine-scale-out.md
 [P01]: bootstrap/06-qualification-gates.md#p01
-[P03]: bootstrap/06-qualification-gates.md#p03
-[P04]: bootstrap/06-qualification-gates.md#p04
-[P05]: bootstrap/06-qualification-gates.md#p05
 [P06]: bootstrap/06-qualification-gates.md#p06
-[P07]: bootstrap/06-qualification-gates.md#p07
-[P09]: bootstrap/06-qualification-gates.md#p09
 [P11]: bootstrap/06-qualification-gates.md#p11
 [P12]: bootstrap/06-qualification-gates.md#p12
 [P13]: bootstrap/06-qualification-gates.md#p13

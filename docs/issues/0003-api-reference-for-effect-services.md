@@ -1,6 +1,6 @@
 # I3: API reference reads poorly for Effect services
 
-Status: ready-for-human
+Status: resolved
 
 Category: enhancement
 
@@ -14,8 +14,13 @@ Effort: [log-store-guide](../plan/log-store-guide/spec.md)
 
 Ship it as it is; defer it until it reads well; or rely on the embedded `service` regions the guides already show, and amend [D61 Repository pages rendered in place][D61].
 
+## Answer
+
+Decided with the human on 2026-10-09 ([D61' Service regions instead of a generated API reference][D61']): guides show an Effect service through the `service` region they embed from the exemplar's source; no API reference is generated until TypeDoc renders an Effect `Context.Service` readably, measured on `libs/datom`'s `LogStore`.
+
 ## Comments
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D61]: ../plan/bootstrap/02-decision-log.md#d61
+[D61']: ../plan/bootstrap/02-decision-log.md#d61p

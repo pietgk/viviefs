@@ -1,6 +1,6 @@
 # I28: Alchemy: infrastructure as Effects
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
 
@@ -76,6 +76,8 @@ Names pinned by gates ([D44 Never rename, never migrate][D44]) are not renamed f
 - [alchemy-run/alchemy](https://github.com/alchemy-run/alchemy) and `npm view alchemy@2.0.0-beta.80`
 
 ## Comments
+
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is with [I7 Production hosting, deployment and telemetry backend][I7]; its glossary clashes are map 3's.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

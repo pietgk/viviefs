@@ -1,8 +1,10 @@
 # I29: Ideas batch: agents that record a replayable run
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
+
+Decide when: map 6 is charted
 
 Found: 2026-10-03
 
@@ -65,6 +67,8 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 
 ## Comments
 
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is map 6; [I51 Actors or the engine][I51] reviews it, because a replayable run looks like the durable workflow's journal.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
@@ -73,5 +77,6 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 [I13]: 0013-ui-on-every-platform.md
 [I24]: 0024-ideas-batch-andrej-karpathy-understanding.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
+[I51]: 0051-actors-or-the-engine.md
 [P12]: ../plan/bootstrap/06-qualification-gates.md#p12
 [P13]: ../plan/bootstrap/06-qualification-gates.md#p13

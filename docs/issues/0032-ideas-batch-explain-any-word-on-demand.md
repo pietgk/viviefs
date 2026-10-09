@@ -1,8 +1,10 @@
 # I32: Ideas batch: explain any word on demand
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
+
+Decide when: [I26 Glossary links on words that are not our terms][I26] is decided
 
 Found: 2026-10-04
 
@@ -45,6 +47,8 @@ Let a reader point at any word on a docs page and get an explanation when one ex
 - **What stays at build time?** The checks for unknown ids and missing paths, the links a page wants to stress, and anything an agent reading the source needs.
 
 ## Comments
+
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is the docs site, after [I26 Glossary links on words that are not our terms][I26] (the same linker).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

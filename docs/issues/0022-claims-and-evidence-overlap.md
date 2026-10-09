@@ -1,8 +1,10 @@
 # I22: Claims and evidence show each gate three times
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
+
+Decide when: map 4 is charted (evidence and how it is presented); decide in a short design review
 
 Found: 2026-10-02
 
@@ -20,6 +22,8 @@ The docs site's Claims and evidence chapter shows each gate up to three times: i
 The answer may change how the sidebar and the generated pages are built; decide it in a short design review before building.
 
 ## Comments
+
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is map 4 (evidence).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

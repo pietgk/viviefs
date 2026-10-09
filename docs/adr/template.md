@@ -27,6 +27,11 @@ applicability. Say what would cause the decision to be revisited.
 List meaningful alternatives and why this choice serves the requirements. Include
 consequences for simplicity, robustness, scalability, and maintenance.
 
+End with an **Out-of-scope items** bullet ([D100 Out of scope means not yet][D100]): name the items under "Out of
+scope (for now)" in [01-vision-and-scope](../plan/bootstrap/01-vision-and-scope.md)
+that this decision makes harder, and how much, including what [D105 What must stay possible][D105] lists as
+needing to stay possible; "none" is an answer.
+
 ## Failure-handling
 
 Describe relevant failures, safeguards, and qualification/validation criteria. Link
@@ -50,3 +55,5 @@ Never fill this from prose.
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0026]: 0026-verify-qualify-teach.md
+[D100]: ../plan/bootstrap/02-decision-log.md#d100
+[D105]: ../plan/bootstrap/02-decision-log.md#d105

@@ -1,6 +1,6 @@
 # I70: Research: access from membership to enterprise
 
-Status: ready-for-agent
+Status: resolved
 
 Category: enhancement
 
@@ -24,7 +24,13 @@ Questions:
 4. **Offline and any `node`.** Which implementations run on a device (Cedar's WebAssembly build, an OpenFGA model evaluated locally), and what replaces Zanzibar's consistency token when a check runs away from authority ([I60 Server-independent mode][I60])?
 5. **The ladder.** For each step (code, roles, relations, policies): what the conformance decision table looks like, and what triggers moving up.
 
+## Answer
+
+Researched on 2026-10-09 in [2026-10-09 Access from membership to enterprise](../research/2026-10-09-access-from-membership-to-enterprise.md), from primary sources. One contract fits, shaped like the AuthZEN request, with three corrections to [ADR-0035 Accepting a change][ADR-0035]'s sketch: a changeset is a batch of evaluations, one per entity it touches, combined with AND; a decision names the position it read (the server's cursor today; away from one authority a frontier of each writer's progress, because a single `tx` cannot play Zanzibar's consistency token); and an evaluation error is a deny whatever the engine (Cedar skips an erroring policy, so its adapter must fail closed). Cedar on iOS and Android (Hermes) is unverified and needs a probe. Reading the code found [I71 An append can land after a revocation][I71] (an append can land after a revocation). Nothing is decided for [I54 Trust, encryption and who may sign in][I54]; the record ends with the questions its grilling should ask.
+
 ## Comments
+
+2026-10-09: Researched in [Access from membership to enterprise](../research/2026-10-09-access-from-membership-to-enterprise.md). Short answer: one contract fits, AuthZEN-shaped, with three corrections to the sketch in [ADR-0035 Accepting a change][ADR-0035]: a changeset is a batch of evaluations, one per touched entity and combined with AND, not one request over all its entities; the decision names the position it read (the cursor today; away from one authority a frontier of per-writer progress, because a single `tx` cannot play the zookie); and an evaluation error is a deny whatever the engine (Cedar skips an erroring policy). Cedar on iOS and Android (Hermes) is unverified and needs a probe. The record ends with questions for [I54 Trust, encryption and who may sign in][I54].
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
@@ -32,3 +38,4 @@ Questions:
 [I50]: 0050-contracts-checked-as-data-or-by-commands.md
 [I54]: 0054-trust-encryption-and-who-may-sign-in.md
 [I60]: 0060-server-independent-mode.md
+[I71]: 0071-an-append-can-land-after-a-revocation.md

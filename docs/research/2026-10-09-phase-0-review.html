@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 0: six questions and I71 drawn (review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Phase 0 of the sequence</span>
+    <span class="badge badge-outline">2026-10-09</span>
+    <span class="badge badge-soft badge-info">Review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Six questions, and I71 drawn</h1>
+  <p class="text-lg opacity-80">The six phase-0 questions in full, and the I71 race drawn as it runs in the reproduction test. The sequence these belong to is <a class="cr-link" href="2026-10-09-issue-sequence-review.html">2026-10-09 A sequence for the open issues</a>; Q7 (reproduce I71) is already agreed and done.</p>
+</header>
+
+<section class="space-y-6" id="i71">
+  <h2 class="text-2xl font-bold">I71: an append can land after a revocation</h2>
+  <p>Alice is a member of organization <code class="cr-inline">acme</code>. Her phone sends a changeset (<code class="cr-inline">renameList</code>) at the same moment the operator revokes her membership. The server's <code class="cr-inline">Append</code> handler does two things one after the other, with nothing tying them together: it checks membership, then it appends. Membership writes (<code class="cr-inline">grant</code>, <code class="cr-inline">revoke</code>) take a lock, but only against each other.</p>
+
+  <h3 class="text-lg font-semibold">What happens today (reproduced)</h3>
+  <div class="cr-mermaid"><pre class="mermaid">
+%%{init: {"sequence": {"actorMargin": 24, "width": 120, "noteMargin": 6}}}%%
+sequenceDiagram
+  autonumber
+  participant P as Phone (Alice)
+  participant S as Server Append
+  participant M as Memberships
+  participant O as Operator
+  participant L as Log
+  P->>S: Append(changeset: rename list)
+  S->>M: isMember(Alice, acme)?
+  M-->>S: yes
+  Note over S: accept's other checks
+  Note over S,M: window opens
+  O->>M: revoke(Alice, acme)
+  M->>L: retract membership, seq 6
+  M-->>O: done
+  S->>L: append changeset, seq 7-9
+  S-->>P: ok
+  Note over S,L: a non-member's change after seq 6
+</pre></div>
+
+  <h3 class="text-lg font-semibold">The control: an append that starts after the revoke</h3>
+  <div class="cr-mermaid"><pre class="mermaid">
+%%{init: {"sequence": {"actorMargin": 24, "width": 120, "noteMargin": 6}}}%%
+sequenceDiagram
+  autonumber
+  participant P as Phone (Alice)
+  participant S as Server Append
+  participant M as Memberships
+  participant O as Operator
+  O->>M: revoke(Alice, acme)
+  M-->>O: done
+  P->>S: Append(changeset)
+  S->>M: isMember(Alice, acme)?
+  M-->>S: no
+  S-->>P: MembershipMissing
+</pre></div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Why it matters</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>Removing someone from an organization should stop their writes. For a few milliseconds, a write already in flight still lands, and the log orders it after the removal, so the log itself says a non-member wrote it.</li>
+        <li>The test holds the append to make the window wide; in real use it is the time accept spends on its reads (transaction lookups, file checks, lease and write-once reads), each a point where a revoke can commit.</li>
+      </ul>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">How it could be closed (decided with I54, not now)</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li><b>Check where you write:</b> check membership inside the append's transaction, against the state the append commits on (D124's first question, read at the position it appends on).</li>
+        <li><b>Order them:</b> appends and membership writes for one organization take the same lock, so a revoke waits for an in-flight append or the other way round.</li>
+        <li><b>Accept the window:</b> document it, as Zanzibar does for a check made just before a revocation.</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <h3 class="text-lg font-semibold">How the test pins it down</h3>
+  <ol class="list-decimal pl-6 space-y-1 text-sm">
+    <li>Starts the evidence server's real composition: sync RPCs over HTTP, the PGlite log store the deployed server uses, the real accept, a fake sign-in issuer, memberships granted and revoked by the operator commands.</li>
+    <li>One test seam: a wrapper around the log store that holds a device's append until the test releases it (the server's own membership writes pass straight through). No sleeps.</li>
+    <li>Alice's <code class="cr-inline">Append</code> goes out over HTTP, passes the membership check and every accept check, and waits at the append (steps 1-4 above).</li>
+    <li>The test runs <code class="cr-inline">revoke</code> to completion (steps 5-7), then releases the append (steps 8-9).</li>
+    <li>Two tests: a normal one checks the revoke happened and the control is refused (<code class="cr-inline">MembershipMissing</code>); a known-bug test (<code class="cr-inline">it.live.fails</code>) asserts no datom of the held changeset lands after the revocation. It fails today, so <code class="cr-inline">verify</code> stays green; when a fix closes the window it turns red and becomes a normal test.</li>
+  </ol>
+  <p class="cr-src"><code class="cr-inline">apps/evidence-server/src/revocation-race.integration.test.ts</code>; run on 2026-10-09: 1 passed, 1 expected fail.</p>
+</section>
+
+<section class="space-y-5" id="questions">
+  <h2 class="text-2xl font-bold">The six questions</h2>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. I5: confirm the suite catalogue</h3>
+    <p class="text-sm">Every suite is declared once in <code class="cr-inline">libs/testing/src/suites.ts</code>, because Vitest needs every tag in its config and <code class="cr-inline">verify</code> needs the list without importing every lib. D82 already builds on it: the pattern id there is the guide folder, the suite prefix and the <code class="cr-inline">metadata.guides</code> value. I69 and I62 will add suites.</p>
+    <p class="text-sm"><b>Proposed:</b> confirm it, and resolve I5 citing D82.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. I3: the API reference for Effect services</h3>
+    <p class="text-sm">D61 asks for an API reference generated by <code class="cr-inline">starlight-typedoc</code>. Measured on <code class="cr-inline">libs/datom</code>: it builds (119 pages, the site build from about 5 s to 15 s), but <code class="cr-inline">LogStore</code> renders as one <code class="cr-inline">Shape&lt;...&gt;</code> type expression. Options: ship it as it is, defer it, or rely on the <code class="cr-inline">service</code> regions the guides already embed and amend D61.</p>
+    <p class="text-sm"><b>Proposed:</b> the last two together: D61' says guides show the service regions, and the generated reference waits until TypeDoc renders <code class="cr-inline">Context.Service</code> readably. I3 resolves with that trigger in D61'.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. I4: the effect-solutions peer warning</h3>
+    <p class="text-sm"><code class="cr-inline">effect-solutions</code> 0.5.3 is still the newest and still pins <code class="cr-inline">effect</code> 4.0.0-beta.59, so every install warns about an unmet peer. It is a development-only CLI.</p>
+    <p class="text-sm"><b>Proposed:</b> accept the warning; <code class="cr-inline">Decide when:</code> a release peers <code class="cr-inline">effect</code> ^4; status <code class="cr-inline">ready-for-agent</code>, so phase 3's qualification batch checks it.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. I6: post the two upstream drafts</h3>
+    <p class="text-sm">Two Effect issues are drafted in <code class="cr-inline">docs/plan/upstream-issues.md</code> and not posted: the sqlite-wasm client that waits forever when its worker fails, and a comment on Effect-TS/effect#6347 (still open) about the Metro migrator import. Posting is outward-facing.</p>
+    <p class="text-sm"><b>Proposed:</b> you reread the two drafts; then the agent posts them under your GitHub account with <code class="cr-inline">gh-axi</code> and records the links in I6. Or you post them yourself.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">Q5. A home and a <code class="cr-inline">Decide when:</code> for each untriaged issue</h3>
+    <p class="text-sm">Triage gives each issue a status and a trigger, not an answer.</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Issue</th><th>Home</th><th><code class="cr-inline">Decide when:</code></th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>I22 Claims and evidence shown three times</td><td>map 4 (evidence)</td><td>map 4 is charted; a short design review</td><td>ready-for-human</td></tr>
+        <tr><td>I24 Karpathy: understanding LLM output</td><td>map 6</td><td>map 6 is charted</td><td>ready-for-human</td></tr>
+        <tr><td>I25 Understanding and maintaining code bases</td><td>map 5, its starting point</td><td>map 5 is charted</td><td>ready-for-human</td></tr>
+        <tr><td>I26 Glossary links on words not ours</td><td>phase 2, with map 3</td><td>map 3 starts</td><td>ready-for-human</td></tr>
+        <tr><td>I27 Docs dev server unreliable, no search</td><td>a bug in our tooling</td><td>now (Q6)</td><td>ready-for-agent</td></tr>
+        <tr><td>I28 Alchemy</td><td>with I7; its glossary clashes to map 3</td><td>as set: with I7, or when a gate needs a cloud resource</td><td>ready-for-human</td></tr>
+        <tr><td>I29 Agents that record a replayable run</td><td>map 6; I51 reviews it</td><td>map 6 is charted</td><td>ready-for-human</td></tr>
+        <tr><td>I30 Glossary entries written as effects</td><td>input to I56, then map 3</td><td>I56, then map 3</td><td>ready-for-human</td></tr>
+        <tr><td>I31 DataFrames</td><td>merged into I63: I49 placed DataFrames as Presenter engines; what is left (which engines where, Arrow on Hermes) is I63's</td><td>resolved into I63 with a comment</td><td>resolved</td></tr>
+        <tr><td>I32 Explain any word on demand</td><td>the docs site, after I26</td><td>I26 is decided</td><td>ready-for-human</td></tr>
+        <tr><td>I33 Abstractions that constrain agents</td><td>input to I56; "abstraction" or "pattern" to map 3</td><td>I56, then map 3</td><td>ready-for-human</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>Proposed:</b> accept the table, or name rows to place differently. I34 stays the umbrella for maps 2-6.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. I27 now, in the background</h3>
+    <p class="text-sm">The docs development server takes 100-120 s to start and then often never answers; Nx even reports success when it fails; it has no search. It is how you would review guides. An agent reproduces it in a plain terminal, diagnoses it (the content cache cleared on every start, the 60 s Vite timeout) and fixes it, on files nobody else is touching.</p>
+    <p class="text-sm"><b>Proposed:</b> yes: your standing rule is to fix broken tooling when it is seen, and phase 2's I26 and I32 build on a working docs site.</p>
+  </div></div>
+</section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+</script>
+</body>
+</html>

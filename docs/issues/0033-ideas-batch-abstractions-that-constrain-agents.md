@@ -1,8 +1,10 @@
 # I33: Ideas batch: abstractions that constrain agents
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
+
+Decide when: [I56 One shape at every level?][I56], then map 3
 
 Found: 2026-10-04
 
@@ -73,6 +75,8 @@ So it may be the abstraction above all of these: one shape every decision, ADR, 
 
 ## Comments
 
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is an input to [I56 One shape at every level?][I56]; whether "abstraction" or "pattern" names what ViViEfs delivers is map 3's.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0025]: ../adr/0025-ai-robust-guardrails.md
@@ -88,3 +92,4 @@ So it may be the abstraction above all of these: one shape every decision, ADR, 
 [I29]: 0029-ideas-batch-agents-that-record-a-replayable-run.md
 [I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md
 [I34]: 0034-vivief-as-the-source-of-viviefs-concepts.md
+[I56]: 0056-one-shape-at-every-level.md

@@ -1,8 +1,10 @@
 # I26: Glossary links on words that are not our terms
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: bug
+
+Decide when: map 3 starts (phase 2 of the sequence)
 
 Found: 2026-10-03
 
@@ -60,6 +62,8 @@ not exist ([D87 References resolved when rendered][D87]). It was rewritten as "t
 A quote cannot be reworded at all: in [I33 Ideas batch: abstractions that constrain agents][I33], Matt Pocock's "constrain them only
 to good decisions" links "decisions" to our Decision entry, and the quote has
 to stay as he wrote it.
+
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is phase 2, with map 3: map 3 needs the linker to tell `node` from Node.js and Frame from frame.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

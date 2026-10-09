@@ -1,6 +1,6 @@
 # I31: Ideas batch: DataFrames as a universal data format
 
-Status: needs-triage
+Status: resolved
 
 Category: enhancement
 
@@ -74,6 +74,10 @@ What these ideas say about this stack:
 - **The analytics databases.** Integrate one (ClickHouse on the server, behind the analytics projection), or only take their ideas (where the work is done, storage apart from compute) into how our projections and read models are designed? At what size of data or number of users would one start to pay off?
 - **A pattern or not.** If it becomes a pattern, what is its contract, which suites prove it on each platform, and which gate qualifies it?
 
+## Answer
+
+Merged into [I63 The columnar copy as a Presenter implementation][I63] with the human on 2026-10-09. [I49 Projection: one concept or several patterns][I49] already placed DataFrames: a screen asks a Presenter for a frame, so DuckDB, Polars, Arrow and SQLite are engines behind Presenter implementations rather than one format everywhere ([D107 The Presenter pattern][D107]-[D111 Faster and enriching implementations][D111], [ADR-0033 The Presenter pattern][ADR-0033]). What is left, which engines run where and whether Arrow works on Hermes, is [I63][I63]'s question and is noted there.
+
 ## Comments
 
 2026-10-08: [I49](0049-projection-one-concept-or-several-patterns.md) places DataFrames ([D107 The Presenter pattern][D107]-[D111 Faster and enriching implementations][D111], [ADR-0033](../adr/0033-the-presenter-pattern.md)): a screen asks a Presenter for a frame, a contract with implementations, so DuckDB, Polars, Arrow and SQLite are engines behind Presenter implementations rather than one format everywhere. Which engines, where they run and whether Arrow works on Hermes stay this issue's. The human's design of the columnar copy (one wide table per organization) is in [I63 The columnar copy as a Presenter implementation][I63].
@@ -81,10 +85,12 @@ What these ideas say about this stack:
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0011]: ../adr/0011-log-store-pattern.md
+[ADR-0033]: ../adr/0033-the-presenter-pattern.md
 [D1]: ../plan/bootstrap/02-decision-log.md#d1
 [D107]: ../plan/bootstrap/02-decision-log.md#d107
 [D111]: ../plan/bootstrap/02-decision-log.md#d111
 [D21]: ../plan/bootstrap/02-decision-log.md#d21
 [D37]: ../plan/bootstrap/02-decision-log.md#d37
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
+[I49]: 0049-projection-one-concept-or-several-patterns.md
 [I63]: 0063-the-columnar-copy.md

@@ -48,6 +48,7 @@ decisions that chose them.
 - [I49](../../issues/0049-projection-one-concept-or-several-patterns.md): a screen asks a Presenter for a frame and keeps a frame subscription; a reference implementation and faster or enriching implementations; trust belongs to an origin; [ADR-0033 The Presenter pattern][ADR-0033] and [ADR-0034 Origin trust][ADR-0034] ([D107-D117 Presenters and origin trust][D107-D117], [D58' Envelope names the origin][D58']). Added I62-[I64 Build origin trust][I64].
 - [I52](../../issues/0052-the-datom-and-its-store.md): the log store contract is what a datom needs from storage; `tx` stays an HLC worded for any `node` holding authority; id segments minted or derived; every attribute carries a value Schema; external identifiers are attributes; the final choice is the pattern ([D118-D123 The datom and its store][D118-D123]; [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010], [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] amended). Added I66-[I68 Uniqueness as an acceptance rule][I68].
 - [I50](../../issues/0050-contracts-checked-as-data-or-by-commands.md): authority accepts every change by asking may this writer do this, is it well formed, does the data stay valid; acceptance rules are code about the data alone, judged no worse; every domain writer uses a registered command that declares its writes; rules over time and re-running a command deferred; [ADR-0035](../../adr/0035-accepting-a-change.md) ([D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']). Found that the server never checked a command's rules. Added I69-[I70 Research: access from membership to enterprise][I70]; access as a pattern is a direction for [I54 Trust, encryption and who may sign in][I54].
+- [I70](../../issues/0070-research-access-from-membership-to-enterprise.md): research for [I54 Trust, encryption and who may sign in][I54]: access fits one AuthZEN-shaped contract, with a changeset as a batch of evaluations, a decision naming the position it read, and errors that deny; Cedar on Hermes unverified ([the record](../../research/2026-10-09-access-from-membership-to-enterprise.md)). Found [I71 An append can land after a revocation][I71].
 
 ## Not yet specified
 
@@ -93,5 +94,6 @@ decisions that chose them.
 [I64]: ../../issues/0064-build-origin-trust.md
 [I68]: ../../issues/0068-uniqueness-as-an-acceptance-rule.md
 [I70]: ../../issues/0070-research-access-from-membership-to-enterprise.md
+[I71]: ../../issues/0071-an-append-can-land-after-a-revocation.md
 [P01]: ../bootstrap/06-qualification-gates.md#p01
 [P10]: ../bootstrap/06-qualification-gates.md#p10

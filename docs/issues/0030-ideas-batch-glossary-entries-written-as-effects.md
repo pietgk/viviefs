@@ -1,8 +1,10 @@
 # I30: Ideas batch: glossary entries written as effects
 
-Status: needs-triage
+Status: ready-for-human
 
 Category: enhancement
+
+Decide when: [I56 One shape at every level?][I56], then map 3
 
 Found: 2026-10-04
 
@@ -102,6 +104,8 @@ What this could give:
 
 ## Comments
 
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is an input to [I56 One shape at every level?][I56], then map 3 (the formula's names).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
@@ -112,3 +116,4 @@ What this could give:
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I28]: 0028-alchemy-infrastructure-as-effects.md
 [I29]: 0029-ideas-batch-agents-that-record-a-replayable-run.md
+[I56]: 0056-one-shape-at-every-level.md
