@@ -158,6 +158,23 @@ describe('pnpm refs fix', () => {
     expect(rewritten(doubled).text).toBe(once.text)
   })
 
+  it('merges a block left above text appended later into the one block at the end', () => {
+    const once = rewritten('See D107.\n').text
+    const appended = `${once}\nA comment added later names D108.\n`
+    const fixed = rewritten(appended).text
+    expect(fixed).toBe(
+      'See [D107 The Presenter pattern][D107].\n\nA comment added later names [D108 Query as data][D108].\n' +
+        block(['[D107]: ../plan/bootstrap/02-decision-log.md#d107', '[D108]: ../plan/bootstrap/02-decision-log.md#d108']),
+    )
+    expect(referenceProblems(appended, FILE, catalog)).toEqual([`${FILE}: run \`pnpm refs fix\``])
+    const atStart = rewritten(`${REFERENCES_MARKER}\n\n[D107]: x.md\n\nSee D107.\n`).text
+    expect(atStart).toBe(once)
+    const notABlock = `${REFERENCES_MARKER}\nSee D107.\n`
+    expect(rewritten(notABlock).text.startsWith(`${REFERENCES_MARKER}\nSee [D107 The Presenter pattern][D107].\n`)).toBe(true)
+    const fenced = `\`\`\`md\n${REFERENCES_MARKER}\n\n[D107]: x.md\n\`\`\`\n\nSee D107.\n`
+    expect(rewritten(fenced).text.startsWith(`\`\`\`md\n${REFERENCES_MARKER}\n\n[D107]: x.md\n\`\`\`\n`)).toBe(true)
+  })
+
   it('changes nothing the second time, and reports an unknown id without inventing a link', () => {
     const source = 'See D107.\n'
     const once = rewritten(source)

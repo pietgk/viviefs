@@ -68,9 +68,41 @@ const isDefinitionsTail = (source: string, at: number, marker: string): boolean 
   return rest.split('\n').every((line) => line.trim() === '' || /^\[[^\]]+\]: \S/.test(line))
 }
 
+const DEFINITION = /^\[[^\]]+\]: \S/
+
+/**
+ * Drops a generated block that is not at the end, such as one left above a
+ * comment appended after it; the fix writes one block at the end again.
+ * Fenced code keeps its text.
+ */
+const stripInnerBlocks = (source: string): string => {
+  const lines = source.split('\n')
+  const kept: string[] = []
+  let fence: string | undefined
+  let skipUntil = 0
+  for (const [index, line] of lines.entries()) {
+    if (index < skipUntil) continue
+    const opener = /^\s*(`{3,}|~{3,})/.exec(line)?.[1]
+    if (fence === undefined && opener !== undefined) fence = opener
+    else if (fence !== undefined && line.trim().startsWith(fence)) fence = undefined
+    else if (fence === undefined && (REFERENCES_MARKERS as ReadonlyArray<string>).includes(line.trim())) {
+      const rest = lines.slice(index + 1)
+      const length = rest.findIndex((next) => next.trim() !== '' && !DEFINITION.test(next))
+      if (length > 0 && rest.slice(0, length).some((next) => DEFINITION.test(next))) {
+        while (kept.at(-1)?.trim() === '') kept.pop()
+        if (kept.length > 0) kept.push('')
+        skipUntil = index + 1 + length
+        continue
+      }
+    }
+    kept.push(line)
+  }
+  return kept.join('\n')
+}
+
 /** Drops a generated definitions block. A mention of the marker in prose stays. */
 const stripBlock = (source: string): string => {
-  let text = source
+  let text = stripInnerBlocks(source)
   for (;;) {
     const found = markerAt(text)
     if (found === undefined || !isDefinitionsTail(text, found.at, found.marker)) return text

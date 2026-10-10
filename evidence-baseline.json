@@ -451,10 +451,10 @@
         "statements": "147/156"
       },
       "libs/references/src/rewrite.ts": {
-        "branches": "176/254",
-        "functions": "36/37",
-        "lines": "250/278",
-        "statements": "290/335"
+        "branches": "200/276",
+        "functions": "39/40",
+        "lines": "275/298",
+        "statements": "322/362"
       },
       "libs/sync/client/src/client.ts": {
         "branches": "30/34",

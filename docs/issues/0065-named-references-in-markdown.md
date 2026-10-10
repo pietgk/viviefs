@@ -44,6 +44,8 @@ Observed on [D86' Named references in every living document][D86']: `pnpm verify
 
 ## Comments
 
+2026-10-09: Fixed a gap found while fixing [I27 The docs development server does not come up reliably, and has no search][I27]: a comment appended after the generated block left that block in the middle of the file, `pnpm refs fix` wrote a second one at the end, and `verify` passed. The rewriter now drops a generated block that stands on its own lines outside fenced code wherever it is, so the fix merges both into one block at the end and `verify`'s references step reports a file left that way (`libs/references/src/rewrite.ts`, tested in `rewrite.test.ts`). No living document had one.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D52]: ../plan/bootstrap/02-decision-log.md#d52
@@ -51,3 +53,4 @@ Observed on [D86' Named references in every living document][D86']: `pnpm verify
 [D58']: ../plan/bootstrap/02-decision-log.md#d58p
 [D86]: ../plan/bootstrap/02-decision-log.md#d86
 [D86']: ../plan/bootstrap/02-decision-log.md#d86p
+[I27]: 0027-docs-dev-server-unreliable-and-without-search.md
