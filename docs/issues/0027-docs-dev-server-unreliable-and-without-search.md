@@ -1,6 +1,6 @@
 # I27: The docs development server does not come up reliably, and has no search
 
-Status: needs-triage
+Status: resolved
 
 Category: bug
 
@@ -38,6 +38,10 @@ Around it:
 - Should `docs:prod` reuse a cached build (the Nx `build` target is cached on its inputs) so a second start is fast?
 - Should the docs scripts pass `--ignore-lock` in agent sessions, so agents get a foreground server and a real failure instead of a false success?
 - Is the table text in the search index a Pagefind setting (`data-pagefind-ignore` on table headers) or a problem of how the site renders tables?
+
+## Answer
+
+Resolved with the human on 2026-10-10. The development server is fixed: `pnpm docs:dev` is ready in about 2.5 s instead of 100 to 190 s, and a failed start fails the command (the comment of 2026-10-09 has the numbers and the causes; commit `8d367fda66`). Search stays on `pnpm docs:prod`, which serves a full build in about 16 s and in about 3 s from the Nx cache; the development server gets no search. The one question left open, how table text lands in the search index, moved to [I73 Table text in the docs search index][I73].
 
 ## Comments
 
@@ -94,6 +98,8 @@ On the questions:
 - **`--ignore-lock` in agent sessions:** not needed. A 3 s start fits Astro's 30 s background limit, and a failure now fails the command. Its reason is in `apps/docs/.astro/dev.log`.
 - **Table text in the search index:** not looked at. It is the one question left open.
 
+2026-10-10: The human resolved it: search stays on `docs:prod`; the table-text question is now [I73 Table text in the docs search index][I73].
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D31]: ../plan/bootstrap/02-decision-log.md#d31
@@ -104,3 +110,4 @@ On the questions:
 [I1]: 0001-advisories-that-fail-audit.md
 [I65]: 0065-named-references-in-markdown.md
 [I70]: 0070-research-access-from-membership-to-enterprise.md
+[I73]: 0073-table-text-in-the-docs-search-index.md

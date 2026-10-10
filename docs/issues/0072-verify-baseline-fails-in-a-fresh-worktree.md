@@ -1,6 +1,6 @@
 # I72: verify baseline fails in a fresh worktree
 
-Status: needs-triage
+Status: ready-for-agent
 
 Category: bug
 
@@ -13,6 +13,8 @@ Found: 2026-10-09
 Agents now work in worktrees (the `.gitignore` entry of 2026-10-09 keeps them out of Nx), so a baseline recorded there hits it. To do: reproduce in a fresh worktree with a warm Nx cache, then make the bundle report an output of the cached target, or have `verify baseline` produce it when it is missing.
 
 ## Comments
+
+2026-10-10: Triaged with the human: fix it in phase 3's qualification batch ([the handover](../plan/next-session.md)).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
