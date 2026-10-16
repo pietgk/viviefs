@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>React stack for mobile and web: Expo or One (research)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .cr-mermaid svg { margin: 0 auto; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .cr-score { display: inline-block; min-width: 4.6rem; text-align: center; }
+  .cr-score + .cr-note { display: block; font-size: 0.85rem; opacity: 0.8; margin-top: 0.25rem; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Stack research</span>
+    <span class="badge badge-outline">2026-10-16</span>
+    <span class="badge badge-soft badge-info">Research record, not a decision</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">React for mobile and web: Expo or One, and what goes around it</h1>
+  <p class="text-lg opacity-80">An earlier conclusion picked Expo with Unistyles 3. <a class="cr-link" href="https://onestack.dev">One</a> is now a serious candidate. This page compares the two for a TypeScript and Effect codebase, covering the app, the UI layer and the backend, including Hono and <a class="cr-link" href="../issues/0028-alchemy-infrastructure-as-effects.md">Alchemy (I28)</a>. Every claim is sourced in <a class="cr-link" href="2026-10-16-react-mobile-and-web-stack.md">the record</a>.</p>
+</header>
+
+<section class="space-y-5" id="verdict">
+  <div class="card bg-base-200 cr-rec">
+    <div class="card-body space-y-3">
+      <h2 class="text-2xl font-bold">Verdict: keep Expo + Unistyles 3. Watch One and probe it later.</h2>
+      <div class="grid md:grid-cols-4 gap-3">
+        <div class="rounded-box bg-base-100 p-4"><div class="text-xs uppercase opacity-60">App framework</div><div class="font-bold text-lg">Expo SDK 58</div><div class="text-sm opacity-80">Expo Router, dev-client, EAS</div></div>
+        <div class="rounded-box bg-base-100 p-4"><div class="text-xs uppercase opacity-60">UI</div><div class="font-bold text-lg">Unistyles 3</div><div class="text-sm opacity-80">styles over plain RN views</div></div>
+        <div class="rounded-box bg-base-100 p-4"><div class="text-xs uppercase opacity-60">Backend</div><div class="font-bold text-lg">Effect HTTP + RPC</div><div class="text-sm opacity-80">on Node; Hono only as a host</div></div>
+        <div class="rounded-box bg-base-100 p-4"><div class="text-xs uppercase opacity-60">Infra</div><div class="font-bold text-lg">Alchemy, at I7</div><div class="text-sm opacity-80">behind a gate; beta today</div></div>
+      </div>
+      <ol class="list-decimal pl-6 space-y-1">
+        <li><b>RN version gap.</b> One 2.7.7 peers <code class="cr-inline">react-native ^0.87.0</code>, which excludes 0.88. Expo SDK 58 and this repo are on 0.88.</li>
+        <li><b>Too new, one maintainer.</b> One's v2 has been stable for 3 days, and one person wrote about 89% of the commits among its top six contributors.</li>
+        <li><b>Expo's web gap has closed.</b> SDK 58 made SSR, data loaders and middleware stable. One's FAQ line "Expo Router is SPA-only on web" is out of date.</li>
+        <li><b>One's data story doesn't apply here.</b> One recommends Zero, but ViViEfs already has its own datom sync. What One adds for us is Vite everywhere and inline Swift/Kotlin. Both are real, but neither justifies requalifying P01 now.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-5" id="timeline">
+  <h2 class="text-2xl font-bold">What changed since Expo + Unistyles was chosen</h2>
+  <ul class="timeline timeline-vertical timeline-compact">
+    <li><div class="timeline-start text-sm opacity-70">2026-09-29</div><div class="timeline-middle">●</div><div class="timeline-end timeline-box"><b>Expo SDK 58 stable.</b> RN 0.88. SSR, data loaders and middleware are stable. Server output is the default.</div><hr></li>
+    <li><hr><div class="timeline-start text-sm opacity-70">2026-10-07</div><div class="timeline-middle">●</div><div class="timeline-end timeline-box"><b>Unistyles 3.5.1</b> fixes the build on RN 0.88.</div><hr></li>
+    <li><hr><div class="timeline-start text-sm opacity-70">2026-10-10</div><div class="timeline-middle">●</div><div class="timeline-end timeline-box"><b>Tamagui 3.0.</b> C++ native style runtime (opt-in beta), flat props, React Strict DOM, Tailwind syntax.</div><hr></li>
+    <li><hr><div class="timeline-start text-sm opacity-70">2026-10-12</div><div class="timeline-middle">●</div><div class="timeline-end timeline-box"><b>Alchemy 2.0.0-beta.83.</b> Still "alpha, expect breaking changes" in its README.</div><hr></li>
+    <li><hr><div class="timeline-start text-sm opacity-70">2026-10-13</div><div class="timeline-middle">●</div><div class="timeline-end timeline-box"><b>One v2 stable (2.6.0).</b> Rolldown for native, One Native modules, Swift and Kotlin imports, <code class="cr-inline">one prebuild</code>, <code class="cr-inline">One.Updates</code>.</div><hr></li>
+    <li><hr><div class="timeline-start text-sm opacity-70">2026-10-15</div><div class="timeline-middle">●</div><div class="timeline-end timeline-box"><b>React Native 0.88.0 final.</b></div><hr></li>
+    <li><hr><div class="timeline-start text-sm opacity-70">2026-10-16</div><div class="timeline-middle">●</div><div class="timeline-end timeline-box"><b>One 2.7.7.</b> Five patch releases in 48 hours.</div></li>
+  </ul>
+</section>
+
+<section class="space-y-5" id="layers">
+  <h2 class="text-2xl font-bold">The two stacks, layer by layer</h2>
+  <p>Grey boxes are shared, whatever framework you pick. The Effect libraries in <code class="cr-inline">libs/</code> don't depend on a framework, which is why switching is cheaper here than in most apps.</p>
+<div class="cr-mermaid"><pre class="mermaid">
+flowchart TB
+  subgraph E["Expo SDK 58 (recommended)"]
+    direction TB
+    E1["Expo Router: native stacks and tabs; web static, SSR, API routes"]
+    E2["Unistyles 3 (Babel plugin) or @expo/ui"]
+    E3["Metro: native and web"]
+    E4["expo-* modules, config plugins, dev-client, EAS"]
+    E5["React Native 0.88, Hermes"]
+    E1 --> E2 --> E3 --> E4 --> E5
+  end
+  subgraph O["One 2.7 (candidate)"]
+    direction TB
+    O1["One router: native stacks and tabs; web SSG, SSR, SPA per route"]
+    O2["Tamagui 3 (first-class) or Unistyles (unverified)"]
+    O3["Vite 8 and Rolldown with Oxc, no Babel: native and web"]
+    O4["One Native: SwiftUI, Compose and services on Nitro"]
+    O5["React Native 0.87, Hermes"]
+    O1 --> O2 --> O3 --> O4 --> O5
+  end
+  S["Shared: Effect 4 libs, datom log, op-sqlite 18.2.5, sync client, workflow engine"]
+  B["Backend: Effect HttpRouter and RpcServer on Node, sync server, Postgres"]
+  E5 --> S
+  O5 --> S
+  S --> B
+  classDef shared fill:#3a3a3a,stroke:#888,color:#eee
+  class S,B shared
+</pre></div>
+</section>
+
+<section class="space-y-5" id="scorecard">
+  <h2 class="text-2xl font-bold">Scorecard for ViViEfs</h2>
+  <p>This scores fit for this repository, not general quality. <span class="badge badge-success badge-sm">strong</span> <span class="badge badge-info badge-sm">good</span> <span class="badge badge-warning badge-sm">weak</span> <span class="badge badge-error badge-sm">risk</span></p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Dimension</th><th>Expo SDK 58 + Unistyles 3</th><th>One 2.7 + Tamagui 3</th></tr></thead>
+    <tbody>
+      <tr><th>Maturity</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">SDK cadence tied to RN; 52.8k stars</span></td>
+        <td><span class="badge badge-error cr-score">risk</span><span class="cr-note">v2 stable since 2026-10-13; nav peers are React Navigation 8 alphas</span></td></tr>
+      <tr><th>Bus factor</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">company-backed; top six each 1.5k-3.3k commits</span></td>
+        <td><span class="badge badge-error cr-score">risk</span><span class="cr-note">natew 10,261 of the top six's 11,581 commits</span></td></tr>
+      <tr><th>RN version vs our pin</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">0.88, the version we pin</span></td>
+        <td><span class="badge badge-error cr-score">risk</span><span class="cr-note"><code class="cr-inline">^0.87.0</code> excludes 0.88 today</span></td></tr>
+      <tr><th>Bundler</th>
+        <td><span class="badge badge-warning cr-score">weak</span><span class="cr-note">Metro next to our Vite 8; Migrator babel stub stays (effect#6347 open)</span></td>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">Vite 8 + Rolldown everywhere, the toolchain the repo already uses</span></td></tr>
+      <tr><th>Web rendering</th>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">static or server, global; stable SSR, loaders, middleware, API routes</span></td>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">SSG, SSR, SPA per route; <code class="cr-inline">one serve</code> on Hono</span></td></tr>
+      <tr><th>Native modules</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">largest module set, config plugins</span></td>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">One Native maps 46 packages; new; Expo modules usable through Expo prebuild</span></td></tr>
+      <tr><th>Custom native code</th>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">Expo modules API, <code class="cr-inline">@expo/ui</code></span></td>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">import <code class="cr-inline">.swift</code> / <code class="cr-inline">.kt</code> files directly</span></td></tr>
+      <tr><th>Styling fit</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">Unistyles documents Expo Router</span></td>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">Tamagui is first-class; Unistyles needs Babel under a no-Babel pipeline (unverified)</span></td></tr>
+      <tr><th>Build and release</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">dev-client, EAS Build, Update, Hosting</span></td>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note"><code class="cr-inline">one prebuild</code>, <code class="cr-inline">One.Updates</code>, EAS as a plain RN project; dev-build QR is open issue #562</span></td></tr>
+      <tr><th>Our qualification tooling</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">P01 passed; <code class="cr-inline">@expo/agent-cli</code> wired in</span></td>
+        <td><span class="badge badge-warning cr-score">weak</span><span class="cr-note">P01 requalified; device path in AGENTS.md reworked</span></td></tr>
+      <tr><th>Effect on Hermes</th>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note"><code class="cr-inline">expo-crypto</code> polyfill, measured</span></td>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">crypto globals built in; not measured here</span></td></tr>
+      <tr><th>Data layer</th>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">neutral; our own sync</span></td>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">recommends Zero, which we don't need; <code class="cr-inline">One.Database</code> is our op-sqlite</span></td></tr>
+      <tr><th>Licence</th>
+        <td><span class="badge badge-success cr-score">strong</span><span class="cr-note">MIT</span></td>
+        <td><span class="badge badge-info cr-score">good</span><span class="cr-note">repo LICENSE is MIT, but npm says BSD-3-Clause; both are fine, mismatch to be fixed upstream</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5" id="pros-cons">
+  <h2 class="text-2xl font-bold">Pros and cons</h2>
+  <div class="grid md:grid-cols-2 gap-5 items-start">
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="text-xl font-bold">One</h3>
+      <p class="font-semibold text-success">For</p>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>One bundler (Vite 8, Rolldown) for native and web, matching our tests and docs.</li>
+        <li>No Metro, so no babel stub for Effect's <code class="cr-inline">Migrator</code> dynamic import.</li>
+        <li><code class="cr-inline">getRandomValues</code>, <code class="cr-inline">randomUUID</code> and <code class="cr-inline">subtle.digest</code> installed on Hermes at startup.</li>
+        <li>Per-route SSG, SSR and SPA; Hono server included; deploys to Node, Vercel and Cloudflare.</li>
+        <li>Swift and Kotlin imported straight from TypeScript, plus full SwiftUI and Compose.</li>
+        <li>Same SQLite driver we already use (op-sqlite 18.2.5).</li>
+      </ul>
+      <p class="font-semibold text-error">Against</p>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>RN 0.87 only; we are on 0.88.</li>
+        <li>Stable v2 is days old; navigation sits on alphas; five patch releases in 48 hours.</li>
+        <li>One main author.</li>
+        <li>Unistyles under its no-Babel pipeline is unverified; Uniwind is Metro-only.</li>
+        <li>Our dev-client and <code class="cr-inline">@expo/agent-cli</code> path would need rework.</li>
+        <li>Its comparison with Expo is out of date, so check every comparison it makes.</li>
+      </ul>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="text-xl font-bold">Expo</h3>
+      <p class="font-semibold text-success">For</p>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>Already qualified here (P01, ADR-0004).</li>
+        <li>SDK 58 web: stable SSR, loaders, middleware, API routes; adapters for Node, Bun, Express, Vercel, Netlify and Cloudflare Workers.</li>
+        <li>Largest module set, config plugins, EAS Build, Update and Hosting.</li>
+        <li><code class="cr-inline">@expo/ui</code> for SwiftUI and Compose when we want native controls.</li>
+        <li>Unistyles 3 documents Expo Router.</li>
+      </ul>
+      <p class="font-semibold text-error">Against</p>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>Metro is a second bundler next to Vite; the Migrator stub stays.</li>
+        <li>Render mode is global, not per route.</li>
+        <li>Per-request SSR with Unistyles is unverified (documented: Next.js SSR and Expo static).</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-5" id="ui">
+  <h2 class="text-2xl font-bold">UI layer</h2>
+  <p>Unistyles 3 stays the best fit if the design system is styles over plain React Native views. That keeps the view tree unchanged and suits ADR-0019's pure views. Tamagui 3 only wins if you want a component kit <i>and</i> you go with One.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Library</th><th>Model</th><th>Expo</th><th>One</th></tr></thead>
+    <tbody>
+      <tr><th>Unistyles 3.5.3 <span class="cr-src">MIT</span></th><td><code class="cr-inline">StyleSheet</code> API, no components, C++ core on Nitro, Babel plugin, web and SSR</td><td><span class="badge badge-success badge-sm">documented</span></td><td><span class="badge badge-warning badge-sm">unverified</span></td></tr>
+      <tr><th>Tamagui 3.0.18 <span class="cr-src">MIT</span></th><td>Components + compiler, themes, SSR-safe, React Strict DOM, Tailwind syntax, C++ native runtime (beta)</td><td><span class="badge badge-info badge-sm">works</span></td><td><span class="badge badge-success badge-sm">first-class</span></td></tr>
+      <tr><th>Uniwind 1.12.2 <span class="cr-src">MIT</span></th><td>Tailwind 4 for RN</td><td><span class="badge badge-success badge-sm">yes</span></td><td><span class="badge badge-error badge-sm">Metro-only</span></td></tr>
+      <tr><th>NativeWind 4.2.7 <span class="cr-src">MIT</span></th><td>Tailwind 3</td><td><span class="badge badge-success badge-sm">yes</span></td><td><span class="badge badge-success badge-sm">auto-detected</span></td></tr>
+      <tr><th>@expo/ui 58 <span class="cr-src">MIT</span></th><td>SwiftUI, Compose, universal components</td><td><span class="badge badge-success badge-sm">native</span></td><td><span class="badge badge-info badge-sm">via Expo prebuild</span></td></tr>
+      <tr><th>One Native views</th><td>SwiftUI, Compose, shared <code class="cr-inline">One.UI</code></td><td><span class="badge badge-ghost badge-sm">no</span></td><td><span class="badge badge-success badge-sm">native</span></td></tr>
+      <tr><th>react-strict-dom 0.0.55 <span class="cr-src">MIT</span></th><td>Web-standard elements on native</td><td><span class="badge badge-warning badge-sm">experimental</span></td><td><span class="badge badge-info badge-sm">via Tamagui 3</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5" id="backend">
+  <h2 class="text-2xl font-bold">Backend: the fetch handler is the common ground, not Hono</h2>
+  <p>Effect's <code class="cr-inline">HttpRouter.toWebHandler</code> turns an app <code class="cr-inline">Layer</code> into <code class="cr-inline">(Request) =&gt; Promise&lt;Response&gt;</code>. Every host below accepts that function, so the backend stays plain Effect and the choice of host can be made later.</p>
+<div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  L["Effect app Layer: HttpRouter, HttpApi, RpcServer"] --> W["toWebHandler: Request to Response"]
+  L --> N["NodeHttpServer: today's evidence-server"]
+  subgraph HOSTS["Hosts that take a fetch handler"]
+    direction TB
+    H["Hono app, also inside one serve"]
+    X["Expo API routes and expo-server adapters"]
+    CF["Cloudflare Worker"]
+    AL["Alchemy runtime: returns { fetch }"]
+  end
+  W --> HOSTS
+  AL --> T["Cloudflare, AWS Lambda or ECS, Fly, Hetzner"]
+</pre></div>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="rounded-box bg-base-200 p-4 space-y-1"><h3 class="font-bold">Hono</h3><p class="text-sm">Effect already has its own router and RPC, so Hono only matters as a host, for example inside <code class="cr-inline">one serve</code>. Effect's docs show the pattern with <code class="cr-inline">ManagedRuntime</code>.</p></div>
+    <div class="rounded-box bg-base-200 p-4 space-y-1"><h3 class="font-bold">Alchemy</h3><p class="text-sm">It <b>does not use Hono</b>: the word appears nowhere in its docs. Its APIs are Effect RPC and Effect <code class="cr-inline">HttpApi</code>. It has no Expo or One resource; a web build would go through <code class="cr-inline">StaticSite</code> or a container. It's still beta, so decide at I7 (I28).</p></div>
+    <div class="rounded-box bg-base-200 p-4 space-y-1"><h3 class="font-bold">Sync server</h3><p class="text-sm">It holds leases and a cursor stream open, so it needs a long-lived process: a container or VM (Fly, Hetzner, ECS), not Lambda or a Worker. The web app's server can run somewhere else.</p></div>
+  </div>
+</section>
+
+<section class="space-y-5" id="switch">
+  <h2 class="text-2xl font-bold">What switching to One would cost here</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="rounded-box bg-base-200 p-4"><h3 class="font-bold">Small</h3><ul class="list-disc pl-5 text-sm space-y-1"><li>7 imports from <code class="cr-inline">expo*</code> packages in source, each with a One Native equivalent.</li><li>The evidence app has no router or UI kit yet.</li><li>The Effect libs and op-sqlite move over unchanged.</li></ul></div>
+    <div class="rounded-box bg-base-200 p-4"><h3 class="font-bold">Large</h3><ul class="list-disc pl-5 text-sm space-y-1"><li>P01 requalified: RN 0.88 down to 0.87, Rolldown, new polyfill source, new bundle baseline.</li><li>P01 probe and the <code class="cr-inline">@expo/agent-cli</code> device path reworked.</li><li>ADR-0004 amended.</li></ul></div>
+  </div>
+  <div class="alert alert-info"><span><b>When to look at One again:</b> it supports the RN version that the then-current Expo SDK ships; v2 goes about three months without breaking changes; a second regular maintainer appears or a company backs it; and a P01-style probe passes under Rolldown (Effect 4, op-sqlite, the datom store, the workflow check, Unistyles through a Babel transform or Tamagui 3).</span></div>
+</section>
+
+<section class="space-y-5" id="questions">
+  <h2 class="text-2xl font-bold">Questions that could change the verdict</h2>
+  <p>The verdict assumes the answers marked recommended. A different answer to Q1 or Q2 is the main way One wins.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 web role')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q1 - What is the web for?</h3>
+      <p>One's strongest edge is web rendering per route, along with Lighthouse scores and SEO.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: the same app behind sign-in, local-first; SEO does not matter" checked><span><b>A (assumed).</b> The same app behind sign-in, local-first. SEO doesn't matter, so Expo's global render mode is enough.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: the app plus public, SEO-heavy pages from the same codebase"><span><b>B.</b> The app plus public, SEO-heavy pages from the same codebase. This tilts toward One, or toward a separate Vite site that shares <code class="cr-inline">libs/</code>.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 native look')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q2 - Should the apps look like your brand or like the platform?</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: one brand design system on every platform, platform controls only where needed" checked><span><b>A (assumed).</b> One brand design system on every platform, with platform controls only where needed. Unistyles plus <code class="cr-inline">@expo/ui</code> covers this.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: platform-native SwiftUI and Compose screens, with custom Swift and Kotlin"><span><b>B.</b> Platform-native SwiftUI and Compose screens, plus a lot of custom Swift and Kotlin. One's inline native code is a real advantage here.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 One probe')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q3 - Run a One probe now?</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: no; open an issue with the four re-evaluation triggers and Decide when: they hold" checked><span><b>A (recommended).</b> No. Open an issue that lists the four triggers, with <code class="cr-inline">Decide when:</code> they all hold.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: yes, a throwaway prototype outside the gates: One 2.7 + Effect 4 + op-sqlite + datom store + Unistyles via Babel transform, on iOS and Android"><span><b>B.</b> Yes, as a throwaway prototype outside the gates: One 2.7, Effect 4, op-sqlite, the datom store and Unistyles via a Babel transform, on iOS and Android. It settles the two unverified points.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<section class="space-y-3" id="sources">
+  <h2 class="text-2xl font-bold">Sources</h2>
+  <ul class="list-disc pl-5 text-sm space-y-1">
+    <li>One: <a class="cr-link" href="https://onestack.dev/llms-full.txt">docs, full text</a>, <a class="cr-link" href="https://github.com/onejs/one/releases/tag/v2.6.0">v2.6.0 release</a>, <a class="cr-link" href="https://github.com/onejs/one/issues/562">issue #562</a>, npm <code class="cr-inline">one@2.7.7</code>.</li>
+    <li>Expo: <a class="cr-link" href="https://expo.dev/changelog/sdk-58">SDK 58 changelog</a>, <a class="cr-link" href="https://docs.expo.dev/router/web/server-rendering.md">server rendering</a>, <a class="cr-link" href="https://docs.expo.dev/router/web/data-loaders.md">data loaders</a>, <a class="cr-link" href="https://docs.expo.dev/versions/latest/sdk/server.md">expo-server</a>, <a class="cr-link" href="https://docs.expo.dev/versions/latest/sdk/ui/universal.md">@expo/ui</a>.</li>
+    <li>Unistyles: <a class="cr-link" href="https://unistyl.es/llms-full.txt">docs, full text</a>, <a class="cr-link" href="https://github.com/jpudysz/react-native-unistyles/releases">releases</a>. Tamagui: <a class="cr-link" href="https://github.com/tamagui/tamagui/releases/tag/v3.0.0">v3.0.0</a>.</li>
+    <li>Alchemy: <a class="cr-link" href="https://alchemy.run/llms.txt">docs index</a>, <a class="cr-link" href="https://alchemy.run/apis">APIs</a>, <a class="cr-link" href="../issues/0028-alchemy-infrastructure-as-effects.md">I28</a>.</li>
+    <li>Effect: <code class="cr-inline">repos/effect</code> (<code class="cr-inline">HttpRouter.toWebHandler</code>, the Hono <code class="cr-inline">ManagedRuntime</code> example), <a class="cr-link" href="https://github.com/Effect-TS/effect/issues/6347">effect#6347</a>.</li>
+    <li>npm registry and GitHub API, queried 2026-10-16. Full detail: <a class="cr-link" href="2026-10-16-react-mobile-and-web-stack.md">the record</a>.</li>
+  </ul>
+</section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+</script>
+</body>
+</html>
