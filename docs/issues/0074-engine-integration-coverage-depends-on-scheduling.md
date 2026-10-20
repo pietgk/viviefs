@@ -48,6 +48,21 @@ uncached build could not run there because `hermesc` has no linux-arm64 binary.
 
 ## Comments
 
+2026-10-20: It now blocks recording a baseline. On the Linux arm64 sandbox, on
+Effect 4.0.2, `pnpm verify baseline` refused once ("coverage differs between
+runs, a flaky test to fix first") and the next attempt had all three runs low,
+so it wrote `engine.ts` at 120/156 branches. That lower number was discarded,
+not committed. CI (x86-64) still matches the lockfile's 123/156.
+
+A focused test does not reach the branch the simple way: Effect's workflow
+wrapper turns a self-suspension (`DurableDeferred.await`) into a successful
+`Suspended` result, so `execute` takes `return (yield* exit)`. The branch
+needs the awaited fiber to fail with interrupts only while suspended, which
+some other interrupt must cause. In the same attempt, `execute` (not discard)
+on a workflow waiting on a deferred that is never completed did not return
+within 8 seconds, on sqlite-node; whether that is intended is a question for
+the engine's contract.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [I72]: 0072-verify-baseline-fails-in-a-fresh-worktree.md
