@@ -16,6 +16,7 @@ import { judgeEvidence } from './evidence.ts'
 import { owningProducer } from './file-treatments.ts'
 import { LOCKFILE, registryDigest, stableJson, type Lockfile } from './lockfile.ts'
 import { DOCS_ONLY_STEPS, changedPaths, isDocsOnly } from './docs-only.ts'
+import { OVERRIDE, findQemu, linuxHermesc, planHermesc, writeWrapper } from './hermesc.ts'
 import {
   ROOT,
   STAGES,
@@ -67,6 +68,14 @@ class UnknownSelectorError extends Schema.TaggedError<UnknownSelectorError>()(
 
 class NodeVersionError extends Schema.TaggedError<NodeVersionError>()(
   'NodeVersionError',
+  { message: Schema.String },
+) {
+  override readonly [Runtime.errorExitCode] = 1
+  override readonly [Runtime.errorReported] = false
+}
+
+class HermescError extends Schema.TaggedError<HermescError>()(
+  'HermescError',
   { message: Schema.String },
 ) {
   override readonly [Runtime.errorExitCode] = 1
@@ -306,6 +315,34 @@ const bundleApps = () =>
         .map((path) => path.replace(/\/project\.json$/, ''))
     : []
 
+const BUILD_STEPS = ['build', 'bundle-size']
+
+/**
+ * Before `build` or `bundle-size`, make the Hermes compiler runnable here
+ * (`hermesc.ts`): on Linux arm64 the children get an override that runs the
+ * shipped x86-64 binary under QEMU.
+ */
+const prepareHermesc = Effect.fnUntraced(function* (steps: ReadonlyArray<string>) {
+  const app = bundleApps()[0]
+  if (app === undefined || !steps.some((step) => BUILD_STEPS.includes(step))) return
+  const plan = planHermesc({
+    platform: process.platform,
+    arch: process.arch,
+    override: process.env[OVERRIDE],
+    qemu: findQemu(process.env.PATH),
+    hermesc: linuxHermesc(join(ROOT, app)),
+    dir: join(ROOT, '.artifacts/verify/hermesc'),
+  })
+  if (plan._tag === 'Missing') {
+    yield* writeErr(plan.message)
+    return yield* new HermescError({ message: plan.message })
+  }
+  if (plan._tag === 'Emulated') {
+    process.env[OVERRIDE] = writeWrapper(plan)
+    yield* writeOut(`  Linux arm64: hermesc runs under QEMU (${OVERRIDE}).\n\n`)
+  }
+})
+
 /**
  * `pnpm verify baseline` (D70, D77): runs the coverage producers three times,
  * refuses when evidence does not hold or a tuple varies, measures the bundles,
@@ -339,7 +376,8 @@ const runBaseline = Effect.fnUntraced(function* () {
     )
   }
   yield* writeOut('\n  Bundles\n')
-  yield* runSteps(['build', 'bundle-size'])
+  yield* prepareHermesc(BUILD_STEPS)
+  yield* runSteps(BUILD_STEPS)
   const today = new Date(yield* Clock.currentTimeMillis).toISOString().slice(0, 10)
   const bundle: Record<string, Lockfile['bundle'][string]> = {}
   for (const app of bundleApps()) {
@@ -393,6 +431,7 @@ export const verify = Command.make(
       )
       return yield* new UnknownSelectorError({ selector: selected.selector })
     }
+    yield* prepareHermesc(selected.stages.flatMap((stage) => stage.steps.map((step) => step.name)))
     yield* runStages(selected.stages)
   }),
 ).pipe(
