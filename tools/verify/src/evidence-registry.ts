@@ -344,6 +344,7 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   unit('tools/verify/src/diagrams.ts', 'The Mermaid edge rule; pure, with failing cases in unit tests.'),
   unit('tools/verify/src/docs-only.ts', 'The docs-only path rule; pure, with unit tests.'),
   unit('tools/verify/src/guides.ts', 'The guides rules (template shape, statuses, exemplar links, exercise layout); pure, with failing cases in unit tests.'),
+  unit('tools/verify/src/hermesc.ts', 'Whether the build steps run hermesc natively or under QEMU on Linux arm64; pure plan with unit tests, the small fs parts on a scratch directory.'),
   unit('tools/verify/src/evidence-artifacts.ts', "Reads the producers' artifacts and the lockfile under a given root; tested on a scratch directory."),
   unit('tools/verify/src/evidence.ts', 'The evidence verdicts over injected runs and lockfile; pure, with unit tests.'),
   unit('tools/verify/src/evidence-registry.ts', 'This registry; the ownership tests read it.'),

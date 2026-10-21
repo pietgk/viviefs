@@ -1,7 +1,7 @@
 import { Effect, Fiber } from 'effect'
 import { TestClock } from 'effect/testing'
 import { expect, it } from '@effect/vitest'
-import { STAGES, findStage, findStep, formatHelp, selectStages } from './stages.ts'
+import { STAGES, everyProject, findStage, findStep, formatHelp, selectStages } from './stages.ts'
 
 it('help is generated from the executed stage table', () => {
   const help = formatHelp()
@@ -56,3 +56,22 @@ it.effect('advances TestClock instead of waiting on wall time', () =>
     expect(yield* Fiber.join(fiber)).toBe('done')
   }),
 )
+
+it('runs a step over every project for the baseline, whatever changed (I72)', () => {
+  const step = {
+    name: 'bundle-size',
+    blurb: '',
+    invocations: [
+      { command: 'pnpm', args: ['exec', 'nx', 'affected', '-t', 'bundle-size'] },
+      { command: 'pnpm', args: ['exec', 'nx', 'run-many', '--all', '-t', 'build'] },
+      { command: 'node', args: ['affected'] },
+    ],
+  }
+  expect(everyProject(step).invocations.map(({ args }) => args)).toEqual([
+    ['exec', 'nx', 'run-many', '--all', '-t', 'bundle-size'],
+    ['exec', 'nx', 'run-many', '--all', '-t', 'build'],
+    ['affected'],
+  ])
+  const real = findStep('bundle-size')
+  expect(real && everyProject(real).invocations.every(({ args }) => !args.includes('affected'))).toBe(true)
+})
