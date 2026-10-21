@@ -35,7 +35,7 @@ several consistent official-looking sources. `X chatter` means posts, not
 checked further. `our experiment` means a result this area produced.
 `unlabelled` means the snapshot stated it and gave it no mark. Whether
 `release` and `unlabelled` stay is open in
-[I74 XDevl grill: open questions](../../issues/0074-xdevl-grill-open-questions.md). A later session may downgrade a
+[I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md). A later session may downgrade a
 label. It records that as a decision-log row.
 
 ## Grill session

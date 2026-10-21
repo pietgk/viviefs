@@ -9,7 +9,7 @@ living pages and dated snapshots. Decisions live in the
 the [repository glossary](../../../GLOSSARY.md). The first grill session, on
 2026-10-21, is [D130 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d130) through
 [D136 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d136). Questions still open are
-[I74 XDevl grill: open questions](../../issues/0074-xdevl-grill-open-questions.md).
+[I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md).
 
 A snapshot stays as written. A guide's claim comes from a gate
 ([ADR-0026 Verify - Qualify - Teach](../../adr/0026-verify-qualify-teach.md),
@@ -164,7 +164,7 @@ Evidence label: unlabelled candidate ([N08](insights.md#n08),
 
 - [Repository glossary](../../../GLOSSARY.md)
 - [Decision log, D130-D136](../../plan/bootstrap/02-decision-log.md#d130-d136)
-- [I74 XDevl grill: open questions](../../issues/0074-xdevl-grill-open-questions.md)
+- [I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md)
 - [Insights](insights.md)
 - [How to maintain](HOW-TO-MAINTAIN.md)
 - [Concept map](concept-map.html)

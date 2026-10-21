@@ -6,7 +6,7 @@ not edit the stable core. The first grill session, on 2026-10-21, recorded
 [D136 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d136) and left these entries **raw**. N01-N14
 carry a layer tag from that session
 ([D131 Layers as the backbone](../../plan/bootstrap/02-decision-log.md#d131)). Questions still open are
-[I74 XDevl grill: open questions](../../issues/0074-xdevl-grill-open-questions.md).
+[I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md).
 
 Statements are copied from the snapshots. A figure is the snapshot's report
 of its source, not a measurement this area ran. `verified` means the

@@ -280,7 +280,7 @@ Checking the code found that the server does not re-execute a command ([ADR-0016
 <a id="d130-d136"></a>
 ## XDevl grill session 1 (2026-10-21)
 
-The human ran the first XDevl grill session on 2026-10-21. The answers are these rows. Questions still open are [I74 XDevl grill: open questions][I74]. No ADR: none of these decides the stack's architecture.
+The human ran the first XDevl grill session on 2026-10-21. The answers are these rows. Questions still open are [I75 XDevl grill: open questions][I75]. No ADR: none of these decides the stack's architecture.
 
 | # | Name | Decision | Why |
 |---|---|---|---|
@@ -404,7 +404,7 @@ The human ran the first XDevl grill session on 2026-10-21. The answers are these
 [I67]: ../../issues/0067-minting-entity-id-segments.md
 [I68]: ../../issues/0068-uniqueness-as-an-acceptance-rule.md
 [I69]: ../../issues/0069-accept-checks-every-change.md
-[I74]: ../../issues/0074-xdevl-grill-open-questions.md
+[I75]: ../../issues/0075-xdevl-grill-open-questions.md
 [I8]: ../../issues/0008-engine-scale-out.md
 [I9]: ../../issues/0009-product-apps-as-app-pairs.md
 [P01]: 06-qualification-gates.md#p01
