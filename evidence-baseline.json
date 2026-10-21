@@ -2,7 +2,7 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7456859,
+        "hbcBytes": 7456815,
         "jsBytes": 4591898,
         "packages": {
           "(unmapped)": 200309,
@@ -71,7 +71,7 @@
         "recordedAt": "2026-10-21"
       },
       "ios": {
-        "hbcBytes": 5351421,
+        "hbcBytes": 5351377,
         "jsBytes": 2498470,
         "packages": {
           "(unmapped)": 198618,
@@ -229,16 +229,16 @@
         "statements": "11/25"
       },
       "apps/docs/src/lib/repo-pages.ts": {
-        "branches": "32/36",
-        "functions": "10/13",
-        "lines": "36/38",
-        "statements": "37/43"
+        "branches": "43/47",
+        "functions": "24/24",
+        "lines": "60/60",
+        "statements": "64/67"
       },
       "apps/docs/src/lib/repo.ts": {
-        "branches": "34/39",
+        "branches": "42/47",
         "functions": "7/7",
-        "lines": "41/45",
-        "statements": "46/50"
+        "lines": "43/47",
+        "statements": "48/52"
       },
       "features/evidence/client/src/index.ts": {
         "branches": "0/0",
@@ -716,5 +716,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "d23677e04ed0c2bab9c725c99aa2a16a66ed914fad2a7bcf1cc97ac5723fcee7"
+  "registryDigest": "5a9bec8b41e95f4b413162f310a5fb4455647d422c5868f6f4ee561649ddeb14"
 }

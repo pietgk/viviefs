@@ -18,7 +18,8 @@ posted there without asking the human first.
 - The spec is `docs/plan/<effort-slug>/spec.md`; the slug names the Schedule
   step or gate (for example `p12-p13-app-shell`).
 - A `Status:` line holds the triage role (see [triage-labels.md](triage-labels.md))
-  or `resolved`; a `Category:` line holds `bug` or `enhancement`.
+  or `resolved`; a `Category:` line holds `bug`, `enhancement`, or `question`
+  ([D136 Issue and Area defined](../plan/bootstrap/02-decision-log.md#d136)).
 - A `Blocked by: I3, I4` line lists blocking issues. An issue is unblocked
   when every issue it lists is `resolved`.
 - Conversation appends to the bottom of the file under `## Comments`.
