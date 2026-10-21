@@ -8,10 +8,16 @@ page that cites gate evidence. Claims come from gates
 
 Name a record `YYYY-MM-DD-<topic>` with `.md` or `.html`. The `research`
 skill writes its Markdown findings here. The docs site renders Markdown
-records as pages and serves HTML records as they are.
+records as pages, including a subfolder, and serves HTML records as they are.
+
+[XDevl](XDevl/README.md) is the first living area. Its pages change as the
+account is maintained. Every dated file in the table below, and every file
+in `XDevl/snapshots/`, stays as written. The living pages are research
+records too: a guide's claim still comes from a gate.
 
 | Record | What it is |
 | --- | --- |
+| [XDevl](XDevl/README.md) | Living area: how we develop with a human, an LLM and the system. The pages change. `snapshots/` inside it does not. |
 | [2026-09-27 P11 Q5: how a request proves who sent it](2026-09-27-p11-q5-token-transport.html) | P11 grilling explainer, token transport (Q5) |
 | [2026-09-27 P11: who can tamper with the datom log](2026-09-27-p11-log-tampering.html) | P11 grilling explainer, tampering (Q14, Q15) |
 | [2026-09-28 Enterprise and P2P communication architecture](2026-09-28-communication-architecture.html) | Communication architecture research |

@@ -117,7 +117,7 @@ export default defineConfig({
         },
       ],
       plugins: [
-        starlightLinksValidator({ exclude: ['/research/*.html'] }),
+        starlightLinksValidator({ exclude: ['/research/*.html', '/research/**/*.html'] }),
         starlightLlmsTxt(),
       ],
     }),

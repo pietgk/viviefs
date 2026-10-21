@@ -62,17 +62,48 @@ const filesIn = (root: string, directory: string, extension: string) =>
     .sort()
     .map((name) => `${directory}/${name}`)
 
+const childDirectories = (root: string, directory: string) =>
+  readdirSync(join(root, directory), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+
+/** A rendered directory whose nested Markdown is also a page (`docs/research`). */
+const listsNested = (directory: string) =>
+  RENDERED_DIRECTORIES.some(
+    (entry) =>
+      entry.nested === true &&
+      (directory === entry.directory || directory.startsWith(`${entry.directory}/`)),
+  )
+
+const markdownUnder = (root: string, directory: string, nested: boolean): string[] => {
+  const here = filesIn(root, directory, '.md')
+  if (!nested) return here
+  return [
+    ...here,
+    ...childDirectories(root, directory).flatMap((name) => markdownUnder(root, `${directory}/${name}`, true)),
+  ]
+}
+
 /** Every repository Markdown file the site renders, as repository paths. */
 export const repositoryMarkdownFiles = (root: string): string[] => [
   ...RENDERED_FILES.map((entry) => entry.file),
-  ...RENDERED_DIRECTORIES.flatMap(({ directory }) =>
-    filesIn(root, directory, '.md'),
-  ),
+  ...RENDERED_DIRECTORIES.flatMap(({ directory, nested }) => markdownUnder(root, directory, nested === true)),
 ]
+
+/** Research HTML, including a file nested under `docs/research`. Paths are repository paths. */
+export const researchHtmlFiles = (root: string): string[] => {
+  const walk = (directory: string): string[] => [
+    ...filesIn(root, directory, '.html'),
+    ...childDirectories(root, directory).flatMap((name) => walk(`${directory}/${name}`)),
+  ]
+  return walk(RAW_HTML_DIRECTORY)
+}
 
 export type SidebarItem =
   | { readonly label: string; readonly slug: string; readonly badge?: Badge }
   | { readonly label: string; readonly link: string }
+  | { readonly label: string; readonly collapsed: true; readonly items: readonly SidebarItem[] }
 
 const htmlTitle = (path: string, html: string): string => {
   const title = /<title>([^<]+)<\/title>/.exec(html)?.[1]?.trim()
@@ -85,9 +116,10 @@ const NUMBERED_RECORD = /^docs\/(?:adr|issues)\/\d{4}-[^/]+\.md$/
 
 /**
  * The sidebar entries of a rendered directory: its README as "Index", then
- * every other page in file order, then HTML records. Starlight's
- * `autogenerate` groups content by path under `src/content/docs`, which
- * these files are not.
+ * every other page in file order, then HTML records. A nested research
+ * directory becomes a collapsed group, so a living area sits beside the
+ * dated records. Starlight's `autogenerate` groups content by path under
+ * `src/content/docs`, which these files are not.
  */
 export const sidebarItems = (
   root: string,
@@ -109,11 +141,22 @@ export const sidebarItems = (
       ? { label, slug, badge: statusBadge(page.status) }
       : { label, slug }
   })
-  if (directory !== RAW_HTML_DIRECTORY) return pages
+  if (!listsNested(directory)) return pages
+  const groups = childDirectories(root, directory).map(
+    (name): SidebarItem => ({
+      label: name,
+      collapsed: true,
+      items: sidebarItems(root, `${directory}/${name}`),
+    }),
+  )
   const records = filesIn(root, directory, '.html').map((path): SidebarItem => {
     const link = siteUrlFor(path)
     if (link === null) throw new Error(`${path} has no site URL.`)
     return { label: htmlTitle(path, readFileSync(join(root, path), 'utf8')), link }
   })
-  return [...pages, ...records]
+  const first = markdown[0]
+  const readmeFirst = first !== undefined && first.endsWith('/README.md')
+  const head = readmeFirst ? pages.slice(0, 1) : []
+  const tail = readmeFirst ? pages.slice(1) : pages
+  return [...head, ...groups, ...tail, ...records]
 }
