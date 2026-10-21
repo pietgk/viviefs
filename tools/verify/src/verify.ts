@@ -20,6 +20,7 @@ import { OVERRIDE, findQemu, linuxHermesc, planHermesc, writeWrapper } from './h
 import {
   ROOT,
   STAGES,
+  everyProject,
   findStep,
   formatHelp,
   selectStages,
@@ -290,11 +291,14 @@ const refuse = (reason: string) =>
     return yield* new BaselineRefused({ reason })
   })
 
-const runSteps = Effect.fnUntraced(function* (names: ReadonlyArray<string>) {
+const runSteps = Effect.fnUntraced(function* (
+  names: ReadonlyArray<string>,
+  scope: (step: Step) => Step = (step) => step,
+) {
   for (const name of names) {
     const step = findStep(name)
     if (!step) return yield* refuse(`no verify step ${name}`)
-    const row = yield* runStep(step)
+    const row = yield* runStep(scope(step))
     yield* writeOut(`${formatRow(row)}\n`)
     if (row.status === FAIL) {
       yield* writeOut(row.output)
@@ -377,7 +381,7 @@ const runBaseline = Effect.fnUntraced(function* () {
   }
   yield* writeOut('\n  Bundles\n')
   yield* prepareHermesc(BUILD_STEPS)
-  yield* runSteps(BUILD_STEPS)
+  yield* runSteps(BUILD_STEPS, everyProject)
   const today = new Date(yield* Clock.currentTimeMillis).toISOString().slice(0, 10)
   const bundle: Record<string, Lockfile['bundle'][string]> = {}
   for (const app of bundleApps()) {
