@@ -29,7 +29,7 @@
     "@effect/vitest": "4.0.2",
     "@viviefs/store-postgres": "workspace:*",
     "@viviefs/store-sqlite-node": "workspace:*",
-    "vite": "8.3.0",
+    "vite": "8.3.4",
     "vitest": "5.0.1"
   }
 }
