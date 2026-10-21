@@ -1,4 +1,3 @@
-import * as Cause from 'effect/Cause'
 import * as Clock from 'effect/Clock'
 import * as Context from 'effect/Context'
 import * as Duration from 'effect/Duration'
@@ -27,6 +26,7 @@ import {
   type EnvelopeType,
   type StoredDatomType,
 } from '@viviefs/datom'
+import { awaitedExit } from './awaited.ts'
 import { CrashHook } from './crash-hook.ts'
 import { EngineConfig } from './config.ts'
 import { EngineSweep } from './sweep.ts'
@@ -521,14 +521,7 @@ export const engineLayer: Layer.Layer<
         }
         const instance = state.instance
         const exit = yield* Fiber.await(state.fiber)
-        if (
-          Exit.isFailure(exit) &&
-          Cause.hasInterruptsOnly(exit.cause) &&
-          instance.suspended
-        ) {
-          return new Workflow.Suspended({}) as never
-        }
-        return (yield* exit) as never
+        return (yield* awaitedExit(exit, instance.suspended)) as never
       }, die),
       poll: (workflow: Workflow.Any, exec: string) =>
         die(

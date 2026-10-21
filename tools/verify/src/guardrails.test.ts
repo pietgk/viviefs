@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ESLint } from 'eslint'
-import { describe, expect, it } from '@effect/vitest'
+import { beforeAll, describe, expect, it } from '@effect/vitest'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
@@ -26,6 +26,12 @@ const ruleMessages = async (rule: string, filePath: string, code: string) =>
     .map((message) => message.message)
 
 describe('ADR-0024: module boundaries', () => {
+  // The rule reads Nx's cached project graph and skips itself without one,
+  // which is the state of a fresh clone before any nx command has run.
+  beforeAll(() => {
+    execFileSync('pnpm', ['exec', 'nx', 'show', 'projects'], { cwd: ROOT, stdio: 'ignore' })
+  }, 120_000)
+
   const boundary = (filePath: string, code: string) =>
     ruleMessages('@nx/enforce-module-boundaries', filePath, code)
 

@@ -266,6 +266,7 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   support('libs/testing/src/vitest.ts', 'unit', 'The one Vitest config shape; its test checks which producer runs which file.'),
   reExport('libs/ui/src/index.ts', 'The package entry re-exports the UI hooks.'),
   unit('libs/ui/src/settled-text.ts', 'A React hook with timers; unit-tested under jsdom until P12 moves UI to Chromium.'),
+  unit('libs/workflow-engine/src/awaited.ts', 'What execute returns for a run it awaited, including a preempted suspension (I74); pure, with unit tests.'),
   integration('libs/workflow-engine/src/config.ts', 'Engine configuration Layer; exercised by the engine suites.', ['durable-workflow/crash-matrix']),
   integration('libs/workflow-engine/src/crash-hook.ts', 'Simulated kills at each boundary; only the crash matrix arms it.', ['durable-workflow/crash-matrix']),
   integration('libs/workflow-engine/src/engine.ts', 'The datom-backed engine; its suites run it on sqlite-node and PGlite with kills.', [
@@ -344,6 +345,7 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   unit('tools/verify/src/diagrams.ts', 'The Mermaid edge rule; pure, with failing cases in unit tests.'),
   unit('tools/verify/src/docs-only.ts', 'The docs-only path rule; pure, with unit tests.'),
   unit('tools/verify/src/guides.ts', 'The guides rules (template shape, statuses, exemplar links, exercise layout); pure, with failing cases in unit tests.'),
+  unit('tools/verify/src/hermesc.ts', 'Whether the build steps run hermesc natively or under QEMU on Linux arm64; pure plan with unit tests, the small fs parts on a scratch directory.'),
   unit('tools/verify/src/evidence-artifacts.ts', "Reads the producers' artifacts and the lockfile under a given root; tested on a scratch directory."),
   unit('tools/verify/src/evidence.ts', 'The evidence verdicts over injected runs and lockfile; pure, with unit tests.'),
   unit('tools/verify/src/evidence-registry.ts', 'This registry; the ownership tests read it.'),

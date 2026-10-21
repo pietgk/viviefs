@@ -1,6 +1,8 @@
 # I56: One shape at every level?
 
-Status: ready-for-human
+Status: ready-for-agent
+
+Claimed: 2026-10-10
 
 Category: enhancement
 

@@ -25,6 +25,21 @@ const nxScope = process.env.CI
   ? ['run-many', '--all']
   : ['affected']
 
+/**
+ * A step over every project, whatever changed: `verify baseline` measures
+ * every bundle app, and `affected` skips an app the change does not touch,
+ * which left its bundle report missing (I72).
+ */
+export const everyProject = (step: Step): Step => ({
+  ...step,
+  invocations: step.invocations.map((invocation) => {
+    const at = invocation.args.indexOf('affected')
+    return at === -1 || invocation.args[at - 1] !== 'nx'
+      ? invocation
+      : { ...invocation, args: [...invocation.args.slice(0, at), 'run-many', '--all', ...invocation.args.slice(at + 1)] }
+  }),
+})
+
 const nxTarget = (target: string): Invocation => ({
   command: 'pnpm',
   args: ['exec', 'nx', ...nxScope, '-t', target],
