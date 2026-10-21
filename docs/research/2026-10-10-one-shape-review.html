@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I56: One shape at every level? (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.6rem; overflow-x: auto; line-height: 1.45; white-space: pre; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-table-wrap td:first-child code.cr-inline { white-space: nowrap; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  dl.cr-shape { display: grid; grid-template-columns: minmax(0, 7rem) minmax(0, 1fr); gap: 0.15rem 0.75rem; font-size: 0.9rem; }
+  dl.cr-shape dt { font-weight: 600; opacity: 0.8; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I56</span>
+    <span class="badge badge-outline">2026-10-10</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">One shape at every level?</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0056-one-shape-at-every-level.md">I56 One shape at every level?</a> asks whether vivief's <code class="cr-inline">(State, intent) =&gt; (State', [Effects]')</code> describes ViViEfs at every level, and where it stops being useful. <a class="cr-link" href="../issues/0047-what-viviefs-is-about.md">I47 What ViViEfs is about</a> left it here on purpose; the human called it "close to an existential level discussion". It settles two rows of <a class="cr-link" href="2026-10-06-vivief-inventory.html">the vivief inventory</a>, <code class="cr-inline">viviefs:changeset</code> and <code class="cr-inline">vivief:fractal-factory</code>, and reviews <a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30 Ideas batch: glossary entries written as effects</a> and <a class="cr-link" href="../issues/0033-ideas-batch-abstractions-that-constrain-agents.md">I33 Ideas batch: abstractions that constrain agents</a>. The names (<code class="cr-inline">effectHandler</code>, intent, effect) are map 3's; this ticket decides whether the shape is foundation, not what it is called.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in five lines</h2>
+    <ol class="list-decimal pl-5 space-y-1">
+      <li>Where the stack keeps the state as data and the code is deterministic (command, accept, projector, workflow, the IntentComposer, the gate ledger), the shape fits cleanly.</li>
+      <li>At the data level it fits as <b>two functions, not one</b>: a command <i>decides</i> (state and intent to a changeset), the projector <i>evolves</i> (state and changeset to a new state), and accept sits between them. That split is what the code already does, and it answers <code class="cr-inline">viviefs:changeset</code>: the changeset is the step, not <code class="cr-inline">State'</code>.</li>
+      <li>Reads (a Presenter's frame, a query atom) and pure helpers are not handlers: they make no new state. vivief drew the same line ("creation boundary").</li>
+      <li>Above the code (a change and <code class="cr-inline">verify</code>, a guide, an agent session, an app improving a part), it fits only as <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98 Vision - View - Effects</a>'s loop: a person or an agent is in it, and the state is not one value.</li>
+      <li>Proposed sweet spot: the shape is a foundation concept at the data level, shown by gates that already pass, and a lens for teaching and design above it.</li>
+    </ol>
+  </div></div>
+</header>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="vivief">
+  <h2 class="text-2xl font-bold">1. vivief's shape in one page</h2>
+  <p class="cr-src">vivief HEAD <code class="cr-inline">3071cb2</code>: <code class="cr-inline">docs/contract/foundation.md</code> §3, §5.1-5.5; <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> §2.5, §3, §11; <code class="cr-inline">docs/contract/concepts-quick-ref.md</code> §1; <code class="cr-inline">docs/contract/vision/actors.md</code> §2; <code class="cr-inline">docs/contract/vision/effecthandler-roles.md</code>; <code class="cr-inline">docs/contract/vision/fractal-software-factory.md</code>.</p>
+  <p>vivief writes the formula three ways, and its own documents do not agree on the output:</p>
+  <pre class="cr-code">foundation §5.1, quick-ref §1     effectHandler = (state, intent) =&gt; (state', [intent'])     "This is the entire pattern."
+v6 §2.5 Level 1 (the function)    handler(state: State, intent: Intent): { datoms: Datom[], intents: Intent[] }
+v6 §3 the creation loop           effect (Intent) -&gt; Contract(effectHandler) -&gt; datoms (result)
+actors §2.1                       dialogHandler = (DialogState, UserEvent) =&gt; (DialogState', [FocusMove, APICall])</pre>
+  <p>Note the move from the foundation to v6: the output stops being <code class="cr-inline">state'</code> and becomes <code class="cr-inline">datoms</code>, the facts the handler adds. In v6 a handler never returns a new state; it returns the change, and the state follows. That is the reading this page proposes for ViViEfs too (section 4).</p>
+
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief</th><th>What it is</th><th>Where it could land here</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">effectHandler</code></td><td>"The universal control pattern" (v6 §2.5): state and an intent in, facts and further intents out</td><td>Split in two: Command decides, Projector evolves; Activity does the outside work (section 2). The word waits for map 3.</td></tr>
+      <tr><td>Level 1, the function; Level 2, the actor</td><td>A pure function for most handlers; an actor (identity, queue, lifecycle, typed protocol) for multi-step, streaming or cancellable work (v6 §2.5)</td><td>Command; durable workflow. Whether the workflow is the actor level is <a class="cr-link" href="../issues/0051-actors-or-the-engine.md">I51 Actors or the engine</a>'s (<code class="cr-inline">vivief:handler-levels</code>).</td></tr>
+      <tr><td>Implementation strategy</td><td>Code, Markdown/LLM, StateMachine, Hybrid; orthogonal to level (v6 §2.5)</td><td>Code today. The IntentComposer is the StateMachine strategy (<a class="cr-link" href="../adr/0020-interaction-state-three-way-prototype.md">ADR-0020 Interaction state: outcome of the three-way prototype</a>). A model's output enters through an activity as an enriching implementation (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d111">D111 Faster and enriching implementations</a>).</td></tr>
+      <tr><td><code class="cr-inline">Intent</code></td><td>"The effect that enters the creation loop", with payload, context and requester (v6 §11)</td><td>Intent: "what the user asked for, before it is checked" (glossary). Narrower; map 3.</td></tr>
+      <tr><td>Effects as data</td><td>"A description of something to do (data, not function)" (foundation §5.2)</td><td>Datoms in the log. The Effect library's <code class="cr-inline">Effect</code> is a program, not data: the clash is map 3's.</td></tr>
+      <tr><td>Effect hierarchies</td><td>Low-level (DB query), high-level (charge payment), actor-level (state machines) (foundation §5.5)</td><td>Understanding code: map 5 (<a class="cr-link" href="../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md">I25 Ideas batch: understanding and maintaining code bases</a>); levels of a glossary effect form: <a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30</a>.</td></tr>
+      <tr><td>The creation loop</td><td><code class="cr-inline">effect -&gt; Contract(effectHandler) -&gt; datoms</code>; a validation failure re-enters the loop (v6 §3)</td><td>A command, then accept's one checkpoint (<a class="cr-link" href="../adr/0035-accepting-a-change.md">ADR-0035 Accepting a change</a>), then the log. A rejection goes back to the device's outbox.</td></tr>
+      <tr><td>Vision ↔ View</td><td>"Vision = Why, View = What/Where/When/How; iterate through validation" (foundation §3)</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98 Vision - View - Effects</a>, read as a loop over what we build.</td></tr>
+      <tr><td>Fractal software factory</td><td>"The same retrieve → generate → evaluate pattern repeats at every scale"; "outputs of each cycle become callable skills for the next" (fsf Summary)</td><td>The row <code class="cr-inline">vivief:fractal-factory</code> (section 3).</td></tr>
+      <tr><td>Roles</td><td>An attribute naming what a handler is good at, used to dispatch an intent (effecthandler-roles)</td><td>Outside this ticket: dispatching to agents is map 6.</td></tr>
+      <tr><td>Graceful failure, crash</td><td>Error datoms and <code class="cr-inline">:handler/failed</code>; a crash datom (v6 §2.5)</td><td><code class="cr-inline">DomainError</code>, a typed <code class="cr-inline">Rejection</code>, a journaled activity exit; the crash matrix (<a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p06">P06 Workflow engine crash matrix</a>).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">Ideas worth keeping</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief idea</th><th>What it would give ViViEfs</th></tr></thead>
+    <tbody>
+      <tr class="cr-rec"><td><b>The handler returns the change, not the new state</b> (v6 §2.5, <code class="cr-inline">{ datoms, intents }</code>)</td><td>The answer to <code class="cr-inline">viviefs:changeset</code>, and the reason the shape splits into decide and evolve (section 4).</td></tr>
+      <tr class="cr-rec"><td><b>The creation boundary</b>: "Creation = produces datoms. Utility = pure transformation below the concept level" (v6 §11)</td><td>A test for what is not a handler: a read and a pure helper make no new state. It answers the inventory's question (1) on <code class="cr-inline">vivief:effect-handler</code>.</td></tr>
+      <tr class="cr-rec"><td><b>Failure is data</b>: both failure paths end in the log (v6 §2.5)</td><td>Already ours: a rejection is typed, an activity exit is journaled, a crash is replayed. Worth saying as part of the shape.</td></tr>
+      <tr><td><b>Temperature tiers</b>: the same loop with different time constants, hot (milliseconds), warm (a session), cold (days to weeks) (fsf Decision)</td><td>A way to order the levels of section 2 without claiming they are the same function.</td></tr>
+      <tr><td><b>Every output is the next cycle's input</b> (fsf "Datoms as fractal substrate")</td><td>True here in spirit for app data (the log). Not for development artifacts: decisions, the ledger and the Schema are files, kept out of the log on purpose (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129 Boundaries and live change</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d48p">D48' Verify - Qualify - Teach</a>).</td></tr>
+      <tr><td><b>Deterministic first</b>, the two worlds (foundation §3.3)</td><td>Already ours (<a class="cr-link" href="../adr/0025-ai-robust-guardrails.md">ADR-0025 AI-robust guardrails</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d26">D26 AI-robust guardrails</a>). The shape makes it visible: the pure part of each level, and where time, ids and models come in.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="levels">
+  <h2 class="text-2xl font-bold">2. The shape on ViViEfs's real code, level by level</h2>
+  <p>Each card fills in the four slots from the code as it is on <code class="cr-inline">main</code> today. Badges: <span class="badge badge-success badge-sm">fits cleanly</span> <span class="badge badge-warning badge-sm">stretches</span> <span class="badge badge-error badge-sm">fits only by renaming</span>.</p>
+
+  <div class="grid md:grid-cols-2 gap-4">
+
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">Command</h3><span class="badge badge-success badge-sm">fits cleanly, as decide</span></div>
+      <p class="cr-src"><code class="cr-inline">features/evidence/model/src/command.ts:81-116</code> <code class="cr-inline">renameList</code>; <code class="cr-inline">finish</code> L52-79; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d36p">D36' Shared commands, as built</a></p>
+      <pre class="cr-code">renameList(read, intent, mint)
+  : Effect&lt;CommandChangeset, DomainError&gt;</pre>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>A slice of the read model: <code class="cr-inline">{ title }</code></dd>
+        <dt>Input</dt><dd>The intent <code class="cr-inline">{ org, list, title }</code>, and a third input: <code class="cr-inline">mint</code> (ids, <code class="cr-inline">tx</code>s, actor, device, basis)</dd>
+        <dt>State'</dt><dd>None. It returns a changeset or a <code class="cr-inline">DomainError</code></dd>
+        <dt>Effects</dt><dd>None. The caller submits to the outbox (<code class="cr-inline">apps/evidence-mobile/src/p11-runtime.ts:348-364</code>)</dd>
+      </dl>
+      <p class="text-sm">Pure, as <a class="cr-link" href="../adr/0025-ai-robust-guardrails.md">ADR-0025</a> wants: the world's nondeterminism (ids, time) is passed in as <code class="cr-inline">mint</code>. The formula has no slot for it.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">Accept, on the server</h3><span class="badge badge-success badge-sm">fits cleanly</span></div>
+      <p class="cr-src"><code class="cr-inline">libs/sync/server/src/server.ts:440-452</code> <code class="cr-inline">accept</code>; Append handler L698-708; <code class="cr-inline">store.append</code> L626-630; <code class="cr-inline">Rejection</code> in <code class="cr-inline">libs/sync/protocol/src/rpc.ts:95-135</code></p>
+      <pre class="cr-code">accept(catalog, request, caller, services)
+  : Effect&lt;{ cursor }, Rejection | FutureSkew | InvalidTx | SqlError&gt;</pre>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The log and the memberships</dd>
+        <dt>Input</dt><dd>A changeset with its envelope</dd>
+        <dt>State'</dt><dd>The log with the changeset appended (<code class="cr-inline">acceptedAt</code> set)</dd>
+        <dt>Effects</dt><dd>The ack (<code class="cr-inline">cursor</code>) or a typed <code class="cr-inline">Rejection</code></dd>
+      </dl>
+      <p class="text-sm">The shape assumes one step from <code class="cr-inline">State</code> to <code class="cr-inline">State'</code>. The code reads membership in one place and appends in another, with nothing tying them: the window of <a class="cr-link" href="../issues/0071-an-append-can-land-after-a-revocation.md">I71 An append can land after a revocation</a>. The shape makes that bug easy to name.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">Projector</h3><span class="badge badge-success badge-sm">fits cleanly, as evolve</span></div>
+      <p class="cr-src"><code class="cr-inline">libs/datom/src/projector.ts:577-691</code> <code class="cr-inline">project()</code>; pure core <code class="cr-inline">libs/datom/src/visibility.ts:61</code> <code class="cr-inline">reduceAll(facts, catalog)</code>; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d37">D37 Log store tables</a></p>
+      <pre class="cr-code">project(): Effect&lt;ProjectResult&gt;
+reduceAll(facts, catalog): ReadonlyArray&lt;StoredFact&gt;</pre>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The cursor and the read models (<code class="cr-inline">projected_facts</code>, <code class="cr-inline">changeset_status</code>)</dd>
+        <dt>Input</dt><dd>The log rows since the cursor</dd>
+        <dt>State'</dt><dd>The new cursor and read models, in one SQL transaction</dd>
+        <dt>Effects</dt><dd><code class="cr-inline">reactivity.invalidate(keys)</code> (L686-689)</dd>
+      </dl>
+      <p class="text-sm">A fold. <code class="cr-inline">rebuild</code> runs the same fold from an empty state, which is what <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p05">P05 Changesets and projections</a> checks.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">Activity and workflow</h3><span class="badge badge-success badge-sm">fits cleanly</span></div>
+      <p class="cr-src"><code class="cr-inline">features/evidence/model/src/device-resume.ts:29-57</code>; replay <code class="cr-inline">libs/workflow-engine/src/engine.ts:398-458</code>; <code class="cr-inline">activityExecute</code> L563-631; journal codecs <code class="cr-inline">journal.ts:61-137</code>; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d2">D2 Temporal model</a>, <a class="cr-link" href="../adr/0012-datom-backed-workflow-engine.md">ADR-0012 Durable execution over one datom-backed engine</a></p>
+      <pre class="cr-code">activityExecute(activity, attempt)
+  // stored exit?  -&gt; return it (replay)
+  // else run body -&gt; append viviefs/activity/exit</pre>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The journal: <code class="cr-inline">viviefs/workflow/*</code>, activity exits, the lease</dd>
+        <dt>Input</dt><dd>The next step the workflow body asks for</dd>
+        <dt>State'</dt><dd>The journal with one more exit datom</dd>
+        <dt>Effects</dt><dd>The activity's real work (an upload); time, ids and models happen only here</dd>
+      </dl>
+      <p class="text-sm">The workflow body is a deterministic function of its journal; replay is a fold over it. This is the one level where the formula's <code class="cr-inline">[Effects]</code> are carried out, and their results are kept.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">IntentComposer</h3><span class="badge badge-success badge-sm">fits cleanly, vivief's own example</span></div>
+      <p class="cr-src"><code class="cr-inline">features/evidence/client/src/intent-composer/effect-machine.ts:110-172</code>; <a class="cr-link" href="../adr/0020-interaction-state-three-way-prototype.md">ADR-0020 Interaction state: outcome of the three-way prototype</a></p>
+      <pre class="cr-code">Reviewing --Confirm--&gt; Submitting  invoke submit(hash)
+Submitting --onDone--&gt; ...         --onFailure--&gt; Reviewing</pre>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>Empty, Composing, Reviewing, Submitting, with the candidate's hash</dd>
+        <dt>Input</dt><dd>An event: Start, Candidate, Confirm, Retake, Cancel</dd>
+        <dt>State'</dt><dd>The next machine state</dd>
+        <dt>Effects</dt><dd><code class="cr-inline">submit</code>, which hands the intent to a command</dd>
+      </dl>
+      <p class="text-sm">Exactly vivief's <code class="cr-inline">dialogHandler = (DialogState, UserEvent) =&gt; (DialogState', [...])</code>. Ephemeral: nothing is kept.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">Gate: claim to evidence</h3><span class="badge badge-success badge-sm">fits cleanly in form</span></div>
+      <p class="cr-src"><code class="cr-inline">tools/qualification/src/gates.ts:9-27</code> (<code class="cr-inline">claim</code>); <code class="cr-inline">ledger.ts:8-25</code> <code class="cr-inline">LedgerEntry</code>, L125-176 <code class="cr-inline">recordGate</code>, <code class="cr-inline">GateState</code>; <code class="cr-inline">docs/evidence/*.md</code>; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d93">D93 Claims in front</a></p>
+      <pre class="cr-code">recordGate({ gate, status, artifacts, ... }): LedgerEntry
+ledgerState(gates): GateState[]   // pass | fail | not run | stale</pre>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The ledger, append-only, and the inputs' fingerprint</dd>
+        <dt>Input</dt><dd>A claim, run as its probe</dd>
+        <dt>State'</dt><dd>The ledger with one more entry</dd>
+        <dt>Effects</dt><dd>Artifacts, an evidence note, the claims page</dd>
+      </dl>
+      <p class="text-sm">The log store's shape again, in a file: the ledger is the log, <code class="cr-inline">GateState</code> is a read model derived from it ("stale" is derived, never written). <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d99">D99 Facts kept, meaning derived</a> at the gate level. A person still runs a device gate.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">A change: diff to <code class="cr-inline">verify</code>'s verdict</h3><span class="badge badge-warning badge-sm">stretches</span></div>
+      <p class="cr-src"><code class="cr-inline">tools/verify/src/verify.ts:160-246</code> (<code class="cr-inline">Row</code>, the <code class="cr-inline">RED</code>/<code class="cr-inline">GREEN</code> line, <code class="cr-inline">VerifyFailed</code>); <code class="cr-inline">stages.ts:7-22</code></p>
+      <pre class="cr-code">runStages(stages): Effect&lt;void, VerifyFailed&gt;
+// prints "GREEN · 19 checks" or "RED · n of m failed"</pre>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The working tree (and the Nx cache)</dd>
+        <dt>Input</dt><dd>A change</dd>
+        <dt>State'</dt><dd>Nothing: the tree is unchanged; the verdict is printed, not kept</dd>
+        <dt>Effects</dt><dd>Artifacts (coverage, reports)</dd>
+      </dl>
+      <p class="text-sm"><code class="cr-inline">verify</code> is not a handler; it is a check: <code class="cr-inline">(State, change) =&gt; verdict</code>. It fits as the <b>accept of the repository</b>: the person or agent who commits is the handler, the commit is the step, and <code class="cr-inline">verify</code> is the checkpoint, as accept is for a changeset. Unlike accept, nothing enforces it except the working agreements and CI.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">Guide: decision to lesson</h3><span class="badge badge-error badge-sm">fits only by renaming</span></div>
+      <p class="cr-src"><code class="cr-inline">apps/docs/src/guide-template/index.mdx</code> (frontmatter <code class="cr-inline">pattern, adrs, gates, exemplar, exercises, status</code>); <code class="cr-inline">tools/verify/src/guides.ts:380</code>; <code class="cr-inline">exercises/log-store/</code>; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d96">D96 Two verifications</a></p>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The guides, and what a learner knows</dd>
+        <dt>Input</dt><dd>A decision</dd>
+        <dt>State'</dt><dd>A lesson; a learner who can build, or a finding against the writing</dd>
+        <dt>Effects</dt><dd>Exercises run, findings filed</dd>
+      </dl>
+      <p class="text-sm">The code checks the guide's shape (<code class="cr-inline">guides</code> step), not the turn. A learner's knowledge is not a value anyone holds. The turn is real; the function is a metaphor.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">An agent session</h3><span class="badge badge-error badge-sm">fits only by renaming</span></div>
+      <p class="cr-src">No code. Skills; <code class="cr-inline">docs/plan/next-session.md</code>; the issues</p>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The repository and the handover</dd>
+        <dt>Input</dt><dd>A prompt or an issue</dd>
+        <dt>State'</dt><dd>Commits and a new handover</dd>
+        <dt>Effects</dt><dd>Issues opened, comments, review pages</dd>
+      </dl>
+      <p class="text-sm">The handover really is the next session's input (this session started from it). But the session is reasoning, not a function: the same input does not give the same output, and nothing replays it. That is what <a class="cr-link" href="../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md">I29 Ideas batch: agents that record a replayable run</a> is about.</p>
+    </div></div>
+
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">An app improving a part</h3><span class="badge badge-error badge-sm">fits only by renaming</span></div>
+      <p class="cr-src">No code yet. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d95">D95 App creation</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d55p">D55' Consumer apps live here</a></p>
+      <dl class="cr-shape">
+        <dt>State</dt><dd>The patterns and their guides</dd>
+        <dt>Input</dt><dd>A consumer app's need</dd>
+        <dt>State'</dt><dd>A better pattern, a new gate</dd>
+        <dt>Effects</dt><dd>Issues, decisions, a release</dd>
+      </dl>
+      <p class="text-sm">Months long, many people and agents. The loop is the point of <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d95">D95</a>; calling it a function adds nothing.</p>
+    </div></div>
+
+    <div class="card bg-base-200 md:col-span-2"><div class="card-body p-5 space-y-2">
+      <div class="flex flex-wrap gap-2 items-center"><h3 class="font-semibold text-lg">Not a handler: a read</h3><span class="badge badge-outline badge-sm">outside the shape</span></div>
+      <p class="cr-src">Presenter and frame: not built (<a class="cr-link" href="../adr/0033-the-presenter-pattern.md">ADR-0033 The Presenter pattern</a>, Proposed). Nearest today: <code class="cr-inline">features/evidence/client/src/intent-composer/query-atom.ts:17-28</code> <code class="cr-inline">makeEvidenceAtom</code></p>
+      <p class="text-sm"><code class="cr-inline">(State, query) =&gt; frame</code>: no <code class="cr-inline">State'</code>, no effects. "Reads never write" (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d107">D107 The Presenter pattern</a>). Forcing it into the shape (<code class="cr-inline">State' = State</code>, no effects) is true and useless. vivief's creation boundary says the same: what makes no facts is below the concept.</p>
+    </div></div>
+
+  </div>
+
+  <h3 class="text-lg font-semibold">The pattern in the cards</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Level</th><th>State kept as data?</th><th>Deterministic?</th><th>Fit</th></tr></thead>
+    <tbody>
+      <tr><td>Command</td><td>Read model (derived)</td><td>Yes, mint passed in</td><td>Clean, as decide</td></tr>
+      <tr><td>Accept</td><td>Log</td><td>Yes (I71 aside)</td><td>Clean</td></tr>
+      <tr><td>Projector</td><td>Read models, cursor</td><td>Yes</td><td>Clean, as evolve</td></tr>
+      <tr><td>Workflow, activity</td><td>Journal</td><td>Body yes; activity is where the world comes in</td><td>Clean</td></tr>
+      <tr><td>IntentComposer</td><td>Machine state, ephemeral</td><td>Yes</td><td>Clean</td></tr>
+      <tr><td>Gate</td><td>Ledger</td><td>The record yes; the run is a probe on devices</td><td>Clean in form</td></tr>
+      <tr><td>Change, <code class="cr-inline">verify</code></td><td>Tree; verdict not kept</td><td>Mostly (flakiness is a defect)</td><td>Stretches: a check, not a handler</td></tr>
+      <tr><td>Guide, agent session, app</td><td>Partly, as files</td><td>No: a person or a model reasons</td><td>Only by renaming</td></tr>
+    </tbody>
+  </table></div>
+  <p>The line falls where the state stops being one value the stack holds and the step stops being code that runs the same way twice.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="data-level">
+  <h2 class="text-2xl font-bold">The data level drawn: decide, accept, evolve</h2>
+  <p>The clean cards are not one function. They are three, chained through the log. This is the event-sourcing "decider" split (decide: state and command to events; evolve: state and event to the next state), which ViViEfs already built under other names.</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+flowchart TB
+  I["Intent"] --> C["Command: decide<br/>(read model, intent, mint) to changeset or DomainError"]
+  RM[("Read model: derived")] -- "State, as of basis" --> C
+  C -- "changeset: the step" --> A{"Accept: authority,<br/>one checkpoint"}
+  A -- "Rejection" --> O["Outbox: rebuild, retry"]
+  A -- "append" --> L[("Log: the kept State")]
+  W["Workflow body: replay over the journal"] -- "next step" --> ACT["Activity: the world<br/>(time, ids, IO, models)"]
+  ACT -- "exit datom" --> L
+  L -- "rows since cursor" --> P["Projector: evolve (a fold)"]
+  P -- "State'" --> RM
+  P -. "invalidate keys" .-> S["Screen: a frame, a read"]
+</pre></div>
+  <p class="text-sm">Pure: Command, Projector's fold, the workflow body, accept's checks. Effectful: Activity, the append, the invalidation. Nothing here is new; the proposal is to name the shape so a newcomer sees the three as one idea.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="loop">
+  <h2 class="text-2xl font-bold">3. The loop as a process: <code class="cr-inline">vivief:fractal-factory</code></h2>
+  <p>The inventory row: "the same retrieve, generate, evaluate loop at every scale, from a tool call to the product lifecycle; each cycle's output is the next cycle's callable input, so velocity compounds". Its question: "Is 'the same loop at every scale' part of what ViViEfs is about, and which of its loops (verify per change, a gate per claim, a guide per pattern) would it call one?"</p>
+  <p><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98 Vision - View - Effects</a> already reads a gate and a guide as turns of one loop: intend, build, observe what happened, show it, check it against the intent. Each box below is one such loop at one level; the arrows are what one level hands to another:</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart TB
+  H["<b>Hot: milliseconds to seconds</b><br/>Vision: an intent<br/>Effects: a changeset in the log<br/>View: a frame on a screen"]
+  W["<b>Warm: minutes to hours</b><br/>Vision: an issue, a plan<br/>Effects: a change, verify's verdict<br/>View: a review page, a diff"]
+  G["<b>Cold: a claim</b><br/>Vision: a claim, an ADR<br/>Effects: a probe run, the ledger, an evidence note<br/>View: the claims page"]
+  U["<b>Cold: a pattern</b><br/>Vision: a decision<br/>Effects: the exemplar, exercises<br/>View: a lesson a learner tries"]
+  P["<b>Coldest: an app</b><br/>Vision: an app's need<br/>Effects: an app built on the parts<br/>View: what broke, what was missing"]
+  H -- "a bug a user sees" --> W
+  W -- "a passing tree" --> G
+  G -- "evidence cited" --> U
+  U -- "parts to build on" --> P
+  U -. "a learner's finding" .-> W
+  P -. "an issue against a part" .-> W
+</pre></div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5">
+      <h3 class="font-semibold">What holds</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>Each level has the three parts of <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a>, and each turn leaves something kept that the next turn reads: the log, the verdict and the commit, the ledger, the decision, the handover, an issue.</li>
+        <li>The levels feed each other: a learner's finding and an app's gap both come back as warm-loop issues (dotted arrows).</li>
+        <li>vivief's temperature tiers order the levels by their time constants without pretending they are the same code.</li>
+      </ul>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5">
+      <h3 class="font-semibold">What does not</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li>"Callable input": a turn's output is read by the next, not called. Only app data is facts in one log; development artifacts are files, by decision (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d48p">D48'</a>).</li>
+        <li>"Velocity compounds" is a claim no gate can show. Whether an agent builds the next pattern faster from the guides is a question of evidence, which is map 4's.</li>
+        <li>Retrieve, generate, evaluate is a model-in-the-loop reading; the hot loop has no model in it.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="changeset">
+  <h2 class="text-2xl font-bold">4. <code class="cr-inline">viviefs:changeset</code>: is the changeset <code class="cr-inline">State'</code>?</h2>
+  <p>The inventory row's question: "Is the changeset the <code class="cr-inline">State'</code> of the formula, or is that the read model after projection, or the log?" One list title, traced. Organization <code class="cr-inline">acme</code>, list <code class="cr-inline">L7</code>, title "Untitled" today, renamed to "Site visit".</p>
+  <pre class="cr-code">1. Read model (State as the device sees it, as of basis 41)
+     projected_facts  Oacme/L7  evidence/list/title  "Untitled"
+
+2. decide: renameList({ title: "Untitled" }, { org: "acme", list: "7", title: "Site visit" }, mint)
+     -&gt; changeset c9:
+        [Oacme/L7  evidence/list        "1"            tx m1  cs c9]
+        [Oacme/L7  evidence/list/title  "Site visit"   tx m2  cs c9]
+        [c9        viviefs/changeset/commit {n: 2, hash, basis: 41}  tx m3  cs c9]
+        envelope { command: "evidence.renameList", actor, device, ... }
+
+3. accept (authority): may this writer, well formed, data valid?  -&gt; append, cursor 42
+     Log, the kept State: ... 41 facts ..., then c9's three facts
+
+4. evolve: project() from cursor 41
+     projected_facts  Oacme/L7  evidence/list/title  "Site visit"   (lww)
+     changeset_status c9 committed;  cursor 42;  invalidate keys for Oacme/L7</pre>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5">
+      <h3 class="font-semibold">A. The changeset is <code class="cr-inline">State'</code></h3>
+      <p class="text-sm">It is not a state: it is three facts that mean nothing without the log they join. It can be rejected and never become anything. It is the <b>step</b> between states: vivief v6's <code class="cr-inline">datoms</code>, the decider's events.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5">
+      <h3 class="font-semibold">B. <code class="cr-inline">State'</code> is the read model after projection</h3>
+      <p class="text-sm">True of what the command will see next time, but the read model is derived, disposable and rebuilt (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d99">D99</a>). Calling it the state makes the thing we throw away the thing we keep.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5">
+      <h3 class="font-semibold">C. <code class="cr-inline">State'</code> is the log after accept (proposed)</h3>
+      <p class="text-sm">The log is the kept state; the changeset is the step a command proposes; accept turns it into <code class="cr-inline">State'</code>; the read model is a view of the state, the one a command reads and a screen shows. Facts kept, meaning derived (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d99">D99</a>), said in the formula's terms.</p>
+    </div></div>
+  </div>
+  <p class="text-sm">With C, the human's framing in <a class="cr-link" href="../issues/0047-what-viviefs-is-about.md">I47</a> ("State can be read as the whole log store plus the output of the active projectors, with a local and a global context") becomes precise: the log is the state, the read models are its views, the device's log is the local context and authority's the global one.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="sweet-spot">
+  <h2 class="text-2xl font-bold">5. The sweet spot (proposed)</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Foundation: at the data level</h3>
+      <p class="text-sm">A foundation concept in <a class="cr-link" href="../adr/0032-what-viviefs-is-about.md">ADR-0032 What ViViEfs is about and its foundation concepts</a>: <b>every change to kept state goes state and input, to a step, to the next state.</b> A command decides (read model and intent to a changeset, pure, its ids passed in); authority accepts the step into the log; the projector evolves the read models from the log. A workflow is the same over its journal, and an activity is the only place the world comes in, its result kept. Failure is data: a typed error, a rejection, a journaled exit.</p>
+      <p class="text-sm"><b>Shown by gates that pass:</b> <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p05">P05 Changesets and projections</a> (atomic steps, the rebuild fold), <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p06">P06 Workflow engine crash matrix</a> (replay over the journal), <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p09">P09 Sync</a> (accept). No new gate.</p>
+      <p class="text-sm"><b>Not handlers:</b> reads (a Presenter's frame, a query atom) and pure helpers.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Lens: above the code</h3>
+      <p class="text-sm">A change and <code class="cr-inline">verify</code>, a gate, a guide, an agent session, an app improving a part: each is a turn of <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a>'s loop, with something kept that the next turn reads. Useful for teaching and as a design checklist (what is kept, what is derived, where is the check, where does a person or a model decide). Not a claim, not a function, no gate.</p>
+      <p class="text-sm"><b>The rabbit hole</b> is calling these handlers: it hides the person, and it invites "everything is a datom" for files the decisions keep out of the log.</p>
+    </div></div>
+  </div>
+
+  <h3 class="text-lg font-semibold">The two rows, proposed</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>Proposed disposition</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">viviefs:changeset</code></td><td><b>Keep ours</b>, with its place in the shape recorded: the changeset is the step, not <code class="cr-inline">State'</code>; the log after accept is <code class="cr-inline">State'</code>; read models are its views (reading C). The formula's names are map 3's.</td></tr>
+      <tr><td><code class="cr-inline">vivief:fractal-factory</code></td><td><b>Adopt, narrowed, as a lens</b>: <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a>'s loop recurs at every level, each turn leaving kept facts or files the next reads, ordered by time constant (hot, warm, cold). Not adopted: datoms as the substrate for development artifacts (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129</a>), and "velocity compounds" as a claim; whether agents build faster from the guides is map 4's evidence question.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="deferred">
+  <h2 class="text-2xl font-bold">6. Deferred issues: I30 and I33</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Issue</th><th>Trigger today</th><th>Proposed comment (if the line above holds)</th></tr></thead>
+    <tbody>
+      <tr><td><a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30 Ideas batch: glossary entries written as effects</a></td><td><code class="cr-inline">Decide when:</code> I56, then map 3</td><td>I56 decided where the shape is foundation: the data level (decide, accept, evolve; activities). An effect form fits the terms that are steps over kept state (Command, Accept, Projector, Workflow, Activity, IntentComposer), not reads or things (Datom, Read model, Gate). Its other sketch, "super high", is the lens, not a handler. <code class="cr-inline">State'</code> is the log after accept. Trigger narrowed to: map 3, the formula's names.</td></tr>
+      <tr><td><a class="cr-link" href="../issues/0033-ideas-batch-abstractions-that-constrain-agents.md">I33 Ideas batch: abstractions that constrain agents</a></td><td><code class="cr-inline">Decide when:</code> I56, then map 3</td><td>I56 gives the shape no role in the problem-to-conclusion statement: that statement is <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a>'s loop at the decision level, a lens. What constrains an agent at the data level is the decide/evolve split (a command cannot write, a projector cannot decide). Trigger narrowed to: map 3 ("abstraction" or "pattern"); "where can an agent still write bad code that passes" goes with map 4.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-8" id="questions">
+  <h2 class="text-2xl font-bold">7. Questions, round 1</h2>
+  <p>Three questions with no prerequisite. What the shape becomes in the glossary, what <a class="cr-link" href="../issues/0051-actors-or-the-engine.md">I51 Actors or the engine</a> inherits, and the I30 and I33 comments hang off Q1 and come in round 2.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 sweet spot')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q1 - Is the shape a foundation concept, and where?</h3>
+      <p>Section 2 found clean fits where the state is kept as data and the code is deterministic, a stretch at <code class="cr-inline">verify</code>, and only renaming above that.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: foundation at the data level (decide, accept, evolve; workflow over its journal; activities the only door to the world; failure as data), recorded in ADR-0032 with P05, P06, P09; reads and pure helpers are not handlers; above the code it is a lens (D98's loop), not a concept" checked><span><b>A (recommended).</b> Foundation at the data level: decide, accept, evolve; a workflow over its journal; activities as the only door to the world; failure as data. Recorded in ADR-0032, shown by P05, P06 and P09. Reads and pure helpers are not handlers. Above the code it is a lens, D98's loop.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: foundation at every level: ADR-0032 names one shape for everything, from a command to an app improving a part"><span><b>B.</b> Foundation at every level: ADR-0032 names one shape for everything, a command to an app. Elegant, but a "foundation concept" must cite a gate, and nothing can show a guide or a session is a function.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="C: a lens only, everywhere: no foundation concept; D36, D37, D2 and D99 already say it at the data level"><span><b>C.</b> A lens only, everywhere. D36', D37, D2 and D99 already say each part; nothing new is recorded. Least to write, but the newcomer never sees the three as one idea.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 changeset')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q2 - <code class="cr-inline">viviefs:changeset</code>: which reading?</h3>
+      <p>Section 4 traced one changeset through decide, accept and evolve.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="C: the changeset is the step; the log after accept is State'; read models are its views (derived, D99); keep ours" checked><span><b>C (recommended).</b> The changeset is the step; the log after accept is <code class="cr-inline">State'</code>; read models are its views. Disposition: keep ours, with this reading recorded.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: State' is the read model after projection"><span><b>B.</b> <code class="cr-inline">State'</code> is the read model after projection: what a command reads next.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: the changeset is State'"><span><b>A.</b> The changeset is <code class="cr-inline">State'</code>.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 fractal factory')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q3 - <code class="cr-inline">vivief:fractal-factory</code>: the same loop at every scale?</h3>
+      <p>Section 3 drew D98's loop at five levels with what each turn leaves for the next.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: adopt narrowed, as a lens: D98 amended (D98') to say the loop recurs at every level, each turn leaving kept facts or files the next reads, ordered by time constant (hot, warm, cold); datoms as the substrate for development artifacts and velocity compounding not adopted; agents building faster from guides is map 4's evidence question" checked><span><b>A (recommended).</b> Adopt, narrowed, as a lens: D98 amended to say the loop recurs at every level, each turn leaving kept facts or files the next reads, ordered by time constant. Not adopted: datoms as the substrate for development artifacts, and "velocity compounds" as a claim (map 4's evidence question).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: keep D98 as it is; reject the fractal claim"><span><b>B.</b> Keep D98 as it is (it already names a gate and a guide as turns); reject the fractal claim.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="C: defer to map 4 (evidence) or map 6 (agents), Decide when: an agent builds a pattern from the guides"><span><b>C.</b> Defer to map 4 or map 6, <code class="cr-inline">Decide when:</code> an agent builds a pattern from the guides and we can measure the compounding.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+</script>
+</body>
+</html>
