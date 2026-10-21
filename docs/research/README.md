@@ -11,9 +11,10 @@ skill writes its Markdown findings here. The docs site renders Markdown
 records as pages, including a subfolder, and serves HTML records as they are.
 
 [XDevl](XDevl/README.md) is the first living area. Its pages change as the
-account is maintained. Every dated file in the table below, and every file
-in `XDevl/snapshots/`, stays as written. The living pages are research
-records too: a guide's claim still comes from a gate.
+account is maintained. It keeps no glossary and no grill log of its own
+([D136 Issue and Area defined](../plan/bootstrap/02-decision-log.md#d136)). Every dated file in the table below,
+and every file in `XDevl/snapshots/`, stays as written. The living pages are
+research records too: a guide's claim still comes from a gate.
 
 | Record | What it is |
 | --- | --- |

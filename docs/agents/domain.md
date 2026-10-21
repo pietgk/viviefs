@@ -16,6 +16,13 @@ context: one glossary and one ADR directory at the root.
 
 - A grilling records its answers in the decision log first, numbered on from the
   last `D`. An ADR follows when the decision is architectural.
+- Questions still open when a session ends go into one issue for that session
+  (`Category: question`, `Status: ready-for-human`). The next session answers
+  them as decision-log rows and resolves the issue with links. An area keeps
+  living docs and dated records, and links up to this log for decisions and to
+  the glossary for vocabulary
+  ([D135 Grill outcomes in the decision log](../plan/bootstrap/02-decision-log.md#d135),
+  [D136 Issue and Area defined](../plan/bootstrap/02-decision-log.md#d136)).
 - ADRs use this repo's template, not a one-paragraph ADR: `Status`, `Date`,
   `Qualifying gate`, `Related`, then Problem, Design, Trade-offs,
   Failure-handling, Outcome (expected vs observed). Every ADR starts as

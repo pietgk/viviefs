@@ -14,13 +14,13 @@
 </head>
 <body>
 <main>
-<header><div class="eyebrow">XDevl · A small map around one idea</div><h1>One idea in the middle.<br>Its connections around it.</h1><p class="lead">The same regions as the <a href="https://htmlpreview.github.io/?https://github.com/pietgk/viviefs/blob/main/docs/research/2026-10-06-k-plex-explained.html">K-Plex explainer</a>: parent and children group, siblings share that parent, and previous and next are a sequence. This map reads <a href="https://github.com/pietgk/viviefs/blob/cursor/xdevl-living-research-2a01/docs/research/XDevl/README.md">our way</a>. It is a proposal for the first grill session.</p></header>
-<div class="toolbar"><div class="toggle" role="group" aria-label="Example"><button type="button" data-example="loop" aria-pressed="true">The loop</button><button type="button" data-example="roles" aria-pressed="false">The three roles</button></div><span class="subtle">Proposed reading, waiting on the first grill</span></div>
+<header><div class="eyebrow">XDevl · A small map around one idea</div><h1>One idea in the middle.<br>Its connections around it.</h1><p class="lead">The same regions as the <a href="https://htmlpreview.github.io/?https://github.com/pietgk/viviefs/blob/main/docs/research/2026-10-06-k-plex-explained.html">K-Plex explainer</a>: parent and children group, siblings share that parent, and previous and next are a sequence. This map reads <a href="https://github.com/pietgk/viviefs/blob/cursor/xdevl-living-research-2a01/docs/research/XDevl/README.md">our way</a>. The first grill session left this reading in place. Whether App creation, Pattern and Guide belong on it is still open.</p></header>
+<div class="toolbar"><div class="toggle" role="group" aria-label="Example"><button type="button" data-example="loop" aria-pressed="true">The loop</button><button type="button" data-example="roles" aria-pressed="false">The three roles</button></div><span class="subtle">Reading left in place by the first grill</span></div>
 <div class="roles" role="group" aria-label="Highlight a relationship"><button type="button" data-role="all" aria-pressed="true">See everything</button><button type="button" data-role="parent" aria-pressed="false">Parent</button><button type="button" data-role="children" aria-pressed="false">Children</button><button type="button" data-role="previous" aria-pressed="false">Previous</button><button type="button" data-role="next" aria-pressed="false">Next</button><button type="button" data-role="siblings" aria-pressed="false">Siblings</button></div>
 <div class="board" aria-label="Relationships around Grill session">
 <svg class="wires" aria-hidden="true"><defs><marker id="seq-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 1 L 8 5 L 0 9" style="stroke:var(--order);fill:none;stroke-width:1.5"/></marker></defs><g id="paths"></g></svg>
 <div class="region parent" data-region="parent"><div class="region-label">Parent</div><div class="region-question">What does this belong to?</div><div class="tile" id="parent-title">Our way</div></div>
-<div class="region previous sequence-region" data-region="previous"><div class="region-label">Previous</div><div class="region-question">What comes before?</div><div class="tile" id="previous-title">Insight</div></div>
+<div class="region previous sequence-region" data-region="previous"><div class="region-label">Previous</div><div class="region-question">What comes before?</div><div class="tile" id="previous-title">Finding</div></div>
 <div class="region focus"><div class="region-label">You are looking at</div><div class="tile" id="focus-title">Grill session</div></div>
 <div class="region next sequence-region" data-region="next"><div class="region-label">Next</div><div class="region-question">What comes after?</div><div class="tile" id="next-title">Promotion</div></div>
 <div class="region children" data-region="children"><div class="region-label">Children</div><div class="region-question">What are the smaller parts?</div><div class="child-tiles" id="child-tiles"></div></div>
@@ -28,18 +28,18 @@
 </div>
 <div class="explanation" aria-live="polite" aria-atomic="true"><div><h3 id="explain-title">Grouping and order</h3><p class="question" id="explain-question">Two kinds of connection on one map.</p></div><p id="explain-body"></p></div>
 <p class="small-note">Solid lines = grouping. Dashed arrows = sequence. Siblings connect through a shared parent.</p>
-<section class="facts" aria-label="Three useful things to remember"><article><h3>A sibling is a peer.</h3><p id="fact-sibling"></p></article><article><h3>Order is a separate connection.</h3><p id="fact-order">Previous and next mean before and after in a chosen sequence. A node can be both a sibling and the previous step. Insight is that node in the loop example.</p></article><article><h3>The middle is the viewpoint.</h3><p>In K-Plex, choosing a node makes it the center. These two examples are two viewpoints. The underlying terms stay the ones in the glossary.</p></article></section>
-<footer><span>Placement follows <a href="https://github.com/zsviczian/kplex#why-k-plex">K-Plex's documented relationship regions</a>, in the same simplified form as the 2026-10-06 explainer.</span><span>Words are the <a href="https://github.com/pietgk/viviefs/blob/cursor/xdevl-living-research-2a01/docs/research/XDevl/GLOSSARY.md">XDevl glossary</a>. App creation, Pattern and Guide stay in the repository glossary and are not drawn here.</span></footer>
+<section class="facts" aria-label="Three useful things to remember"><article><h3>A sibling is a peer.</h3><p id="fact-sibling"></p></article><article><h3>Order is a separate connection.</h3><p id="fact-order">Previous and next mean before and after in a chosen sequence. A node can be both a sibling and the previous step. Finding is that node in the loop example.</p></article><article><h3>The middle is the viewpoint.</h3><p>In K-Plex, choosing a node makes it the center. These two examples are two viewpoints. The underlying terms stay the ones in the glossary.</p></article></section>
+<footer><span>Placement follows <a href="https://github.com/zsviczian/kplex#why-k-plex">K-Plex's documented relationship regions</a>, in the same simplified form as the 2026-10-06 explainer.</span><span>Words are the <a href="https://github.com/pietgk/viviefs/blob/cursor/xdevl-living-research-2a01/GLOSSARY.md">repository glossary</a>. This area keeps no vocabulary of its own. App creation, Pattern and Guide are not drawn here.</span></footer>
 </main>
 <script>
 const examples={
   loop:{
     focus:'Grill session',
     parent:'Our way',
-    previous:'Insight',
+    previous:'Finding',
     next:'Promotion',
     children:['Grill outcome','Reason'],
-    siblings:['Stable core','Insight'],
+    siblings:['Stable core','Finding'],
     childKind:'parts of',
     note:'Next is the promote path. Park and reject are on the state diagram in the stable core.'
   },
@@ -100,7 +100,7 @@ function render(){
   document.getElementById('explain-body').innerHTML=bodies[role];
   document.getElementById('fact-sibling').textContent='"'+d.focus+'" and "'+d.siblings[0]+'" both belong to "'+d.parent+'". Neither contains the other. Sharing that parent makes them siblings.';
   document.getElementById('fact-order').textContent=example==='loop'
-    ?'Insight is a sibling of Grill session, because both belong to Our way, and it is also the previous step. Promotion is next only on the promote path.'
+    ?'Finding is a sibling of Grill session, because both belong to Our way, and it is also the previous step. Promotion is next only on the promote path.'
     :'Human is a sibling of LLM, because both belong to Our way, and Human is also the previous step in one task. System is next: it runs the check.';
   requestAnimationFrame(draw);
 }

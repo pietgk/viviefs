@@ -15,7 +15,9 @@ issue id like `I1` anywhere in the docs renders as a named link.
   - `Status:` one of `needs-triage`, `needs-info`, `ready-for-agent`,
     `ready-for-human`, `wontfix` (the triage roles,
     [triage labels](../agents/triage-labels.md)) or `resolved`.
-  - `Category:` `bug` or `enhancement`.
+  - `Category:` `bug`, `enhancement`, or `question`. A `question` is a question
+    for the human, including the questions still open at the end of a grill
+    session ([D135 Grill outcomes in the decision log][D135]).
   - Optional: `Effort:` (the `docs/plan/<effort>/` it belongs to),
     `Blocked by:` (issue ids), `Decide when:` (the trigger for a deferred
     decision), `Found:` (date).
@@ -30,4 +32,5 @@ already names issues of other projects on GitHub.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D135]: ../plan/bootstrap/02-decision-log.md#d135
 [D92]: ../plan/bootstrap/02-decision-log.md#d92

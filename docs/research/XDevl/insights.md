@@ -1,9 +1,12 @@
 # Insights
 
 The inbox. The Research bot appends. It does not edit an entry, and it does
-not edit the stable core. Every entry below is **raw**: no grill session has
-touched it. A session changes the status, in this file, and records the
-outcome in the [grill log](grill-log.md).
+not edit the stable core. The first grill session, on 2026-10-21, recorded
+[D130 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d130) through
+[D136 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d136) and left these entries **raw**. N01-N14
+carry a layer tag from that session
+([D131 Layers as the backbone](../../plan/bootstrap/02-decision-log.md#d131)). Questions still open are
+[I74 XDevl grill: open questions](../../issues/0074-xdevl-grill-open-questions.md).
 
 Statements are copied from the snapshots. A figure is the snapshot's report
 of its source, not a measurement this area ran. `verified` means the
@@ -12,6 +15,7 @@ snapshot's author read that source.
 ## N01
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** release
 - **Statement:** Claude Opus 5.5 (Anthropic, Sep 22 in the snapshot) is $4/$20 per 1M tokens, about 40% cheaper than Opus 5, and Anthropic says it is roughly Fable 5.1 level.
@@ -22,6 +26,7 @@ snapshot's author read that source.
 ## N02
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** release
 - **Statement:** Claude Sonnet 5.5 (about Sep 29-Oct 1) and Claude Haiku 5.5 (Oct 7, $0.10/$0.50 up to 100K tokens, pitched for subagents).
@@ -32,6 +37,7 @@ snapshot's author read that source.
 ## N03
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** release
 - **Statement:** GPT-6 Astra (OpenAI, about Sep 3) is called "best model yet for software engineering", at $10/$50 per posts, which is the snapshot's wording for where the price came from.
@@ -42,6 +48,7 @@ snapshot's author read that source.
 ## N04
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** release
 - **Statement:** GPT-6.1 Sol (about Sep 29) is $2/$10, and cached input is halved.
@@ -52,6 +59,7 @@ snapshot's author read that source.
 ## N05
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** release
 - **Statement:** Gemini 4 Argon (Google, about Oct 1) is for trusted testers only.
@@ -62,6 +70,7 @@ snapshot's author read that source.
 ## N06
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** X chatter
 - **Statement:** Grok 4.7 (Sep 21) comes with the Grok Build coding tool.
@@ -72,6 +81,7 @@ snapshot's author read that source.
 ## N07
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** X chatter
 - **Statement:** Artificial Analysis Coding Agent Index, model in its maker's tool, as the cited post states it: Sonnet 5.5 max in Claude Code 68 ($14.19/task); Opus 5.5 in Claude Code 66; Gemini 4 Argon in Antigravity CLI 64 ($5.84 promo); GPT-6.1 Sol xhigh in Codex 63 ($1.04/task).
@@ -82,6 +92,7 @@ snapshot's author read that source.
 ## N08
 
 - **Status:** raw
+- **Layer:** L3
 - **Date:** 2026-10-08
 - **Evidence label:** unlabelled
 - **Statement:** The snapshot's reading of the tools in that window: terminal tools, editor tools, and open multi-model tools, converging on AGENTS.md.
@@ -92,6 +103,7 @@ snapshot's author read that source.
 ## N09
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** unlabelled
 - **Statement:** The snapshot's overall read: Anthropic 5.5 leads on perceived quality, GPT-6.1 Sol is the value pick, and Gemini 4 Argon is wait-and-see.
@@ -102,6 +114,7 @@ snapshot's author read that source.
 ## N10
 
 - **Status:** raw
+- **Layer:** L0, L4
 - **Date:** 2026-10-08
 - **Evidence label:** X chatter
 - **Statement:** On an impossible-task test of 2 tasks by 12 runs, Opus 5.5 faked passing tests 0/12, Astra 8/12, and GPT-6 Sol 10/12.
@@ -112,6 +125,7 @@ snapshot's author read that source.
 ## N11
 
 - **Status:** raw
+- **Layer:** L0, L4
 - **Date:** 2026-10-08
 - **Evidence label:** X chatter
 - **Statement:** On 105 real bugs in 2 repos, the cited post's scores are Sonnet 5.5 max 55.5, Astra 45, and Opus 5.5 41.7.
@@ -122,6 +136,7 @@ snapshot's author read that source.
 ## N12
 
 - **Status:** raw
+- **Layer:** L0
 - **Date:** 2026-10-08
 - **Evidence label:** X chatter
 - **Statement:** On Merge's 20 real tasks, GLM 5.3 beat Sonnet 5 at about 1/10 the cost.
@@ -132,6 +147,7 @@ snapshot's author read that source.
 ## N13
 
 - **Status:** raw
+- **Layer:** L0, L4
 - **Date:** 2026-10-08
 - **Evidence label:** X chatter
 - **Statement:** Real-SWE, on private codebases, tops out at 38.8% in the cited post.
@@ -142,6 +158,7 @@ snapshot's author read that source.
 ## N14
 
 - **Status:** raw
+- **Layer:** Human, L4
 - **Date:** 2026-10-08
 - **Evidence label:** X chatter
 - **Statement:** On tau-bench realistic requirement simulations, the best result in the cited post is 23.9%.
@@ -306,7 +323,7 @@ snapshot's author read that source.
 - **Evidence label:** verified
 - **Statement:** A glossary entry is a term, a one or two sentence definition, and an Avoid list of synonyms, with no implementation detail. A hard decision goes to an ADR only when it is hard to reverse, surprising, and a real trade-off.
 - **Source:** <https://github.com/mattpocock/skills/blob/main/skills/engineering/domain-modeling/GLOSSARY-FORMAT.md> and the skill file linked from N29.
-- **Would affect:** the shape of [GLOSSARY.md](GLOSSARY.md).
+- **Would affect:** the shape of the [repository glossary](../../../GLOSSARY.md).
 - **Snapshot:** [2026-10-09](snapshots/2026-10-09-glossary-defined-english.md)
 
 ## N31
@@ -366,7 +383,7 @@ snapshot's author read that source.
 - **Evidence label:** unlabelled
 - **Statement:** The snapshot's candidate: separate vocabulary (glossary nouns) from behavior (EARS or Given/When/Then sentences that use those nouns), each convertible to a human-written acceptance test.
 - **Source:** the snapshot's suggestions. No separate measurement is cited.
-- **Would affect:** the split between [GLOSSARY.md](GLOSSARY.md) and the practices on the [stable core](README.md).
+- **Would affect:** the split between the [repository glossary](../../../GLOSSARY.md) and the practices on the [stable core](README.md).
 - **Snapshot:** [2026-10-09](snapshots/2026-10-09-glossary-defined-english.md)
 
 ## N37
@@ -396,7 +413,7 @@ snapshot's author read that source.
 - **Evidence label:** unlabelled
 - **Statement:** The snapshot's candidate: short, human-reviewed glossaries, one per area, referenced once from AGENTS.md.
 - **Source:** the snapshot's suggestions.
-- **Would affect:** [C3](README.md#c3-a-human-reviews-a-glossary-an-llm-wrote) and this area's glossary.
+- **Would affect:** [C3](README.md#c3-a-human-reviews-a-glossary-an-llm-wrote) and the [repository glossary](../../../GLOSSARY.md).
 - **Snapshot:** [2026-10-09](snapshots/2026-10-09-glossary-defined-english.md)
 
 ## N40

@@ -302,24 +302,36 @@ export const parseGlossary = (source: string): ReadonlyArray<GlossaryTerm> =>
  */
 export const EVERYDAY_TERMS = [
   'Accepted',
+  'Area',
   'Command',
   'Deferred',
   'Delivered',
   'Effect',
   'Execution',
   'Feature',
+  'Finding',
   'Frame',
+  'Human',
+  'Issue',
   'Layer',
   'Origin',
+  'Our way',
+  'Park',
+  'Practice',
+  'Promotion',
   'Qualified',
   'Qualify',
+  'Reason',
+  'Reject',
   'Service',
+  'Snapshot',
+  'System',
   'Verify',
   'Worker',
 ]
 
 /** Names that have no plural: "Effects" in "Vision - View - Effects" is not Effect. */
-const PROPER_NOUNS = ['Effect', 'ViViEfs', 'IntentComposer']
+const PROPER_NOUNS = ['Effect', 'ViViEfs', 'IntentComposer', 'XDevl']
 
 /** The forms of a term a page may use: as written, and its plural. */
 export const termForms = (term: string): ReadonlyArray<string> => {
