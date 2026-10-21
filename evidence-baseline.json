@@ -68,7 +68,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-09"
+        "recordedAt": "2026-10-21"
       },
       "ios": {
         "hbcBytes": 5350618,
@@ -130,7 +130,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41594
         },
-        "recordedAt": "2026-10-09"
+        "recordedAt": "2026-10-21"
       }
     }
   },
@@ -648,6 +648,12 @@
         "lines": "238/247",
         "statements": "282/303"
       },
+      "tools/verify/src/hermesc.ts": {
+        "branches": "9/9",
+        "functions": "8/8",
+        "lines": "22/22",
+        "statements": "25/25"
+      },
       "tools/verify/src/lint-scope.ts": {
         "branches": "18/18",
         "functions": "7/7",
@@ -679,10 +685,10 @@
         "statements": "68/68"
       },
       "tools/verify/src/stages.ts": {
-        "branches": "9/11",
-        "functions": "15/15",
-        "lines": "45/46",
-        "statements": "53/54"
+        "branches": "13/15",
+        "functions": "17/17",
+        "lines": "48/49",
+        "statements": "57/58"
       }
     }
   },
@@ -704,5 +710,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "d6d6ae586177524849ef4f640963add81b5b938cdac26e2968780979a1bb83f3"
+  "registryDigest": "b3d2ed287d58cd151a38cca331ae649ba7da6061e0d67908eace53434076d6b0"
 }
