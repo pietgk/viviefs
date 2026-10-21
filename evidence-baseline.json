@@ -2,10 +2,10 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7456060,
-        "jsBytes": 4591362,
+        "hbcBytes": 7456859,
+        "jsBytes": 4591898,
         "packages": {
-          "(unmapped)": 199942,
+          "(unmapped)": 200309,
           "@babel/runtime": 2100,
           "@effect/sql-sqlite-react-native": 2909,
           "@expo/cli": 2348,
@@ -66,15 +66,15 @@
           "workspace:libs/sync/client": 8148,
           "workspace:libs/sync/protocol": 5414,
           "workspace:libs/telemetry": 8968,
-          "workspace:libs/workflow-engine": 41594
+          "workspace:libs/workflow-engine": 41763
         },
         "recordedAt": "2026-10-21"
       },
       "ios": {
-        "hbcBytes": 5350618,
-        "jsBytes": 2497934,
+        "hbcBytes": 5351421,
+        "jsBytes": 2498470,
         "packages": {
-          "(unmapped)": 198251,
+          "(unmapped)": 198618,
           "@babel/runtime": 2100,
           "@effect/sql-sqlite-react-native": 2909,
           "@expo/cli": 2348,
@@ -128,7 +128,7 @@
           "workspace:libs/sync/client": 8148,
           "workspace:libs/sync/protocol": 5414,
           "workspace:libs/telemetry": 8968,
-          "workspace:libs/workflow-engine": 41594
+          "workspace:libs/workflow-engine": 41763
         },
         "recordedAt": "2026-10-21"
       }
@@ -173,10 +173,10 @@
         "statements": "10/10"
       },
       "libs/workflow-engine/src/engine.ts": {
-        "branches": "123/156",
+        "branches": "118/151",
         "functions": "54/57",
-        "lines": "247/262",
-        "statements": "267/294"
+        "lines": "245/260",
+        "statements": "265/292"
       },
       "libs/workflow-engine/src/sweep.ts": {
         "branches": "0/0",
@@ -504,6 +504,12 @@
         "lines": "29/29",
         "statements": "33/35"
       },
+      "libs/workflow-engine/src/awaited.ts": {
+        "branches": "5/5",
+        "functions": "1/1",
+        "lines": "2/2",
+        "statements": "2/2"
+      },
       "libs/workflow-engine/src/journal.ts": {
         "branches": "4/4",
         "functions": "14/15",
@@ -710,5 +716,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "b3d2ed287d58cd151a38cca331ae649ba7da6061e0d67908eace53434076d6b0"
+  "registryDigest": "d23677e04ed0c2bab9c725c99aa2a16a66ed914fad2a7bcf1cc97ac5723fcee7"
 }
