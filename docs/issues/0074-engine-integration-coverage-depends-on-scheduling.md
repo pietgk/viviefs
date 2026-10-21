@@ -1,6 +1,6 @@
 # I74: The engine's integration coverage depends on scheduling
 
-Status: needs-triage
+Status: resolved
 
 Category: bug
 
@@ -62,6 +62,18 @@ some other interrupt must cause. In the same attempt, `execute` (not discard)
 on a workflow waiting on a deferred that is never completed did not return
 within 8 seconds, on sqlite-node; whether that is intended is a question for
 the engine's contract.
+
+2026-10-21: Resolved by moving the decision into a unit-tested function
+(`awaitedExit` in `libs/workflow-engine/src/awaited.ts`, pietgk/viviefs PR 4).
+Tracing found the race: only the lease-handoff check reached the branch. Its
+durable clock fires while `execute` retries the suspended run every 20 ms, and
+when Effect's `deferredDone` preempts a run after `Workflow.intoResult` has
+decided `Suspended`, the interrupt lands at the run's next interruptible step,
+so the run exits interrupted. Effect 4 reports that exit even for an
+uninterruptible run, so the handling stays; only where it is tested changes.
+`engine.ts` was the same in 8 of 8 integration runs, and `verify all` went
+green on the arm64 sandbox. The first candidate above was tried and dropped:
+a self-suspending workflow never reaches the branch.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
