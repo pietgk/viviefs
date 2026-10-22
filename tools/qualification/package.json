@@ -27,7 +27,7 @@
     "@viviefs/telemetry": "workspace:*",
     "@viviefs/testing": "workspace:*",
     "@viviefs/workflow-engine": "workspace:*",
-    "agent-device": "0.21.6",
+    "agent-device": "0.21.30",
     "effect": "4.0.5",
     "playwright": "1.55.1",
     "vite": "8.3.4",
