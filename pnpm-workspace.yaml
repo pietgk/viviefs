@@ -57,6 +57,15 @@ overrides:
   # GHSA-q3jh-wrc6-jgq8 and GHSA-8r9p-f939-6h3c (high, found 2026-10-21): axios 1.20.0,
   # through nx, resolved follow-redirects 1.16.0; patched from 1.16.1.
   'follow-redirects@1': 1.16.1
+  # GHSA-cg2g-xh64-v4q7 (critical) and GHSA-mrv2-3pqr-j5jr (high, found 2026-10-22):
+  # mermaid, which builds the docs site's diagrams, resolved dompurify 3.4.16;
+  # patched from 3.4.17.
+  'dompurify@3': 3.4.17
+  # GHSA-4qx8-w7c3-pj3p, GHSA-9j65-hcg3-gc64 and GHSA-9qmh-m7c6-f92p (high, found
+  # 2026-10-22): effect-solutions' effect 4.0.0-beta.59 uses toml 4.3.0 to parse CLI
+  # files; patched only in 5.0.1, whose one change is that an integer beyond
+  # Number.MAX_SAFE_INTEGER throws instead of losing precision.
+  'toml@4': 5.0.1
   '@op-engineering/op-sqlite': 18.2.5
   # One copy of each native Expo module: expo-auth-session's ranges would
   # otherwise pull newer patch releases next to the ones expo 58 bundles.
