@@ -7,7 +7,7 @@ one is posted or fixed, and drop the workaround in the same change as the fix.
 | Draft | Where | Status |
 | --- | --- | --- |
 | [1](#1-sqlite-wasm-client-waits-forever-when-its-worker-fails-before-it-is-ready) | new issue on `Effect-TS/effect` | not posted |
-| [2](#2-comment-on-effect-ts-effect-6347) | comment on [#6347](https://github.com/Effect-TS/effect/issues/6347) (open; transferred out and back on 2026-07-14) | not posted |
+| [2](#2-comment-on-effect-ts-effect-6347) | comment on [#6347](https://github.com/Effect-TS/effect/issues/6347) (closed 2026-10-21 by [#9157](https://github.com/Effect-TS/effect/pull/9157) on `v4/next-minor`; not in 4.0.5) | not needed: drop the Babel stub when an Effect release with #9157 is pinned |
 
 ## 1. sqlite-wasm client waits forever when its worker fails before it is ready
 
@@ -15,7 +15,7 @@ one is posted or fixed, and drop the workaround in the same change as the fix.
 
 **Body:**
 
-Version: `effect` and `@effect/sql-sqlite-wasm` 4.0.2 (first seen in 4.0.0; rechecked against the `effect@4.0.2` tag on 2026-10-09).
+Version: `effect` and `@effect/sql-sqlite-wasm` 4.0.5 (first seen in 4.0.0; rechecked against the `effect@4.0.5` tag on 2026-10-22).
 
 If the OPFS worker fails before it posts `["ready"]`, building the `SqliteClient` layer never completes and
 never fails. We hit it in a browser with a database name longer than wa-sqlite's 64-character path limit
