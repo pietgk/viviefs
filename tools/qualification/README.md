@@ -113,6 +113,13 @@ Learned in P11 and in the sequential runs since (2026-09-28 to 2026-10-01).
 - **Chrome on the emulator**: first-run screens, and web accessibility switched
   off after a quiet spell. `prepareAndroidChrome()` in `devices.ts` sets test
   flags (debug app plus `/data/local/tmp/chrome-command-line`).
+- **After reinstalling the app** (a fresh development build), the first
+  sequential run of 2026-10-22 failed P11 on iOS: every `agent-device snapshot` failed for
+  90 s while Keycloak's sheet was on screen ("the login page did not show: "
+  with an empty tree). `agent-device daemon stop` and a rerun passed, so a
+  daemon that outlived the reinstall is the likely cause, not proven. Old
+  replay daemons from earlier runs (each with its own temporary state
+  directory) can also linger; they held no device claims.
 - **A new development build** greets its first launch with a sheet
   ("Continue") that opens the developer menu; the runner dismisses both.
 - **P07's notification tap** misses on iOS and Android; the relaunch fallback

@@ -4,7 +4,7 @@ Summary: Expo SDK 58 on React Native 0.88 and Hermes from day one, pinned, with 
 
 Status: Qualified
 
-Date: 2026-09-20
+Date: 2026-09-20. Amended 2026-10-22 (SDK 58 stable: the pin moved off the beta).
 
 Qualifying gate: [P01 Platform on SDK 58][P01]
 
@@ -62,7 +62,28 @@ minimum deployment target: this run used Xcode 26.6 and an iOS 26.5
 simulator. Evidence: [2026-09-20-p01.md](../evidence/2026-09-20-p01.md).
 Qualified 2026-09-22 from that record. Not Accepted.
 
+2026-10-22: SDK 58 stable (released 2026-10-15). `expo` 58.0.17,
+`react-native` 0.88.0, `react` and `react-dom` 19.3.0, and every Expo module at
+the version `expo` 58.0.17 bundles; `npx expo install --check` and expo-doctor
+are clean. Doctor's findings were fixed: `newArchEnabled` left `app.json` (the
+schema rejects it; the New Architecture is the only one), Metro's
+`unstable_enableSymlinks` left `metro.config.js` (Metro 0.87 no longer reads
+it), and the workspace root pins `@babel/core` 7.29.7 so op-sqlite and
+React Native resolve to one copy each. A fresh development build on both
+devices: `expo prebuild --clean` now writes `SceneDelegate.swift` and the scene
+manifest (the iOS 27 life cycle), built with Xcode 26.6 for the iOS 26.5
+simulator, so building SDK 58 still does not need Xcode 27. The first
+sequential run failed [P11 Identity][P11] on iOS only: agent-device could not read the sign-in sheet
+the app had presented, after the reinstall, with stale daemons on the Mac;
+with its daemon restarted [P11][P11] passed alone, and then
+[P01 Platform on SDK 58][P01]-[P11][P11] passed in one sequential run on `2a56b18c0`, run `2026-10-22T15-07-32.252Z-5378fb60`.
+The Hermes bundles grew by about 170 KB (iOS 5.52 MB, Android 7.63 MB): Effect
+4.0.5, React Native 0.88.0, and development tooling Expo 58 now ships in a
+production export ([I75 Expo 58's production bundle carries its development tooling][I75]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D22]: ../plan/bootstrap/02-decision-log.md#d22
+[I75]: ../issues/0075-expo-58-production-bundle-carries-dev-tooling.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11

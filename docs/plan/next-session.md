@@ -20,9 +20,12 @@
 - **The Schedule's next step is still the app shell** ([P12 UI on every platform][P12], [P13 Links and routing][P13]). The log-store
   guide is built as a draft; the human judged it not yet good enough to accept
   ([I34 vivief as the source of ViViEfs's concepts][I34]), and accepting a pattern is map 4's.
-- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `1a5175fa2`
-  (2026-10-02). Phase 3 below changes gate inputs and closes with a sequential
-  run.
+- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `2a56b18c0`
+  (2026-10-22, Expo SDK 58 stable and Effect 4.0.5, from fresh development
+  builds; [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]). Phase 3 below changes gate inputs and closes with a
+  sequential run. The next change that reruns the gates also drops the
+  `minimumReleaseAgeExclude` entries pnpm added for the `expo` 58.0.17 set
+  (no-ops once a day old, but the workspace file is a gate input).
 - **Found while deciding [I50 Contracts checked as data or by commands][I50]**: the server never re-executes a command, so a
   crafted changeset with a blank list title is accepted today ([I69 Accept checks every change][I69]).
 
@@ -57,11 +60,13 @@ An issue not named here is parked until its `Decide when:` fires.
 - The ledger's input fingerprint includes the lockfile, workspace, `nx.json`,
   `tsconfig*.json`, `eslint.config.js`, `tools/qualification` and most of
   `libs/`, `apps/evidence-*` and `features/evidence/*` (Markdown excluded).
-- Upstream on 2026-10-09: Expo 58 is on `next` (58.0.6), Storybook 11 is
-  `11.0.0-alpha.4`, Effect 4.0.2 is `latest`; Effect-TS/effect#6347 is open.
+- Upstream on 2026-10-22: Expo SDK 58 is stable (`expo` 58.0.17 pinned) on
+  React Native 0.88.0; Effect 4.0.5 is `latest` and pinned; Effect-TS/effect#6347
+  is fixed on `v4/next-minor` (Effect-TS/effect#9157), not yet released.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0004]: ../adr/0004-expo-sdk-58-platform-baseline.md
 [ADR-0032]: ../adr/0032-what-viviefs-is-about.md
 [ADR-0033]: ../adr/0033-the-presenter-pattern.md
 [ADR-0034]: ../adr/0034-origin-trust.md
