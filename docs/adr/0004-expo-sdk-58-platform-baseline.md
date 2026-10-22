@@ -73,10 +73,13 @@ React Native resolve to one copy each. A fresh development build on both
 devices: `expo prebuild --clean` now writes `SceneDelegate.swift` and the scene
 manifest (the iOS 27 life cycle), built with Xcode 26.6 for the iOS 26.5
 simulator, so building SDK 58 still does not need Xcode 27. The first
-sequential run failed [P11 Identity][P11] on iOS only: agent-device could not read the sign-in sheet
-the app had presented, after the reinstall, with stale daemons on the Mac;
-with its daemon restarted [P11][P11] passed alone, and then
+sequential run failed [P11 Identity][P11] on iOS only: the app presented Keycloak's sheet, and
+agent-device could not read it; [P11][P11] then passed alone, and
 [P01 Platform on SDK 58][P01]-[P11][P11] passed in one sequential run on `2a56b18c0`, run `2026-10-22T15-07-32.252Z-5378fb60`.
+The same failure came back after the audit fixes: agent-device 0.21.6 refused
+every snapshot of the sheet ("requires a valid viewport"), a runner bug fixed
+upstream, so the lab moved to agent-device 0.21.30 (callstack/agent-device#2938). [P01][P01]-[P11][P11] then passed in one sequential run on `3a5dc1a57`,
+run `2026-10-22T19-57-19.763Z-1f994378`, and [P11][P11] passed alone twice more on it.
 The Hermes bundles grew by about 170 KB (iOS 5.52 MB, Android 7.63 MB): Effect
 4.0.5, React Native 0.88.0, and development tooling Expo 58 now ships in a
 production export ([I75 Expo 58's production bundle carries its development tooling][I75]).

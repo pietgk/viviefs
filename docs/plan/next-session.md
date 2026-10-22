@@ -20,12 +20,11 @@
 - **The Schedule's next step is still the app shell** ([P12 UI on every platform][P12], [P13 Links and routing][P13]). The log-store
   guide is built as a draft; the human judged it not yet good enough to accept
   ([I34 vivief as the source of ViViEfs's concepts][I34]), and accepting a pattern is map 4's.
-- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `2a56b18c0`
-  (2026-10-22, Expo SDK 58 stable and Effect 4.0.5, from fresh development
-  builds; [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]). Phase 3 below changes gate inputs and closes with a
-  sequential run. The next change that reruns the gates also drops the
-  `minimumReleaseAgeExclude` entries pnpm added for the `expo` 58.0.17 set
-  (no-ops once a day old, but the workspace file is a gate input).
+- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `3a5dc1a57`
+  (2026-10-22, run `2026-10-22T19-57-19.763Z-1f994378`: Expo SDK 58 stable,
+  Effect 4.0.5 and agent-device 0.21.30, from fresh development builds;
+  [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]). Phase 3 below changes gate inputs and closes with a
+  sequential run.
 - **Found while deciding [I50 Contracts checked as data or by commands][I50]**: the server never re-executes a command, so a
   crafted changeset with a blank list title is accepted today ([I69 Accept checks every change][I69]).
 
