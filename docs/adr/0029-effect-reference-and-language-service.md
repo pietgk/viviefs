@@ -29,6 +29,9 @@ TypeScript 7, which this repo dual-pinned in [ADR-0028 TypeScript 7 CLI with Typ
   reference is the code the apps run. Read-only reference. Application code
   still imports `effect` and `@effect/*` from pnpm. Move both in one change:
   `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git effect@<version> --squash`.
+  The subtree is the whole tag, nothing filtered, nested `.github` included
+  (inert: GitHub reads only the root one); the root `.gitattributes` marks
+  `repos/**` vendored and generated, so pull requests collapse its diff.
 - Pin `@effect/tsgo` exactly. `prepare` runs
   `effect-tsgo patch --typescript --typescript-package @typescript/native`
   so CLI `tsc` (TypeScript 7) emits Effect diagnostics. Do not patch the

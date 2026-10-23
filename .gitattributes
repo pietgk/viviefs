@@ -1,0 +1,5 @@
+# Vendored git subtrees (ADR-0029): GitHub collapses their diffs in pull
+# requests and leaves them out of language statistics. The subtree stays an
+# exact copy of the release tag, nested .github included (GitHub reads only the
+# root .github).
+repos/** linguist-vendored linguist-generated
