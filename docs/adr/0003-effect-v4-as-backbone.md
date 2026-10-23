@@ -4,7 +4,7 @@ Summary: Effect v4 is the backbone everywhere, one exactly pinned version for ef
 
 Status: Qualified
 
-Date: 2026-09-20. Amended 2026-10-09 (Effect 4.0.2, the pin moved). Amended 2026-10-02 (Effect 4.0.0): pin the stable release, the
+Date: 2026-09-20. Amended 2026-10-22 (Effect 4.0.5, the pin moved; the engine ignores a repeated deferred completion). Amended 2026-10-09 (Effect 4.0.2, the pin moved). Amended 2026-10-02 (Effect 4.0.0): pin the stable release, the
 `unstable` segment left the import paths, and the language service's
 `unstableApiUsage` rule is off.
 
@@ -25,7 +25,7 @@ boundary let agents slop past them. Effect v3 is the line being replaced; its
 
 Effect is the backbone everywhere: services and Layers are the ports, Schema at
 every boundary (including SQLite rows), typed errors, HttpApi and RPC contracts
-shared with the client. Pin `effect` exactly (`4.0.2` since 2026-10-09; `4.0.0` was the first stable v4); every
+shared with the client. Pin `effect` exactly (`4.0.5` since 2026-10-22; `4.0.0` was the first stable v4); every
 `@effect/*` package is at the same version (they release together).
 
 Greenfield started on the v4 RC, not v3. Public interfaces only. Workflows use
@@ -88,11 +88,30 @@ prefix and drew every call as staying on the device; it now tells them by kind
 and `rpc.system.name`, and draws the recorded picture again. The app bundles
 grew by about 7 KB of Effect code. `mise exec -- pnpm verify` was green.
 
+2026-10-22: Effect 4.0.5, every `effect` and `@effect/*` pin moved in one
+change, with `repos/effect` pulled from the `effect@4.0.5` tag. The trade-off
+above held in a patch release: 4.0.3-4.0.5 changed the `effect/workflow`
+internals the datom engine mirrors (deferred waits counted per run, a wake that
+preempts a run), and on PGlite the engine then replayed for ever: on each replay
+`scheduleClock` re-fired the clock that was already due, `completeDeferred` woke
+the run although the deferred was already recorded, and the wake preempted the
+replay that had just read the stored exit. The crash matrix and both tracing
+suites timed out. A repeated completion now writes nothing and wakes nothing,
+as in Effect's own engine; a run whose wake was lost to a crash is still
+resumed by the launch sweep. 4.0.5 also takes `WorkflowInstance.initial`'s
+scope as an options object. The engine's integration coverage then depended on
+scheduling again ([I74 The engine's integration coverage depends on scheduling][I74]); a test now reaches `resume` of a finished run on purpose.
+The bundles grew by about 33 KB of Effect code. [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed
+in one sequential run on `2a56b18c0`, run `2026-10-22T15-07-32.252Z-5378fb60`, with Expo SDK 58 stable
+([ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0004]: 0004-expo-sdk-58-platform-baseline.md
 [ADR-0029]: 0029-effect-reference-and-language-service.md
 [D8]: ../plan/bootstrap/02-decision-log.md#d8
 [D9]: ../plan/bootstrap/02-decision-log.md#d9
+[I74]: ../issues/0074-engine-integration-coverage-depends-on-scheduling.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P07]: ../plan/bootstrap/06-qualification-gates.md#p07
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11

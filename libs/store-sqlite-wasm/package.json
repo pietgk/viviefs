@@ -14,9 +14,9 @@
     }
   },
   "dependencies": {
-    "@effect/sql-sqlite-wasm": "4.0.2",
+    "@effect/sql-sqlite-wasm": "4.0.5",
     "@effect/wa-sqlite": "0.1.2",
     "@viviefs/datom": "workspace:*",
-    "effect": "4.0.2"
+    "effect": "4.0.5"
   }
 }

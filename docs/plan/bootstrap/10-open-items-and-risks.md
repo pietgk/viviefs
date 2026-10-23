@@ -85,7 +85,6 @@ as `Pnn.k`, other work by name.
 | 2, App shell | [P12 UI on every platform][P12] UI on every platform, [P13 Links and routing][P13] Links and routing | One grilling for both, design review, gates; closed by one sequential run. [P08 UI three-way prototype][P08] re-runs on the rewritten IntentComposer view ([D72 UI on every platform][D72], [D73 Links and routing][D73]) |
 | 3 | [P14 Quarantine after a lost lease][P14] Quarantine after a lost lease | Grilling, design review, gate |
 | 4 | [P15 Encrypted store][P15] Encrypted store, [P16 Crypto-shredding][P16] Crypto-shredding, [P17 Browser engine leader][P17] Browser engine leader | In that order |
-| Any time | Expo SDK 58 stable: `expo` 58 on npm's `latest` tag with a stable `react-native` 0.88 (on 2026-10-08, [I52](../../issues/0052-the-datom-and-its-store.md): `expo` 58.0.6 is on `next` and bundles `react-native` 0.88.0-rc.3; the repo pins `58.0.0-preview.3` and `0.88.0-rc.0`) | Repin as its own change, then a sequential [P01 Platform on SDK 58][P01]-[P11 Identity][P11] run |
 | Any time | Storybook 11 stable | Repin from `11.0.0-alpha.1` as its own change, then the [P12 UI on every platform][P12] run |
 | Before the first consumer app | Identity, keys and trust; one physical-device run; product apps as app pairs ([D55 Exemplar first, product apps later][D55]); the trace projector on devices | As recorded under Deferred decisions |
 
@@ -118,11 +117,10 @@ the docs site. Open questions for the human ([I1 Advisories that fail audit with
 |---|---|---|
 | Effect modules marked `@stability unstable` (workflow, sql, rpc, http, cli, reactivity, observability; under `effect/*` since 4.0) change in minor releases | Breakage on upgrade | Exact version pin; upgrades as their own change with full verify and gate rerun (ledger goes stale on dependency change) |
 | Effect Workflow has no versioning API | In-flight executions break on code changes | Version by workflow name, stable activity names, old versions ship until drained, lint on activity-name changes |
-| Metro Migrator dynamic `import()` (Effect-TS/effect#6347, open; still in 4.0.2 on 2026-10-09) | Build failure when importing SQL modules | Babel stub plugin (`apps/evidence-mobile/babel.config.js`) until upstream fix; comment drafted in [upstream-issues.md](../upstream-issues.md) |
+| Metro Migrator dynamic `import()` (Effect-TS/effect#6347, closed by Effect-TS/effect#9157 on `v4/next-minor`; still in 4.0.5 on 2026-10-22) | Build failure when importing SQL modules | Babel stub plugin (`apps/evidence-mobile/babel.config.js`) until the Effect release with the fix is pinned |
 | Basis checks on long-lived changesets are subtle | Wrong conflict outcomes | Dedicated [P05 Changesets and projections][P05] cases, a lesson and an exercise |
 | Clock skew beyond HLC tolerance on long-offline devices | Wrong LWW winners | Server-side skew detection, flagged in trace; human-conflict policy for important attributes |
 | Scope size: many patterns at once | Slow progress | Gate order, delivery definition, one exemplar |
-| Expo SDK 58 is beta | Instability | Pin beta, move to stable when released (expected October 2026) |
 | Storybook `11.0.0-alpha.1` pinned for Vitest 5 ([D72 UI on every platform][D72]); `@storybook/react-native` needs Reanimated 4.5.1 and friends, unproven on Expo 58 / RN 0.88 | Stories break on upgrade, or do not run on device | Exact pin, all Storybook packages on one version; [P12 UI on every platform][P12] qualifies it on iOS, Android and Chromium; stable as its own change |
 | Evidence owners declared but not run (found 2026-09-29) | A green `verify` that proves less than it claims | Per-file treatments that name the producing `verify` step ([D71 Evidence ownership][D71], [D76 Eleven file treatments][D76]); since 2026-10-01 `evidence` fails an owned file no test reaches and a suite no test runs |
 | Single maintainer projects (motel, effect-machine) | Abandonment | Telemetry sink and interaction state are patterns behind contracts |

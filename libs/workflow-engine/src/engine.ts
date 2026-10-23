@@ -305,20 +305,23 @@ export const engineLayer: Layer.Layer<
           options.deferredName,
         )
         const rows = yield* rowsOf(options.executionId)
-        const exists = rows.some(
-          (row) => row.e === entity && row.a === Attr.deferredExit,
-        )
-        if (!exists) {
-          yield* appendFact(
-            options.executionId,
-            entity,
-            Attr.deferredExit,
-            encodeExit(options.exit),
-            origin === 'caller'
-              ? yield* caller(options.executionId, entity)
-              : origin,
-          )
+        // A deferred completes once. A repeat (a clock re-fired on replay,
+        // a caller retrying) must not wake the run: the wake preempts a
+        // replay that has already read the stored exit, and it replays
+        // into the same repeat forever. A run whose wake was lost to a
+        // crash is resumed by the launch sweep.
+        if (rows.some((row) => row.e === entity && row.a === Attr.deferredExit)) {
+          return
         }
+        yield* appendFact(
+          options.executionId,
+          entity,
+          Attr.deferredExit,
+          encodeExit(options.exit),
+          origin === 'caller'
+            ? yield* caller(options.executionId, entity)
+            : origin,
+        )
         const wake = deferredState
           .deferredDone(options.executionId, options.deferredName)
           .pipe(Effect.andThen(resume(options.executionId)), Effect.orDie)
@@ -429,7 +432,7 @@ export const engineLayer: Layer.Layer<
       const instance = WorkflowEngine.WorkflowInstance.initial(
         entry.workflow,
         exec,
-        state?.instance.scope,
+        { scope: state?.instance.scope },
       )
       if (state?.interrupted) instance.interrupted = true
       state = {

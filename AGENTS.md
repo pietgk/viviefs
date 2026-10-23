@@ -160,7 +160,9 @@ Field-manual topics without a pattern file: `pnpm exec effect-solutions show <to
 - Keep accepted, proposed, implemented and verified distinct. Never mark a gate
   passed from prose.
 - Pin exact versions. `effect` and every `@effect/*` share one version. Expo SDK
-  58 is pinned (beta until stable).
+  58 is pinned (stable since 2026-10-15); Expo's modules, `react`, `react-dom` and
+  `react-native` at the versions its `bundledNativeModules.json` names
+  (`npx expo install --check` agrees).
 - Licence is Apache-2.0. Check licences of everything added. PowerSync service
   (FSL), Inngest server (SSPL) and Restate (BUSL) are not in the plan.
 - Never add an agent as a commit co-author.

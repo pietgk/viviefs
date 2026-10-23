@@ -22,6 +22,8 @@ newest and still pins `effect` 4.0.0-beta.59. A second peer warning,
 
 2026-10-10: The human accepted the warning. Resolved as a deferred issue: the warning stays until a release of `effect-solutions` peers `effect` ^4, the `Decide when:` trigger that reopens this issue to move to that release.
 
+2026-10-22: Unchanged with Effect 4.0.5: `effect-solutions` 0.5.3 is still the newest and still depends on `effect` 4.0.0-beta.59.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [I23]: 0023-effect-machine-on-stable-effect.md

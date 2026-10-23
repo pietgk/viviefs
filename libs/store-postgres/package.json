@@ -14,13 +14,13 @@
     }
   },
   "dependencies": {
-    "@effect/sql-pglite": "4.0.2",
+    "@effect/sql-pglite": "4.0.5",
     "@electric-sql/pglite": "0.5.8",
     "@viviefs/datom": "workspace:*",
-    "effect": "4.0.2"
+    "effect": "4.0.5"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.2",
+    "@effect/vitest": "4.0.5",
     "@viviefs/testing": "workspace:*",
     "vite": "8.3.4",
     "vitest": "5.0.1"
