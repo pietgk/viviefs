@@ -19,6 +19,7 @@ This is the one issue for security advisories that fail verify's audit step (`pn
 | `node-forge` 1.4.0, [GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv), high, found 2026-10-02 | RSA signature verification | `@expo/cli` and `@expo/code-signing-certificates` (development builds, code signing); not in the iOS or Android exports | `node-forge` ships a fix, or `@expo/cli` drops it |
 | `http-cache-semantics` 4.2.0, [GHSA-ch52-4w7c-c8xp](https://github.com/advisories/GHSA-ch52-4w7c-c8xp), high, found 2026-10-03 | A shared cache can give one user another user's cached response | `astro` 7.3.5, which builds the static docs site; not in `apps/docs/dist` | a fixed release, or `astro` drops it |
 | `braces` 3.0.3, [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), high, found 2026-10-03 | Deeply nested braces exhaust the stack and stop the process | `micromatch` 4.0.8 in `metro-file-map`, `@expo/metro-file-map` and `starlight-llms-txt`, build tools that match our own globs; not in the iOS or Android exports | a fixed release, or all three drop it |
+| `zod` 3.25.76, [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5), high, found 2026-10-24 | Validating an oversized constrained collection exhausts memory | `@expo/cli` 58.1.15 (development server, builds and exports), which wants `^3.25.76`; not in the iOS or Android exports | a fixed zod 3 release, or `@expo/cli` drops zod 3 |
 
 ## How an advisory is checked before it is accepted
 
@@ -51,6 +52,14 @@ its only parent, used by `metro-file-map`, `@expo/metro-file-map` and
 `starlight-llms-txt`, and the only "braces" in the mobile exports of
 2026-10-02 is a variable of that name in an inspect helper, not the package.
 The human accepted both; they are rows above and entries in `ignoreGhsas`.
+
+2026-10-24: GHSA-mrhx-c7xc-m3w5 (`zod`, high) failed audit for zod 4.6.5 and
+zod 3.25.76. zod 4 has a fix and is overridden to 4.6.6 in
+`pnpm-workspace.yaml`; zod 3 has none, since 3.25.76 is the newest 3.x. Checked as above:
+`pnpm why -r zod@3` has only `@expo/cli` 58.1.14 as its parent (58.1.15, the
+newest, still wants `^3.25.76`), and the iOS and Android exports in
+`.artifacts/verify/evidence-mobile` contain no `zod`. The human accepted it;
+it is a row above and an entry in `ignoreGhsas`.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
