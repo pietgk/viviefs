@@ -1,4 +1,4 @@
-# I76: P07 leaves agent-device replay daemons running
+# I79: P07 leaves agent-device replay daemons running
 
 Status: resolved
 

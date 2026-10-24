@@ -127,7 +127,7 @@ Learned in P11 and in the sequential runs since (2026-09-28 to 2026-10-01).
   whose script leaves its session active (every P07 flow) keeps that daemon.
   Until 2026-10-24 each P07 run left two (the Android replays), each holding
   a device claim, and its iOS flows never ran
-  ([I76](../../docs/issues/0076-p07-leaves-agent-device-replay-daemons-running.md)).
+  ([I79](../../docs/issues/0079-p07-leaves-agent-device-replay-daemons-running.md)).
   P07 now runs `open`, `replay` and `close` on one state directory of its own
   and stops that daemon (`daemon stop --state-dir`) after it; a stop that
   fails fails the probe and keeps the directory. Count daemons with

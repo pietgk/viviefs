@@ -22,7 +22,7 @@
   ([I34 vivief as the source of ViViEfs's concepts][I34]), and accepting a pattern is map 4's.
 - **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `1b959a7e0`
   (2026-10-24, run `2026-10-24T10-06-05.746Z-b0f98686`: [P07 Device resume E2E][P07] on its own agent-device
-  daemon, [I76 P07 leaves agent-device replay daemons running][I76]; Expo SDK 58 stable, Effect 4.0.5 and agent-device 0.21.30;
+  daemon, [I79 P07 leaves agent-device replay daemons running][I79]; Expo SDK 58 stable, Effect 4.0.5 and agent-device 0.21.30;
   [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]). Phase 3 below changes gate inputs and closes with a
   sequential run.
 - **Found while deciding [I50 Contracts checked as data or by commands][I50]**: the server never re-executes a command, so a
@@ -117,7 +117,7 @@ An issue not named here is parked until its `Decide when:` fires.
 [I71]: ../issues/0071-an-append-can-land-after-a-revocation.md
 [I72]: ../issues/0072-verify-baseline-fails-in-a-fresh-worktree.md
 [I73]: ../issues/0073-table-text-in-the-docs-search-index.md
-[I76]: ../issues/0076-p07-leaves-agent-device-replay-daemons-running.md
+[I79]: ../issues/0079-p07-leaves-agent-device-replay-daemons-running.md
 [I8]: ../issues/0008-engine-scale-out.md
 [P01]: bootstrap/06-qualification-gates.md#p01
 [P06]: bootstrap/06-qualification-gates.md#p06

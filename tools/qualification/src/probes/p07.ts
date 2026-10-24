@@ -106,7 +106,7 @@ const waitPhase = (
   })
 
 // open, replay and close share one daemon, so the replay drives the session
-// open started and its daemon does not outlive the run (I76).
+// open started and its daemon does not outlive the run (I79).
 const replayMaestro = (
   flow: string,
   platform: 'ios' | 'android',

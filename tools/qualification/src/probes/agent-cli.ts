@@ -149,7 +149,7 @@ const stopDaemon = async (
  * is stopped afterwards, whatever `use` did. The default daemon is never
  * touched.
  *
- * For `replay` (I76): without a state directory, a replay starts a private
+ * For `replay` (I79): without a state directory, a replay starts a private
  * daemon that `open` and `close` never reach. The replay then has no app
  * session (on iOS it fails at its first step), and when its script leaves
  * the session active, as every P07 flow does, the daemon outlives the run.
