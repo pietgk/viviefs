@@ -20,8 +20,8 @@
 - **The Schedule's next step is still the app shell** ([P12 UI on every platform][P12], [P13 Links and routing][P13]). The log-store
   guide is built as a draft; the human judged it not yet good enough to accept
   ([I34 vivief as the source of ViViEfs's concepts][I34]), and accepting a pattern is map 4's.
-- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `1b959a7e0`
-  (2026-10-24, run `2026-10-24T10-06-05.746Z-b0f98686`: [P07 Device resume E2E][P07] on its own agent-device
+- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `946846318`
+  (2026-10-24, run `2026-10-24T10-41-01.028Z-5e8b8c21`: [P07 Device resume E2E][P07] on its own agent-device
   daemon, [I79 P07 leaves agent-device replay daemons running][I79]; Expo SDK 58 stable, Effect 4.0.5 and agent-device 0.21.30;
   [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]). Phase 3 below changes gate inputs and closes with a
   sequential run.

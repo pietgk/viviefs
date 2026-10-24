@@ -20,10 +20,11 @@ This is agent-device's documented behaviour, not a bug in it, so the fix is ours
 
 ## Comments
 
-2026-10-24: Resolved by `withOwnAgentDeviceDaemon` in `tools/qualification/src/probes/agent-cli.ts` (commits `4e24b01` and `327d485`): `replayMaestro` runs `open`, `replay` and `close` on a state directory of its own and stops the daemon there with `daemon stop --state-dir`; a stop it cannot confirm fails the probe. [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `1b959a7e0` (run `2026-10-24T10-06-05.746Z-b0f98686`, clean tree). On the Mac, agent-device daemons were 0 before the run and 1 after it, the default daemon in `~/.agent-device`; a sample every 20 s showed each of [P07 Device resume E2E][P07]'s six own daemons alive only during its replay, and no state directory was left. iOS mid-upload and no-sweep now replay all 6 Maestro steps; both mid-wait notification taps still miss, as before, and the fallback completes the deferred.
+2026-10-24: Resolved by `withOwnAgentDeviceDaemon` in `tools/qualification/src/probes/agent-cli.ts` (commits `4e24b01` and `327d485`, whose messages still use its first number, 76): `replayMaestro` runs `open`, `replay` and `close` on a state directory of its own and stops the daemon there with `daemon stop --state-dir`; a stop it cannot confirm fails the probe. [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `946846318` (run `2026-10-24T10-41-01.028Z-5e8b8c21`, clean tree), after the move to [I79 P07 leaves agent-device replay daemons running][I79], which is the number the human's local main had not taken yet (`9468463`); the run before it, on `1b959a7e0`, passed the same way. On the Mac, agent-device daemons were 0 before the run and 1 after it, the default daemon in `~/.agent-device`; a sample every 20 s showed each of [P07 Device resume E2E][P07]'s six own daemons alive only during its replay, and no state directory was left. iOS mid-upload and no-sweep now replay all 6 Maestro steps; both mid-wait notification taps still miss, as before, and the fallback completes the deferred.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[I79]: 0079-p07-leaves-agent-device-replay-daemons-running.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P07]: ../plan/bootstrap/06-qualification-gates.md#p07
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11
