@@ -34,6 +34,14 @@ overrides:
   # files; patched only in 5.0.1, whose one change is that an integer beyond
   # Number.MAX_SAFE_INTEGER throws instead of losing precision.
   'toml@4': 5.0.1
+  # GHSA-mrhx-c7xc-m3w5 (high, found 2026-10-24): zod 4.6.5, through @expo/cli
+  # and astro, can exhaust memory validating oversized constrained collections;
+  # patched from 4.6.6.
+  'zod@4': 4.6.6
+  # GHSA-xjj6-f33q-929c (high, found 2026-10-24): astro's unifont resolved undici
+  # 8.10.2 and 8.11.2, which an excessive content-encoding list crashes;
+  # patched from 8.12.2.
+  'undici@8': 8.12.2
   '@op-engineering/op-sqlite': 18.2.5
   # One copy of each native Expo module: expo-auth-session's ranges would
   # otherwise pull newer patch releases next to the ones expo 58 bundles.
