@@ -10,7 +10,7 @@ Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
 gate that already shows it, or names the gate to come.
 
 Related: [D95 App creation][D95], [D96 Two verifications][D96], [D97 Our languages by type][D97], [D98 Vision - View - Effects][D98], [D99 Facts kept, meaning derived][D99], [D100 Out of scope means not yet][D100], [D101 Lab and production][D101], [D102 Tools are apps][D102], [D55' Consumer apps live here][D55'], [D103 Nodes and authority][D103], [D104 The server-independent goal][D104], [D105 What must stay possible][D105],
-[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
+[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
 from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
 (claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54 Trust, encryption and who may sign in][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
 [The foundation concepts map](../plan/foundation-concepts/map.md).
@@ -64,8 +64,8 @@ intend and decide (decisions, ADRs, claims). `Effects` is what actually happens
 learns from (guides, diagrams, the app's screens). One turn: intend, build,
 observe what happened, show it, check it against the intent. A gate is one turn
 (claim, run, evidence, claims page); a guide is another (decision, exemplar,
-evidence, a lesson a learner tries). Whether one shape describes every level is
-[I56 One shape at every level?][I56]'s.
+evidence, a lesson a learner tries). One shape at every level, below, answers
+how far the loop is one shape ([D98' Vision - View - Effects, at every level][D98']).
 
 **Facts kept, meaning derived ([D99 Facts kept, meaning derived][D99]).** What happened is kept; what it means is
 derived and replaceable. The log holds what commands wrote; read models are
@@ -118,6 +118,29 @@ that grows from membership to enterprise policies is a direction for [I54 Trust,
 ([I70 Research: access from membership to enterprise][I70]). [ADR-0035](0035-accepting-a-change.md) states it; [ADR-0016 Commands, server validation and rejection][ADR-0016] and [D44 Never rename, never migrate][D44] are
 amended ([D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']).
 
+**One shape at every level ([D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [I56 One shape at every level?][I56]).** At the data level, every
+change to kept state goes from a state and an input, through a step, to the
+next state: a command decides (a changeset or a typed error, pure, its ids
+passed in), authority accepts the step into the log, and the projector evolves
+the read models from it. A workflow runs the same way over its journal, and an
+activity is the only place the world comes in, its result kept. Failure is
+data. The changeset is the step; the log after accept is the new state, and
+read models are its views. Reads and pure helpers make no new state, so they
+are outside the shape. Shown by [P05 Changesets and projections][P05], [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09]. vivief's `effectHandler` is
+adopted in this form; its name is map 3's. Above the code the shape is a lens,
+not a concept: people and agents compose intent, and apps and tools,
+themselves built from intent, carry it out to reach a goal. At every level
+(data, decisions, code, claims, patterns) a thing is hot while it is open,
+crosses a frontier where a checkpoint decides, is kept warm with its history,
+and turns cold as net truth others build on. Something cold that someone reads
+becomes a hot intent at another level. Intent comes in kinds from a WayFinder
+map down to a button press, and the more abstract the intent, the longer its
+turn. A verified commit, a commit on which `pnpm verify` is green, is the code
+level's crossing. A frame reaches a person through a surface of any modality,
+a screen being one. vivief's fractal factory is adopted as this lens; datoms
+for development artifacts and "velocity compounds" are not. Where Effect
+already names a concept, ViViEfs uses Effect's name and meaning.
+
 **Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
 one installation of an app that keeps all or part of an organization's data
 and writes changes to it; a device is the `node` a person uses. Authority is a
@@ -135,8 +158,8 @@ what must stay possible. A consumer app is `<product>-client` +
 because it clashes with Node.js.
 
 Revisit when a learner's failure shows the languages above are not the ones
-people and agents actually use, or when [I56 One shape at every level?][I56] finds one shape that describes
-every level.
+people and agents actually use, or when a gate shows the shape at a level above
+the code, where [D132 Four states at every level][D132] keeps it a lens.
 
 ## Trade-offs
 
@@ -195,6 +218,8 @@ Not yet run.
 [D107-D117]: ../plan/bootstrap/02-decision-log.md#d107-d117
 [D118-D123]: ../plan/bootstrap/02-decision-log.md#d118-d123
 [D124-D129]: ../plan/bootstrap/02-decision-log.md#d124-d129
+[D130-D135]: ../plan/bootstrap/02-decision-log.md#d130-d135
+[D132]: ../plan/bootstrap/02-decision-log.md#d132
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [D36']: ../plan/bootstrap/02-decision-log.md#d36p
@@ -209,6 +234,7 @@ Not yet run.
 [D96]: ../plan/bootstrap/02-decision-log.md#d96
 [D97]: ../plan/bootstrap/02-decision-log.md#d97
 [D98]: ../plan/bootstrap/02-decision-log.md#d98
+[D98']: ../plan/bootstrap/02-decision-log.md#d98p
 [D99]: ../plan/bootstrap/02-decision-log.md#d99
 [I34]: ../issues/0034-vivief-as-the-source-of-viviefs-concepts.md
 [I47]: ../issues/0047-what-viviefs-is-about.md

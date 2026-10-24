@@ -169,7 +169,7 @@ _Avoid_: tombstone, deleted flag
 Several facts that must appear together or not at all, such as a whole form.
 It becomes visible atomically when its commit datom arrives; open changesets
 are drafts. `cs == tx` marks a self-committed datom, a changeset of one.
-_Avoid_: transaction (a datom's own unit), batch, patch
+_Avoid_: transaction (a datom's own unit), batch, patch, code changeset (a commit)
 
 **Commit datom**:
 The last fact of a changeset, which makes all of it appear at once. It is
@@ -599,6 +599,14 @@ The full set of checks every change must pass before it is done. Staged; it
 proves the code keeps its contract, runs only checks that need nothing but the
 host, and changes no file. Done means verify passes.
 
+**Verified commit**:
+A saved version of the code on which every check passed. A commit on which
+`pnpm verify` is green. A commit is to the repository what a changeset is to
+the log: one step, prepared in a worktree, checked by verify and agreed by the
+human, then kept on `main`, where CI runs verify again. The verdict is kept
+only in the CI run ([D133 Verified commit][D133]). Not GitHub's "Verified" badge, which means a signed commit.
+_Avoid_: passing tree, code changeset, merged commit
+
 **Qualify**:
 Proving claims about the stack by running gates, including on phones and
 emulators, and recording each run in the ledger. Device and lab runs happen
@@ -696,6 +704,7 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D125]: docs/plan/bootstrap/02-decision-log.md#d125
 [D126]: docs/plan/bootstrap/02-decision-log.md#d126
 [D127]: docs/plan/bootstrap/02-decision-log.md#d127
+[D133]: docs/plan/bootstrap/02-decision-log.md#d133
 [D2]: docs/plan/bootstrap/02-decision-log.md#d2
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
 [D58']: docs/plan/bootstrap/02-decision-log.md#d58p

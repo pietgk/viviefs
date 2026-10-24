@@ -65,12 +65,18 @@ to stay as he wrote it.
 
 2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is phase 2, with map 3: map 3 needs the linker to tell `node` from Node.js and Frame from frame.
 
+2026-10-24: Input from [I56 One shape at every level?][I56]. [I78 Research: Effect's vocabulary against ours][I78] compares Effect's vocabulary with ours, and its clashes (Envelope, Journal, Entity, Decision and "decide", Tool, Prompt) are words this issue's linker must tell apart ([D135 Effect's names first][D135]). "Surface" is map 3's leading candidate for what a frame reaches a person through, and it clashes with React Native Paper's and Material's `Surface` component ([D134 Presenting in any modality][D134]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0027]: ../adr/0027-developer-experience-planes.md
+[D134]: ../plan/bootstrap/02-decision-log.md#d134
+[D135]: ../plan/bootstrap/02-decision-log.md#d135
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I24]: 0024-ideas-batch-andrej-karpathy-understanding.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I31]: 0031-ideas-batch-dataframes-as-a-universal-data-format.md
 [I33]: 0033-ideas-batch-abstractions-that-constrain-agents.md
+[I56]: 0056-one-shape-at-every-level.md
+[I78]: 0078-research-effect-vocabulary-against-ours.md

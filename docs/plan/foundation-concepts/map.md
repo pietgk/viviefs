@@ -32,7 +32,9 @@ decisions that chose them.
 - **Names.** This map writes the glossary entry for each concept it adopts, in the
   best ViViEfs word available. Where the word clashes (`Contract`, `effectHandler`,
   intent, effect), the decision records the meaning with vivief's word in code
-  font and the entry waits for map 3.
+  font and the entry waits for map 3. Before a word is adopted, it is checked
+  against Effect's modules: a concept Effect already names takes Effect's name
+  and meaning ([D135 Effect's names first][D135]).
 - **Sources.** The inventory record and its [HTML view](../../research/2026-10-06-vivief-inventory.html)
   (section "Map 2: Foundation", and Review ([I46 Review the vivief inventory][I46]) for the clusters); the rows files
   in `docs/plan/vivief-inventory/rows/` for full citations; vivief (`~/ws/vivief`,
@@ -49,6 +51,7 @@ decisions that chose them.
 - [I52](../../issues/0052-the-datom-and-its-store.md): the log store contract is what a datom needs from storage; `tx` stays an HLC worded for any `node` holding authority; id segments minted or derived; every attribute carries a value Schema; external identifiers are attributes; the final choice is the pattern ([D118-D123 The datom and its store][D118-D123]; [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010], [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] amended). Added I66-[I68 Uniqueness as an acceptance rule][I68].
 - [I50](../../issues/0050-contracts-checked-as-data-or-by-commands.md): authority accepts every change by asking may this writer do this, is it well formed, does the data stay valid; acceptance rules are code about the data alone, judged no worse; every domain writer uses a registered command that declares its writes; rules over time and re-running a command deferred; [ADR-0035](../../adr/0035-accepting-a-change.md) ([D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']). Found that the server never checked a command's rules. Added I69-[I70 Research: access from membership to enterprise][I70]; access as a pattern is a direction for [I54 Trust, encryption and who may sign in][I54].
 - [I70](../../issues/0070-research-access-from-membership-to-enterprise.md): research for [I54 Trust, encryption and who may sign in][I54]: access fits one AuthZEN-shaped contract, with a changeset as a batch of evaluations, a decision naming the position it read, and errors that deny; Cedar on Hermes unverified ([the record](../../research/2026-10-09-access-from-membership-to-enterprise.md)). Found [I71 An append can land after a revocation][I71].
+- [I56](../../issues/0056-one-shape-at-every-level.md): the shape is a foundation concept at the data level (a command decides, authority accepts, the projector evolves; a workflow over its journal) and a lens above it, four states at every level, with kinds of intent from a WayFinder map to a button press; the changeset is the step and the log after accept is `State'`; a verified commit is a commit on which verify is green; a frame reaches a person through a surface of any modality; Effect's names first ([D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98']). Added I76-[I78 Research: Effect's vocabulary against ours][I78].
 
 ## Not yet specified
 
@@ -79,12 +82,15 @@ decisions that chose them.
 [D107-D117]: ../bootstrap/02-decision-log.md#d107-d117
 [D118-D123]: ../bootstrap/02-decision-log.md#d118-d123
 [D124-D129]: ../bootstrap/02-decision-log.md#d124-d129
+[D130-D135]: ../bootstrap/02-decision-log.md#d130-d135
+[D135]: ../bootstrap/02-decision-log.md#d135
 [D36']: ../bootstrap/02-decision-log.md#d36p
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D55']: ../bootstrap/02-decision-log.md#d55p
 [D58']: ../bootstrap/02-decision-log.md#d58p
 [D94]: ../bootstrap/02-decision-log.md#d94
 [D95-D102]: ../bootstrap/02-decision-log.md#d95-d102
+[D98']: ../bootstrap/02-decision-log.md#d98p
 [I21]: ../../issues/0021-test-the-glossary-with-a-reader.md
 [I46]: ../../issues/0046-review-the-vivief-inventory.md
 [I47]: ../../issues/0047-what-viviefs-is-about.md
@@ -95,5 +101,6 @@ decisions that chose them.
 [I68]: ../../issues/0068-uniqueness-as-an-acceptance-rule.md
 [I70]: ../../issues/0070-research-access-from-membership-to-enterprise.md
 [I71]: ../../issues/0071-an-append-can-land-after-a-revocation.md
+[I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [P01]: ../bootstrap/06-qualification-gates.md#p01
 [P10]: ../bootstrap/06-qualification-gates.md#p10

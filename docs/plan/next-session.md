@@ -9,14 +9,14 @@
 > `domain-modeling`). Ask before deviating from an agreed decision and record
 > a deviation as an ADR amendment.
 
-## Where things stand (2026-10-10)
+## Where things stand (2026-10-24)
 
 - **The vivief review paused the Schedule.** [I34 vivief as the source of ViViEfs's concepts][I34] (2026-10-05) set out to take
   vivief's ideas into ViViEfs in six wayfinder maps. Map 1, the inventory, is
-  done (I35-[I46 Review the vivief inventory][I46]). Map 2, the foundation concepts, has I47-[I50 Contracts checked as data or by commands][I50] and [I52 The datom and its store][I52] resolved:
+  done (I35-[I46 Review the vivief inventory][I46]). Map 2, the foundation concepts, has I47-[I50 Contracts checked as data or by commands][I50], [I52 The datom and its store][I52] and [I56 One shape at every level?][I56] resolved:
   what ViViEfs is about ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]), what an app is to a device and a node, the
   Presenter pattern and origin trust ([ADR-0033 The Presenter pattern][ADR-0033], [ADR-0034 Origin trust][ADR-0034]), the datom and its
-  store, and accepting a change ([ADR-0035 Accepting a change][ADR-0035]). Maps 3-6 are not charted.
+  store, accepting a change ([ADR-0035 Accepting a change][ADR-0035]), and one shape at every level ([D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98']): the shape is foundation at the data level and a lens above it. Maps 3-6 are not charted.
 - **The Schedule's next step is still the app shell** ([P12 UI on every platform][P12], [P13 Links and routing][P13]). The log-store
   guide is built as a draft; the human judged it not yet good enough to accept
   ([I34 vivief as the source of ViViEfs's concepts][I34]), and accepting a pattern is map 4's.
@@ -38,12 +38,12 @@ An issue not named here is parked until its `Decide when:` fires.
 | --- | --- | --- |
 | 0 | Done 2026-10-09: triage; [I5 Confirm the suite catalogue as the one declaration place][I5] and [I3 API reference reads poorly for Effect services][I3] ([D61' Service regions instead of a generated API reference][D61']); [I57 Out-of-scope items in an ADR's trade-offs][I57]; Effect 4.0.2 with the `repos/effect` subtree; [I4 effect-solutions pins an older effect and warns on install][I4], [I6 Post the two upstream issue drafts][I6] and [I23 effect-machine still requires the Effect release candidate][I23] rechecked on it; [I27 The docs development server does not come up reliably, and has no search][I27] fixed (the docs dev server is ready in about 2.5 s and fails visibly). Closed 2026-10-10: [I4][I4]'s warning accepted (`Decide when:` a release peers `effect` ^4); [I27][I27] resolved, search stays `docs:prod`, table text in the index moved to [I73 Table text in the docs search index][I73]; [I72 verify baseline fails in a fresh worktree][I72] triaged to phase 3. Open for the human: post [I6][I6]'s drafts after rereading them. New: [I71 An append can land after a revocation][I71] (reproduced) | [I31 Ideas batch: DataFrames as a universal data format][I31] merged into [I63 The columnar copy as a Presenter implementation][I63]. `@effect/tsgo` 0.51.1 can follow as its own change or with phase 3. |
 | 0, background | [I70 Research: access from membership to enterprise][I70] research: access from membership to enterprise | Done 2026-10-09 ([the record](../research/2026-10-09-access-from-membership-to-enterprise.md)); [I54 Trust, encryption and who may sign in][I54] reads it. It found [I71 An append can land after a revocation][I71], a possible race between an append and a revocation, to triage with the rest. |
-| 1 | Finish map 2, in this order: [I56 One shape at every level?][I56], [I51 Actors or the engine][I51], [I53 Sync and conflict][I53], [I54 Trust, encryption and who may sign in][I54], [I59 Bring ADR-0002 and the vision page in line with I47][I59], [I55 Accept the foundation concepts][I55] | Each grilling also reviews its overlapping deferred issues with a comment that confirms or narrows the trigger: [I56 One shape at every level?][I56] with [I30 Ideas batch: glossary entries written as effects][I30], [I33 Ideas batch: abstractions that constrain agents][I33]; [I51 Actors or the engine][I51] with [I8 Engine scale-out and a multi-runner server][I8], [I29 Ideas batch: agents that record a replayable run][I29]; [I53 Sync and conflict][I53] with [I11 Quarantine of user content after a lost lease][I11], [I12 Partial sync, history consolidation and client data access][I12]; [I54 Trust, encryption and who may sign in][I54] with [I10 Encryption at rest per consumer app][I10], [I15 Identity, keys and trust][I15], [I16 Roles in use, invitations and self-service membership][I16], [I17 Local deletion after a revoked membership][I17], [I18 Identity provider migration][I18]. [I53][I53]'s server-validation and sync-contract rows were largely answered by [I49 Projection: one concept or several patterns][I49] and [I50 Contracts checked as data or by commands][I50]. |
-| 2 | Map 3, the words, with [I26 Glossary links on words that are not our terms][I26] | Chart it first. Words waiting: `Contract`, `effectHandler`, intent, effect, `node`, Tool, Vision, View and Effects, Frame, the lab qualifier, the formula's names ([I30 Ideas batch: glossary entries written as effects][I30]). [I26 Glossary links on words that are not our terms][I26] lets the linker tell `node` from Node.js. |
+| 1 | Finish map 2, in this order: [I56 One shape at every level?][I56] (done 2026-10-24), [I51 Actors or the engine][I51], [I53 Sync and conflict][I53], [I54 Trust, encryption and who may sign in][I54], [I59 Bring ADR-0002 and the vision page in line with I47][I59], [I55 Accept the foundation concepts][I55] | Each grilling also reviews its overlapping deferred issues with a comment that confirms or narrows the trigger: [I56 One shape at every level?][I56] with [I30 Ideas batch: glossary entries written as effects][I30], [I33 Ideas batch: abstractions that constrain agents][I33]; [I51 Actors or the engine][I51] with [I8 Engine scale-out and a multi-runner server][I8], [I29 Ideas batch: agents that record a replayable run][I29]; [I53 Sync and conflict][I53] with [I11 Quarantine of user content after a lost lease][I11], [I12 Partial sync, history consolidation and client data access][I12]; [I54 Trust, encryption and who may sign in][I54] with [I10 Encryption at rest per consumer app][I10], [I15 Identity, keys and trust][I15], [I16 Roles in use, invitations and self-service membership][I16], [I17 Local deletion after a revoked membership][I17], [I18 Identity provider migration][I18]. [I53][I53]'s server-validation and sync-contract rows were largely answered by [I49 Projection: one concept or several patterns][I49] and [I50 Contracts checked as data or by commands][I50]. |
+| 2 | Map 3, the words, with [I26 Glossary links on words that are not our terms][I26], after [I78 Research: Effect's vocabulary against ours][I78] | Chart it first, once [I78 Research: Effect's vocabulary against ours][I78] has compared Effect's vocabulary with ours ([D135 Effect's names first][D135]). Words waiting: `Contract`, `effectHandler`, intent, effect, `node`, Tool, Vision, View and Effects, Frame, the lab qualifier, the formula's names ([I30 Ideas batch: glossary entries written as effects][I30]), Surface ([D134 Presenting in any modality][D134]), hot, frontier, warm and cold and the kinds of intent ([D132 Four states at every level][D132]), "abstraction" or "pattern" ([I33 Ideas batch: abstractions that constrain agents][I33]), "change" ([I77 The word change has two meanings][I77]), and [I78][I78]'s clashes (Envelope, Journal, Entity, Decision, Tool, Prompt). [I26 Glossary links on words that are not our terms][I26] lets the linker tell `node` from Node.js. |
 | 3 | Build, then the app shell | A qualification batch first ([I61 Rename evidence-mobile to evidence-client][I61] rename, [I23 effect-machine still requires the Effect release candidate][I23] effect-machine bump, [I72 verify baseline fails in a fresh worktree][I72] fix), then [I66 Attribute value types and the typed reference read model][I66], [I69 Accept checks every change][I69] (needs [I66][I66]'s value Schemas), [I67 Minting entity id segments][I67], then the app shell [P12 UI on every platform][P12], [P13 Links and routing][P13] with [I13 UI renders only in the DOM, never on a device][I13], closed by one sequential run. |
 | 4 | Map 4 with [I2 Accept the log-store guide][I2], [I22 Claims and evidence show each gate three times][I22], [I21 Test the glossary with a reader outside software][I21]; the changesets, durable workflow and identity guides; [P14 Quarantine after a lost lease][P14]-[P17 Browser engine leader][P17]; maps 5 and 6 | Map 4 owns accepting a pattern and what counts as evidence; [I21 Test the glossary with a reader outside software][I21] waits for map 3's words. Maps 5 ([I25 Ideas batch: understanding and maintaining code bases][I25]) and 6 ([I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24], [I29 Ideas batch: agents that record a replayable run][I29]) when needed. |
 
-**Next step:** [I56 One shape at every level?][I56], the first ticket of phase 1.
+**Next step:** [I51 Actors or the engine][I51], the second ticket of phase 1. Read Effect's `cluster` first (Entity, Sharding, Singleton): Cluster's Entity is Effect's answer to an actor ([D135 Effect's names first][D135]).
 
 ## Working notes
 
@@ -70,8 +70,13 @@ An issue not named here is parked until its `Decide when:` fires.
 [ADR-0033]: ../adr/0033-the-presenter-pattern.md
 [ADR-0034]: ../adr/0034-origin-trust.md
 [ADR-0035]: ../adr/0035-accepting-a-change.md
+[D130-D135]: bootstrap/02-decision-log.md#d130-d135
+[D132]: bootstrap/02-decision-log.md#d132
+[D134]: bootstrap/02-decision-log.md#d134
+[D135]: bootstrap/02-decision-log.md#d135
 [D61']: bootstrap/02-decision-log.md#d61p
 [D86']: bootstrap/02-decision-log.md#d86p
+[D98']: bootstrap/02-decision-log.md#d98p
 [I10]: ../issues/0010-encryption-at-rest-per-app.md
 [I11]: ../issues/0011-quarantine-after-a-lost-lease.md
 [I12]: ../issues/0012-partial-sync-and-history.md
@@ -117,6 +122,8 @@ An issue not named here is parked until its `Decide when:` fires.
 [I71]: ../issues/0071-an-append-can-land-after-a-revocation.md
 [I72]: ../issues/0072-verify-baseline-fails-in-a-fresh-worktree.md
 [I73]: ../issues/0073-table-text-in-the-docs-search-index.md
+[I77]: ../issues/0077-change-has-two-meanings.md
+[I78]: ../issues/0078-research-effect-vocabulary-against-ours.md
 [I79]: ../issues/0079-p07-leaves-agent-device-replay-daemons-running.md
 [I8]: ../issues/0008-engine-scale-out.md
 [P01]: bootstrap/06-qualification-gates.md#p01

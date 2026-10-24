@@ -4,7 +4,7 @@ Status: ready-for-human
 
 Category: enhancement
 
-Decide when: [I56 One shape at every level?][I56], then map 3
+Decide when: map 3, "abstraction" or "pattern"
 
 Found: 2026-10-04
 
@@ -77,16 +77,22 @@ So it may be the abstraction above all of these: one shape every decision, ADR, 
 
 2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is an input to [I56 One shape at every level?][I56]; whether "abstraction" or "pattern" names what ViViEfs delivers is map 3's.
 
+2026-10-24: [I56 One shape at every level?][I56] gives the shape no role in the problem-to-conclusion statement. That statement is [D98 Vision - View - Effects][D98]'s loop at the decision level, a lens ([D132 Four states at every level][D132], [D98' Vision - View - Effects, at every level][D98']): a review page is hot, the human settling a round is the frontier, the decision log is warm, and the ADR and glossary are cold. What constrains an agent at the data level is the split between decide and evolve: a command cannot write, and a projector cannot decide ([D130 One shape at the data level][D130]). Input for map 3: the human's kinds of intent, from a WayFinder map, a grilling with docs, a grilling, a prompt and one decision down to a button press, ordered by how abstract the intent is ([D132][D132]), are the strongest case so far for "abstraction" as the wider word; a pattern keeps its delivered meaning, and an app is not one. Whether "abstraction" or "pattern" names what ViViEfs delivers is map 3's. "Where can an agent still write bad code that passes" goes with map 4.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0025]: ../adr/0025-ai-robust-guardrails.md
 [ADR-0026]: ../adr/0026-verify-qualify-teach.md
 [ADR-0031]: ../adr/0031-typescript-strictness-flags.md
+[D130]: ../plan/bootstrap/02-decision-log.md#d130
+[D132]: ../plan/bootstrap/02-decision-log.md#d132
 [D26]: ../plan/bootstrap/02-decision-log.md#d26
 [D38]: ../plan/bootstrap/02-decision-log.md#d38
 [D48']: ../plan/bootstrap/02-decision-log.md#d48p
 [D52]: ../plan/bootstrap/02-decision-log.md#d52
 [D66]: ../plan/bootstrap/02-decision-log.md#d66
+[D98]: ../plan/bootstrap/02-decision-log.md#d98
+[D98']: ../plan/bootstrap/02-decision-log.md#d98p
 [I21]: 0021-test-the-glossary-with-a-reader.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I29]: 0029-ideas-batch-agents-that-record-a-replayable-run.md
