@@ -34,6 +34,14 @@ overrides:
   # files; patched only in 5.0.1, whose one change is that an integer beyond
   # Number.MAX_SAFE_INTEGER throws instead of losing precision.
   'toml@4': 5.0.1
+  # GHSA-mrhx-c7xc-m3w5 (high, found 2026-10-24): zod 4.6.5, through @expo/cli
+  # and astro, can exhaust memory validating oversized constrained collections;
+  # patched from 4.6.6.
+  'zod@4': 4.6.6
+  # GHSA-xjj6-f33q-929c (high, found 2026-10-24): astro's unifont resolved undici
+  # 8.10.2 and 8.11.2, which an excessive content-encoding list crashes;
+  # patched from 8.12.2.
+  'undici@8': 8.12.2
   '@op-engineering/op-sqlite': 18.2.5
   # One copy of each native Expo module: expo-auth-session's ranges would
   # otherwise pull newer patch releases next to the ones expo 58 bundles.
@@ -60,3 +68,9 @@ auditConfig:
     # file map and starlight-llms-txt, build tools that read our own globs.
     # Remove when a fix ships or both drop it.
     - GHSA-vfj7-8cjw-p6xm
+    # I1: zod 3 memory exhaustion validating oversized constrained collections
+    # (high). No patched zod 3 (3.25.76 is the newest); it comes only through
+    # @expo/cli 58.1.15, a development tool, not through anything the apps ship.
+    # zod 4 is overridden to its fix above. Remove when a fix ships or
+    # @expo/cli drops zod 3.
+    - GHSA-mrhx-c7xc-m3w5

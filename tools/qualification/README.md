@@ -120,9 +120,19 @@ Learned in P11 and in the sequential runs since (2026-09-28 to 2026-10-01).
   `~/.agent-device/sessions/*/requests/` keep it. Moved to agent-device
   0.21.30, which reads the viewport after entering tree capture
   (callstack/agent-device#2938). After moving agent-device, stop its daemon
-  (`agent-device daemon stop`) so the new version serves. Old replay daemons
-  from earlier runs (each with its own temporary state directory) can linger;
-  they held no device claims.
+  (`agent-device daemon stop`) so the new version serves.
+- **agent-device replay daemons**: without `--state-dir`, `replay` runs on
+  a private daemon of its own. `open` and `close` do not reach it, so on iOS
+  the replay has no app session and fails at its first step, and a replay
+  whose script leaves its session active (every P07 flow) keeps that daemon.
+  Until 2026-10-24 each P07 run left two (the Android replays), each holding
+  a device claim, and its iOS flows never ran
+  ([I79](../../docs/issues/0079-p07-leaves-agent-device-replay-daemons-running.md)).
+  P07 now runs `open`, `replay` and `close` on one state directory of its own
+  and stops that daemon (`daemon stop --state-dir`) after it; a stop that
+  fails fails the probe and keeps the directory. Count daemons with
+  `pgrep -fl 'agent-device.*internal/daemon.js'`; besides the default daemon
+  there should be none.
 - **A new development build** greets its first launch with a sheet
   ("Continue") that opens the developer menu; the runner dismisses both.
 - **P07's notification tap** misses on iOS and Android; the relaunch fallback

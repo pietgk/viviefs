@@ -20,9 +20,9 @@
 - **The Schedule's next step is still the app shell** ([P12 UI on every platform][P12], [P13 Links and routing][P13]). The log-store
   guide is built as a draft; the human judged it not yet good enough to accept
   ([I34 vivief as the source of ViViEfs's concepts][I34]), and accepting a pattern is map 4's.
-- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `3a5dc1a57`
-  (2026-10-22, run `2026-10-22T19-57-19.763Z-1f994378`: Expo SDK 58 stable,
-  Effect 4.0.5 and agent-device 0.21.30, from fresh development builds;
+- **Gates**: [P01 Platform on SDK 58][P01]-[P11 Identity][P11] last passed in one sequential run on `4389ad32c`
+  (2026-10-24, run `2026-10-24T13-09-17.522Z-bd1028f3`: [P07 Device resume E2E][P07] on its own agent-device
+  daemon, [I79 P07 leaves agent-device replay daemons running][I79]; Expo SDK 58 stable, Effect 4.0.5 and agent-device 0.21.30;
   [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]). Phase 3 below changes gate inputs and closes with a
   sequential run.
 - **Found while deciding [I50 Contracts checked as data or by commands][I50]**: the server never re-executes a command, so a
@@ -117,9 +117,11 @@ An issue not named here is parked until its `Decide when:` fires.
 [I71]: ../issues/0071-an-append-can-land-after-a-revocation.md
 [I72]: ../issues/0072-verify-baseline-fails-in-a-fresh-worktree.md
 [I73]: ../issues/0073-table-text-in-the-docs-search-index.md
+[I79]: ../issues/0079-p07-leaves-agent-device-replay-daemons-running.md
 [I8]: ../issues/0008-engine-scale-out.md
 [P01]: bootstrap/06-qualification-gates.md#p01
 [P06]: bootstrap/06-qualification-gates.md#p06
+[P07]: bootstrap/06-qualification-gates.md#p07
 [P11]: bootstrap/06-qualification-gates.md#p11
 [P12]: bootstrap/06-qualification-gates.md#p12
 [P13]: bootstrap/06-qualification-gates.md#p13

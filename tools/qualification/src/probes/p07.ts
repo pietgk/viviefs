@@ -33,7 +33,11 @@ import {
   writeJson,
   type ProbeReport,
 } from './dev-client.ts'
-import { agentCliJson, agentDevice } from './agent-cli.ts'
+import {
+  agentCliJson,
+  agentDevice,
+  withOwnAgentDeviceDaemon,
+} from './agent-cli.ts'
 import {
   ensureMotelDaemon,
   MOTEL_ORIGIN,
@@ -101,55 +105,62 @@ const waitPhase = (
     },
   })
 
-const replayMaestro = async (
+// open, replay and close share one daemon, so the replay drives the session
+// open started and its daemon does not outlive the run (I79).
+const replayMaestro = (
   flow: string,
   platform: 'ios' | 'android',
   extra: NodeJS.ProcessEnv,
-) => {
-  const opened = await agentDevice(
-    [
-      'open',
-      APP_ID,
-      '--platform',
-      platform,
-      '--foreground',
-      '--json',
-    ],
-    { cwd: QUAL, env: extra, timeout: 60_000 },
-  )
-  await writeFile(
-    join(ARTIFACTS, `agent-device-open-${platform}-${flow}.log`),
-    opened.stdout + opened.stderr,
-  )
-  try {
-    const result = await agentDevice(
+) =>
+  withOwnAgentDeviceDaemon({ cwd: QUAL, env: extra }, async (stateDir) => {
+    const opened = await agentDevice(
       [
-        'replay',
-        join(ROOT, '.maestro', flow),
-        '--maestro',
+        'open',
+        APP_ID,
         '--platform',
         platform,
-        '-e',
-        `APP_ID=${APP_ID}`,
-        '--timeout',
-        '180000',
+        '--foreground',
+        '--state-dir',
+        stateDir,
         '--json',
       ],
-      { cwd: QUAL, env: extra, timeout: 200_000 },
+      { cwd: QUAL, env: extra, timeout: 60_000 },
     )
     await writeFile(
-      join(ARTIFACTS, `maestro-${platform}-${flow}.log`),
-      result.stdout + result.stderr,
+      join(ARTIFACTS, `agent-device-open-${platform}-${flow}.log`),
+      opened.stdout + opened.stderr,
     )
-    return result
-  } finally {
-    await agentDevice(['close'], {
-      cwd: QUAL,
-      env: extra,
-      timeout: 15_000,
-    })
-  }
-}
+    try {
+      const result = await agentDevice(
+        [
+          'replay',
+          join(ROOT, '.maestro', flow),
+          '--maestro',
+          '--platform',
+          platform,
+          '-e',
+          `APP_ID=${APP_ID}`,
+          '--timeout',
+          '180000',
+          '--state-dir',
+          stateDir,
+          '--json',
+        ],
+        { cwd: QUAL, env: extra, timeout: 200_000 },
+      )
+      await writeFile(
+        join(ARTIFACTS, `maestro-${platform}-${flow}.log`),
+        result.stdout + result.stderr,
+      )
+      return result
+    } finally {
+      await agentDevice(['close', '--state-dir', stateDir], {
+        cwd: QUAL,
+        env: extra,
+        timeout: 15_000,
+      })
+    }
+  })
 
 const tapWakeNotification = async (
   platform: 'ios' | 'android',
