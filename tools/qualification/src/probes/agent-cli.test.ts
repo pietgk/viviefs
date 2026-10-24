@@ -126,32 +126,55 @@ describe('own agent-device daemon', () => {
     expect(existsSync(stateDir)).toBe(false)
   })
 
-  // A record that names a process which is not the daemon: agent-device
-  // refuses to signal it, so the stop is unconfirmed.
-  it('fails and keeps the directory when the stop is not confirmed', async () => {
+  // A record whose pid now belongs to another process, with a start time that
+  // process cannot have: agent-device reads it as stale and signals nothing.
+  it('never signals a process the record names but that is not the daemon', async () => {
     vi.stubEnv('ANDROID_HOME', tmpdir())
-    const impostor = spawn('sleep', ['60'], { stdio: 'ignore' })
+    const other = spawn('sleep', ['60'], { stdio: 'ignore' })
+    let stateDir = ''
+    try {
+      await withOwnAgentDeviceDaemon({ cwd: QUAL }, async (dir) => {
+        stateDir = dir
+        const record = await startDaemon(dir)
+        const stopped = await agentDevice(
+          ['daemon', 'stop', '--state-dir', dir, '--json'],
+          { cwd: QUAL },
+        )
+        expect(daemonStopProblem(stopped)).toBeUndefined()
+        await writeFile(
+          `${dir}/daemon.json`,
+          JSON.stringify({
+            ...record,
+            pid: other.pid,
+            processStartTime: 'Thu Jan  1 00:00:00 2026',
+          }),
+        )
+      })
+      expect(isAlive(other.pid ?? 0)).toBe(true)
+      expect(existsSync(stateDir)).toBe(false)
+    } finally {
+      other.kill()
+    }
+  })
+
+  it('fails and keeps the directory when the stop cannot tell', async () => {
+    vi.stubEnv('ANDROID_HOME', tmpdir())
     let stateDir = ''
     try {
       await expect(
         withOwnAgentDeviceDaemon({ cwd: QUAL }, async (dir) => {
           stateDir = dir
-          const record = await startDaemon(dir)
+          await startDaemon(dir)
           const stopped = await agentDevice(
             ['daemon', 'stop', '--state-dir', dir, '--json'],
             { cwd: QUAL },
           )
           expect(daemonStopProblem(stopped)).toBeUndefined()
-          await writeFile(
-            `${dir}/daemon.json`,
-            JSON.stringify({ ...record, pid: impostor.pid }),
-          )
+          await writeFile(`${dir}/daemon.json`, 'not json')
         }),
       ).rejects.toThrow(/agent-device daemon in .*daemon stop exited 1/s)
       expect(existsSync(stateDir)).toBe(true)
-      expect(isAlive(impostor.pid ?? 0)).toBe(true)
     } finally {
-      impostor.kill()
       if (stateDir) await rm(stateDir, { recursive: true, force: true })
     }
   })
