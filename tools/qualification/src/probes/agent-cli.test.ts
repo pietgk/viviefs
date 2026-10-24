@@ -4,9 +4,10 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from '@effect/vitest'
 import {
-  agentDeviceReplay,
+  agentDevice,
+  daemonStopProblem,
   parseJsonObject,
-  replayDaemonStopProblem,
+  withOwnAgentDeviceDaemon,
 } from './agent-cli.ts'
 
 const QUAL = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -35,62 +36,86 @@ const stopReply = (data: object, success = true) => ({
   stderr: '',
 })
 
-describe('replay daemon stop', () => {
+describe('agent-device daemon stop', () => {
   it('accepts a daemon it stopped', () => {
     expect(
-      replayDaemonStopProblem(stopReply({ stopped: true, mode: 'graceful' })),
+      daemonStopProblem(stopReply({ stopped: true, mode: 'graceful' })),
     ).toBeUndefined()
   })
 
   it('accepts a daemon that was already gone', () => {
     expect(
-      replayDaemonStopProblem(stopReply({ stopped: false, mode: 'not-running' })),
+      daemonStopProblem(stopReply({ stopped: false, mode: 'not-running' })),
     ).toBeUndefined()
   })
 
   it('reports a daemon it left running', () => {
     expect(
-      replayDaemonStopProblem(stopReply({ stopped: false, mode: 'retained' })),
+      daemonStopProblem(stopReply({ stopped: false, mode: 'retained' })),
     ).toMatch(/did not stop it \(mode retained\)/)
   })
 
   it('reports a reply that did not succeed', () => {
     expect(
-      replayDaemonStopProblem(stopReply({ stopped: true }, false)),
+      daemonStopProblem(stopReply({ stopped: true }, false)),
     ).toMatch(/did not succeed/)
   })
 
   it('reports a failed or silent stop', () => {
     expect(
-      replayDaemonStopProblem({ code: 1, stdout: '', stderr: 'COMMAND_FAILED' }),
+      daemonStopProblem({ code: 1, stdout: '', stderr: 'COMMAND_FAILED' }),
     ).toMatch(/exited 1: COMMAND_FAILED/)
     expect(
-      replayDaemonStopProblem({ code: 0, stdout: '', stderr: '' }),
+      daemonStopProblem({ code: 0, stdout: '', stderr: '' }),
     ).toMatch(/printed no JSON/)
   })
 })
 
-describe('agent-device replay', () => {
+describe('own agent-device daemon', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
   })
 
-  const replayStateDirs = async () =>
+  const ownStateDirs = async () =>
     (await readdir(tmpdir())).filter((name) =>
-      name.startsWith('viviefs-agent-device-replay-'),
+      name.startsWith('viviefs-agent-device-'),
     )
 
-  // A missing script fails in the client, before any daemon starts, so this
-  // runs the real CLI without a device (or an Android SDK).
-  it('stops on its own state directory and removes it, even when the replay fails', async () => {
-    vi.stubEnv('ANDROID_HOME', tmpdir())
-    const before = await replayStateDirs()
-    const result = await agentDeviceReplay(
-      [`${tmpdir()}/viviefs-missing-flow.yaml`, '--maestro', '--platform', 'ios', '--json'],
+  // A missing script fails in the client, before any daemon starts, so these
+  // run the real CLI without a device (or an Android SDK).
+  const replayMissingFlow = (stateDir: string) =>
+    agentDevice(
+      [
+        'replay',
+        `${tmpdir()}/viviefs-missing-flow.yaml`,
+        '--maestro',
+        '--platform',
+        'ios',
+        '--state-dir',
+        stateDir,
+        '--json',
+      ],
       { cwd: QUAL },
     )
+
+  it('returns what it ran, then stops the daemon and removes its directory', async () => {
+    vi.stubEnv('ANDROID_HOME', tmpdir())
+    const before = await ownStateDirs()
+    const result = await withOwnAgentDeviceDaemon({ cwd: QUAL }, replayMissingFlow)
     expect(result.code).not.toBe(0)
     expect(result.stdout).toContain('replay script not found')
-    expect(await replayStateDirs()).toEqual(before)
+    expect(await ownStateDirs()).toEqual(before)
+  })
+
+  it('stops the daemon when what it ran throws', async () => {
+    vi.stubEnv('ANDROID_HOME', tmpdir())
+    const before = await ownStateDirs()
+    await expect(
+      withOwnAgentDeviceDaemon({ cwd: QUAL }, async (stateDir) => {
+        await replayMissingFlow(stateDir)
+        throw new Error('the probe failed')
+      }),
+    ).rejects.toThrow('the probe failed')
+    expect(await ownStateDirs()).toEqual(before)
   })
 })

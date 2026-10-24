@@ -293,7 +293,7 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   reExport('tools/qualification/src/index.ts', 'The package entry re-exports the gate table.'),
   unit('tools/qualification/src/ledger.ts', 'The ledger; its test runs every scenario in-process against a scratch repository.'),
   unit('tools/qualification/src/process.ts', 'Child-process helpers with timeouts; unit-tested.'),
-  unit(`${PROBES}/agent-cli.ts`, 'Wrappers over @expo/agent-cli and agent-device; JSON parsing and replay daemon cleanup are unit-tested, device calls run in qualify.'),
+  unit(`${PROBES}/agent-cli.ts`, 'Wrappers over @expo/agent-cli and agent-device; JSON parsing and own-daemon cleanup are unit-tested, device calls run in qualify.'),
   unit(`${PROBES}/dev-client.ts`, 'Development-build helpers; the pure parts are unit-tested, device runs happen in qualify.'),
   unit(`${PROBES}/devices.ts`, 'Simulator and emulator helpers; the pure parts are unit-tested, device runs happen in qualify.'),
   qualifyOnly(`${PROBES}/keycloak.ts`, 'P11', 'Starts Keycloak on Apple Container; a lab.'),

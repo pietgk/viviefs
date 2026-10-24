@@ -106,12 +106,10 @@ export const agentDevice = async (
 }
 
 /**
- * Why `daemon stop` did not account for a replay daemon, or `undefined` when
- * it stopped it or found none running (the replay may have retired it).
+ * Why `daemon stop` did not account for a daemon, or `undefined` when it
+ * stopped it or found none running (a failed replay retires its own).
  */
-export const replayDaemonStopProblem = (
-  result: CommandResult,
-): string | undefined => {
+export const daemonStopProblem = (result: CommandResult): string | undefined => {
   const output = (result.stderr || result.stdout).trim().slice(-2000)
   if (result.code !== 0) return `daemon stop exited ${result.code}: ${output}`
   let parsed: unknown
@@ -129,7 +127,7 @@ export const replayDaemonStopProblem = (
   return `daemon stop did not stop it (mode ${String(data?.mode)})`
 }
 
-const stopReplayDaemon = async (
+const stopDaemon = async (
   stateDir: string,
   options: { cwd: string; env?: NodeJS.ProcessEnv | undefined },
 ) => {
@@ -137,33 +135,33 @@ const stopReplayDaemon = async (
     ['daemon', 'stop', '--state-dir', stateDir, '--json'],
     { cwd: options.cwd, env: options.env, timeout: 30_000 },
   )
-  const problem = replayDaemonStopProblem(stopped)
+  const problem = daemonStopProblem(stopped)
   // The directory holds the daemon's log; it stays when the daemon may too.
   if (problem) {
-    throw new Error(`agent-device replay daemon in ${stateDir}: ${problem}`)
+    throw new Error(`agent-device daemon in ${stateDir}: ${problem}`)
   }
   await rm(stateDir, { recursive: true, force: true })
 }
 
 /**
- * `replay` of a script that leaves its session active (every P07 flow) keeps
- * the daemon it started, in a temporary state directory that no later call
- * names, so `close` never reaches it (I76). Each replay therefore runs on a
- * state directory of its own, and its daemon is stopped there afterwards,
- * whatever the replay did. The default daemon is never touched.
+ * Runs `use` against an agent-device daemon of its own: every call in it
+ * passes `--state-dir` with the directory it is given, and the daemon there
+ * is stopped afterwards, whatever `use` did. The default daemon is never
+ * touched.
+ *
+ * For `replay` (I76): without a state directory, a replay starts a private
+ * daemon that `open` and `close` never reach. The replay then has no app
+ * session (on iOS it fails at its first step), and when its script leaves
+ * the session active, as every P07 flow does, the daemon outlives the run.
  */
-export const agentDeviceReplay = async (
-  args: string[],
-  options: {
-    cwd: string
-    env?: NodeJS.ProcessEnv | undefined
-    timeout?: number | undefined
-  },
-): Promise<CommandResult> => {
-  const stateDir = await mkdtemp(join(tmpdir(), 'viviefs-agent-device-replay-'))
+export const withOwnAgentDeviceDaemon = async <A>(
+  options: { cwd: string; env?: NodeJS.ProcessEnv | undefined },
+  use: (stateDir: string) => Promise<A>,
+): Promise<A> => {
+  const stateDir = await mkdtemp(join(tmpdir(), 'viviefs-agent-device-'))
   try {
-    return await agentDevice(['replay', ...args, '--state-dir', stateDir], options)
+    return await use(stateDir)
   } finally {
-    await stopReplayDaemon(stateDir, options)
+    await stopDaemon(stateDir, options)
   }
 }
