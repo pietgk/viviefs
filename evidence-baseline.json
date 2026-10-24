@@ -2,8 +2,8 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7628412,
-        "jsBytes": 4676179,
+        "hbcBytes": 7628793,
+        "jsBytes": 4676156,
         "packages": {
           "(unmapped)": 204862,
           "@babel/runtime": 2100,
@@ -35,12 +35,12 @@
           "expo": 95139,
           "expo-application": 2806,
           "expo-asset": 6772,
-          "expo-auth-session": 24959,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 6900,
           "expo-modules-core": 15296,
-          "expo-notifications": 36279,
+          "expo-notifications": 36273,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -73,11 +73,11 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41774
         },
-        "recordedAt": "2026-10-22"
+        "recordedAt": "2026-10-24"
       },
       "ios": {
-        "hbcBytes": 5522465,
-        "jsBytes": 2582245,
+        "hbcBytes": 5522846,
+        "jsBytes": 2582222,
         "packages": {
           "(unmapped)": 203177,
           "@babel/runtime": 2100,
@@ -102,12 +102,12 @@
           "expo": 94920,
           "expo-application": 2843,
           "expo-asset": 6691,
-          "expo-auth-session": 24959,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 7036,
           "expo-modules-core": 15065,
-          "expo-notifications": 33907,
+          "expo-notifications": 33901,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -140,7 +140,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41774
         },
-        "recordedAt": "2026-10-22"
+        "recordedAt": "2026-10-24"
       }
     }
   },
@@ -545,10 +545,10 @@
         "statements": "49/54"
       },
       "tools/qualification/src/probes/agent-cli.ts": {
-        "branches": "5/12",
-        "functions": "1/4",
-        "lines": "13/21",
-        "statements": "13/23"
+        "branches": "19/24",
+        "functions": "5/7",
+        "lines": "35/42",
+        "statements": "39/47"
       },
       "tools/qualification/src/probes/dev-client.ts": {
         "branches": "0/129",
@@ -557,10 +557,10 @@
         "statements": "27/209"
       },
       "tools/qualification/src/probes/devices.ts": {
-        "branches": "0/71",
-        "functions": "0/24",
-        "lines": "20/128",
-        "statements": "20/136"
+        "branches": "3/71",
+        "functions": "4/24",
+        "lines": "26/128",
+        "statements": "27/136"
       },
       "tools/qualification/src/probes/motel.ts": {
         "branches": "5/48",
@@ -726,5 +726,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "d23677e04ed0c2bab9c725c99aa2a16a66ed914fad2a7bcf1cc97ac5723fcee7"
+  "registryDigest": "1ea2d88a251da9fe0bd9619aece8d60bc116b0e3e88d200ec3ba0078dc6799c3"
 }
