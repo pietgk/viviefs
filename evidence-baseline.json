@@ -545,10 +545,10 @@
         "statements": "49/54"
       },
       "tools/qualification/src/probes/agent-cli.ts": {
-        "branches": "19/24",
+        "branches": "20/24",
         "functions": "5/7",
-        "lines": "35/42",
-        "statements": "39/47"
+        "lines": "36/42",
+        "statements": "40/47"
       },
       "tools/qualification/src/probes/dev-client.ts": {
         "branches": "0/129",
