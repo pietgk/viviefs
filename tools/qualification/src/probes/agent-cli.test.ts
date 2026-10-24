@@ -1,4 +1,6 @@
-import { readdir } from 'node:fs/promises'
+import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -71,51 +73,86 @@ describe('agent-device daemon stop', () => {
   })
 })
 
+// These start real daemons with the CLI and no device: `session list` brings
+// one up on the state directory it is given.
 describe('own agent-device daemon', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
   })
 
-  const ownStateDirs = async () =>
-    (await readdir(tmpdir())).filter((name) =>
-      name.startsWith('viviefs-agent-device-'),
-    )
-
-  // A missing script fails in the client, before any daemon starts, so these
-  // run the real CLI without a device (or an Android SDK).
-  const replayMissingFlow = (stateDir: string) =>
-    agentDevice(
-      [
-        'replay',
-        `${tmpdir()}/viviefs-missing-flow.yaml`,
-        '--maestro',
-        '--platform',
-        'ios',
-        '--state-dir',
-        stateDir,
-        '--json',
-      ],
+  const startDaemon = async (stateDir: string) => {
+    const listed = await agentDevice(
+      ['session', 'list', '--state-dir', stateDir, '--json'],
       { cwd: QUAL },
     )
+    expect(listed.code).toBe(0)
+    const record = JSON.parse(await readFile(`${stateDir}/daemon.json`, 'utf8'))
+    expect(isAlive(record.pid)).toBe(true)
+    return record as { pid: number }
+  }
 
-  it('returns what it ran, then stops the daemon and removes its directory', async () => {
+  const isAlive = (pid: number) => {
+    try {
+      process.kill(pid, 0)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  it('stops the daemon it started and removes its directory', async () => {
     vi.stubEnv('ANDROID_HOME', tmpdir())
-    const before = await ownStateDirs()
-    const result = await withOwnAgentDeviceDaemon({ cwd: QUAL }, replayMissingFlow)
-    expect(result.code).not.toBe(0)
-    expect(result.stdout).toContain('replay script not found')
-    expect(await ownStateDirs()).toEqual(before)
+    let stateDir = ''
+    const daemon = await withOwnAgentDeviceDaemon({ cwd: QUAL }, async (dir) => {
+      stateDir = dir
+      return startDaemon(dir)
+    })
+    expect(isAlive(daemon.pid)).toBe(false)
+    expect(existsSync(stateDir)).toBe(false)
   })
 
   it('stops the daemon when what it ran throws', async () => {
     vi.stubEnv('ANDROID_HOME', tmpdir())
-    const before = await ownStateDirs()
+    let stateDir = ''
+    let pid = 0
     await expect(
-      withOwnAgentDeviceDaemon({ cwd: QUAL }, async (stateDir) => {
-        await replayMissingFlow(stateDir)
+      withOwnAgentDeviceDaemon({ cwd: QUAL }, async (dir) => {
+        stateDir = dir
+        pid = (await startDaemon(dir)).pid
         throw new Error('the probe failed')
       }),
     ).rejects.toThrow('the probe failed')
-    expect(await ownStateDirs()).toEqual(before)
+    expect(isAlive(pid)).toBe(false)
+    expect(existsSync(stateDir)).toBe(false)
+  })
+
+  // A record that names a process which is not the daemon: agent-device
+  // refuses to signal it, so the stop is unconfirmed.
+  it('fails and keeps the directory when the stop is not confirmed', async () => {
+    vi.stubEnv('ANDROID_HOME', tmpdir())
+    const impostor = spawn('sleep', ['60'], { stdio: 'ignore' })
+    let stateDir = ''
+    try {
+      await expect(
+        withOwnAgentDeviceDaemon({ cwd: QUAL }, async (dir) => {
+          stateDir = dir
+          const record = await startDaemon(dir)
+          const stopped = await agentDevice(
+            ['daemon', 'stop', '--state-dir', dir, '--json'],
+            { cwd: QUAL },
+          )
+          expect(daemonStopProblem(stopped)).toBeUndefined()
+          await writeFile(
+            `${dir}/daemon.json`,
+            JSON.stringify({ ...record, pid: impostor.pid }),
+          )
+        }),
+      ).rejects.toThrow(/agent-device daemon in .*daemon stop exited 1/s)
+      expect(existsSync(stateDir)).toBe(true)
+      expect(isAlive(impostor.pid ?? 0)).toBe(true)
+    } finally {
+      impostor.kill()
+      if (stateDir) await rm(stateDir, { recursive: true, force: true })
+    }
   })
 })
