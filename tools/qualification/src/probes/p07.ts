@@ -33,7 +33,7 @@ import {
   writeJson,
   type ProbeReport,
 } from './dev-client.ts'
-import { agentCliJson, agentDevice } from './agent-cli.ts'
+import { agentCliJson, agentDevice, agentDeviceReplay } from './agent-cli.ts'
 import {
   ensureMotelDaemon,
   MOTEL_ORIGIN,
@@ -122,9 +122,8 @@ const replayMaestro = async (
     opened.stdout + opened.stderr,
   )
   try {
-    const result = await agentDevice(
+    const result = await agentDeviceReplay(
       [
-        'replay',
         join(ROOT, '.maestro', flow),
         '--maestro',
         '--platform',
