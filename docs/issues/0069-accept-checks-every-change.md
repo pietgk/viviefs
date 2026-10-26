@@ -26,6 +26,8 @@ From [I50 Contracts checked as data or by commands][I50] ([ADR-0035 Accepting a 
 
 ## Comments
 
+2026-10-26: From [I53 Sync and conflict][I53] ([D34' Per-attribute conflict policies, decided at accept][D34'], [I81 Build conflicts decided at accept][I81]): orphans (user content whose owner is not visible, [D38 Entity ids and strict composition][D38]) are decided at accept too, with the read model this issue brings to the server. [I81][I81] builds the rest of conflicts at accept and comes after this issue in phase 3.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0016]: ../adr/0016-commands-and-server-validation.md
@@ -35,11 +37,15 @@ From [I50 Contracts checked as data or by commands][I50] ([ADR-0035 Accepting a 
 [D125]: ../plan/bootstrap/02-decision-log.md#d125
 [D126]: ../plan/bootstrap/02-decision-log.md#d126
 [D127]: ../plan/bootstrap/02-decision-log.md#d127
+[D34']: ../plan/bootstrap/02-decision-log.md#d34p
+[D38]: ../plan/bootstrap/02-decision-log.md#d38
 [I50]: 0050-contracts-checked-as-data-or-by-commands.md
+[I53]: 0053-sync-and-conflict.md
 [I54]: 0054-trust-encryption-and-who-may-sign-in.md
 [I64]: 0064-build-origin-trust.md
 [I66]: 0066-attribute-value-types.md
 [I68]: 0068-uniqueness-as-an-acceptance-rule.md
+[I81]: 0081-build-conflicts-decided-at-accept.md
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09
 [P12]: ../plan/bootstrap/06-qualification-gates.md#p12
 [P13]: ../plan/bootstrap/06-qualification-gates.md#p13

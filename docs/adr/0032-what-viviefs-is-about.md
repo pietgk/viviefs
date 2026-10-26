@@ -10,7 +10,7 @@ Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
 gate that already shows it, or names the gate to come.
 
 Related: [D95 App creation][D95], [D96 Two verifications][D96], [D97 Our languages by type][D97], [D98 Vision - View - Effects][D98], [D99 Facts kept, meaning derived][D99], [D100 Out of scope means not yet][D100], [D101 Lab and production][D101], [D102 Tools are apps][D102], [D55' Consumer apps live here][D55'], [D103 Nodes and authority][D103], [D104 The server-independent goal][D104], [D105 What must stay possible][D105],
-[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
+[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
 from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]; [ADR-0036 The journal is the fence][ADR-0036] (the journal is the fence), from [I51 Actors or the engine][I51]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
 (claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54 Trust, encryption and who may sign in][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
 [The foundation concepts map](../plan/foundation-concepts/map.md).
@@ -155,6 +155,21 @@ its own fence ([ADR-0036 The journal is the fence][ADR-0036]), so one engine, on
 device and server, and Effect Cluster is not needed. Shown by [P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07] and
 [P09 Sync][P09]; the fence is to be shown by [P06][P06] and [P09][P09] again.
 
+**Sync and conflict ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [I53 Sync and conflict][I53]).** Sync is in the foundation on
+purpose: the first app is phones offline for days with a server and people who
+switch devices, and the engine, domain data and sync share one log; vivief made
+sync possible from its first phase too and deferred only the build. vivief's
+Sync Contract is three parts ViViEfs has: the conflict policy, the organization
+as scope with partial sync on demand later, and the journal fence as the claim.
+The `node` holding authority decides a human conflict when it accepts a change,
+against the cursor its writer had pulled, and writes the conflict as a fact a
+command resolves. An attribute holds one value; a set is entities, one per
+member. Text has no CRDT until two people type in one text at once. One
+checkpoint is the one place trust is enforced. User content never lives only in
+a journal, and quarantine keeps the user content of a rejected change on the
+device until a person resolves it. Sync is shown by [P09 Sync][P09]; conflicts decided at
+accept are to be shown by [P05 Changesets and projections][P05] and [P09][P09] again ([I81 Build conflicts decided at accept][I81]), quarantine by [P14 Quarantine after a lost lease][P14].
+
 **Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
 one installation of an app that keeps all or part of an organization's data
 and writes changes to it; a device is the `node` a person uses. Authority is a
@@ -237,7 +252,9 @@ Not yet run.
 [D132]: ../plan/bootstrap/02-decision-log.md#d132
 [D136-D141]: ../plan/bootstrap/02-decision-log.md#d136-d141
 [D14']: ../plan/bootstrap/02-decision-log.md#d14p
+[D142-D148]: ../plan/bootstrap/02-decision-log.md#d142-d148
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
+[D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [D36']: ../plan/bootstrap/02-decision-log.md#d36p
 [D37]: ../plan/bootstrap/02-decision-log.md#d37
@@ -261,6 +278,7 @@ Not yet run.
 [I50]: ../issues/0050-contracts-checked-as-data-or-by-commands.md
 [I51]: ../issues/0051-actors-or-the-engine.md
 [I52]: ../issues/0052-the-datom-and-its-store.md
+[I53]: ../issues/0053-sync-and-conflict.md
 [I54]: ../issues/0054-trust-encryption-and-who-may-sign-in.md
 [I55]: ../issues/0055-accept-the-foundation-concepts.md
 [I56]: ../issues/0056-one-shape-at-every-level.md
@@ -269,8 +287,10 @@ Not yet run.
 [I60]: ../issues/0060-server-independent-mode.md
 [I70]: ../issues/0070-research-access-from-membership-to-enterprise.md
 [I8]: ../issues/0008-engine-scale-out.md
+[I81]: ../issues/0081-build-conflicts-decided-at-accept.md
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06
 [P07]: ../plan/bootstrap/06-qualification-gates.md#p07
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11
+[P14]: ../plan/bootstrap/06-qualification-gates.md#p14

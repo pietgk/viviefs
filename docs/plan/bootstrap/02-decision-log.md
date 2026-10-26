@@ -54,6 +54,7 @@ Reference > Decisions, and a reference to a decision anywhere on the site links 
 | <a id="d32"></a>D32 | Traces derived from the log | Trace context is written in each changeset's envelope ([D58 Envelope per changeset][D58]). Spans are derived from the log with deterministic span ids (`executionId + activity + attempt`), so replays never duplicate spans. Export is durable: a projector reads the log from a cursor and posts OTLP via Effect's native exporter. Live `withSpan` detail inside activities is parented to durable spans. The tracing backend is never the store the engine reads from. | Tracing and durability become one concept without trusting a lossy, sampled, non-transactional store for durability. |
 | <a id="d33p"></a>D33' | Hybrid logical clock for tx | `tx` is a hybrid logical clock `(pt, c)`. `pt` is server-corrected time: monotonic clock anchored to the server offset within a boot session, wall clock + persisted offset after a reboot; never below the last persisted HLC. `c` is a tie-break counter used only when `pt` would not advance. Receive rule: `last = max(last, received)`. Server rejects future skew and flags measured gaps. Encoded ULID-shaped: 48-bit ms, 16-bit counter, remaining bits random + device id. | Offline for days must still work; corrected clocks alone cannot handle backwards jumps or cross-device causality. |
 | <a id="d34"></a>D34 | Per-attribute conflict policies | Conflict policy is declared per attribute in its Schema: **LWW** (domain scalars), **write-once fenced** (journal facts, lease grants), **human conflict** (references, evidence attachments, approvals: both values kept, a conflict datom raised). | One global LWW rule is wrong for GRC, ERP and the journal. |
+| <a id="d34p"></a>D34' | Per-attribute conflict policies, decided at accept | As [D34 Per-attribute conflict policies][D34]: LWW, write-once fenced and human conflict, per attribute. A commit's basis is the server cursor its writer had pulled when the command ran, which gives the basis of [D35'' Single-datom transactions with changesets][D35''] one meaning on every `node`. The `node` holding authority decides a human conflict at accept: a fact for the same entity and attribute accepted after the basis from another device is a conflict (the writer's own earlier outbox is not), and authority writes a `viviefs/conflict` fact in the same step as the append, so every `node` shows the same conflict and a command can close it. Projectors read conflicts from the log; a device may show a preview. An orphan (user content whose owner is not visible, [D38 Entity ids and strict composition][D38]) is decided at accept too, with [I69 Accept checks every change][I69]'s read model. Per value, the later of its assert and retract wins: a replace writes "retract old, assert new", so one writer leaves one value and two concurrent replaces leave both, marked by the open conflict; a resolving command retracts the values not chosen and closes the conflict. Effect's `EventLog` finds conflicts on the server on ingest the same way. Decided in [I53](../../issues/0053-sync-and-conflict.md) ([ADR-0009 Per-attribute conflict policies][ADR-0009]); built by [I81 Build conflicts decided at accept][I81], with [P05 Changesets and projections][P05] and [P09 Sync][P09] qualified again with two devices. | Found in [I53 Sync and conflict][I53]: the basis was a sequence number in whichever log projected it, and every changeset outside [P05 Changesets and projections][P05] sent 0; a conflict was a row each projector derived, never a fact; the server checked write-once only (`BasisRejected`); and a human-conflict attribute kept every value ever asserted, so a retract removed nothing and no conflict could be resolved. No gate put two devices on human conflict. |
 | <a id="d35pp"></a>D35'' | Single-datom transactions with changesets | **Single-datom transactions with a changeset id.** Datom = `[e, a, v, tx, op, cs]`. A changeset becomes visible when its commit datom arrives, carrying a manifest (count + hash of members). Conflicts are ordered by the commit `tx`; the commit records its basis and the server checks, per attribute policy, whether touched attributes changed since. `cs == tx` means self-committed (a checkbox toggle stays one datom). Commit and abort are write-once; open changesets may expire. Authors see a "committed + my open changesets" view. Keep the defining attribute for entity lifecycle. | Keeps web-interview's one-datom wire and storage simplicity, gives atomic multi-attribute and cross-entity changes enforced once by the projector, and makes drafts native (Studio drafts, evidence review, ERP draft orders). |
 | <a id="d58"></a>D58 | Envelope per changeset | The envelope (actor, device, lease epoch, trace context, command) is one fixed-shape record per changeset, keyed by `cs`, stored in the `changesets` table (not as datoms) and sent with the commit datom, or with the datom when `cs == tx`. One mechanism for every changeset size; the commit datom carries only manifest and basis. | The changeset is the unit of intent. Uniform, keeps the one-datom shorthand, queryable by joining on `cs`. Replaces a dual mechanism (commit datom vs columns) that was never decided. |
 | <a id="d58p"></a>D58' | Envelope names the origin | The envelope gains `origin`: a reference to the origin entity the changeset's content came from (a person, a mail account or chat workspace, a website, a model and its version, a system activity), apart from the actor who committed it. An enriching changeset ([D111 Faster and enriching implementations][D111]) also names the origins of its inputs. For data a person types, the origin is that person. The `datoms` table does not change. Decided in [I49 Projection: one concept or several patterns][I49] ([D115 Origin trust][D115]); built with [I64 Build origin trust][I64]. | Trust belongs to an origin ([D115 Origin trust][D115]), so every changeset must say where its content came from; one field per changeset, not per fact, because gathering commits per batch per origin ([D109 Frame and frame subscription][D109]). |
@@ -314,11 +315,30 @@ From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
 | <a id="d140"></a>D140 | Commands and the engine are the handler runtime | What vivief asks of an `effectHandler` runtime, ViViEfs has in commands (the function level) and the engine (the actor level): the queue is the deferreds and the outbox, failure is typed errors and journaled exits. A model call is an activity ([D111 Faster and enriching implementations][D111]). A handler written as instructions for a model is a skill, vivief's Markdown/LLM strategy in [D132 Four states at every level][D132]'s lens, not a part of the runtime. `vivief:effect-handler-runtime-needs`: keep ours. | A model's output already enters through an activity, journaled, with its origin. A second door would go around both. |
 | <a id="d141"></a>D141 | The actor is the accountable identity | The envelope's `actor` is the authenticated identity accountable for a changeset, the one authority checked ([D124 One checkpoint][D124]'s first question). Today a person or the server (the server rejects an actor that is not the signed-in caller, `ActorMismatch`). An agent writing in a person's session has that person as actor; inside a server workflow, the server; in both the model is the origin ([D58' Envelope names the origin][D58'], [D115 Origin trust][D115]). Whether an agent may have its own identity is [I54 Trust, encryption and who may sign in][I54]'s. The kind of identity is a fact about that identity, read when access is decided, not an envelope field. vivief's actor category (`vivief:provenance`, "actor-type defaults") is not adopted: trust stays on the origin. | "A person or the server" was the list of identities that can sign in today, not the meaning. With trust on the origin, nothing needs the actor's kind on every changeset. |
 
+<a id="d142-d148"></a>
+## Sync and conflict (2026-10-26)
+
+From [I53](../../issues/0053-sync-and-conflict.md), the eighth ticket of
+[the foundation concepts map](../foundation-concepts/map.md), grilled with the human on
+[the review page](../../research/2026-10-26-sync-and-conflict-review.html) over two rounds.
+[ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] records [D142-D148 Sync and conflict][D142-D148] among the foundation concepts; [ADR-0009 Per-attribute conflict policies][ADR-0009] records [D34' Per-attribute conflict policies, decided at accept][D34'], which amends [D34 Per-attribute conflict policies][D34] and is placed after it.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d142"></a>D142 | Sync from the start | Sync is in the foundation on purpose: a difference from vivief in build order, not in design. ViViEfs's first app is phones offline for days with a server and people who switch devices ([D13 Server holds workflow state][D13]), the server holds authority ([D36' Shared commands, as built][D36']), and the engine, domain data and sync share one log ([D31 One datom log][D31]), so sync was a foundation theme ([D46 Spikes are gates][D46]), qualified by [P09 Sync][P09]. vivief also made sync possible from its first phase (Hypercore "so the P2P path is never blocked by a storage migration", `vivief ADR 0047` §5) and deferred only the build. [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] says so. `vivief:sync-after-core`: keep ours. | Adding replication later to a store built for one writer is a migration, which [D44' Never rename, never migrate, the RPC too][D44'] forbids, and the first app could not be shown without it. |
+| <a id="d143"></a>D143 | The sync contract as three parts | vivief's Sync Contract is three parts ViViEfs already has, not one thing: its resolution is the conflict policy ([D34' Per-attribute conflict policies, decided at accept][D34']), its scope the organization ([D18 Organization isolation on the server][D18]) with partial sync on demand later ([D114 Partial sync on demand][D114]), and its claim the journal fence, where an online writer may claim a step before acting ([D14' The journal is the fence][D14']), with no timeout. Sync stays datom replication: an outbox up, one cursor stream per organization down, over Effect RPC ([ADR-0017 Sync: outbox and cursor stream over Effect RPC][ADR-0017]). Effect's `EventLog`, read again on 4.0.5, has the same shape (server sequence, dedup by id) and still has no typed rejection of one entry, orders by the device's clock and has no changesets; it finds `conflicts` where entries are accepted, as [D34'][D34'] now does. `vivief:sync-contract`: keep ours, its text CRDT deferred ([D145 Text without a CRDT][D145]); `viviefs:sync-as-datom-replication`: stands. | A contract as one declared thing was not adopted ([D124 One checkpoint][D124]); each part has its own home and its own gate. |
+| <a id="d144"></a>D144 | A set is entities | No cardinality. Every attribute holds one value; a set is an entity per member under its owner, its id segment derived from the member's value or the referenced entity's id ([D120 Minted and derived id segments][D120]), as membership is (`O{org}/M{person}`). The rule of thumb, beside [D38 Entity ids and strict composition][D38]'s: "is it a set? then it is entities". A list value (an array Schema, [D121 Attribute value types][D121]) only where one writer always replaces it whole. vivief's `:many` with an OR-Set is not adopted; `vivief:conflict-resolution-by-cardinality` is settled with `viviefs:conflict-policy` ([D34' Per-attribute conflict policies, decided at accept][D34']). | A many-valued attribute and an entity per member sync alike. The entity also gains data of its own without a migration ([D44' Never rename, never migrate, the RPC too][D44']), needs no second reduce or side table in the typed read model ([D121 Attribute value types][D121]), and is what membership already is. |
+| <a id="d145"></a>D145 | Text without a CRDT | Short text (a title) is LWW; a person's longer text is human conflict, so two edits made apart are both kept for a person to merge. A CRDT is deferred, `Decide when:` an app needs two people typing in one text at the same time ([I83 Live co-editing of text][I83]). That decision includes where the CRDT's state lives (in the log or beside it, [D31 One datom log][D31]) and vivief's one document per text instance. | Edits made apart, offline, are what human conflict is for. A CRDT needs a second sync channel, or opaque values every reader and authority must decode, for a need no app has. |
+| <a id="d146"></a>D146 | One checkpoint enforces trust | Accept on the `node` holding authority is the one place trust is enforced ([D124 One checkpoint][D124]); vivief's three trust strategies are commit paths above it ([D117 Trust strategies as commit paths][D117]). A device applies the cursor stream without checking it again. A `node` that accepts from a peer runs the same checkpoint ([I60 Server-independent mode][I60], [D105 What must stay possible][D105]). Whether signed changesets let a device check who wrote what is [I54 Trust, encryption and who may sign in][I54]'s. `viviefs:server-authoritative-validation`: keep ours; its pair `vivief:peer-validation-as-contract`: handed to [I54][I54]. | A device checking what the server sent against the server's own rules guards nothing until a changeset can be checked against its writer's key. |
+| <a id="d147"></a>D147 | User content outside the journal | An activity that captures user content (a photo, a recording, a signature) writes it as a domain changeset and returns its id; a journal value never holds user content alone. So a refused history ([D14' The journal is the fence][D14']) strands no user content. | Under the journal fence engine facts are refused whole and domain changesets are judged on their own; content kept only in a journal value would be lost with no way back. |
+| <a id="d148"></a>D148 | Quarantine is rejected user content | Quarantine keeps the user content of a changeset authority rejected (a write-once collision, an acceptance rule, revoked access): the device's rejected outbox rows that touch a user-content type, kept with their blobs until a person keeps the content as new (a command makes a fresh changeset, judged again) or discards it. It lives on the device; a copy on the server for its writer is deferred, `Decide when:` a person loses unresolved quarantined content with a lost or reset phone, or must resolve it on another device ([I11 Quarantine of user content after a lost lease][I11]). It is not a conflict fact: the content never reached the log. After revoked access it follows [I17 Local deletion after a revoked membership][I17]. Blobs no accepted fact refers to (a rejected changeset's file is uploaded before accept judges it) get a retention rule ([I82 Blobs no fact refers to][I82]). [P14 Quarantine after a lost lease][P14]'s grilling designs the screen. This is [D15 Server authority after a lost lease][D15]'s quarantine under [D14' The journal is the fence][D14']. | A rejected changeset is aborted and rebuilt away with no screen showing it, so its user content is lost in practice; and that happens without any workflow, when two people seal one item. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
 [ADR-0006]: ../../adr/0006-one-datom-log.md
 [ADR-0007]: ../../adr/0007-hybrid-logical-clock.md
+[ADR-0009]: ../../adr/0009-per-attribute-conflict-policies.md
 [ADR-0010]: ../../adr/0010-entity-ids-and-defining-attributes.md
 [ADR-0011]: ../../adr/0011-log-store-pattern.md
 [ADR-0012]: ../../adr/0012-datom-backed-workflow-engine.md
@@ -350,6 +370,7 @@ From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
 [D117]: #d117
 [D118]: #d118
 [D12]: #d12
+[D120]: #d120
 [D121]: #d121
 [D122]: #d122
 [D124]: #d124
@@ -357,6 +378,7 @@ From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
 [D127]: #d127
 [D128]: #d128
 [D129]: #d129
+[D13]: #d13
 [D130-D135]: #d130-d135
 [D132]: #d132
 [D134]: #d134
@@ -364,7 +386,10 @@ From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
 [D14]: #d14
 [D14']: #d14p
 [D141]: #d141
+[D142-D148]: #d142-d148
+[D145]: #d145
 [D15]: #d15
+[D18]: #d18
 [D2]: #d2
 [D22]: #d22
 [D24]: #d24
@@ -375,6 +400,8 @@ From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
 [D30]: #d30
 [D31]: #d31
 [D33']: #d33p
+[D34]: #d34
+[D34']: #d34p
 [D35'']: #d35pp
 [D36]: #d36
 [D36']: #d36p
@@ -420,9 +447,11 @@ From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
 [D98]: #d98
 [D98']: #d98p
 [D99]: #d99
+[I11]: ../../issues/0011-quarantine-after-a-lost-lease.md
 [I12]: ../../issues/0012-partial-sync-and-history.md
 [I15]: ../../issues/0015-identity-keys-and-trust.md
 [I16]: ../../issues/0016-roles-and-self-service-membership.md
+[I17]: ../../issues/0017-local-deletion-after-revoked-membership.md
 [I25]: ../../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I3]: ../../issues/0003-api-reference-for-effect-services.md
 [I33]: ../../issues/0033-ideas-batch-abstractions-that-constrain-agents.md
@@ -452,6 +481,9 @@ From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I8]: ../../issues/0008-engine-scale-out.md
 [I80]: ../../issues/0080-build-the-journal-fence.md
+[I81]: ../../issues/0081-build-conflicts-decided-at-accept.md
+[I82]: ../../issues/0082-blobs-no-fact-refers-to.md
+[I83]: ../../issues/0083-live-co-editing-of-text.md
 [I9]: ../../issues/0009-product-apps-as-app-pairs.md
 [P01]: 06-qualification-gates.md#p01
 [P03]: 06-qualification-gates.md#p03

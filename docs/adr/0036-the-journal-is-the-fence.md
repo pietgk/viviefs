@@ -8,7 +8,7 @@ Date: 2026-10-26
 
 Qualifying gate: [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09], qualified again on the journal fence.
 
-Related: [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D11 Human steps as deferreds][D11], [D13 Server holds workflow state][D13], [D15 Server authority after a lost lease][D15], [D40 Server-side human steps][D40], [D103 Nodes and authority][D103]. [ADR-0012 Durable execution over one datom-backed engine][ADR-0012], [ADR-0014 Leases, fencing and server authority][ADR-0014] (its lease design is superseded once this ADR qualifies). [I71 An append can land after a revocation][I71], [I80 Build the journal fence][I80]. Decided in [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-actors-or-the-engine-review.html), sections 8 and 13-15).
+Related: [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D11 Human steps as deferreds][D11], [D13 Server holds workflow state][D13], [D15 Server authority after a lost lease][D15], [D40 Server-side human steps][D40], [D103 Nodes and authority][D103], [D147 User content outside the journal][D147], [D148 Quarantine is rejected user content][D148]. [ADR-0012 Durable execution over one datom-backed engine][ADR-0012], [ADR-0014 Leases, fencing and server authority][ADR-0014] (its lease design is superseded once this ADR qualifies). [I71 An append can land after a revocation][I71], [I80 Build the journal fence][I80]. Decided in [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-actors-or-the-engine-review.html), sections 8 and 13-15).
 
 ## Problem
 
@@ -87,7 +87,9 @@ routing in memory.
   effect is duplicated, made harmless by its idempotency key, and none when the
   step was claimed before acting.
 - An offline phone overtaken: its history from the divergence is refused whole;
-  user content goes to quarantine ([P14 Quarantine after a lost lease][P14], [D15 Server authority after a lost lease][D15]).
+  its domain changesets are judged on their own. User content never lives only
+  in a journal value ([D147 User content outside the journal][D147]), and user content in a changeset that is rejected
+  goes to quarantine ([D148 Quarantine is rejected user content][D148], [P14 Quarantine after a lost lease][P14]).
 - A paused runner: its late write follows a fact that is no longer the head and
   is refused.
 - Two starts with one idempotency key: the second is refused.
@@ -118,6 +120,8 @@ Not yet run. Built by [I80 Build the journal fence][I80].
 [D13]: ../plan/bootstrap/02-decision-log.md#d13
 [D14]: ../plan/bootstrap/02-decision-log.md#d14
 [D14']: ../plan/bootstrap/02-decision-log.md#d14p
+[D147]: ../plan/bootstrap/02-decision-log.md#d147
+[D148]: ../plan/bootstrap/02-decision-log.md#d148
 [D15]: ../plan/bootstrap/02-decision-log.md#d15
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D39]: ../plan/bootstrap/02-decision-log.md#d39

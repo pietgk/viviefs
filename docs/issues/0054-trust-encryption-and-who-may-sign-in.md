@@ -30,6 +30,8 @@ Rows (10): `vivief:trust-contract`, `vivief:projection-access`, `vivief:selectiv
 
 2026-10-26: [I51](0051-actors-or-the-engine.md) leaves two inputs here ([D141 The actor is the accountable identity][D141]). The envelope's `actor` is the authenticated identity accountable for a changeset, today a person or the server; **whether an agent may have its own identity** (sign in, hold a membership, be refused what a person may do, such as committing on [D117 Trust strategies as commit paths][D117]'s gated path) is this ticket's question. An agent in a person's session has that person as actor, and inside a server workflow the server; the model is the origin in both. **The kind of identity** (person, server, agent account) is a fact about that identity, read when access is decided, not an envelope field.
 
+2026-10-26: From [I53 Sync and conflict][I53] ([D146 One checkpoint enforces trust][D146]): one checkpoint on the `node` holding authority enforces trust, and a device applies the cursor stream without checking it again. Handed here with `vivief:peer-validation-as-contract`: whether signed changesets let a device check who wrote what, and what a `node` accepting from a peer checks (with [I60 Server-independent mode][I60]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0035]: ../adr/0035-accepting-a-change.md
@@ -40,10 +42,13 @@ Rows (10): `vivief:trust-contract`, `vivief:projection-access`, `vivief:selectiv
 [D122]: ../plan/bootstrap/02-decision-log.md#d122
 [D124]: ../plan/bootstrap/02-decision-log.md#d124
 [D141]: ../plan/bootstrap/02-decision-log.md#d141
+[D146]: ../plan/bootstrap/02-decision-log.md#d146
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I12]: 0012-partial-sync-and-history.md
 [I15]: 0015-identity-keys-and-trust.md
 [I46]: 0046-review-the-vivief-inventory.md
 [I47]: 0047-what-viviefs-is-about.md
 [I49]: 0049-projection-one-concept-or-several-patterns.md
+[I53]: 0053-sync-and-conflict.md
+[I60]: 0060-server-independent-mode.md
 [I70]: 0070-research-access-from-membership-to-enterprise.md

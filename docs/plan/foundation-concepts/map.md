@@ -53,6 +53,7 @@ decisions that chose them.
 - [I70](../../issues/0070-research-access-from-membership-to-enterprise.md): research for [I54 Trust, encryption and who may sign in][I54]: access fits one AuthZEN-shaped contract, with a changeset as a batch of evaluations, a decision naming the position it read, and errors that deny; Cedar on Hermes unverified ([the record](../../research/2026-10-09-access-from-membership-to-enterprise.md)). Found [I71 An append can land after a revocation][I71].
 - [I56](../../issues/0056-one-shape-at-every-level.md): the shape is a foundation concept at the data level (a command decides, authority accepts, the projector evolves; a workflow over its journal) and a lens above it, four states at every level, with kinds of intent from a WayFinder map to a button press; the changeset is the step and the log after accept is `State'`; a verified commit is a commit on which verify is green; a frame reaches a person through a surface of any modality; Effect's names first ([D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98']). Added I76-[I78 Research: Effect's vocabulary against ours][I78].
 - [I51](../../issues/0051-actors-or-the-engine.md): the actor level is the durable workflow, one execution per actor; no actor runtime, supervision tree or event bus (a workflow, or a cursor); commands and the engine are the handler runtime; one meaning of entity, some entity types act; the actor is the accountable identity; a run's journal is its own fence, so one engine, one journal and one fence, and Cluster is not needed ([D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39']; [ADR-0036 The journal is the fence][ADR-0036]). Added [I80 Build the journal fence][I80].
+- [I53](../../issues/0053-sync-and-conflict.md): sync is in the foundation on purpose; vivief's Sync Contract is three parts we have; authority decides a human conflict at accept against the writer's cursor and writes it as a fact a command resolves; a set is entities, with no cardinality; no text CRDT until live co-editing; one checkpoint enforces trust; user content never lives only in a journal, and quarantine keeps a rejected change's user content on the device ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34']). Added I81-[I83 Live co-editing of text][I83].
 
 ## Not yet specified
 
@@ -88,6 +89,8 @@ decisions that chose them.
 [D135]: ../bootstrap/02-decision-log.md#d135
 [D136-D141]: ../bootstrap/02-decision-log.md#d136-d141
 [D14']: ../bootstrap/02-decision-log.md#d14p
+[D142-D148]: ../bootstrap/02-decision-log.md#d142-d148
+[D34']: ../bootstrap/02-decision-log.md#d34p
 [D36']: ../bootstrap/02-decision-log.md#d36p
 [D39']: ../bootstrap/02-decision-log.md#d39p
 [D44']: ../bootstrap/02-decision-log.md#d44p
@@ -108,5 +111,6 @@ decisions that chose them.
 [I71]: ../../issues/0071-an-append-can-land-after-a-revocation.md
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I80]: ../../issues/0080-build-the-journal-fence.md
+[I83]: ../../issues/0083-live-co-editing-of-text.md
 [P01]: ../bootstrap/06-qualification-gates.md#p01
 [P10]: ../bootstrap/06-qualification-gates.md#p10

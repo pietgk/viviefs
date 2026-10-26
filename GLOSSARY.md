@@ -184,9 +184,9 @@ is applied half. The count and hash of its members (and file references) that
 must be satisfied before it is applied.
 
 **Basis**:
-The point in the log a change was made from, used to notice when someone else
-changed the same thing since. Checked at commit against later changes, per
-attribute policy.
+The point a change was made from: how far its writer had caught up with the
+server. The server cursor the writer had pulled; authority uses it at accept to
+notice that someone else changed the same thing since ([D34' Per-attribute conflict policies, decided at accept][D34']).
 
 **Envelope**:
 The label on a changeset: who made it, on which device, and why. One
@@ -234,7 +234,9 @@ _Avoid_: timestamp, version
 
 **Conflict policy**:
 The rule for what happens when two people change the same thing at once. Per
-attribute: last writer wins (LWW), write-once fenced, or human conflict.
+attribute: last writer wins (LWW), write-once fenced, or human conflict,
+decided by authority when the change is accepted. An attribute holds one
+value; a set is entities, one per member ([D144 A set is entities][D144]).
 
 **Read model**:
 A table built from the facts so a screen can show them quickly; it can be
@@ -339,9 +341,16 @@ everything before it. Redelivery is safe because ids are stable; used by sync
 pull, trace export and the compaction horizon.
 
 **Conflict datom**:
-A note that two people changed the same thing and a person must choose. Raised
-under the human-conflict policy when both values are kept for a person to
-resolve.
+A note that two people changed the same thing and a person must choose.
+Written by authority under the human-conflict policy, in the same step as the
+change it found; a resolving command closes it.
+
+**Quarantine**:
+A person's work in a change the server refused, such as a photo sent with a
+seal someone else set first, kept on their phone until they keep it as new or
+throw it away. The user content of a rejected changeset, kept on the device
+with its blobs until a person resolves it ([D148 Quarantine is rejected user content][D148]).
+_Avoid_: lost lease
 
 **Changeset abort**:
 The fact that cancels an unfinished changeset so it never appears. Write-once.
@@ -708,7 +717,10 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D126]: docs/plan/bootstrap/02-decision-log.md#d126
 [D127]: docs/plan/bootstrap/02-decision-log.md#d127
 [D133]: docs/plan/bootstrap/02-decision-log.md#d133
+[D144]: docs/plan/bootstrap/02-decision-log.md#d144
+[D148]: docs/plan/bootstrap/02-decision-log.md#d148
 [D2]: docs/plan/bootstrap/02-decision-log.md#d2
+[D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
 [D58']: docs/plan/bootstrap/02-decision-log.md#d58p
 [D94]: docs/plan/bootstrap/02-decision-log.md#d94
