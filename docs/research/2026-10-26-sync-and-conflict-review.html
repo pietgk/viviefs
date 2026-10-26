@@ -24,6 +24,7 @@
   .cr-gap { border-left: 4px solid var(--color-warning); }
   .cr-bad { border-left: 4px solid var(--color-error); }
   .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
   .cr-figure { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; }
   .cr-svg { display: block; width: 100%; height: auto; color: var(--color-base-content); }
   .cr-svg text { fill: currentColor; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13px; }
@@ -97,7 +98,7 @@
       <tr><td><b>Q7</b> quarantine</td><td><b>Explainer asked for:</b> <a class="cr-link" href="#q7-explained">section 9</a>, then <a class="cr-link" href="#questions-2">round 2</a>.</td></tr>
     </tbody>
   </table></div>
-  <p class="text-sm">Also fixed: the diagrams in sections 3 and 4b are now drawn as inline SVG. Lavish turns every Mermaid diagram into an editable Excalidraw whiteboard, and these two sequence diagrams (notes, an <code class="cr-inline">alt</code> block, line breaks) did not survive that conversion.</p>
+  <p class="text-sm">The diagrams in sections 3 and 4b first failed to render. The cause found: a <code class="cr-inline">;</code> inside a sequence-diagram note ends the statement in Mermaid, a parse error. They are Mermaid again with the <code class="cr-inline">;</code> removed, checked in the Lavish view.</p>
 </section>
 
 <!-- ============================================================ -->
@@ -163,31 +164,29 @@
 <section class="space-y-5" id="as-built">
   <h2 class="text-2xl font-bold">3. Ours as built</h2>
   <p class="cr-src">Sources: <a class="cr-link" href="../../libs/sync/client/src/client.ts"><code class="cr-inline">libs/sync/client/src/client.ts</code></a> (<code class="cr-inline">submit</code>:393, <code class="cr-inline">push</code>:483, rejection :541-548); <a class="cr-link" href="../../libs/sync/server/src/server.ts"><code class="cr-inline">libs/sync/server/src/server.ts</code></a> (write-once :604-623); <a class="cr-link" href="../../libs/datom/src/projector.ts"><code class="cr-inline">libs/datom/src/projector.ts</code></a> (<code class="cr-inline">applyReady</code>:470-575); <a class="cr-link" href="../../libs/datom/src/visibility.ts"><code class="cr-inline">libs/datom/src/visibility.ts</code></a> (<code class="cr-inline">reduceAttribute</code>:29-46); <a class="cr-link" href="../../libs/datom/src/catalog.ts"><code class="cr-inline">libs/datom/src/catalog.ts</code></a>; evidence <a class="cr-link" href="../evidence/2026-09-22-p09.md">2026-09-22-p09.md</a>.</p>
-  <div class="cr-figure"><svg class="cr-svg" viewBox="0 0 960 590" role="img" aria-labelledby="fig-built-title">
-    <title id="fig-built-title">Sync as built: outbox up, accept, cursor down, rejection and rebuild</title>
-    <defs><marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
-    <g id="b-lanes">
-      <line class="lane" x1="90" y1="46" x2="90" y2="580"/><line class="lane" x1="270" y1="46" x2="270" y2="580"/><line class="lane" x1="480" y1="46" x2="480" y2="580"/><line class="lane" x1="690" y1="46" x2="690" y2="580"/><line class="lane" x1="870" y1="46" x2="870" y2="580"/>
-      <rect class="box" x="10" y="10" width="160" height="34" rx="6"/><text x="90" y="32" text-anchor="middle" font-weight="600">Command, phone A</text>
-      <rect class="box" x="190" y="10" width="160" height="34" rx="6"/><text x="270" y="32" text-anchor="middle" font-weight="600">Outbox, phone A</text>
-      <rect class="box" x="400" y="10" width="160" height="34" rx="6"/><text x="480" y="32" text-anchor="middle" font-weight="600">Server accept</text>
-      <rect class="box" x="610" y="10" width="160" height="34" rx="6"/><text x="690" y="32" text-anchor="middle" font-weight="600">Server log</text>
-      <rect class="box" x="790" y="10" width="160" height="34" rx="6"/><text x="870" y="32" text-anchor="middle" font-weight="600">Phone B</text>
-    </g>
-    <g id="b-draft"><title>The command's members are kept on phone A as an open changeset, seen in the author's draft view</title><rect class="note" x="10" y="58" width="236" height="28" rx="5"/><text x="128" y="77" text-anchor="middle">members kept as a draft locally</text></g>
-    <g id="b-queue"><line class="msg" x1="90" y1="120" x2="268" y2="120" marker-end="url(#arr-b)"/><text x="180" y="113" text-anchor="middle">changeset, basis 0</text></g>
-    <g id="b-append"><line class="msg" x1="270" y1="160" x2="478" y2="160" marker-end="url(#arr-b)"/><text x="375" y="153" text-anchor="middle">Append(basis, datoms)</text></g>
-    <g id="b-checks"><title>What accept checks today (server.ts)</title><rect class="note" x="360" y="178" width="240" height="46" rx="5"/><text x="480" y="197" text-anchor="middle">membership, organization, catalog,</text><text x="480" y="215" text-anchor="middle">manifest, files, lease, write-once</text></g>
-    <g id="b-accepted"><title>Accepted</title><rect class="region region-ok" x="250" y="240" width="460" height="82" rx="6"/><text x="262" y="256" font-size="12" opacity="0.8">accepted</text>
-      <line class="msg" x1="480" y1="276" x2="688" y2="276" marker-end="url(#arr-b)"/><text x="584" y="269" text-anchor="middle">append, acceptedAt set</text>
-      <line class="msg reply" x1="480" y1="306" x2="272" y2="306" marker-end="url(#arr-b)"/><text x="375" y="299" text-anchor="middle">ack with cursor</text></g>
-    <g id="b-rejected"><title>Rejected: typed rejection, local abort, rebuild</title><rect class="region region-bad" x="130" y="332" width="580" height="112" rx="6"/><text x="142" y="348" font-size="12" opacity="0.8">rejected</text>
-      <line class="msg reply" x1="480" y1="368" x2="272" y2="368" marker-end="url(#arr-b)"/><text x="375" y="361" text-anchor="middle">typed rejection</text>
-      <rect class="note" x="145" y="384" width="250" height="46" rx="5"/><text x="270" y="403" text-anchor="middle">abort locally, rebuild read models,</text><text x="270" y="421" text-anchor="middle">push the rest of the outbox</text></g>
-    <g id="b-pull"><line class="msg" x1="870" y1="476" x2="692" y2="476" marker-end="url(#arr-b)"/><text x="780" y="469" text-anchor="middle">Pull(org, cursor)</text>
-      <line class="msg reply" x1="690" y1="506" x2="868" y2="506" marker-end="url(#arr-b)"/><text x="780" y="499" text-anchor="middle">accepted datoms</text></g>
-    <g id="b-project"><title>Phone B's projector decides LWW and human conflict on its own</title><rect class="note note-warn" x="715" y="522" width="240" height="46" rx="5"/><text x="835" y="541" text-anchor="middle">projector: LWW by commit tx,</text><text x="835" y="559" text-anchor="middle">human conflict vs the basis</text></g>
-  </svg></div>
+  <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant C as Command on phone A
+  participant A as Phone A log
+  participant O as Phone A outbox
+  participant V as Server accept
+  participant L as Server log
+  participant B as Phone B
+  C->>A: members appended, open (draft view)
+  C->>O: changeset with basis 0
+  O->>V: Append(org, basis, envelope, datoms)
+  Note over V: membership, organization, catalog,<br/>manifest, files, lease, write-once<br/>(BasisRejected if the fact exists)
+  alt accepted
+    V->>L: append, acceptedAt set
+    V-->>O: ack with cursor
+  else rejected
+    V-->>O: typed rejection
+    O->>A: abort locally, rebuild read models,<br/>push the rest of the outbox
+  end
+  B->>L: Pull(org, cursor)
+  L-->>B: accepted datoms and envelopes
+  Note over B: projector: LWW by highest commit tx,<br/>human conflict against the basis<br/>as a projection_conflicts row
+  </pre></div>
   <div class="cr-table-wrap"><table class="table table-sm">
     <thead><tr><th>Policy</th><th>Used for (catalog)</th><th>Checked by the server</th><th>Decided by each projector</th></tr></thead>
     <tbody>
@@ -241,27 +240,22 @@ sequential re-attach:      [ 'blob:a', 'blob:b' ]   // a replace keeps both
 retract after keep-both:   [ 'blob:a', 'blob:b' ]   // a retract removes nothing
 lww:                       [ 'Shopping' ]</pre>
     <p class="text-sm"><b>Reading.</b> No command writes <code class="cr-inline">evidence/file</code> outside the P05 suite, and P09 never put two devices on a human-conflict attribute, so no gate saw this. What the policy needs: a basis that means the same on every node, someone who can see every accepted fact to decide, a conflict that is a fact so every node shows the same one and a command can close it, and a reduce in which a retract removes a value. Section 5 and Q2-Q3.</p>
-    <div class="cr-figure"><svg class="cr-svg" viewBox="0 0 960 462" role="img" aria-labelledby="fig-proposal-title">
-      <title id="fig-proposal-title">The proposal: authority decides a human conflict at accept and writes it as a fact</title>
-      <defs><marker id="arr-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
-      <g id="p-lanes">
-        <line class="lane" x1="110" y1="46" x2="110" y2="456"/><line class="lane" x1="370" y1="46" x2="370" y2="456"/><line class="lane" x1="620" y1="46" x2="620" y2="456"/><line class="lane" x1="860" y1="46" x2="860" y2="456"/>
-        <rect class="box" x="30" y="10" width="160" height="34" rx="6"/><text x="110" y="32" text-anchor="middle" font-weight="600">Phone A</text>
-        <rect class="box" x="290" y="10" width="160" height="34" rx="6"/><text x="370" y="32" text-anchor="middle" font-weight="600">Authority (accept)</text>
-        <rect class="box" x="540" y="10" width="160" height="34" rx="6"/><text x="620" y="32" text-anchor="middle" font-weight="600">Log</text>
-        <rect class="box" x="780" y="10" width="160" height="34" rx="6"/><text x="860" y="32" text-anchor="middle" font-weight="600">Phone B</text>
-      </g>
-      <g id="p-cursor"><title>Phone A has pulled up to cursor 41</title><rect class="note" x="25" y="58" width="170" height="28" rx="5"/><text x="110" y="77" text-anchor="middle">pulled up to cursor 41</text></g>
-      <g id="p-b-append"><title>Phone B attaches blob:b with basis 41</title><line class="msg" x1="860" y1="112" x2="372" y2="112" marker-end="url(#arr-p)"/><text x="615" y="105" text-anchor="middle">attach blob:b to E1, basis 41</text></g>
-      <g id="p-b-accepted"><line class="msg" x1="370" y1="146" x2="618" y2="146" marker-end="url(#arr-p)"/><text x="495" y="139" text-anchor="middle">seq 42: B's changeset</text></g>
-      <g id="p-a-append"><title>Phone A attaches blob:a with the same basis</title><line class="msg" x1="110" y1="186" x2="368" y2="186" marker-end="url(#arr-p)"/><text x="240" y="179" text-anchor="middle">attach blob:a to E1, basis 41</text></g>
-      <g id="p-detect"><title>Authority finds a fact for the same entity and attribute accepted after the basis by another device</title><rect class="note note-warn" x="240" y="200" width="260" height="46" rx="5"/><text x="370" y="219" text-anchor="middle">(E1, evidence/file) has a fact</text><text x="370" y="237" text-anchor="middle">after 41 from another device</text></g>
-      <g id="p-a-accepted"><line class="msg" x1="370" y1="276" x2="618" y2="276" marker-end="url(#arr-p)"/><text x="495" y="269" text-anchor="middle">seq 43: A's changeset</text></g>
-      <g id="p-conflict"><title>In the same step, authority appends a server-authored conflict fact</title><line class="msg msg-warn" x1="370" y1="308" x2="618" y2="308" marker-end="url(#arr-p)"/><text x="495" y="301" text-anchor="middle">seq 44: viviefs/conflict on E1</text></g>
-      <g id="p-pull-a"><line class="msg reply" x1="620" y1="346" x2="112" y2="346" marker-end="url(#arr-p)"/><text x="365" y="339" text-anchor="middle">pull: both files, one open conflict</text></g>
-      <g id="p-pull-b"><line class="msg reply" x1="620" y1="378" x2="858" y2="378" marker-end="url(#arr-p)"/><text x="740" y="371" text-anchor="middle">pull: the same</text></g>
-      <g id="p-resolve"><title>A person resolves the conflict with a command</title><rect class="note note-ok" x="40" y="400" width="880" height="50" rx="5"/><text x="480" y="420" text-anchor="middle">a person chooses; a resolving command retracts the other file and closes the conflict</text><text x="480" y="439" text-anchor="middle">every node shows the same conflict, and the same resolution</text></g>
-    </svg></div>
+    <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant A as Phone A
+  participant V as Authority (accept)
+  participant L as Log
+  participant B as Phone B
+  Note over A: pulled up to cursor 41
+  B->>V: attach blob:b to E1 (basis 41)
+  V->>L: accepted at seq 42
+  A->>V: attach blob:a to E1 (basis 41)
+  Note over V: a fact for (E1, evidence/file) accepted<br/>after 41 by another device: seq 42
+  V->>L: seq 43 A's changeset<br/>seq 44 viviefs/conflict on E1 (server-authored)
+  L-->>A: pull: both files, one open conflict
+  L-->>B: pull: the same
+  Note over A,B: a person chooses, a command retracts the other file<br/>and closes the conflict, every node agrees
+    </pre></div>
     <p class="text-sm text-center opacity-75">The proposal (Q2-Q3): the basis is the server cursor the writer had pulled; authority decides at accept and writes the conflict as a fact.</p>
   </div></div>
 
@@ -753,5 +747,36 @@ _Avoid_: lost lease</pre>
 
 </div>
 
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  // Mermaid measures labels while it lays a diagram out, so a diagram must stay
+  // visible until it is done. Lavish hides a .mermaid container as soon as an SVG
+  // appears in it (to put a whiteboard there), and preloads the page in a hidden
+  // frame. So each diagram is drawn apart, once the page has a size, and only the
+  // finished SVG goes into its container.
+  const diagrams = [...document.querySelectorAll(".mermaid")];
+  function source(el) {
+    const raw = document.createElement("textarea");
+    raw.innerHTML = el.innerHTML;
+    return raw.value.trim();
+  }
+  async function draw() {
+    for (const [i, el] of diagrams.entries()) {
+      try {
+        const { svg } = await mermaid.render(`diagram-${i}`, source(el));
+        el.innerHTML = svg;
+      } catch (error) {
+        console.error(`Mermaid diagram ${i} in #${el.closest("section")?.id} failed:`, error?.message ?? error);
+      }
+    }
+  }
+  const sized = new ResizeObserver(([entry]) => {
+    if (entry.contentRect.width === 0) return;
+    sized.disconnect();
+    void draw();
+  });
+  window.addEventListener("load", () => sized.observe(document.body), { once: true });
+</script>
 </body>
 </html>
