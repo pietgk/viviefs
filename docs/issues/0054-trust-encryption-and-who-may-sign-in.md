@@ -28,6 +28,8 @@ Rows (10): `vivief:trust-contract`, `vivief:projection-access`, `vivief:selectiv
 
 2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md) leaves inputs here. **Access is the first question of accepting a change** ([D124 One checkpoint][D124], [ADR-0035 Accepting a change][ADR-0035]): may this writer do this, asked before structure and acceptance rules; a rule that names the writer, such as independent review, is an access decision, not an acceptance rule. **Access as a pattern** is the human's direction: a reference implementation in code (membership, `authority: 'server'`, a command's declared writes) and later implementations (roles, relations as datoms, Cedar policies) answering one request, the subject, action, resource and context of the OpenID AuthZEN Authorization API; [I70 Research: access from membership to enterprise][I70] researches it first, and this ticket decides it. **Trust over structure** (vivief): a rule can only judge a value its checker can read, so a rule on an encrypted attribute checks presence and shape, not content.
 
+2026-10-26: [I51](0051-actors-or-the-engine.md) leaves two inputs here ([D141 The actor is the accountable identity][D141]). The envelope's `actor` is the authenticated identity accountable for a changeset, today a person or the server; **whether an agent may have its own identity** (sign in, hold a membership, be refused what a person may do, such as committing on [D117 Trust strategies as commit paths][D117]'s gated path) is this ticket's question. An agent in a person's session has that person as actor, and inside a server workflow the server; the model is the origin in both. **The kind of identity** (person, server, agent account) is a fact about that identity, read when access is decided, not an envelope field.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0035]: ../adr/0035-accepting-a-change.md
@@ -37,6 +39,7 @@ Rows (10): `vivief:trust-contract`, `vivief:projection-access`, `vivief:selectiv
 [D117]: ../plan/bootstrap/02-decision-log.md#d117
 [D122]: ../plan/bootstrap/02-decision-log.md#d122
 [D124]: ../plan/bootstrap/02-decision-log.md#d124
+[D141]: ../plan/bootstrap/02-decision-log.md#d141
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I12]: 0012-partial-sync-and-history.md
 [I15]: 0015-identity-keys-and-trust.md

@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I51: Actors or the engine (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.6rem; overflow-x: auto; line-height: 1.45; white-space: pre; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-table-wrap td:first-child code.cr-inline, .cr-table-wrap td:first-child > b { white-space: nowrap; overflow-wrap: normal; }
+  .cr-table-wrap td:first-child { overflow-wrap: normal; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  table.cr-fixed { table-layout: fixed; width: 100%; }
+  table.cr-fixed th { white-space: normal; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I51</span>
+    <span class="badge badge-outline">2026-10-24, rounds 2-3 on 2026-10-26</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+    <span class="badge badge-success">Settled: D136-D141, D14', D39', ADR-0036</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Actors or the engine?</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0051-actors-or-the-engine.md">I51 Actors or the engine</a> asks whether the datom-backed workflow engine is ViViEfs's answer to vivief's actor runtime, whether anything that is not a workflow needs supervision, and whether the stack needs an event bus beside Reactivity invalidation and the cursor stream. It settles 13 rows of <a class="cr-link" href="2026-10-06-vivief-inventory.html">the vivief inventory</a> and reviews <a class="cr-link" href="../issues/0008-engine-scale-out.md">I8 Engine scale-out and a multi-runner server</a> and <a class="cr-link" href="../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md">I29 Ideas batch: agents that record a replayable run</a>. <a class="cr-link" href="../issues/0056-one-shape-at-every-level.md">I56 One shape at every level?</a> already settled the shape at the data level (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d130">D130 One shape at the data level</a>), so this page does not ask about the shape again. Effect's <code class="cr-inline">cluster</code> is read first: a concept Effect already names takes Effect's name (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135 Effect's names first</a>).</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in five lines</h2>
+    <ol class="list-decimal pl-5 space-y-1">
+      <li>vivief's actor is a handler with identity, a queue, a lifecycle and a typed protocol, for multi-step, streaming or cancellable work. Its runtime was never built: routing, supervision, concurrency and lifecycle are listed as open choices (kb §5).</li>
+      <li>Effect's actor is the Cluster <b>Entity</b>, and Effect builds its durable workflow <b>on</b> it: in <code class="cr-inline">ClusterWorkflowEngine</code> each workflow type is an Entity and each execution an entity id.</li>
+      <li>Our engine gives an execution every actor property (identity, state, protocol, mailbox, lifecycle, one owner) and replaces supervision with something stronger: a crashed run resumes from its journal. So the durable workflow is ViViEfs's actor level, and "actor" keeps its narrow meaning.</li>
+      <li>Nothing else in the stack needs a supervisor: every other loop rebuilds from a cursor. The rule is "if it must not lose progress on a crash, it is a workflow; otherwise it rebuilds from its cursor". There is no event bus: Reactivity in process, the cursor stream between nodes, push only as a wake-up hint.</li>
+      <li>Found on the way: <b>a lease never expires today</b>. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d14">D14 Leases with fencing</a> says "renewed while active ... until the lease expires", but the engine writes <code class="cr-inline">expiresAtMs: null</code> and nothing renews; a lease moves only by an explicit handoff (section 5).</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-3" id="round-1">
+  <h2 class="text-2xl font-bold">Round 1, in conversation (2026-10-24)</h2>
+  <p>The human challenged four points before answering, and asked for an upfront check:</p>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Could Cluster replace the lease?</b> "Both are needed if Cluster comes" made the human ask whether one mechanism is enough: <a class="cr-link" href="#lease-or-shard">section 8</a>.</li>
+    <li><b>Can <code class="cr-inline">MessageStorage</code> be built on the log store?</b> <a class="cr-link" href="#message-storage">Section 9</a>.</li>
+    <li><b>"One execution per actor"</b> in Q1 needed explaining: <a class="cr-link" href="#one-execution">section 10a</a>.</li>
+    <li><b>Is "entity" really a clash?</b> Define both, and see whether a person, a location, a process and a workflow can all be entities with a type and an id: <a class="cr-link" href="#entity">section 10</a>.</li>
+    <li><b>Q6 smelled.</b> Why can an actor only be a person or the server? <a class="cr-link" href="#actor-origin">Section 11</a>.</li>
+  </ul>
+  <p class="text-sm">Q1, Q3, Q4 and Q5 were not challenged; round 2 asks to confirm them.</p>
+</section>
+
+<section class="space-y-3" id="round-2">
+  <h2 class="text-2xl font-bold">Round 2, settled in conversation (2026-10-26)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q8</b> A: one meaning of entity, a thing with an identity (a type and an id) that facts are about; some entity types act; the execution is the only one today; Effect's <code class="cr-inline">Entity</code> is an entity type that acts; the word for the acting kind is map 3's.</li>
+    <li><b>Q9</b> A: <code class="cr-inline">actor</code> is the authenticated identity accountable for a changeset; today a person or the server; an agent's own identity is I54's; the kind of identity is an attribute of the identity; trust stays on the origin.</li>
+    <li><b>Q10</b> Yes: Q1 A, Q3 A, Q4 A, Q5 A.</li>
+    <li><b>Q7</b> D: the journal is the fence. Every engine fact names the fact it follows and is accepted only on the run's head; takeover is always allowed; the holder is derived from the journal; no lease, epoch or heartbeat; a server runner takes over after a step's timeout; Cluster is not needed (D14', D39'). Reached through the human's challenges: the lease explained (<a class="cr-link" href="#fenced-lease">section 13</a>), the human's alternative of takeover always allowed with overlap in the journal, corrected from a per-fact to a per-history fence (<a class="cr-link" href="#journal-fence">section 14</a>), and the human's B, A, B scenario with option D in full (<a class="cr-link" href="#option-d">section 15</a>).</li>
+  </ul>
+</section>
+
+<section class="space-y-3" id="round-3">
+  <h2 class="text-2xl font-bold">Round 3, settled in conversation (2026-10-26)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q11</b> The 13 rows as in <a class="cr-link" href="#questions-3">section 16</a> (not challenged).</li>
+    <li><b>Q12</b> The comments on I8 and I29 as written.</li>
+    <li><b>Q13</b> A: a new ADR-0036 "The journal is the fence", superseding ADR-0014's lease design once qualified; ADR-0012 and ADR-0032 amended.</li>
+    <li><b>Q14</b> actor and Entity entries as written; Lease entries stay until I80 is built; head, holder and the acting entity's word go to map 3.</li>
+    <li><b>Q15</b> A: I80 in phase 3, after I71 and beside I69, before the app shell.</li>
+  </ul>
+  <p class="text-sm">The human confirmed the shared understanding on 2026-10-26, and the write-up in <a class="cr-link" href="#write-up">section 17</a> was recorded as written there: the decision log, ADR-0036, ADR-0032, ADR-0014, ADR-0012, the glossary, I51, I80 and the comments.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="vivief">
+  <h2 class="text-2xl font-bold">1. vivief's actor in one page</h2>
+  <p class="cr-src">vivief HEAD <code class="cr-inline">3071cb2</code>: <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> §2.5 "Level 1 - The function", "Level 2 - The actor", "Failure model"; §9 Actor Runtime. <code class="cr-inline">docs/contract/vivief-concepts-impl-kb.md</code> §3 (effectHandler, Cross-cutting needs), §5 Actor Runtime. Event broker: cp §6.2, §10.1; pr §3.7 (inventory row <code class="cr-inline">vivief:event-broker</code>).</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Two levels (v6 §2.5)</h3>
+      <pre class="cr-code">Level 1, the function:
+  handler(state, intent): { datoms, intents }
+  "Pure, testable, composable. Most handlers."
+
+Level 2, the actor:
+  "Function + identity + Projection + message
+   queue + lifecycle + typed protocol."</pre>
+      <p class="text-sm">Its examples of the actor level: "LLM invocation with streaming", "Session-recap workflow (multi-step, cancellable)", "Context compaction (reads stream, produces summary datom)".</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">The runtime's open choices (kb §5)</h3>
+      <ul class="list-disc pl-5 text-sm space-y-1">
+        <li><b>Message routing</b>: "topic-based, direct addressing, or both"</li>
+        <li><b>Supervision</b>: "what happens when an actor crashes (restart, escalate, stop)"</li>
+        <li><b>Concurrency</b>: "single-threaded event loop vs worker threads"</li>
+        <li><b>Lifecycle</b>: "spawn, running, stopping, stopped - with Projection subscription management"</li>
+      </ul>
+      <p class="text-sm">"The runtime itself is a system actor." kb §3 adds what an <code class="cr-inline">effectHandler</code> needs (a runtime for sync functions and async actors, a message queue, failure handling, lifecycle, strategies code, LLM, StateMachine, hybrid) and, across concepts, "an event bus for effect routing between actors".</p>
+    </div></div>
+  </div>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">At runtime (v6 §9) and when it fails (v6 §2.5)</h3>
+    <pre class="cr-code">HumanActor -&gt; :voice/input-received -&gt; SessionRecapActor
+  -&gt; TranscriberActor produces in-flight tokens -&gt; InFlightContract -&gt; DialogSurfaceActor
+  -&gt; TranscriberActor commits final datom -&gt; StoreActor notifies actors with matching Projections
+  -&gt; if TranscriberActor crashes: [:handler/crashed ...] datom -&gt; escalation StateMachine routes to human</pre>
+    <p class="text-sm">Two failure paths, both datoms: graceful (<code class="cr-inline">:handler/failed</code>, "triggers the creation loop's escalation") and crash (<code class="cr-inline">:handler/crashed</code>, "escalates to human immediately"). vivief's actor has no durable state of its own: a crashed actor's progress is whatever datoms it already committed. The event broker (NATS) appears in two product documents, counseling and procurement, never in v6; procurement marks it "Never (architectural)" and pep says MoQ supersedes it.</p>
+  </div></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="cluster">
+  <h2 class="text-2xl font-bold">2. Effect's <code class="cr-inline">cluster</code> in one page</h2>
+  <p class="cr-src">Effect 4.0.5, <code class="cr-inline">repos/effect/packages/effect/src/cluster/</code>. All modules are marked <code class="cr-inline">@stability unstable</code>.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Module</th><th>What it is</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td><b>Entity</b></td><td>Effect's actor. A type name plus a typed protocol (an <code class="cr-inline">RpcGroup</code>), addressed by <code class="cr-inline">EntityId</code>, routed to a shard. Handlers by <code class="cr-inline">toLayer</code>, or a mailbox by <code class="cr-inline">toLayerQueue</code>. Lifecycle options <code class="cr-inline">maxIdleTime</code>, <code class="cr-inline">concurrency</code>, <code class="cr-inline">mailboxCapacity</code>, <code class="cr-inline">defectRetryPolicy</code>; <code class="cr-inline">keepAlive</code> stops idle eviction.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/Entity.ts"><code class="cr-inline">Entity.ts</code></a>:74, :141, :147-151, :174, :731</td></tr>
+      <tr><td><b>Supervision</b></td><td>A defect in an entity restarts it: "Defect in entity, restarting", retried by <code class="cr-inline">defectRetryPolicy</code>, persisted messages replayed into the rebuilt entity. A typed failure is a reply, not a restart.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/internal/entityManager.ts"><code class="cr-inline">internal/entityManager.ts</code></a>:152-155, :397, :416</td></tr>
+      <tr><td><b>Sharding</b></td><td>Owns shards with locks that expire and are refreshed (<code class="cr-inline">shardLockRefreshInterval</code> 10 s, <code class="cr-inline">shardLockExpiration</code> 35 s). On shutdown, <code class="cr-inline">preemptiveShutdown</code> and <code class="cr-inline">entityTerminationTimeout</code> (15 s) let entities finish.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/ShardingConfig.ts"><code class="cr-inline">ShardingConfig.ts</code></a>:81, :85, :95, :139, :186-195</td></tr>
+      <tr><td><b>Singleton</b></td><td>"A cluster-wide background effect as a <code class="cr-inline">Layer</code>, started only by the runner that currently owns the singleton's shard." It moves when shard ownership moves. Failures from <code class="cr-inline">run</code> become defects.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/Singleton.ts"><code class="cr-inline">Singleton.ts</code></a>:20-48</td></tr>
+      <tr><td><b>ClusterCron</b></td><td>A cron job "scheduled as persisted entity messages, with an initial singleton scheduling step".</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/ClusterCron.ts"><code class="cr-inline">ClusterCron.ts</code></a>:32-45</td></tr>
+      <tr><td><b>MessageStorage</b></td><td>Where requests and replies to entities are persisted (SQL in <code class="cr-inline">SqlMessageStorage</code>). This is the cluster's journal.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/MessageStorage.ts"><code class="cr-inline">MessageStorage.ts</code></a></td></tr>
+      <tr><td><b>ClusterWorkflowEngine</b></td><td>Implements <code class="cr-inline">WorkflowEngine</code>, the interface our engine implements too, by making each workflow type an Entity <code class="cr-inline">Workflow/&lt;name&gt;</code>, each execution an entity id, and the durable clock its own Entity <code class="cr-inline">Workflow/-/DurableClock</code>. It persists in <code class="cr-inline">MessageStorage</code>, not in our log.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/ClusterWorkflowEngine.ts"><code class="cr-inline">ClusterWorkflowEngine.ts</code></a>:63-65, :939, :989</td></tr>
+      <tr><td><b>SingleRunner</b></td><td>A one-process cluster over SQL: "for single-process use rather than multi-runner coordination".</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/SingleRunner.ts"><code class="cr-inline">SingleRunner.ts</code></a>:40-61</td></tr>
+      <tr><td><b>DurableQueue</b> (in <code class="cr-inline">workflow</code>)</td><td>A workflow hands a payload to a persisted queue, a worker pool takes it and completes the workflow's deferred. At least once, dead-lettered after its attempts.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/workflow/DurableQueue.ts"><code class="cr-inline">workflow/DurableQueue.ts</code></a>:1-20</td></tr>
+    </tbody>
+  </table></div>
+  <p>The order matters for this ticket. In Effect, the durable workflow is built <b>on</b> the actor. In ViViEfs we built the durable workflow directly on the log, with no actor below it.</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+flowchart TB
+  subgraph VV["ViViEfs: our engine"]
+    direction TB
+    W2["Workflow.make('Inspection.v3')"] --> WE2["WorkflowEngine (interface)"]
+    WE2 --> OUR["engineLayer<br/>libs/workflow-engine"]
+    OUR --> LS["Lease per execution,<br/>fenced by epoch"]
+    OUR --> SW["Launch sweep:<br/>resume from the journal"]
+    LS --> LOG[("The datom log<br/>(LogStore)")]
+    SW --> LOG
+  end
+  subgraph EF["Effect: ClusterWorkflowEngine"]
+    direction TB
+    W1["Workflow.make('Inspection.v3')"] --> WE1["WorkflowEngine (interface)"]
+    WE1 --> CWE["ClusterWorkflowEngine"]
+    CWE --> ENT["Entity 'Workflow/Inspection.v3'<br/>one entity id per execution"]
+    CWE --> CLK["Entity 'Workflow/-/DurableClock'"]
+    ENT --> SH["Sharding: shard locks,<br/>restart on defect"]
+    CLK --> SH
+    SH --> MS[("MessageStorage<br/>(SQL)")]
+  end
+  </pre></div>
+  <p class="text-sm">Both engines sit behind the same <code class="cr-inline">WorkflowEngine</code> interface, which is why <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d39">D39 One engine everywhere</a> can call Cluster "the later scale-out path behind the same interface". What differs is underneath: Cluster's journal is <code class="cr-inline">MessageStorage</code>, ours is the log. D39's reason is "one journal format is the point of <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d31">D31 One datom log</a>", so the scale-out path is not free (section 6, I8).</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="side-by-side">
+  <h2 class="text-2xl font-bold">3. Actor properties side by side</h2>
+  <p class="cr-src">ViViEfs sources: <a class="cr-link" href="../../libs/workflow-engine/src/engine.ts"><code class="cr-inline">libs/workflow-engine/src/engine.ts</code></a>, <a class="cr-link" href="../../libs/workflow-engine/src/journal.ts"><code class="cr-inline">journal.ts</code></a>, <a class="cr-link" href="../../libs/workflow-engine/src/sweep.ts"><code class="cr-inline">sweep.ts</code></a>, <a class="cr-link" href="../../libs/workflow-engine/src/crash-hook.ts"><code class="cr-inline">crash-hook.ts</code></a>, <a class="cr-link" href="../../libs/sync/server/src/server.ts"><code class="cr-inline">libs/sync/server/src/server.ts</code></a>.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Property</th><th>vivief actor</th><th>Effect Entity</th><th>ViViEfs execution</th></tr></thead>
+    <tbody>
+      <tr><td><b>Identity</b></td><td>"identity" (v6 §2.5), not specified further</td><td><code class="cr-inline">EntityAddress</code>: type + <code class="cr-inline">EntityId</code> + shard</td><td>Entity <code class="cr-inline">O{org}/W{exec}</code>, the execution id a hash of workflow name and idempotency key (glossary Execution; <a class="cr-link" href="../adr/0012-datom-backed-workflow-engine.md">ADR-0012 Durable execution over one datom-backed engine</a>)</td></tr>
+      <tr><td><b>State</b></td><td>In memory, plus datoms it committed</td><td>In memory; rebuilt from persisted messages on restart</td><td>The journal: activity exits, deferred exits, clocks, lease, result, all datoms (<code class="cr-inline">journal.ts</code>). The body holds no other state; it re-runs and replays.</td></tr>
+      <tr><td><b>Typed protocol</b></td><td>"typed protocol"</td><td>An <code class="cr-inline">RpcGroup</code> per entity type</td><td>The workflow's payload, success and error schemas, plus each <code class="cr-inline">DurableDeferred</code>'s schema (Effect's <code class="cr-inline">Workflow</code>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d10">D10 Effect Workflow over our engine</a>)</td></tr>
+      <tr><td><b>Mailbox</b></td><td>"message queue"</td><td><code class="cr-inline">mailboxCapacity</code>, <code class="cr-inline">toLayerQueue</code></td><td>Deferreds: a completion is a <code class="cr-inline">viviefs/deferred/exit</code> datom, from a person, the server or a notification action (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d11">D11 Human steps as deferreds</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d40">D40 Server-side human steps</a>). Ordered by the log, deduplicated by <code class="cr-inline">tx</code>.</td></tr>
+      <tr><td><b>Lifecycle</b></td><td>spawn, running, stopping, stopped</td><td>Spawned on first message, evicted after <code class="cr-inline">maxIdleTime</code>, terminated within <code class="cr-inline">entityTerminationTimeout</code></td><td>Started (<code class="cr-inline">viviefs/workflow/started</code>), running in one fiber, suspended at a deferred or clock, interrupted (<code class="cr-inline">engine.ts</code>:547-556), done (<code class="cr-inline">viviefs/workflow/result</code>). Closing the engine's scope interrupts its fibers; the run resumes later.</td></tr>
+      <tr><td><b>Supervision</b></td><td>Open choice: restart, escalate, stop. Crash becomes a datom, escalated to a person</td><td>Restart on defect with <code class="cr-inline">defectRetryPolicy</code>, persisted messages replayed</td><td><b>Restart</b> is resume from the journal (<code class="cr-inline">resume</code>, <code class="cr-inline">engine.ts</code>:401), by the launch and foreground sweep (<code class="cr-inline">sweep.ts</code>; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d3">D3 Resume on next launch</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d24">D24 Durable clocks and notifications</a>). <b>Escalate</b> is failure as data: a typed activity exit, or a deferred waiting for a person. <b>Stop</b> is <code class="cr-inline">interrupt</code>. Activity retries are Effect's <code class="cr-inline">Activity.retry</code>.</td></tr>
+      <tr><td><b>One owner</b></td><td>Not addressed</td><td>The runner holding the shard lock</td><td>The device holding the lease, fenced by epoch: a write under another holder dies with <code class="cr-inline">StaleLease</code> (<code class="cr-inline">engine.ts</code>:183-200), and the server rejects a stale epoch (<code class="cr-inline">server.ts</code>:557-585; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d14">D14 Leases with fencing</a>, <a class="cr-link" href="../adr/0014-leases-fencing-and-server-authority.md">ADR-0014 Leases, fencing and server authority</a>, <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p09">P09 Sync</a>)</td></tr>
+      <tr><td><b>Routing</b></td><td>Open choice: topic or direct</td><td>Direct, by address through shards</td><td>Direct, by execution id; there is one engine per device and per server, so no routing between engines is needed</td></tr>
+      <tr><td><b>Concurrency</b></td><td>Open choice</td><td><code class="cr-inline">concurrency</code> per entity</td><td>One fiber per execution (<code class="cr-inline">runs</code> map); a resume while running waits for the fiber (<code class="cr-inline">engine.ts</code>:417-430)</td></tr>
+      <tr><td><b>Shown by</b></td><td>Not built</td><td>Effect's own tests</td><td><a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p06">P06 Workflow engine crash matrix</a> (seven kill points, <code class="cr-inline">crash-hook.ts</code>:9-15), <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p07">P07 Device resume E2E</a>, <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p09">P09 Sync</a></td></tr>
+    </tbody>
+  </table></div>
+  <p>Every actor property has an answer in the execution, and two of them are stronger than in an actor: its state survives a crash, and its owner is fenced across devices, not only across runners.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="examples">
+  <h2 class="text-2xl font-bold">4. Worked examples on real code</h2>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(a) A workflow killed mid-activity, against an Entity restarted on a defect</h3>
+    <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="space-y-2">
+        <p><b>Ours (P06, kill point <code class="cr-inline">during-activity</code>).</b></p>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li>The workflow starts; <code class="cr-inline">viviefs/workflow/started</code> is in the log.</li>
+          <li>Activity <code class="cr-inline">upload</code> runs; the process is killed before its exit is journaled.</li>
+          <li>Next launch, <code class="cr-inline">EngineSweep.sweep</code> finds an execution started with no result (<code class="cr-inline">engine.ts</code>:715-731) and calls <code class="cr-inline">resume</code>.</li>
+          <li>The body re-runs from the top. Activities with a journaled exit return it; <code class="cr-inline">upload</code> has none, so it runs again, made harmless by its idempotency key.</li>
+          <li>The run continues. Nothing in memory was needed.</li>
+        </ol>
+      </div>
+      <div class="space-y-2">
+        <p><b>Effect Entity.</b></p>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li>A message arrives; the entity's handler runs.</li>
+          <li>The handler dies with a defect.</li>
+          <li>The entity manager logs "Defect in entity, restarting", waits per <code class="cr-inline">defectRetryPolicy</code> and rebuilds the entity (<code class="cr-inline">entityManager.ts</code>:397-420).</li>
+          <li>Persisted messages without a reply are delivered again.</li>
+          <li>The entity's in-memory state starts empty; anything it needs it must rebuild from its own storage.</li>
+        </ol>
+      </div>
+    </div>
+    <p class="text-sm">Both replay what was persisted. Ours replays the whole run, because the journal is the state; an Entity replays only the unanswered messages, and its state is its own concern. That is why <code class="cr-inline">ClusterWorkflowEngine</code> needs no extra supervision for workflows either: the workflow body's replay is the restart.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(b) A loop that is not a workflow</h3>
+    <p class="text-sm">Today the stack has no long-running loop besides the engine. The sync client pulls when asked (<a class="cr-link" href="../../libs/sync/client/src/client.ts"><code class="cr-inline">client.ts</code></a>:446), the projector invalidates after it projects (<a class="cr-link" href="../../libs/datom/src/projector.ts"><code class="cr-inline">projector.ts</code></a>:686-689), and the trace projector exports from its trace cursor when called (<a class="cr-link" href="../../libs/telemetry/src/trace-sink.ts"><code class="cr-inline">trace-sink.ts</code></a>:1-10). Candidates to come: a sync loop on the device, projector catch-up, a trace export loop, server jobs such as compaction or a sweep of due clocks.</p>
+    <p class="text-sm">Each of them reads the log from a cursor it advances only when its work is acknowledged (glossary Acknowledged cursor; <a class="cr-link" href="../adr/0011-log-store-pattern.md">ADR-0011 Log store pattern, read models, compaction and analytics</a>). A crash loses no progress: the loop starts again from its cursor. So it needs a retry, not a supervisor:</p>
+    <pre class="cr-code">// A sketch, not code to write: a trace export loop as a scoped Layer.
+export const traceExportLoop = Layer.effectDiscard(
+  exportFromCursor.pipe(                          // reads from the trace cursor, advances on ack
+    Effect.repeat(Schedule.spaced("5 seconds")),
+    Effect.retry(Schedule.exponential("1 second")),
+    Effect.forkScoped,                            // interrupted when the Layer's scope closes
+  ),
+)
+
+// The same job on a server with more than one runner, where exactly one runner may run it:
+export const traceExportSingleton = Singleton.make("trace-export", exportForever)
+// or, on a timetable:  ClusterCron.make({ name: "compaction", cron, execute: compactOnce })</pre>
+    <p class="text-sm">The rule this gives: <b>if a piece of work must not lose progress on a crash, it is a workflow; otherwise it rebuilds from its cursor and runs as a scoped Layer with a Schedule.</b> A server job that must have one owner becomes a Singleton or a ClusterCron only once the server has more than one runner (I8); on one runner the scoped Layer is already the only owner.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(c) A commit routed without a bus</h3>
+    <div class="cr-mermaid"><pre class="mermaid">
+flowchart TB
+  subgraph DA["Device A"]
+    CMD["Command decides a changeset"] --> OB["Outbox, pushed to the server"]
+  end
+  subgraph SV[" "]
+    SRV["Server accepts (ADR-0035)"] --> LOGS[("Server log")]
+    LOGS -->|"trace cursor"| TP["Trace projector"]
+  end
+  subgraph DB["Device B"]
+    B[("Device B log")] --> PJ["Projector"]
+    PJ -->|"Reactivity.invalidate(keys)"| QA["Query atoms whose keys match re-query"]
+  end
+  OB --> SRV
+  LOGS -->|"pull from its cursor"| B
+  SRV -.->|"wake-up hint, no logic"| B
+    </pre></div>
+    <p class="text-sm">Inside a process, Reactivity keys route a change to the screens that show it (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d42">D42 Live reads with query atoms</a>, <a class="cr-link" href="../adr/0019-ui-state-ownership-and-query-atoms.md">ADR-0019 UI state ownership and query atoms</a>). Between nodes, every consumer reads the log from its own cursor (<a class="cr-link" href="../adr/0017-sync-outbox-and-cursor-stream.md">ADR-0017 Sync: outbox and cursor stream</a>). A push only wakes a device to pull (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d40">D40 Server-side human steps</a>). With NATS in the middle, the same commit would travel twice, once as a log entry and once as a message, and the message would need its own deduplication, ordering, retention and access checks, all of which the log already has. vivief's counseling design says the same in its own words: signals are "notifications that something happened" and handlers are in-process code (cp §10.1).</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(d) An agent session as a workflow</h3>
+    <pre class="cr-code">// A sketch: an agent run whose model calls and tool actions are activities.
+const Triage = Workflow.make({ name: "Triage.v1", payload: TicketRef, success: TriageResult, idempotencyKey: ... })
+
+Triage.toLayer(Effect.fn(function* (ticket) {
+  const context = yield* Activity.make({ name: "read-ticket", ... })          // journaled
+  const plan    = yield* Activity.make({ name: "model:plan#1", ... })         // a model call, journaled (D111)
+  const done    = yield* Activity.make({ name: "tool:label-ticket#1", ... })  // a tool action, idempotent
+  return yield* approval.await                                                // a person reviews (D117 gated)
+}))</pre>
+    <p class="text-sm">Killed after <code class="cr-inline">model:plan#1</code>, the run resumes and replays the model's answer from the journal with no model call. That is I29's "replay with no model call" for one run. What it does not give is I29's replay on the <i>next</i> run, against a changed app, with hand-off on drift: that is a recording keyed by its input, a different thing, and stays with map 6. The model is the changeset's origin (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d115">D115 Origin trust</a>), and its output goes through a commit path (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d117">D117 Trust strategies as commit paths</a>). The <code class="cr-inline">actor</code> on the envelope stays the person or the server who ran it.</p>
+  </div></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="lease-expiry">
+  <h2 class="text-2xl font-bold">5. Found: a lease never expires</h2>
+  <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2 text-sm">
+    <p><b>What the decisions say.</b> <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d14">D14 Leases with fencing</a> and <a class="cr-link" href="../adr/0014-leases-fencing-and-server-authority.md">ADR-0014</a>: "One lease per execution, renewed while active, with a fencing counter ... other devices show the execution read-only until the lease expires." The glossary's Lease: "Fenced, and renewed while active."</p>
+    <p><b>What the code does.</b> The lease value has an <code class="cr-inline">expiresAtMs</code> field (<code class="cr-inline">journal.ts</code>:13-16), and every place that writes one sets it to <code class="cr-inline">null</code> (<code class="cr-inline">engine.ts</code>:226 on grant, :744 on handoff). Nothing renews it, nothing reads the field, and the server checks only the epoch and the device (<code class="cr-inline">server.ts</code>:557-585). A lease moves only by <code class="cr-inline">Leases.handoff</code>. P09 tested a handoff, not an expiry.</p>
+    <p><b>Why it matters here.</b> Expiry is how an owner that died is replaced without its help. Effect's shard lock has it (expiration 35 s, refresh 10 s). Without it, a device that is lost or wiped holds its executions forever, and <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p14">P14 Quarantine after a lost lease</a> has no "lost" lease to start from except a handoff.</p>
+    <p><b>Proposed.</b> A new issue, I80 "A lease never expires", <code class="cr-inline">Decide when:</code> P14's grilling or <a class="cr-link" href="../issues/0053-sync-and-conflict.md">I53 Sync and conflict</a>'s, whichever comes first, since both need a lease that can be lost. ADR-0014 gains an Observed line now. Not a code change in this ticket.</p>
+  </div></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="rows">
+  <h2 class="text-2xl font-bold">6. The 13 rows, proposed dispositions</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>Proposed</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:actor-runtime</code></td><td><b>keep ours</b></td><td>No actor runtime. The engine, the projector and query atoms stay separate parts. Supervision is resume (restart), failure as data (escalate), interrupt and drain (stop) (Q1, Q3). Crashes are journaled activity exits, not <code class="cr-inline">:handler/crashed</code> datoms.</td></tr>
+      <tr><td><code class="cr-inline">vivief:handler-levels</code></td><td><b>adopt</b>, as Command and Workflow</td><td>The function level is a command; the actor level is a durable workflow, one execution per actor. "actor" keeps its narrow meaning (Q1).</td></tr>
+      <tr><td><code class="cr-inline">vivief:effect-handler-runtime-needs</code></td><td><b>keep ours</b></td><td>Commands and the engine are the handler runtime; the queue is deferreds and the outbox; a model call is an activity (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d111">D111 Faster and enriching implementations</a>); a handler written as instructions is a skill, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132 Four states at every level</a>'s lens (Q5).</td></tr>
+      <tr><td><code class="cr-inline">vivief:cross-cutting-needs</code></td><td><b>keep ours</b></td><td>Serialization is Schema at every boundary; hashing is content hashes; key derivation is <a class="cr-link" href="../issues/0054-trust-encryption-and-who-may-sign-in.md">I54 Trust, encryption and who may sign in</a>'s; the event bus is rejected with the next row (Q4).</td></tr>
+      <tr><td><code class="cr-inline">vivief:event-broker</code></td><td><b>reject</b></td><td>Reactivity in process, the cursor stream between nodes, push only as a hint with no logic; cross-process work is Effect Cluster behind the engine (Q4).</td></tr>
+      <tr><td><code class="cr-inline">viviefs:durable-workflow</code></td><td><b>stands</b></td><td>Its question (which of Command, Activity and Workflow is <code class="cr-inline">effectHandler</code>) was answered by <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d130">D130 One shape at the data level</a>; the name is map 3's. This ticket adds only that the workflow is the actor level.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:datom-backed-engine</code></td><td><b>keep ours</b></td><td>The engine is ViViEfs's actor runtime. Cluster stays the scale-out path behind <code class="cr-inline">WorkflowEngine</code>, now with the journal-format cost named (Q2, I8).</td></tr>
+      <tr><td><code class="cr-inline">viviefs:lease-and-fencing</code></td><td><b>keep ours</b></td><td>A lease per execution between devices and server, where Cluster has a lock per shard between runners: both are needed if Cluster comes, the shard lock on the server, the lease to devices. Expiry is not built: I80 (section 5).</td></tr>
+      <tr><td><code class="cr-inline">viviefs:drain-before-close</code></td><td><b>keep ours</b></td><td>vivief's "stopping" state and Cluster's <code class="cr-inline">entityTerminationTimeout</code> are the same idea. It is a rule for owned resources (the PGlite store, <code class="cr-inline">a7857e4fb</code>); a workflow needs no drain, because a run interrupted on close resumes. No new word.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:resume-on-next-launch</code></td><td><b>stands</b></td><td>It is the device's restart policy: the launch and foreground sweep. Verified by <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p07">P07 Device resume E2E</a>.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:browser-engine-leader</code></td><td><b>stands</b>; its question to P17's grilling</td><td>The leader tab is a singleton by Web Lock, Singleton's idea in a browser. vivief's failure modes (the leader dies between probe and call, a second leader starts, an old tab meets a new leader) go to <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p17">P17 Browser engine leader</a>'s grilling, phase 4.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:service-and-layer</code></td><td><b>stands</b></td><td>Effect's own names already. A loop that is not a workflow is a scoped Layer (example b), which is this row used, not changed.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:quarantine-after-lost-lease</code></td><td><b>stands</b></td><td><a class="cr-link" href="../issues/0053-sync-and-conflict.md">I53 Sync and conflict</a> reviews <a class="cr-link" href="../issues/0011-quarantine-after-a-lost-lease.md">I11 Quarantine of user content after a lost lease</a>; it needs a lease that can be lost (I80).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">Deferred issues: proposed comments</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Issue</th><th>Proposed comment</th></tr></thead>
+    <tbody>
+      <tr><td><a class="cr-link" href="../issues/0008-engine-scale-out.md"><b>I8</b></a></td><td>Confirmed, with two facts for when it fires. <code class="cr-inline">ClusterWorkflowEngine</code> builds each workflow type on an Entity and persists in <code class="cr-inline">MessageStorage</code>, not the log, so scale-out needs either a <code class="cr-inline">MessageStorage</code> over the log or a second journal format, which <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d39">D39 One engine everywhere</a> rejects. And the shard lock would own executions between runners while the lease still owns them between devices and the server. Server jobs that must have one owner (compaction, a sweep of due clocks) become a Singleton or a ClusterCron at the same time. <code class="cr-inline">Decide when:</code> unchanged, plus "or a server job that must run on exactly one of several runners".</td></tr>
+      <tr><td><a class="cr-link" href="../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md"><b>I29</b></a></td><td>Confirmed for map 6, narrowed. An agent run written as a workflow, its model calls and tool actions as activities, already replays one run from its journal with no model call (example d). What I29 adds is a recording kept for the next run, keyed by its input and handed back to the agent on drift; that is not the journal. <code class="cr-inline">Decide when:</code> unchanged.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-8" id="questions">
+  <h2 class="text-2xl font-bold">7. Questions, round 1 (Q2 and Q6 replaced in <a class="cr-link" href="#questions-2">round 2</a>)</h2>
+  <p>Six questions with no prerequisite among them. Lease against shard lock, the remaining rows, I8's and I29's comments and what is written where come in later rounds.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 actor level')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q1 - Is a durable workflow ViViEfs's actor level, and does "actor" keep its narrow meaning?</h3>
+      <p>Section 3: an execution has identity, a journal as state, a typed protocol with deferreds as its mailbox, a lifecycle and one owner by lease. Effect itself builds Workflow on Entity.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: yes; the function level is a command, the actor level a durable workflow (one execution per actor); actor stays the envelope field" checked><span><b>A (recommended).</b> Yes. vivief's function level is a command, its actor level a durable workflow, one execution per actor. "actor" stays the envelope field.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: yes, and describe the runtime as actors in teaching (engine, projector, query atoms as actors)"><span><b>B.</b> Yes, and teach the runtime as actors (the engine, the projector and query atoms as actors). Familiar to vivief readers, but it names things actors that have no identity or mailbox.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="C: no mapping; vivief's actor level has no counterpart"><span><b>C.</b> No mapping: the row is rejected. Loses the bridge for anyone reading vivief.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 Entity')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q2 - Effect's Entity: a concept now, or the scale-out path behind the engine?</h3>
+      <p>D135 says a concept Effect names takes Effect's name. But we have no actors outside workflows, and "entity" already means a datom's entity (I78 lists the clash).</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: keep it behind WorkflowEngine as I8's scale-out path; not adopted as a concept; the word clash goes to map 3" checked><span><b>A (recommended).</b> Keep it behind <code class="cr-inline">WorkflowEngine</code> as I8's path (D39). Not adopted as a concept, so no name is needed now; the clash with our entity goes to map 3.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: adopt Entity now for server-side stateful parts"><span><b>B.</b> Adopt Entity now for server-side stateful parts. Nothing needs it yet, and it brings a second journal (MessageStorage).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="C: plan SingleRunner on the server now, so the server engine is ClusterWorkflowEngine from the start"><span><b>C.</b> Plan <code class="cr-inline">SingleRunner</code> on the server now, so the server is on Cluster from the start. Splits the journal format between device and server today.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 supervision')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q3 - Does anything that is not a workflow need supervision?</h3>
+      <p>Example (b): every other loop reads from a cursor it advances on acknowledgement.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: no supervision tree; work that must not lose progress on a crash is a workflow; anything else rebuilds from its cursor as a scoped Layer with a Schedule; a server job with one owner uses Singleton or ClusterCron once the server has more than one runner" checked><span><b>A (recommended).</b> No supervision tree. The rule: work that must not lose progress on a crash is a workflow; anything else rebuilds from its cursor, as a scoped Layer with a Schedule retry. A server job that must have one owner uses Effect's Singleton or ClusterCron once the server has more than one runner.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: a small supervisor service that restarts named loops and records restarts as datoms"><span><b>B.</b> A small supervisor service that restarts named loops and writes each restart as a datom, as vivief's <code class="cr-inline">:handler/crashed</code>. Auditable, but a second lifecycle beside Effect's scopes.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="C: defer until the first loop exists"><span><b>C.</b> Defer until the first loop exists. Leaves the first one to invent its own answer.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q4" onsubmit="crQueue(event, 'q4', 'Q4 event bus')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q4 - An event bus beside Reactivity and the cursor stream?</h3>
+      <p>Example (c).</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q4" value="A: reject; Reactivity in process, the cursor stream between nodes, push only a wake-up hint with no logic; cross-process work is Effect Cluster behind the engine, not a broker" checked><span><b>A (recommended).</b> Reject. Reactivity in process, the cursor stream between nodes, push only a wake-up hint carrying no logic. Work across processes is Effect Cluster behind the engine (or <code class="cr-inline">DurableQueue</code> for a worker pool), not a broker.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="B: defer, Decide when: a consumer needs messages that are not log entries"><span><b>B.</b> Defer, <code class="cr-inline">Decide when:</code> a consumer needs messages that are not log entries.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q5" onsubmit="crQueue(event, 'q5', 'Q5 handler runtime')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q5 - Are commands and the engine the handler runtime (<code class="cr-inline">vivief:effect-handler-runtime-needs</code>)?</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q5" value="A: yes; a model call is an activity (D111); a handler written as instructions is a skill, D132's lens, not a runtime part" checked><span><b>A (recommended).</b> Yes. The queue is deferreds and the outbox, failure is typed errors and journaled exits. A model call is an activity (D111). A handler written as instructions for a model is a skill, vivief's Markdown/LLM strategy in D132's lens, not a part of the runtime.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="B: yes, and add an instruction-handler kind that the engine runs by model"><span><b>B.</b> Yes, and add a handler kind the engine runs by model from instructions. A model's output already enters through an activity, so this adds a second door.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q6" onsubmit="crQueue(event, 'q6', 'Q6 agent in the envelope')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q6 - An actor category for agents in the envelope (I49's comment)?</h3>
+      <p><code class="cr-inline">vivief:provenance</code> sets trust by "actor-type defaults". D115 already makes the model an origin.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q6" value="A: no; actor stays a person or the server; the model is an origin (D115); who an agent signs in as goes to I54, its run to map 6" checked><span><b>A (recommended).</b> No. <code class="cr-inline">actor</code> stays a person or the server; the model is an origin (D115). Who an agent signs in as goes to I54, its run to map 6.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="B: add an agent kind to actor"><span><b>B.</b> Add an agent kind to <code class="cr-inline">actor</code>. Puts trust in two places (actor and origin).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="lease-or-shard">
+  <h2 class="text-2xl font-bold">8. Could Cluster replace the lease, or the lease replace Cluster?</h2>
+  <p>Section 6 said "both are needed if Cluster comes": the lease between devices and the server, the shard lock between server runners. Two ways of owning a workflow run is one too many if one can do both jobs. Three ways to get there:</p>
+  <div class="cr-table-wrap"><table class="table table-sm cr-fixed">
+    <colgroup><col style="width:14%"><col style="width:30%"><col style="width:22%"><col style="width:34%"></colgroup>
+    <thead><tr><th></th><th>A. Cluster everywhere: a device is a runner</th><th>B. Both (D39 today)</th><th>C. The lease everywhere: a server runner is a lease holder</th></tr></thead>
+    <tbody>
+      <tr><td><b>Unit owned</b></td><td>A shard: a hash bucket of entity ids (300 per group, <code class="cr-inline">ShardingConfig.ts</code>:73, :183), mixing runs of many people and organizations</td><td>Device: one run. Server: a shard</td><td>One run, everywhere</td></tr>
+      <tr><td><b>Holder</b></td><td>A runner, reachable at a <code class="cr-inline">RunnerAddress</code> by the other runners</td><td>Device or runner</td><td>A device or a server runner, neither needs to be reachable</td></tr>
+      <tr><td><b>Offline</b></td><td>Fails: a lock not refreshed within 35 s expires, and the runner must stop its entities (<code class="cr-inline">ShardingConfig.ts</code>:76-85). A phone is offline for hours and suspended at will</td><td>Device lease works offline</td><td>Works offline: the lease is checked when the device syncs (<code class="cr-inline">server.ts</code>:557-585)</td></tr>
+      <tr><td><b>Isolation</b></td><td>Fails: a device would own a shard that holds other organizations' runs</td><td>Fine</td><td>Fine: a lease is under <code class="cr-inline">O{org}/W{exec}</code></td></tr>
+      <tr><td><b>Fencing</b></td><td>By time only: the lock row or a Postgres advisory lock, with no token on writes (<code class="cr-inline">SqlRunnerStorage.ts</code>:163-190). A process that pauses past expiry can still write. <code class="cr-inline">clearReplies</code>' <code class="cr-inline">expectedReplyId</code> guards only stale resumes (<code class="cr-inline">MessageStorage.ts</code>:364-371)</td><td>Device: epoch. Server: time</td><td>By epoch, checked at accept, for every holder</td></tr>
+      <tr><td><b>Journal</b></td><td><code class="cr-inline">MessageStorage</code></td><td>Two: datoms on the device, <code class="cr-inline">MessageStorage</code> on the server (section 9)</td><td>One: datoms</td></tr>
+      <tr><td><b>Finding work</b></td><td>Shard assignment</td><td>Both</td><td>The launch sweep, widened: a runner claims runs with no live holder</td></tr>
+      <tr><td><b>Waking a run</b></td><td>RPC to the owning runner</td><td>Both</td><td>Device: pull plus a push hint (D40). Runner: a wake-up from the shared store (Postgres <code class="cr-inline">LISTEN</code>/<code class="cr-inline">NOTIFY</code> or a short poll), a hint carrying no logic</td></tr>
+      <tr><td><b>One owner of a job</b></td><td>Singleton, ClusterCron</td><td>Singleton, ClusterCron</td><td>A lease on the job's entity</td></tr>
+      <tr><td><b>Balancing</b></td><td>Shards spread evenly over runners</td><td>Cluster's</td><td>Each runner claims up to a cap; crude, but nothing here needs it to be smooth</td></tr>
+      <tr><td><b>What we build</b></td><td>Not possible</td><td>A datom <code class="cr-inline">MessageStorage</code> or a second journal; nothing else</td><td>Holder liveness and expiry (needed anyway, I80), claim on accept, a runner's sweep, a wake-up hint</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>A is not possible.</b> Cluster assumes its runners are always-on, always-connected server processes that call each other. A phone is none of these.</p>
+  <p><b>C is the simpler and more elegant one.</b> One way to own a run (a fenced lease), one journal (datoms), one engine, one tracing path (the trace projector reads the journal; it could not read <code class="cr-inline">MessageStorage</code>). A server runner becomes one more holder, as the server already is one more <code class="cr-inline">node</code> (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d103">D103 Nodes and authority</a>). Workflows never message each other directly: they talk through the log (deferreds are datoms, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d40">D40 Server-side human steps</a>), so Cluster's main strength, routing a message to the live owner of an entity, is not something we use.</p>
+  <p><b>What C borrows from Cluster.</b> Cluster keeps one lock per shard alive, not one per entity. C should do the same: a holder is alive while it heartbeats, and each lease stays valid while its holder is alive. "Renewed while active" (D14) would write a datom for every active run every few seconds; liveness per holder writes none. Liveness is operational state kept beside the log, like the compaction horizon's <code class="cr-inline">device_cursors</code> (ADR-0011). Two policies, one mechanism: a runner that misses its heartbeats for seconds loses its leases; a device that is offline for days must not, because its offline work is legitimate. A device's lease moves by handoff, or by a person or authority declaring the device lost (<a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p14">P14 Quarantine after a lost lease</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d15">D15 Server authority after a lost lease</a>).</p>
+  <p><b>When C would be a bad idea.</b> Many short server workflows per second, where a claim through accept and a wake-up through the store are too slow next to Cluster's in-memory routing. Nothing in the plan comes near this, and today the server runs no workflow at all (the engine runs only on devices and in tests). If it ever does, Cluster is still there behind <code class="cr-inline">WorkflowEngine</code>, and that is I8's to decide.</p>
+  <p><b>What it changes.</b> <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d39">D39 One engine everywhere</a> says "Effect Cluster is the later scale-out path behind the same interface". Under C that becomes: scale-out means more runners holding leases, and Cluster is an option only if a measured load needs it (D39'). <a class="cr-link" href="../issues/0008-engine-scale-out.md">I8 Engine scale-out and a multi-runner server</a> is rewritten to match. I80 (a lease never expires) becomes the first step: holder liveness, with the two policies.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="message-storage">
+  <h2 class="text-2xl font-bold">9. Upfront check: <code class="cr-inline">MessageStorage</code> on the log store</h2>
+  <p class="cr-src"><a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/MessageStorage.ts"><code class="cr-inline">MessageStorage.ts</code></a>:336-484 (the driver contract a backend implements), <a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/SqlMessageStorage.ts"><code class="cr-inline">SqlMessageStorage.ts</code></a>:431-622, <a class="cr-link" href="../../libs/datom/src/log-store.ts"><code class="cr-inline">libs/datom/src/log-store.ts</code></a>.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>What the driver must do</th><th>How SQL does it</th><th>On the log store</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">saveEnvelope</code>, <code class="cr-inline">saveReply</code></td><td>Insert, deduplicated by primary key</td><td>Fits: append datoms, the key derived into the id</td></tr>
+      <tr><td><code class="cr-inline">repliesFor</code>, <code class="cr-inline">requestIdForPrimaryKey</code></td><td>Indexed reads</td><td>Fits: prefix scan</td></tr>
+      <tr><td><code class="cr-inline">unprocessedMessages(shardIds)</code></td><td><code class="cr-inline">UPDATE ... SET last_read = now ... FOR UPDATE</code>: every read claims rows, a claim older than ten minutes is free again</td><td>Poor: needs a shard index (a read model), and every read would write a claim. In an append-only log that syncs, a claim per poll is noise kept forever</td></tr>
+      <tr><td><code class="cr-inline">clearReplies</code> with <code class="cr-inline">expectedReplyId</code></td><td><code class="cr-inline">DELETE</code> after a compare</td><td>Poor: a conditional retraction. The log store has no conditional append; only accept checks a condition (the lease epoch)</td></tr>
+      <tr><td><code class="cr-inline">clearAddress</code>, <code class="cr-inline">resetShards</code>, <code class="cr-inline">resetAddresses</code></td><td><code class="cr-inline">DELETE</code> and <code class="cr-inline">UPDATE</code></td><td>Poor: retractions of queue state that has no meaning as a fact</td></tr>
+      <tr><td><code class="cr-inline">withTransaction</code></td><td>A SQL transaction</td><td>Possible: one changeset</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Verdict: possible, but it does not buy what it is for.</b> A working version keeps messages and replies as datoms and the claim state in a table beside the log. Even then, the journal would be Cluster's shape (requests and replies to a <code class="cr-inline">Workflow/&lt;name&gt;</code> entity), not the attributes P06 pinned (<code class="cr-inline">viviefs/workflow/started</code>, <code class="cr-inline">viviefs/activity/exit</code>, ...), so it would not be the one journal format D39 wants, and the trace projector would need a second reading. <code class="cr-inline">MessageStorage</code> is a durable work queue; the log is a record of facts. This supports C in section 8.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="entity">
+  <h2 class="text-2xl font-bold">10. "Entity": two meanings, or one?</h2>
+  <div class="card bg-base-200 cr-rec" id="one-execution"><div class="card-body p-5 space-y-2 text-sm">
+    <h3 class="text-lg font-semibold">10a. "One execution per actor" (Q1), explained</h3>
+    <p>vivief's actor, like Effect's Entity, has a <b>type</b> and <b>instances</b>. The type says what it can do (its protocol and handler); each instance has its own identity, state and mailbox. Mapped onto a workflow:</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th></th><th>Type (what it can do)</th><th>Instance (one of them)</th></tr></thead>
+      <tbody>
+        <tr><td><b>Effect Cluster</b></td><td><code class="cr-inline">Entity.make("Workflow/Inspection.v3", rpcs)</code></td><td>Entity id <code class="cr-inline">exec-7f3a</code>, address <code class="cr-inline">{shard, type, id}</code></td></tr>
+        <tr><td><b>ViViEfs</b></td><td>The workflow <code class="cr-inline">Inspection.v3</code></td><td>One execution: the inspection of one address, <code class="cr-inline">O{org}/W{exec}</code>, its own journal and lease</td></tr>
+        <tr><td><b>A programming analogy</b></td><td>A class</td><td>An object</td></tr>
+      </tbody>
+    </table></div>
+    <p>So "one execution per actor" means: each run is its own actor. Not one actor per workflow type that handles every run, and not one per device that runs all of a device's workflows.</p>
+  </div></div>
+
+  <p class="cr-src">Glossary Entity, Defining attribute; <a class="cr-link" href="../adr/0010-entity-ids-and-defining-attributes.md">ADR-0010 Entity ids, defining attributes and strict-composition prefixes</a>; <a class="cr-link" href="../../repos/effect/packages/effect/src/cluster/Entity.ts"><code class="cr-inline">Entity.ts</code></a>:62-74 ("a cluster entity type and the RPC protocol it can handle"), <code class="cr-inline">EntityAddress.ts</code>, <code class="cr-inline">EntityId.ts</code>.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th></th><th>Datom entity (ours)</th><th>Cluster Entity (Effect)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Definition</b></td><td>"The thing a fact is about, such as one list or one photo" (glossary)</td><td>"A cluster entity type and the RPC protocol it can handle" (<code class="cr-inline">Entity.ts</code>:63)</td></tr>
+      <tr><td><b>Identity</b></td><td>Type (declared in the catalog, with its defining attribute) + id, <code class="cr-inline">O{org}/L{list}</code></td><td>Type (<code class="cr-inline">EntityType</code>) + <code class="cr-inline">EntityId</code></td></tr>
+      <tr><td><b>The word names</b></td><td>The instance (<code class="cr-inline">e</code> in a datom)</td><td>The type: the value <code class="cr-inline">Entity</code> is the definition; an instance is an address</td></tr>
+      <tr><td><b>Exists when</b></td><td>Its defining attribute is asserted; retracted means deleted</td><td>Always: any id can be addressed; spawned on its first message, evicted when idle</td></tr>
+      <tr><td><b>State</b></td><td>Its facts in the log: durable, shared, replicated</td><td>In memory on one runner; persisted only as messages</td></tr>
+      <tr><td><b>Behaviour</b></td><td>None: commands decide about it, it does not act</td><td>Its handlers: it receives messages and acts</td></tr>
+      <tr><td><b>Where</b></td><td>On every <code class="cr-inline">node</code> that holds its organization's log</td><td>On the one runner that owns its shard</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>What they share is the core:</b> a thing with an identity, a type and an id. A person, a location, a list, a photo and an execution are all entities in that sense, and all are datom entities today.</p>
+  <p><b>What differs is whether it acts.</b> A person, a location or a photo has facts said about it and does nothing itself. An execution has facts said about it (its journal) <i>and</i> acts: it has a protocol, it receives deferred completions, and one owner runs it. So the execution is the one kind of entity in the stack that is also an actor, and it is already a datom entity (<code class="cr-inline">O{org}/W{exec}</code>, defining attribute <code class="cr-inline">viviefs/workflow/started</code>).</p>
+  <p><b>So the two can be the same, with one sentence:</b> an entity is a thing with an identity (a type and an id) that facts are about; <b>some entity types act</b>: they have a protocol and one owner that runs them. Effect's <code class="cr-inline">Entity</code> is then "an entity type that acts", a special case, not a rival meaning. The execution is our only acting entity type today. A person who uses a device is not an acting entity in this sense: the person acts through commands, and the person entity has no protocol of its own.</p>
+  <p><b>What is left of the clash is wording, not meaning.</b> In code, Effect's <code class="cr-inline">Entity</code> names the type with behaviour, and our <code class="cr-inline">entity</code> names an instance's id. And Effect's Entity comes with a runtime (sharding, a mailbox in memory) that, after section 8, we would not use. That is a map 3 matter: whether the glossary says "an entity that acts", or uses another word for the acting kind. The meaning can be decided now.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="actor-origin">
+  <h2 class="text-2xl font-bold">11. Actor and origin: who, and from where</h2>
+  <p class="cr-src"><code class="cr-inline">libs/datom/src/schema.ts</code>:34-48 (the envelope), <code class="cr-inline">libs/sync/server/src/server.ts</code>:157 (<code class="cr-inline">actor: 'server'</code>), :460-465 (<code class="cr-inline">ActorMismatch</code>); <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d58p">D58' Envelope names the origin</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d115">D115 Origin trust</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d116">D116 Trust levels and who sets them</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>.</p>
+  <p><b>What the code does today.</b> The server rejects a changeset whose <code class="cr-inline">actor</code> is not the signed-in caller's person id (<code class="cr-inline">ActorMismatch</code>), and writes <code class="cr-inline">actor: 'server'</code> on its own changesets. So <code class="cr-inline">actor</code> is, in fact, <b>the identity that authority authenticated and checked</b>. "A person or the server" is the list of identities that can authenticate today (a person through sign-in, <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p11">P11 Identity</a>, and the server itself), not the definition. That is the smell the human noticed: the glossary entry states a current list as if it were the meaning.</p>
+  <p><b>A write answers three different questions.</b></p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Question</th><th>Envelope field</th><th>What it carries</th><th>Checked by</th></tr></thead>
+    <tbody>
+      <tr><td><b>Who is accountable, and was allowed?</b></td><td><code class="cr-inline">actor</code></td><td>The authenticated identity (vivief would say principal)</td><td>Authority: "may this writer do this", D124's first question</td></tr>
+      <tr><td><b>Where did the content come from?</b></td><td><code class="cr-inline">origin</code> (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d58p">D58' Envelope names the origin</a>, built with <a class="cr-link" href="../issues/0064-build-origin-trust.md">I64 Build origin trust</a>)</td><td>A person, a mail account, a website, a model and its version, a system activity</td><td>Nobody: it carries trust, derived when read (D115, D116)</td></tr>
+      <tr><td><b>Which software, where?</b></td><td><code class="cr-inline">device</code>, <code class="cr-inline">command</code></td><td>The installation (chosen by the device, not authenticated) and the registered command</td><td>Accept checks the command is registered (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d127">D127 Registered commands</a>)</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Where an agent fits, three cases.</b></p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>How the agent writes</th><th><code class="cr-inline">actor</code></th><th><code class="cr-inline">origin</code></th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><b>For a person, in their session</b></td><td>The person</td><td>The model and its version</td><td>An assistant in the app drafts a summary; the person's device commits it</td></tr>
+      <tr><td><b>Inside a server workflow</b></td><td><code class="cr-inline">server</code></td><td>The model and its version</td><td>An enriching activity classifies incoming mail (D111)</td></tr>
+      <tr><td><b>Under its own account</b></td><td>The agent's own identity: a new kind of identity, not a person</td><td>The model and its version</td><td>A triage agent that runs nightly with its own membership and limits</td></tr>
+    </tbody>
+  </table></div>
+  <p>The first two need nothing new. The third does: an identity that is not a person can sign in, hold a membership and be refused things a person may do (for example, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d117">D117 Trust strategies as commit paths</a>'s gated path needs a <i>person</i> to commit). That is exactly <a class="cr-link" href="../issues/0054-trust-encryption-and-who-may-sign-in.md">I54 Trust, encryption and who may sign in</a>'s question, "who may sign in", with <a class="cr-link" href="../issues/0016-roles-and-self-service-membership.md">I16 Roles in use, invitations and self-service membership</a> for what each may do.</p>
+  <p><b>Why no "actor category" field.</b> vivief needed one because it set trust per actor type (<code class="cr-inline">vivief:provenance</code>, "actor-type defaults"). Here trust hangs on the origin, so the envelope does not need the actor's kind for trust. For access, the kind of identity (person, server, agent account) is a fact about that identity, an attribute on its entity, read when deciding "may this writer do this". The same pattern as origin trust: not copied onto every changeset, derived when needed.</p>
+  <p><b>Proposed.</b> <code class="cr-inline">actor</code> is redefined as the authenticated identity accountable for a changeset, the one authority checked. Today a person or the server, and I54 decides whether an agent may have its own. The kind of identity is an attribute of that identity, not an envelope field. The glossary entry changes from "a person, or the server" to that meaning.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-8" id="questions-2">
+  <h2 class="text-2xl font-bold">12. Questions, round 2</h2>
+  <p>Round 1's Q2 and Q6 are replaced by Q8 and Q9. Q1, Q3, Q4 and Q5 were not challenged; Q10 confirms them.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q7" onsubmit="crQueue(event, 'q7', 'Q7 one ownership mechanism')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q7 - One way to own a run: the lease everywhere?</h3>
+      <p>Sections 8, 13, 14 and 15.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q7" value="D: the journal is the fence: every journal write names the run fact it followed and accept takes it only if that is still the head; takeover always allowed; holder derived from the journal; no lease datom, no epoch, no heartbeat; runners take a run whose head has not moved within its step's timeout; Cluster not needed (D39'); P06 and P09 re-qualified" checked><span><b>D (recommended, the human's idea completed).</b> The journal is the fence: every journal write names the run fact it followed, and accept takes it only if that is still the head. Takeover always allowed; the holder is derived from the journal; no lease datom, epoch or heartbeat. A runner takes a run whose head has not moved within its step's timeout. Cluster not needed (D39'). P06 and P09 qualified again.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="C: the fenced lease is the only ownership mechanism; a server runner is a lease holder; liveness per holder (heartbeat), two policies (runner seconds, device by handoff or declared lost); Cluster an option only for a measured load (D39'); I8 rewritten, I80 first"><span><b>C.</b> The fenced lease is the only way to own a run; a server runner is one more holder. Liveness per holder, two policies: a runner by heartbeat in seconds, a device by handoff or declared lost. Cluster stays behind <code class="cr-inline">WorkflowEngine</code> as an option for a measured load (D39'). I8 rewritten; I80 is the first step.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="B: keep D39: device lease plus Cluster on the server"><span><b>B.</b> Keep D39: the lease on devices, Cluster's shard lock on the server. Two mechanisms, two journals.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="defer: decide with I8"><span><b>Defer</b> to I8. Leaves I80 without its design question.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q8" onsubmit="crQueue(event, 'q8', 'Q8 Entity')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q8 - One meaning of entity, with acting entity types?</h3>
+      <p>Section 10. Replaces round 1's Q2.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q8" value="A: one meaning: an entity is a thing with an identity (type and id) that facts are about; some entity types act (a protocol, one owner); the execution is the only one today; Effect's Entity is an entity type that acts; Cluster's runtime is not adopted; the word for the acting kind is map 3's" checked><span><b>A (recommended).</b> One meaning: an entity is a thing with an identity (a type and an id) that facts are about. Some entity types act: a protocol and one owner. The execution is the only one today. Effect's <code class="cr-inline">Entity</code> is an entity type that acts; its runtime is not adopted (Q7). The word for the acting kind is map 3's.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="B: two meanings; keep the datom entity and treat Effect's Entity as a clash for map 3"><span><b>B.</b> Two meanings: a clash for map 3 to rename around.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q9" onsubmit="crQueue(event, 'q9', 'Q9 actor and origin')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q9 - What is <code class="cr-inline">actor</code>, and where does an agent go?</h3>
+      <p>Section 11. Replaces round 1's Q6.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q9" value="A: actor is the authenticated identity accountable for a changeset, the one authority checked; today a person or the server; whether an agent may have its own identity is I54's; the kind of identity is an attribute of the identity, not an envelope field; trust stays on origin" checked><span><b>A (recommended).</b> <code class="cr-inline">actor</code> is the authenticated identity accountable for a changeset, the one authority checked. Today a person or the server; whether an agent may have its own identity is I54's. The kind of identity is an attribute of the identity, not an envelope field. Trust stays on the origin.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="B: as A, and add an actor kind field to the envelope now"><span><b>B.</b> As A, and add the kind of identity to the envelope now. Copies a fact about the identity onto every changeset.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="C: agents always act for a person; no agent identity ever"><span><b>C.</b> Agents always act for a person, never under their own identity. Decides I54's question here, early.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q10" onsubmit="crQueue(event, 'q10', 'Q10 confirm round 1')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q10 - Q1, Q3, Q4 and Q5 as recommended?</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q10" value="yes: Q1 A, Q3 A, Q4 A, Q5 A" checked><span><b>Yes (recommended).</b> Q1 A (the actor level is the durable workflow, one execution per actor), Q3 A (no supervision tree; the workflow-or-cursor rule; a job with one owner holds a lease, per Q7), Q4 A (no event bus), Q5 A (commands and the engine are the handler runtime).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="other: see notes"><span>Not all of them: see notes</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="fenced-lease">
+  <h2 class="text-2xl font-bold">13. Q7 explained: the fenced lease, today and everywhere</h2>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="text-lg font-semibold">13a. The idea in five sentences</h3>
+    <ol class="list-decimal pl-5 space-y-1">
+      <li>A <b>lease</b> says who may run one workflow run: <code class="cr-inline">{holder, epoch}</code>, a datom on the execution (<code class="cr-inline">viviefs/lease/holder</code> on <code class="cr-inline">O{org}/W{exec}</code>).</li>
+      <li>The <b>epoch</b> is a number that only goes up. Every takeover writes the next number.</li>
+      <li>Every journal write carries the holder and epoch it was made under, in its envelope (<code class="cr-inline">device</code>, <code class="cr-inline">leaseEpoch</code>).</li>
+      <li><b>Fencing</b>: authority accepts a journal write only if that pair is the current lease. A write from an older epoch is rejected, however late it arrives.</li>
+      <li>So two holders can both <i>run</i> for a while, but only one can <i>write</i>, and the loser finds out and stops. Fencing makes a takeover safe; it does not say when a takeover is allowed. That second part is <b>policy</b>, and it is what is missing.</li>
+    </ol>
+  </div></div>
+
+  <h3 class="text-lg font-semibold">13b. Today, step by step</h3>
+  <p class="cr-src"><code class="cr-inline">libs/workflow-engine/src/engine.ts</code>:170-230 (holder, fenced append, grant), :734-757 (handoff); <code class="cr-inline">libs/sync/server/src/server.ts</code>:553-602 (accept's two lease checks); P09 check <code class="cr-inline">staleLease</code> (<code class="cr-inline">tools/qualification/src/probes/p09-checks.ts</code>:416-470).</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant A as Phone A
+  participant S as Server (accept)
+  participant B as Phone B
+  A->>A: start run, no holder yet: write lease {A, 1}
+  A->>S: push lease {A, 1}
+  S-->>A: accepted (no stored lease)
+  A->>A: activity "upload" runs, exit journaled locally under {A, 1}
+  B->>S: push lease {B, 2}
+  S-->>B: accepted (2 is higher than 1)
+  A->>S: push activity exit, envelope {A, 1}
+  S-->>A: rejected StaleLease (current is {B, 2})
+  A->>S: pull
+  S-->>A: lease {B, 2}
+  A->>A: next journal write dies with StaleLease: A stops
+  B->>B: resume from the journal on the server, "upload" re-runs (idempotency key)
+  </pre></div>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Check</th><th>Where</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><b>Local</b></td><td><code class="cr-inline">engine.ts</code>:183-200</td><td>Before every journal write the engine reads the latest holder in its own log; if it is another device, the write dies with <code class="cr-inline">StaleLease</code>. It only knows what it has pulled.</td></tr>
+      <tr><td><b>A lease datom</b></td><td><code class="cr-inline">server.ts</code>:557-585</td><td>A lower epoch than stored is rejected; the same epoch from another device is rejected; a higher epoch from <i>any</i> member device is accepted.</td></tr>
+      <tr><td><b>A journal write</b></td><td><code class="cr-inline">server.ts</code>:588-602</td><td>The envelope's <code class="cr-inline">device</code> and <code class="cr-inline">leaseEpoch</code> must equal the current lease (or the one in the same changeset), or <code class="cr-inline">StaleLease</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <p>A rejected write never reaches the device's own log (a self-committed journal write waits for the server's ack, ADR-0014 Observed), so "drop the divergent journal" (D15) is cheap: the rejected entries stay in the outbox as rejected.</p>
+  <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2 text-sm">
+    <p><b>Three gaps today.</b></p>
+    <ol class="list-decimal pl-5 space-y-1">
+      <li><b>No liveness.</b> <code class="cr-inline">expiresAtMs</code> is always <code class="cr-inline">null</code>; nothing renews or expires (section 5).</li>
+      <li><b>No takeover rule.</b> Any member device may write the next epoch, at any time. P09 does exactly that: B takes A's lease while A holds it. D14 says other devices "show the execution read-only until the lease expires"; nothing enforces it.</li>
+      <li><b>The check is not atomic with the append.</b> Accept reads the stored lease, then appends, with awaits between, so two claims can both read epoch 1 and both land as epoch 2. This is <a class="cr-link" href="../issues/0071-an-append-can-land-after-a-revocation.md">I71 An append can land after a revocation</a>'s window, which already names "lease ... reads"; fixing I71 fixes it here.</li>
+    </ol>
+    <p>None of these breaks the fence's promise when it does run (an older epoch can never write), and the gate (P09) is honest about what it shows. They are what a lease needs before anything other than a handoff can move it.</p>
+  </div></div>
+
+  <h3 class="text-lg font-semibold">13c. The lease everywhere: the same mechanism, plus a policy</h3>
+  <p>Nothing about fencing changes. What is added is <b>when a takeover is allowed</b>, decided at accept, and <b>liveness</b> to decide it with. A server runner becomes a holder exactly like a phone.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Piece</th><th>How it works</th></tr></thead>
+    <tbody>
+      <tr><td><b>Holder</b></td><td>A device or a server runner, each with an id. A runner's writes go through the same accept check as a device's, in process rather than over RPC.</td></tr>
+      <tr><td><b>Liveness</b></td><td>Per holder, not per lease. A runner writes a heartbeat (a row beside the log, like <code class="cr-inline">device_cursors</code>) every few seconds; nothing is written per lease, so no datom per run per heartbeat. For a device, the server already knows when it last synced.</td></tr>
+      <tr><td><b>Takeover rule</b> (new, at accept)</td><td>A lease datom with the next epoch is accepted only if: <b>(1)</b> there is no holder (first start), or <b>(2)</b> the current holder hands off (it writes the lease naming the next holder), or <b>(3)</b> the current holder is <i>not live</i> by its kind's policy. Anything else is rejected, closing gap 2.</td></tr>
+      <tr><td><b>Policy: runner</b></td><td>Not live once its heartbeat is older than a few multiples of its interval (Cluster uses 35 s against a 10 s refresh). Another runner may then take its runs. Automatic.</td></tr>
+      <tr><td><b>Policy: device</b></td><td>Never automatic: a phone offline for three days may be doing legitimate work. Not live only when declared lost, by a person ("Held by phone A, last synced 3 days ago. Take over?") or by authority (the device is wiped, the membership revoked). Its stranded content goes to quarantine (<a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p14">P14 Quarantine after a lost lease</a>).</td></tr>
+      <tr><td><b>Fencing</b></td><td>Unchanged: every journal write's <code class="cr-inline">{holder, epoch}</code> must be current. Made atomic with the append (I71).</td></tr>
+      <tr><td><b>Finding work</b></td><td>A runner's sweep is the launch sweep widened: started runs with no result whose holder is a runner that is not live, or that have no holder. It claims them up to a cap. Two runners racing for one run both write the next epoch; accept takes one and rejects the other.</td></tr>
+      <tr><td><b>Waking</b></td><td>When a deferred completes (a datom from a device or the server), the holder must notice. A device: the push hint, then a pull (D40). A runner: a hint from the store (Postgres <code class="cr-inline">NOTIFY</code>, or a short poll of its own runs). The hint carries no logic; the log is the truth.</td></tr>
+      <tr><td><b>Which runs where</b></td><td>Unchanged: a device workflow runs only on devices, a server workflow only on runners (D13). A holder only claims workflow types it has registered.</td></tr>
+      <tr><td><b>One owner of a job</b></td><td>A recurring server job (compaction, a sweep of due clocks) is written as a server workflow that loops on a durable clock. It is then a run with a lease like any other, and needs no Singleton.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><b>The case that shows why fencing matters: a runner that pauses.</b></p>
+  <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant R1 as Runner 1
+  participant S as Accept + log
+  participant R2 as Runner 2
+  R1->>S: claim run X: lease {R1, 4}
+  R1->>R1: activity "charge" starts, then the process stalls (GC, VM pause)
+  Note over R1,S: R1's heartbeat stops
+  R2->>S: sweep: X's holder R1 is not live, claim {R2, 5}
+  S-->>R2: accepted (rule 3)
+  R2->>R2: resume X from the journal, "charge" re-runs (idempotency key)
+  R1->>S: R1 wakes up, journals "charge" exit under {R1, 4}
+  S-->>R1: rejected StaleLease
+  R1->>R1: stops X
+  </pre></div>
+  <p class="text-sm">Cluster in the same case: R1's shard lock expires, R2 takes the shard, and R1's late write is not rejected by a token, because Cluster fences by time only (section 8). Its <code class="cr-inline">clearReplies</code> compare narrows the damage for workflows, but the fence is the clock. Ours is the epoch, so a late write is refused no matter how late it is.</p>
+
+  <h3 class="text-lg font-semibold">13d. What changes, if Q7 is C</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><b>D14'</b></td><td>One lease per run, held by a device or a server runner, fenced by epoch at accept. A takeover is accepted only for a first start, a handoff, or a holder that is not live by its kind's policy (a runner by heartbeat, a device only when declared lost). Liveness is per holder. Replaces "renewed while active ... until the lease expires".</td></tr>
+      <tr><td><b>D39'</b></td><td>One engine, one journal, one ownership mechanism. Scale-out on the server is more runners holding leases; Effect Cluster is an option only for a measured load, behind <code class="cr-inline">WorkflowEngine</code>.</td></tr>
+      <tr><td><b>I80</b></td><td>"A lease has no liveness and no takeover rule": gaps 1 and 2, with the two policies as its direction. <code class="cr-inline">Decide when:</code> P14's grilling or I53's, or the first server workflow.</td></tr>
+      <tr><td><b>I71</b></td><td>A comment: the lease check has the same window, and its fix closes gap 3.</td></tr>
+      <tr><td><b>I8</b></td><td>Rewritten: scale-out is more runners holding leases; the runner sweep, heartbeats and wake-ups; Cluster only if a measured load needs it.</td></tr>
+      <tr><td><b>ADR-0014</b></td><td>Amended with D14' and an Observed line for the three gaps. ADR-0012's "Effect Cluster is the later scale-out path" amended with D39'.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="journal-fence">
+  <h2 class="text-2xl font-bold">14. The human's alternative: takeover always allowed, the journal detects overlap</h2>
+  <p><b>The idea (2026-10-26).</b> State that a takeover is always allowed. A run is being run by someone else because its first runner is not doing it, so liveness mostly takes care of itself, and no heartbeat is needed. Two engines on one run show up as overlap in the journal.</p>
+
+  <h3 class="text-lg font-semibold">14a. What holds</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Safety never needed a heartbeat.</b> A heartbeat only decides when a takeover may happen <i>automatically</i>. What keeps two runners from both writing is the fence, and the fence works however the takeover was triggered.</li>
+    <li><b>"Always allowed" is today's rule.</b> Accept takes any higher epoch from any member device (section 13b, gap 2); D14's "read-only until it expires" was never enforced.</li>
+    <li><b>Overlap is already detectable from the journal.</b> Every journal fact is write-once at accept (<code class="cr-inline">server.ts</code>:89-95, plus <code class="cr-inline">viviefs/activity/started</code> by catalog policy, <code class="cr-inline">catalog.ts</code>:119): when two engines journal the same step, the second gets <code class="cr-inline">BasisRejected</code>.</li>
+  </ul>
+
+  <h3 class="text-lg font-semibold">14b. Where write-once alone breaks: a spliced history</h3>
+  <p>Write-once rejects the <i>same</i> fact twice. It does not reject a fact that was computed from a history that lost. Phone A goes offline mid-run; phone B takes over:</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant A as Phone A (offline)
+  participant S as Server (accept)
+  participant B as Phone B
+  Note over A,B: journal on the server: steps 1-2
+  A->>A: step 3 "measure" = 41, step 4 "price" from 41 = 820, step 5 "invoice" sent
+  B->>S: step 3 "measure" = 44
+  S-->>B: accepted
+  A->>S: back online: push steps 3, 4, 5
+  S-->>A: step 3 rejected (write-once: B's is there)
+  S-->>A: steps 4 and 5 ACCEPTED (nobody wrote them yet)
+  Note over S: journal: step 3 = 44 (B), step 4 = 820 (from A's 41), step 5 (A's)
+  B->>B: replays: measure 44, then takes price 820 from the journal: wrong
+  </pre></div>
+  <p>The journal now holds a history no single run produced: B's step 3 with A's steps 4 and 5, which were computed from A's step 3. Replay is deterministic, so B adopts A's step 4 without knowing it was built on a value the journal does not hold. Today the epoch prevents this: once B holds epoch 2, every write under A's epoch 1 is rejected as a block, steps 3, 4 and 5 alike. <b>The fence has to cover a history, not a fact.</b></p>
+
+  <h3 class="text-lg font-semibold">14c. The idea, completed: the journal head is the fence</h3>
+  <p>Keep the idea and fence by history: <b>every journal write names the fact of this run it followed</b> (the run's head as the writer saw it), and accept takes it only if that is still the run's head. This is a compare-and-append per run, the glossary's Basis ("the point in the log a change was made from, used to notice when someone else changed the same thing since") scoped to one run. A device's own offline writes chain on each other, so they stay valid until the first one meets a head someone else moved.</p>
+  <p>In 14b: A's step 3 names step 2 as its parent, but the head is now B's step 3, so it is rejected; A's steps 4 and 5 name A's own step 3, which is not in the journal, so they are rejected too. The whole losing history is refused, as with the epoch, and there is no lease, no epoch and no heartbeat.</p>
+  <div class="cr-table-wrap"><table class="table table-sm cr-fixed">
+    <colgroup><col style="width:18%"><col style="width:41%"><col style="width:41%"></colgroup>
+    <thead><tr><th></th><th>C. Lease everywhere (section 13)</th><th>D. The journal is the fence</th></tr></thead>
+    <tbody>
+      <tr><td><b>Stored</b></td><td>A lease datom per run <code class="cr-inline">{holder, epoch}</code>, an epoch on every envelope, a heartbeat table for runners</td><td>On each journal write, the fact of this run it followed (its parent). Nothing else</td></tr>
+      <tr><td><b>Fence</b></td><td>Envelope epoch equals the lease's epoch</td><td>Parent equals the run's head; a write built on an old head is refused, and so is everything built on it</td></tr>
+      <tr><td><b>Takeover</b></td><td>A rule at accept: first start, handoff, or holder not live</td><td>Always allowed: write the next fact on the current head</td></tr>
+      <tr><td><b>Who holds it</b></td><td>The lease datom says</td><td>Derived: whoever wrote the run's last engine fact (not counting outside inputs such as a deferred completed by a person or the server)</td></tr>
+      <tr><td><b>Overlap detected</b></td><td><code class="cr-inline">StaleLease</code> on the loser's first write after a takeover</td><td>The loser's first write after someone else moved the head is refused. Same moment</td></tr>
+      <tr><td><b>Who resumes on its own</b></td><td>The holder; others only by the takeover rule</td><td>Only the derived holder. Another device continues only when a person asks. A runner takes a run whose head has not moved within the running step's timeout, read from the journal's own acceptance times; no heartbeat</td></tr>
+      <tr><td><b>Duplicate side effects</b></td><td>At most the step in flight at a takeover; idempotency keys make it harmless</td><td>The same</td></tr>
+      <tr><td><b>Offline device</b></td><td>Its whole history after the takeover is refused; user content quarantined (P14)</td><td>The same</td></tr>
+      <tr><td><b>Pinned names (D44)</b></td><td>Kept and used</td><td><code class="cr-inline">viviefs/lease/holder</code> and the envelope's <code class="cr-inline">leaseEpoch</code> are no longer written; old values still decode, nothing is renamed. The parent needs a home: a new journal attribute or envelope field</td></tr>
+      <tr><td><b>Gates</b></td><td>P09's <code class="cr-inline">staleLease</code> check stays; checks added for the takeover rule</td><td>P06 and P09 change mechanism and are qualified again; <code class="cr-inline">staleLease</code> becomes "a spliced history is refused"</td></tr>
+      <tr><td><b>Needs</b></td><td>I71's atomic accept</td><td>I71's atomic accept (the head check reads and appends in one step)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">14d. Verdict</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>The idea holds, with one correction.</b> Takeover always allowed and no heartbeat are sound. Overlap detection on write-once facts alone is not: it lets a spliced history in (14b). Fencing by the journal head closes that.</li>
+    <li><b>D is simpler than C.</b> One concept fewer (no lease object, no epoch), no heartbeat table, no takeover rule, and the fence is the history itself, so it cannot disagree with it. The run's holder becomes a fact derived from the journal, the same move the stack already makes for trust (D115) and for an identity's kind (Q9).</li>
+    <li><b>It is a known shape.</b> It is optimistic concurrency per run: append only if you saw the latest. Temporal fences a worker the same way, as far as I know: a worker's completion names the point in the history it was given, and the server refuses it if the history moved on.</li>
+    <li><b>What it costs.</b> A qualified mechanism (P06, P09) changes and is qualified again; the engine's facts that are not fenced today (<code class="cr-inline">viviefs/activity/started</code> is write-once but not in the server's journal check) join the chain; a place for the parent is chosen without renaming anything (D44).</li>
+    <li><b>Server scale-out follows unchanged.</b> A runner is one more writer on the head; finding work is a sweep for runs whose head has not moved within their step's timeout; Cluster is not needed (D39').</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="option-d">
+  <h2 class="text-2xl font-bold">15. Option D in full: the journal is the fence</h2>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="text-lg font-semibold">15a. In one paragraph</h3>
+    <p>A run's journal is one chain of facts. Every fact the engine writes names the fact it follows. Authority accepts an engine fact only if the fact it follows is still the last one in the chain (the <b>head</b>). Whoever is up to date may write the next fact: phone, browser or server runner, and it does not matter who wrote the one before. A writer that is not up to date is refused, and so is everything it built on top. That one rule keeps every run a single, coherent history, without a lease, an epoch or a heartbeat. Who <i>should</i> run a run is then a policy read from the journal, not a lock.</p>
+  </div></div>
+
+  <h3 class="text-lg font-semibold">15b. The words</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>Meaning here</th></tr></thead>
+    <tbody>
+      <tr><td><b>Engine fact</b></td><td>A fact the engine writes while running a run: the start (<code class="cr-inline">viviefs/workflow/started</code>), an activity's start and exit, a durable clock's wake time, the result. These form the chain.</td></tr>
+      <tr><td><b>Outside input</b></td><td>A fact written <i>into</i> a run from outside: a deferred completed by a person, the server or a notification action (D11, D40). Write-once on its own entity, <b>not</b> in the chain, read by the engine when the workflow awaits it. So a person approving never refuses the runner's next write.</td></tr>
+      <tr><td><b>Follows</b></td><td>The reference each engine fact carries to the engine fact before it (its <code class="cr-inline">tx</code>). The start follows nothing.</td></tr>
+      <tr><td><b>Head</b></td><td>The run's last accepted engine fact.</td></tr>
+      <tr><td><b>Holder</b></td><td>Derived, not stored: the device or runner that wrote the head.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">15c. The one rule, at accept</h3>
+  <pre class="cr-code">engine fact F for run R, following P:
+  R has no head yet   -&gt; accept only if F is R's start
+                         (write-once: of two starts with one idempotency key, the second is refused)
+  P is R's head       -&gt; accept; F is R's new head
+  otherwise           -&gt; refuse F (Behind: R's head moved since the writer last saw it)
+
+outside input for run R  -&gt; write-once on its own entity; does not move the head</pre>
+  <p>The check and the append happen as one step (I71). What it guarantees: every run's engine facts form one line, start to result, with no fork and no splice. Section 14b's spliced history cannot be written: A's step 4 follows A's own step 3, which is not in the chain.</p>
+
+  <h3 class="text-lg font-semibold">15d. The human's scenario: B, A, B</h3>
+  <div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  S1["step 1"] --> S2["step 2"] --> S3["step 3<br/>by B<br/>follows 2"] --> S4["step 4<br/>by A<br/>follows 3"] --> S5["step 5<br/>by B<br/>follows 4"]
+  </pre></div>
+  <ol class="list-decimal pl-6 space-y-1 text-sm">
+    <li>The server's journal has steps 1 and 2; head is step 2. B writes step 3 following step 2: accepted, B is the holder.</li>
+    <li>A pulls, so A's log has step 3. A person on A chooses to continue the run on A (a takeover). A's engine replays steps 1-3 from the journal and writes step 4 following step 3: accepted, A is the holder.</li>
+    <li>B pulls, sees step 4, a person on B continues there: B replays 1-4 and writes step 5 following step 4: accepted.</li>
+  </ol>
+  <p class="text-sm">Valid, and the journal is one history. Two conditions make it valid: each writer had pulled the previous step before writing (otherwise it is refused), and each switch was a takeover someone chose, because only the holder resumes on its own (15f). If A had written step 4 while B was still running step 4, one of the two would be refused (15e, case 3).</p>
+
+  <h3 class="text-lg font-semibold">15e. Every case, walked through</h3>
+  <div class="cr-table-wrap"><table class="table table-sm cr-fixed">
+    <colgroup><col style="width:22%"><col style="width:52%"><col style="width:26%"></colgroup>
+    <thead><tr><th>Case</th><th>What happens</th><th>Outcome</th></tr></thead>
+    <tbody>
+      <tr><td><b>1. One phone, online or offline</b></td><td>Each fact follows the previous one; offline facts chain locally and are pushed in order later. Nobody else wrote, so each one meets the head.</td><td>All accepted, as today</td></tr>
+      <tr><td><b>2. Takeover (15d)</b></td><td>The new writer pulls, replays from the journal, writes on the head.</td><td>Accepted; the holder changes</td></tr>
+      <tr><td><b>3. Two writers at once, online</b></td><td>A and B both run step 4 on head 3. Both write "step 4 follows 3"; the first is accepted, the second refused (Behind). The loser stops the run and shows it as moved on. The loser's side effect for step 4 has already happened: an idempotency key makes it harmless.</td><td>One history; at most one step's side effect duplicated</td></tr>
+      <tr><td><b>4. Offline phone overtaken (14b)</b></td><td>A ran steps 3-5 offline; B wrote step 3 meanwhile. A's step 3 is refused (Behind), its steps 4 and 5 are refused (they follow a fact not in the chain).</td><td>A's history refused whole; its user content to quarantine (P14)</td></tr>
+      <tr><td><b>5. A run waiting for a person</b></td><td>The run awaits a deferred; the head does not move. A reviewer approves on the web: an outside input, not in the chain (D40). The holder pulls, its engine resumes and writes the next engine fact following the old head.</td><td>Accepted; approving never refused anyone</td></tr>
+      <tr><td><b>6. A server runner dies mid-step</b></td><td>Runner 1 wrote "step 4 started" and died. The head has not moved for longer than step 4's timeout, read from the acceptance time of that fact. Runner 2 replays and writes "step 4, attempt 2, started" following it.</td><td>Accepted; attempt 2 runs; no heartbeat used</td></tr>
+      <tr><td><b>7. The dead runner wakes up</b></td><td>Runner 1 resumes from a pause and writes "step 4 exit" following its own "step 4 started", which is no longer the head.</td><td>Refused; Runner 1 stops</td></tr>
+      <tr><td><b>8. A retry</b></td><td>An activity fails and Effect retries it: attempt 2 is the next engine fact, following attempt 1's exit.</td><td>Accepted, like any step</td></tr>
+      <tr><td><b>9. Two starts</b></td><td>Two phones start "the same" run (same workflow, same idempotency key, so the same execution id). The start is write-once.</td><td>The second is refused and shows the first's run</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">15f. Who runs a run: policy, not safety</h3>
+  <p>The rule in 15c keeps the history whole whatever anyone does. Separately, each engine decides when to run a run, so that writers rarely collide:</p>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>The holder resumes on its own</b>: on launch, on a wake-up, when a deferred completes. Everyone else leaves the run alone and shows "last worked on by phone A, 3 days ago".</li>
+    <li><b>Another device continues only when a person asks</b> ("Continue on this phone?"). A phone offline for days may be doing legitimate work, so nothing takes over a device's run automatically.</li>
+    <li><b>A server runner takes over a runner's run</b> whose head has not moved for longer than the running step's timeout (case 6). The timeout belongs to the activity, not to the runner.</li>
+    <li><b>Claim before acting, when online</b> (optional). A writer that is online can wait for its "step started" fact to be accepted before running the side effect. Then case 3 duplicates nothing: the loser is refused before it acts. A phone offline cannot wait, and proceeds as in case 4. Server runners are always online, so for them this is free.</li>
+  </ul>
+
+  <h3 class="text-lg font-semibold">15g. What changes, and what stays</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Part</th><th>Under D</th></tr></thead>
+    <tbody>
+      <tr><td><b>Stays</b></td><td>The journal's attributes and entity ids (P06 pinned them), write-once journal facts, idempotency keys, resume from the journal, the launch sweep, the server never running device workflow code (D13), quarantine for user content (D15).</td></tr>
+      <tr><td><b>Added</b></td><td>"Follows" on every engine fact, and the head check at accept. Where "follows" lives is a design choice for I80: an envelope field (journal writes are one-fact changesets already) or a journal attribute. Nothing is renamed (D44).</td></tr>
+      <tr><td><b>No longer written</b></td><td><code class="cr-inline">viviefs/lease/holder</code> and the envelope's <code class="cr-inline">leaseEpoch</code>. Old values still decode; their names are never reused. The engine's <code class="cr-inline">Leases</code> service and its handoff go; a takeover is a replay plus a write.</td></tr>
+      <tr><td><b>Gates</b></td><td>P06's crash matrix runs within one engine and stays, except the "during lease handoff" kill point, which becomes "during a takeover". P09's <code class="cr-inline">staleLease</code> check becomes cases 3 and 4 (a second writer refused, a spliced history refused) and case 5 (an outside input does not move the head). Both gates are qualified again.</td></tr>
+      <tr><td><b>Words</b></td><td>Lease and Lease epoch leave the glossary's live terms; "holder" and "head" are candidates for map 3. Not decided here.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">15h. Open details for I80's design, not for this ticket</h3>
+  <ul class="list-disc pl-6 space-y-1 text-sm">
+    <li>Where "follows" lives (15g).</li>
+    <li>An await that races two outside inputs (a deferred against a durable clock) must record which one it took as an engine fact, so every replay takes the same one.</li>
+    <li><code class="cr-inline">viviefs/activity/started</code> is write-once but not in the server's journal check today; under D it is an engine fact in the chain.</li>
+    <li>Claim before acting: always for runners, and for an online phone or not.</li>
+    <li>Where a step's timeout comes from (the activity's own declaration) and what "Continue on this phone?" looks like.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="questions-3">
+  <h2 class="text-2xl font-bold">16. Round 3: the rows, the deferred issues, and where it is written</h2>
+  <p>Q7 settled D. Two facts follow from it that change section 6:</p>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Today's code is safe, and D is a simplification to build.</b> The epoch already refuses a spliced history; "any device may take over" (gap 2) is no longer a gap but D's rule; gap 1 (no expiry) disappears with the lease; gap 3 is I71. So I80 becomes "Build the journal fence (D14')", not a bug.</li>
+    <li><b>The browser leader stays.</b> D25's reason is one local database, not ownership: several tabs would be several engines on one OPFS database, and an OPFS database has one writer. D removes the lease, not that.</li>
+  </ul>
+
+  <h3 class="text-lg font-semibold">The 13 rows, updated</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>Disposition</th><th>Decided by</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:actor-runtime</code></td><td><b>keep ours</b>: no actor runtime; supervision is resume from the journal, failure as data, interrupt; the engine, projector and query atoms stay separate parts</td><td>Q1, Q3</td></tr>
+      <tr><td><code class="cr-inline">vivief:handler-levels</code></td><td><b>adopt</b>, as Command and Workflow: the actor level is the durable workflow, one execution per actor</td><td>Q1</td></tr>
+      <tr><td><code class="cr-inline">vivief:effect-handler-runtime-needs</code></td><td><b>keep ours</b>: commands and the engine are the handler runtime; a model call is an activity; a handler written as instructions is a skill</td><td>Q5</td></tr>
+      <tr><td><code class="cr-inline">vivief:cross-cutting-needs</code></td><td><b>keep ours</b>: Schema, content hashes; key derivation is I54's; the bus is rejected</td><td>Q4</td></tr>
+      <tr><td><code class="cr-inline">vivief:event-broker</code></td><td><b>reject</b></td><td>Q4</td></tr>
+      <tr><td><code class="cr-inline">viviefs:durable-workflow</code></td><td><b>stands</b>: its question was D130's; the workflow is the actor level</td><td>D130, Q1</td></tr>
+      <tr><td><code class="cr-inline">viviefs:datom-backed-engine</code></td><td><b>keep ours</b>, amended: one engine, one journal, one fence; Cluster not needed (D39')</td><td>Q7</td></tr>
+      <tr><td><code class="cr-inline">viviefs:lease-and-fencing</code></td><td><b>keep ours</b>, changed: the journal head replaces the lease as the fence (D14'); built by I80</td><td>Q7</td></tr>
+      <tr><td><code class="cr-inline">viviefs:drain-before-close</code></td><td><b>keep ours</b>: a rule for owned resources; a workflow needs no drain, because an interrupted run resumes</td><td>Q3</td></tr>
+      <tr><td><code class="cr-inline">viviefs:resume-on-next-launch</code></td><td><b>stands</b>: the device's restart policy, the holder's own sweep under D</td><td>Q3, Q7</td></tr>
+      <tr><td><code class="cr-inline">viviefs:browser-engine-leader</code></td><td><b>stands</b>: one engine per local database; vivief's failure modes go to P17's grilling</td><td>above</td></tr>
+      <tr><td><code class="cr-inline">viviefs:service-and-layer</code></td><td><b>stands</b>: a loop that is not a workflow is a scoped Layer</td><td>Q3</td></tr>
+      <tr><td><code class="cr-inline">viviefs:quarantine-after-lost-lease</code></td><td><b>stands</b>: I53 reviews I11; under D the stranded content is an offline history that was refused (15e, case 4)</td><td>Q7</td></tr>
+    </tbody>
+  </table></div>
+
+  <form class="card bg-base-200" data-lavish-question="q11" onsubmit="crQueue(event, 'q11', 'Q11 rows')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q11 - The 13 rows as in the table above?</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q11" value="yes: as the table" checked><span><b>Yes (recommended).</b></span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q11" value="other: see notes"><span>Not all: see notes</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q12" onsubmit="crQueue(event, 'q12', 'Q12 I8 and I29')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q12 - The comments on I8 and I29</h3>
+      <p><b>I8</b>, direction rewritten: scale-out is more server runners writing on the journal head (D14', D39'). A runner's sweep takes runs whose head has not moved within the running step's timeout; runners claim before acting; a recurring job is a server workflow on a durable clock, so no Singleton. Cluster is not needed: it fences by time, keeps its own journal (<code class="cr-inline">MessageStorage</code>, which does not fit the log, section 9) and assumes reachable runners. <code class="cr-inline">Decide when:</code> unchanged.</p>
+      <p><b>I29</b>, confirmed for map 6, narrowed: an agent run written as a workflow, its model calls and tool actions as activities, already replays one run from its journal with no model call (example d). What I29 adds is a recording kept for the next run, keyed by its input and handed back to the agent on drift; that is not the journal. <code class="cr-inline">Decide when:</code> unchanged.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q12" value="yes: as written" checked><span><b>As written (recommended).</b></span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q12" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q13" onsubmit="crQueue(event, 'q13', 'Q13 ADR')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q13 - The journal fence: a new ADR, or an amendment?</h3>
+      <p>It is hard to reverse, surprising without context, and the result of a real trade-off (sections 8, 13, 14), so it meets the bar for an ADR. ADR-0014 is Qualified for the lease; D is not built.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q13" value="A: new ADR-0036 The journal is the fence (Proposed, unverified; qualifying gates P06 and P09 again), superseding ADR-0014's lease design once qualified; ADR-0014 gets a pointer; ADR-0012 amended for D39'; ADR-0032 gains a paragraph on the actor level and the engine" checked><span><b>A (recommended).</b> A new ADR-0036 "The journal is the fence", <code class="cr-inline">Proposed, unverified</code>, qualified by P06 and P09 again, which supersedes ADR-0014's lease design once qualified. ADR-0014 keeps its Qualified record and gains a pointer; ADR-0012 is amended for D39'; ADR-0032 gains a paragraph on the actor level and the engine.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q13" value="B: amend ADR-0014 in place"><span><b>B.</b> Amend ADR-0014 in place. Mixes a qualified design and an unbuilt one in one record.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q13" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q14" onsubmit="crQueue(event, 'q14', 'Q14 glossary')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q14 - Glossary changes now</h3>
+      <pre class="cr-code">**actor**:
+Who is accountable for a change: the signed-in identity authority checked
+before accepting it. Today a person or the server. An envelope field; the
+kind of identity is a fact about that identity, not part of the envelope.
+_Avoid_: Actor as an entity or type name, author
+
+**Entity**:
+The thing a fact is about, such as one list, one photo or one workflow run.
+A type and an id; the subject `e` of datoms; its id may encode its parent for
+strict composition. Most entities only have facts said about them; a
+workflow run also acts.
+_Avoid_: object, document</pre>
+      <p class="text-sm">Lease and Lease epoch stay until I80 is built: they name what runs and what P09 qualified. Head, holder and the word for an entity that acts are map 3's.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q14" value="yes: actor and Entity as written; Lease entries until I80 is built; head, holder and acting entity to map 3" checked><span><b>As written (recommended).</b></span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q14" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q15" onsubmit="crQueue(event, 'q15', 'Q15 when I80')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q15 - When is the journal fence built (I80)?</h3>
+      <p>It changes accept, as I69 does, and needs I71's atomic accept. Every workflow and gate built on the lease before then has to move later.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q15" value="A: phase 3, after I71 and with I69 (both change accept), before the app shell; P06 and P09 qualified again in the phase's sequential run" checked><span><b>A (recommended).</b> Phase 3, after I71 and beside I69 (both change accept), before the app shell. P06 and P09 are qualified again in the phase's closing sequential run.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q15" value="B: later, Decide when: P14's grilling, I53's, or the first server workflow"><span><b>B.</b> Later, <code class="cr-inline">Decide when:</code> P14's grilling, I53's, or the first server workflow. Today's lease is safe, but more gets built on it meanwhile.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q15" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="write-up">
+  <h2 class="text-2xl font-bold">17. Proposed write-up (for the human's check before any file changes)</h2>
+  <p>Round 3 settled Q12-Q15; Q11 (the 13 rows, section 16) is taken as agreed unless the human says otherwise. The exact text for the decision log, the new ADR, the amendments and the glossary, then everything else. New issue: I80 (I79 is taken).</p>
+
+  <h3 class="text-lg font-semibold">Decision log: a new section, "Actors or the engine (2026-10-26)"</h3>
+  <p class="text-sm">Intro: "From I51, the seventh ticket of the foundation concepts map, grilled with the human on the review page and in conversation over three rounds. ADR-0032 records D136-D141 among the foundation concepts; ADR-0036 records D14' and D39', which amend D14 and D39 and are placed after them."</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>#</th><th>Name</th><th>Decision</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><b>D136</b></td><td>The actor level is the durable workflow</td><td>vivief's two handler levels are a command (the function) and a durable workflow (the actor). The workflow is the actor's type and each execution one actor: its identity <code class="cr-inline">O{org}/W{exec}</code>, its state the journal, its typed protocol the workflow's schemas and its deferreds, its mailbox the outside inputs (D11, D40), its lifecycle started, suspended, interrupted, done, and one writer at a time (D14'). Supervision is resume from the journal (restart), failure as data (escalate) and interrupt (stop). There is no actor runtime: the engine, the projector and query atoms stay separate parts. Effect builds its own durable workflow on Cluster's Entity; ours is built on the log. Shown by P06, P07 and P09. <code class="cr-inline">vivief:handler-levels</code> is adopted in this form; <code class="cr-inline">vivief:actor-runtime</code>: keep ours. "actor" keeps its meaning as the envelope field (D141).</td><td>Every property of vivief's actor already has an answer in the execution, and two are stronger: its state survives a crash, and its fence holds across devices, not only across servers. A second runtime would duplicate it.</td></tr>
+      <tr><td><b>D137</b></td><td>One meaning of entity</td><td>An entity is a thing with an identity, a type and an id, that facts are about: a person, a location, a list, a photo, a workflow run. Some entity types also act: they have a protocol and one writer at a time. The execution is the only one today. Effect's Cluster <code class="cr-inline">Entity</code> is an entity type that acts; its runtime (sharding, a mailbox in memory, <code class="cr-inline">MessageStorage</code>) is not adopted (D39'). In code Effect's <code class="cr-inline">Entity</code> names the type and our <code class="cr-inline">entity</code> an instance's id; the word for an entity that acts is map 3's.</td><td>The two share their core, an identity facts are about; what differs is whether it acts. Calling it a clash would split one idea in two.</td></tr>
+      <tr><td><b>D138</b></td><td>A workflow, or a cursor</td><td>Work that must not lose progress on a crash is a workflow. Anything else rebuilds from its own acknowledged cursor and runs as a scoped Layer with a Schedule retry, with no supervisor. A recurring server job that must have one owner is a server workflow that loops on a durable clock, so it needs no Singleton or ClusterCron. Drain before close stays a rule for owned resources; a workflow needs no drain, because an interrupted run resumes. <code class="cr-inline">viviefs:drain-before-close</code>: keep ours.</td><td>Every loop in sight (sync pull, trace export, compaction, projector catch-up) reads from a cursor it advances only on acknowledgement, so a crash loses nothing. A supervisor tree would be a second lifecycle beside Effect's scopes.</td></tr>
+      <tr><td><b>D139</b></td><td>No event bus</td><td>Reactivity invalidation routes a change inside a process (D42); between <code class="cr-inline">node</code>s each consumer reads the log from its own cursor (ADR-0017); a push is only a wake-up hint carrying no logic (D40). No broker. <code class="cr-inline">vivief:event-broker</code>: reject; <code class="cr-inline">vivief:cross-cutting-needs</code>: keep ours.</td><td>A broker would carry every commit twice, and the second copy would need its own deduplication, ordering, retention and access checks, which the log already has.</td></tr>
+      <tr><td><b>D140</b></td><td>Commands and the engine are the handler runtime</td><td>What vivief asks of an <code class="cr-inline">effectHandler</code> runtime, ViViEfs has in commands (the function level) and the engine (the actor level): the queue is the deferreds and the outbox, failure is typed errors and journaled exits. A model call is an activity (D111). A handler written as instructions for a model is a skill, vivief's Markdown/LLM strategy in D132's lens, not a part of the runtime. <code class="cr-inline">vivief:effect-handler-runtime-needs</code>: keep ours.</td><td>A model's output already enters through an activity, journaled, with its origin. A second door would go around both.</td></tr>
+      <tr><td><b>D141</b></td><td>The actor is the accountable identity</td><td>The envelope's <code class="cr-inline">actor</code> is the authenticated identity accountable for a changeset, the one authority checked (D124's first question). Today a person or the server (the server rejects an actor that is not the signed-in caller, <code class="cr-inline">ActorMismatch</code>). An agent writing in a person's session has that person as actor; inside a server workflow, the server; in both the model is the origin (D58', D115). Whether an agent may have its own identity is I54's. The kind of identity is a fact about that identity, read when access is decided, not an envelope field. vivief's actor category (<code class="cr-inline">vivief:provenance</code>, "actor-type defaults") is not adopted: trust stays on the origin.</td><td>"A person or the server" was the list of identities that can sign in today, not the meaning. With trust on the origin, nothing needs the actor's kind on every changeset.</td></tr>
+      <tr><td><b>D14'</b></td><td>The journal is the fence</td><td>As D14 for its purpose (one writer per run; a stale writer refused), with the lease replaced by the journal. Every engine fact (the start, an activity's start and exit, a clock, the result) names the engine fact of its run it follows; authority accepts it only if that is still the run's head, checked in one step with the append (I71). A takeover is always allowed: whoever is up to date writes on the head. A writer that is behind is refused, and so is everything it built on, so a run is always one history. Outside inputs (deferred completions, D11, D40) are write-once on their own entity and do not move the head. The holder is derived: whoever wrote the head. Only the holder resumes on its own; another device continues when a person asks; a server runner takes over a run whose head has not moved within its running step's timeout; an online writer may claim a step before acting. No lease datom, epoch or heartbeat. A "lost lease" in D15 and P14 now reads as a refused history, and D103's duty "fence leases" as "fence each run's journal". Built by I80; until then the lease runs and is safe (ADR-0014).</td><td>A lease beside the journal is a second record of who runs a run, which can disagree with the first and needs liveness to move. Write-once facts alone let a spliced history in (an offline phone's later steps on top of another device's step); fencing each history by its head closes that, with nothing to expire.</td></tr>
+      <tr><td><b>D39'</b></td><td>One engine, one journal, one fence</td><td>As D39: our datom-backed engine on device and server alike. Scale-out on the server is more runners writing on the journal head (D14'): each sweeps for runs whose head has not moved within their step's timeout and claims before acting. Effect Cluster is not the scale-out path: it fences by time only, keeps its journal in <code class="cr-inline">MessageStorage</code> (a work queue with claims and deletes, which fits the log poorly), and assumes runners that are always reachable, which a device is not. It stays possible behind <code class="cr-inline">WorkflowEngine</code> if a measured load needs its routing in memory (I8).</td><td>One journal format was D39's point; Cluster would add a second journal and a second fence.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">New ADR-0036: The journal is the fence</h3>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2 text-sm">
+    <p><b>Summary:</b> A run's journal fences its own writers: every engine fact names the fact it follows and is accepted only on the run's head, so a takeover is always allowed and no lease is needed. <b>Status:</b> Proposed, unverified. <b>Qualifying gate:</b> P06 and P09, qualified again on the journal fence. <b>Related:</b> D14', D39', D2, D10, D11, D13, D15, D40, D103; ADR-0012, ADR-0014 (its lease design superseded once this qualifies); I71, I80, I51.</p>
+    <p><b>Problem.</b> One run must have one history, written by one writer at a time, across phones that go offline and server runners that pause. Today a lease per run with an epoch does it (ADR-0014), but the lease never expires, any member device may take it, and its check is not atomic with the append (I71). A lease is also a second record of who runs a run, beside the journal, and would need liveness (heartbeats, expiry) to move without its holder. Effect Cluster's shard lock fences by time only and cannot be held by a device.</p>
+    <p><b>Design.</b> Engine facts (start, activity start and exit, clock, result) form one chain per run: each names the engine fact it follows. Authority accepts an engine fact only if it follows the run's head (a start only when the run has none), in one step with the append; otherwise it is refused, and so is anything built on it. Outside inputs are write-once on their own entity, outside the chain. Takeover is always allowed; the holder is derived from the head. Policy, not safety, decides who runs: the holder resumes on its own; another device continues when a person asks; a server runner takes over after the running step's timeout; an online writer may claim a step before acting. <code class="cr-inline">viviefs/lease/holder</code> and the envelope's <code class="cr-inline">leaseEpoch</code> are no longer written; old values decode; nothing is renamed (D44). Where "follows" lives (an envelope field or a journal attribute) is I80's. Revisit if a measured server load needs Cluster's routing in memory.</p>
+    <p><b>Trade-offs.</b> Lease everywhere with liveness (heartbeats, a takeover rule, two policies): safe, but more parts and a second record. Cluster on the server: two journals and a time-only fence. Write-once facts alone: lets a spliced history in. The journal fence: the least stored and one record, at the cost of re-qualifying P06 and P09 and a per-run head read at accept. <b>Out-of-scope items:</b> none made harder; the head check is a duty of authority, so the server-independent mode (I60, D105) can hold it on any <code class="cr-inline">node</code> that holds authority.</p>
+    <p><b>Failure-handling.</b> Two writers on one step: the second is refused, the loser stops; at most one side effect is duplicated, made harmless by its idempotency key, and none when the step was claimed before acting. An offline phone overtaken: its history from the divergence is refused whole; user content goes to quarantine (P14, D15). A paused runner: its late write follows a fact that is no longer the head and is refused. Two starts with one idempotency key: the second is refused. To be shown by P06 (kill during a takeover) and P09 (a second writer refused, a spliced history refused, an outside input not moving the head).</p>
+    <p><b>Outcome.</b> Expected: one history per run, whoever writes, with no lease. Observed: not yet run.</p>
+  </div></div>
+
+  <h3 class="text-lg font-semibold">ADR amendments</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>ADR</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><b>ADR-0032</b></td><td>A new Design paragraph after "One shape at every level": "<b>Actors or the engine (D136-D141, D14', D39', I51).</b> vivief's actor level is the durable workflow: each execution is one actor, its state the journal, its mailbox the outside inputs, one writer at a time, restarted by resuming from its journal. There is no actor runtime and no supervision tree: work that must not lose progress is a workflow, anything else rebuilds from its cursor. There is no event bus: Reactivity in process, the cursor stream between <code class="cr-inline">node</code>s, push only a hint. Commands and the engine are the handler runtime; a model call is an activity. An entity is a thing with an identity that facts are about, and some entity types act; the execution is one. The envelope's actor is the identity authority checked; the model is an origin. A run's journal is its own fence (ADR-0036), so one engine, one journal and one fence serve device and server, and Effect Cluster is not needed. Shown by P06, P07 and P09; the fence is to be shown by P06 and P09 again." Related gains D136-D141, D14', D39', ADR-0036. In "Nodes and authority", "fence leases" becomes "fence each run's journal (D14')". Status stays <code class="cr-inline">Proposed, unverified</code>.</td></tr>
+      <tr><td><b>ADR-0014</b></td><td>Related gains ADR-0036 and D14'. An Observed entry dated 2026-10-26: found in I51, the lease never expires (<code class="cr-inline">expiresAtMs</code> is always null), any member device may write a higher epoch, and the check is not atomic with the append (I71); D14' replaces the lease with the journal fence (ADR-0036), which supersedes this ADR's lease design once qualified. Status stays Qualified.</td></tr>
+      <tr><td><b>ADR-0012</b></td><td>An amendment paragraph (2026-10-26, D39', I51): Effect Cluster is no longer the scale-out path; server scale-out is more runners on the journal fence (ADR-0036). "Lease holder is LWW; fencing is by epoch" gains "until ADR-0036". Status stays Qualified.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">Glossary (as Q14)</h3>
+  <pre class="cr-code">**Entity**:
+The thing a fact is about, such as one list, one photo or one workflow run.
+A type and an id; the subject `e` of datoms; its id may encode its parent
+for strict composition. Most entities only have facts said about them; a
+workflow run also acts.
+_Avoid_: object, document
+
+**actor**:
+Who is accountable for a change: the signed-in identity authority checked
+before accepting it. Today a person or the server. An envelope field; the
+kind of identity is a fact about that identity, not part of the envelope.
+_Avoid_: Actor as an entity or type name, author</pre>
+  <p class="text-sm">Lease and Lease epoch stay until I80 is built. Head, holder and the word for an entity that acts are map 3's.</p>
+
+  <h3 class="text-lg font-semibold">Everything else</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td><b>I51 Answer</b></td><td>The 13 rows with their dispositions (section 16), the three rounds in short (round 1: the challenges; round 2: Q7-Q10; round 3: Q11-Q15), links to this page, ADR-0036 and I80. <code class="cr-inline">Status: resolved</code>.</td></tr>
+      <tr><td><b>I80 Build the journal fence</b></td><td>New. "Build D14' (ADR-0036): every engine fact names the fact it follows, accept checks the run's head in one step with the append, the lease is no longer written; P06 and P09 qualified again." The design details from section 15h. <code class="cr-inline">Status: ready-for-agent</code>, <code class="cr-inline">Category: enhancement</code>, <code class="cr-inline">Blocked by: I71</code>. In phase 3 (Q15).</td></tr>
+      <tr><td><b>I8</b></td><td>Direction rewritten and a comment, as Q12.</td></tr>
+      <tr><td><b>I29</b></td><td>A comment, as Q12.</td></tr>
+      <tr><td><b>I71</b></td><td>A comment: accept's lease and write-once reads have the same window; I80's head check needs the fix, so I71 comes before I80 in phase 3.</td></tr>
+      <tr><td><b>I11</b></td><td>A comment: under D14' the stranded content is an offline history that was refused (section 15e, case 4); I53 reviews this issue with that reading.</td></tr>
+      <tr><td><b>I54</b></td><td>A comment: whether an agent may have its own identity (D141), and the kind of identity as an attribute read when access is decided.</td></tr>
+      <tr><td><b>I78</b></td><td>A comment: Entity is not a clash of meaning (D137), only of wording; Cluster was read (this page, sections 2 and 8-10).</td></tr>
+      <tr><td><b>Map 2</b></td><td>"Decisions so far": "I51: the actor level is the durable workflow, one execution per actor; no actor runtime, supervision tree or event bus (a workflow, or a cursor); commands and the engine are the handler runtime; one meaning of entity, some entity types act; the actor is the accountable identity; a run's journal is its own fence, so one engine, one journal and one fence, and Cluster is not needed (D136-D141, D14', D39'; ADR-0036). Added I80."</td></tr>
+      <tr><td><b>next-session.md</b></td><td>Map 2 adds I51 to what is resolved; the next step is I53. Phase 3's row: "... then I66, I71, I69 (needs I66's value Schemas), I80 (needs I71), I67, then the app shell ...". Phase 1's I51 reviewing note marked done.</td></tr>
+      <tr><td><b>Research README</b></td><td>A row for this page: "I51's design review: vivief's actor against Effect's Cluster and our engine, worked examples, the lease explained, Cluster against a lease against the journal as the fence, MessageStorage on the log, entity and actor; settled in conversation (D136-D141, D14', D39'; ADR-0036)."</td></tr>
+      <tr><td><b>Then</b></td><td><code class="cr-inline">mise exec -- pnpm refs fix</code>, <code class="cr-inline">mise exec -- pnpm verify</code>, one commit on <code class="cr-inline">main</code> after asking. <code class="cr-inline">pnpm qualify</code> is not run: no gate inputs change.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  // Mermaid measures labels while it lays a diagram out, so a diagram must stay
+  // visible until it is done. Lavish hides a .mermaid container as soon as an SVG
+  // appears in it (to put a whiteboard there), and preloads the page in a hidden
+  // frame. So each diagram is drawn apart, once the page has a size, and only the
+  // finished SVG goes into its container.
+  const diagrams = [...document.querySelectorAll(".mermaid")];
+  function source(el) {
+    const raw = document.createElement("textarea");
+    raw.innerHTML = el.innerHTML;
+    return raw.value.trim();
+  }
+  async function draw() {
+    for (const [i, el] of diagrams.entries()) {
+      try {
+        const { svg } = await mermaid.render(`diagram-${i}`, source(el));
+        el.innerHTML = svg;
+      } catch (error) {
+        console.error(`Mermaid diagram ${i} in #${el.closest("section")?.id} failed:`, error?.message ?? error);
+      }
+    }
+  }
+  const sized = new ResizeObserver(([entry]) => {
+    if (entry.contentRect.width === 0) return;
+    sized.disconnect();
+    void draw();
+  });
+  window.addEventListener("load", () => sized.observe(document.body), { once: true });
+</script>
+</body>
+</html>

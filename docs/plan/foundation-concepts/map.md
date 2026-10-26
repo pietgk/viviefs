@@ -52,6 +52,7 @@ decisions that chose them.
 - [I50](../../issues/0050-contracts-checked-as-data-or-by-commands.md): authority accepts every change by asking may this writer do this, is it well formed, does the data stay valid; acceptance rules are code about the data alone, judged no worse; every domain writer uses a registered command that declares its writes; rules over time and re-running a command deferred; [ADR-0035](../../adr/0035-accepting-a-change.md) ([D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44']). Found that the server never checked a command's rules. Added I69-[I70 Research: access from membership to enterprise][I70]; access as a pattern is a direction for [I54 Trust, encryption and who may sign in][I54].
 - [I70](../../issues/0070-research-access-from-membership-to-enterprise.md): research for [I54 Trust, encryption and who may sign in][I54]: access fits one AuthZEN-shaped contract, with a changeset as a batch of evaluations, a decision naming the position it read, and errors that deny; Cedar on Hermes unverified ([the record](../../research/2026-10-09-access-from-membership-to-enterprise.md)). Found [I71 An append can land after a revocation][I71].
 - [I56](../../issues/0056-one-shape-at-every-level.md): the shape is a foundation concept at the data level (a command decides, authority accepts, the projector evolves; a workflow over its journal) and a lens above it, four states at every level, with kinds of intent from a WayFinder map to a button press; the changeset is the step and the log after accept is `State'`; a verified commit is a commit on which verify is green; a frame reaches a person through a surface of any modality; Effect's names first ([D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98']). Added I76-[I78 Research: Effect's vocabulary against ours][I78].
+- [I51](../../issues/0051-actors-or-the-engine.md): the actor level is the durable workflow, one execution per actor; no actor runtime, supervision tree or event bus (a workflow, or a cursor); commands and the engine are the handler runtime; one meaning of entity, some entity types act; the actor is the accountable identity; a run's journal is its own fence, so one engine, one journal and one fence, and Cluster is not needed ([D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39']; [ADR-0036 The journal is the fence][ADR-0036]). Added [I80 Build the journal fence][I80].
 
 ## Not yet specified
 
@@ -78,13 +79,17 @@ decisions that chose them.
 [ADR-0032]: ../../adr/0032-what-viviefs-is-about.md
 [ADR-0033]: ../../adr/0033-the-presenter-pattern.md
 [ADR-0034]: ../../adr/0034-origin-trust.md
+[ADR-0036]: ../../adr/0036-the-journal-is-the-fence.md
 [D103-D106]: ../bootstrap/02-decision-log.md#d103-d106
 [D107-D117]: ../bootstrap/02-decision-log.md#d107-d117
 [D118-D123]: ../bootstrap/02-decision-log.md#d118-d123
 [D124-D129]: ../bootstrap/02-decision-log.md#d124-d129
 [D130-D135]: ../bootstrap/02-decision-log.md#d130-d135
 [D135]: ../bootstrap/02-decision-log.md#d135
+[D136-D141]: ../bootstrap/02-decision-log.md#d136-d141
+[D14']: ../bootstrap/02-decision-log.md#d14p
 [D36']: ../bootstrap/02-decision-log.md#d36p
+[D39']: ../bootstrap/02-decision-log.md#d39p
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D55']: ../bootstrap/02-decision-log.md#d55p
 [D58']: ../bootstrap/02-decision-log.md#d58p
@@ -102,5 +107,6 @@ decisions that chose them.
 [I70]: ../../issues/0070-research-access-from-membership-to-enterprise.md
 [I71]: ../../issues/0071-an-append-can-land-after-a-revocation.md
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
+[I80]: ../../issues/0080-build-the-journal-fence.md
 [P01]: ../bootstrap/06-qualification-gates.md#p01
 [P10]: ../bootstrap/06-qualification-gates.md#p10

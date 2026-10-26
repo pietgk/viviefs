@@ -69,8 +69,12 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 
 2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is map 6; [I51 Actors or the engine][I51] reviews it, because a replayable run looks like the durable workflow's journal.
 
+2026-10-26: [I51](0051-actors-or-the-engine.md) reviewed it. Confirmed for map 6, narrowed: an agent run written as a workflow, its model calls and tool actions as activities, already replays one run from its journal with no model call ([D136 The actor level is the durable workflow][D136], [D140 Commands and the engine are the handler runtime][D140]; the review page's example d). What this issue adds is a recording kept for the *next* run, keyed by its input and handed back to the agent when the app has drifted; that is not the journal. The `Decide when:` is unchanged.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D136]: ../plan/bootstrap/02-decision-log.md#d136
+[D140]: ../plan/bootstrap/02-decision-log.md#d140
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D45']: ../plan/bootstrap/02-decision-log.md#d45p
 [D48']: ../plan/bootstrap/02-decision-log.md#d48p

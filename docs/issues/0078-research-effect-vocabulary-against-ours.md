@@ -28,6 +28,8 @@ Write the record in `docs/research/`, as [I70](0070-research-access-from-members
 
 ## Comments
 
+2026-10-26: [I51](0051-actors-or-the-engine.md) read `cluster` ([the review page](../research/2026-10-24-actors-or-the-engine-review.html), sections 2 and 8-10). Entity is not a clash of meaning ([D137 One meaning of entity][D137]): an entity is a thing with an identity that facts are about, and Effect's `Entity` is an entity type that acts; what remains is wording, Effect's `Entity` naming the type and ours an instance's id. Cluster's runtime is not adopted ([D39' One engine, one journal, one fence][D39']), and `cluster/Envelope` (a transport envelope between entities) stays a clash with ours.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0006]: ../adr/0006-one-datom-log.md
@@ -37,3 +39,5 @@ Write the record in `docs/research/`, as [I70](0070-research-access-from-members
 [D102]: ../plan/bootstrap/02-decision-log.md#d102
 [D130]: ../plan/bootstrap/02-decision-log.md#d130
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
+[D137]: ../plan/bootstrap/02-decision-log.md#d137
+[D39']: ../plan/bootstrap/02-decision-log.md#d39p

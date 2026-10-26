@@ -8,7 +8,7 @@ Date: 2026-09-20
 
 Qualifying gate: [P09 Sync][P09]
 
-Related: [D13 Server holds workflow state][D13], [D14 Leases with fencing][D14], [D15 Server authority after a lost lease][D15]. [ADR 0012](0012-datom-backed-workflow-engine.md),
+Related: [D13 Server holds workflow state][D13], [D14 Leases with fencing][D14], [D15 Server authority after a lost lease][D15], [D14' The journal is the fence][D14']. [ADR-0036 The journal is the fence][ADR-0036] (the journal fence, which supersedes this ADR's lease design once qualified). [ADR 0012](0012-datom-backed-workflow-engine.md),
 [ADR 0017](0017-sync-outbox-and-cursor-stream.md).
 
 ## Problem
@@ -61,11 +61,26 @@ until the server acks it. Quarantine is still an empty named slot. Not
 Accepted. Evidence:
 [2026-09-22-p09.md](../evidence/2026-09-22-p09.md).
 
+2026-10-26, found in [I51 Actors or the engine][I51] by reading the code. The lease never expires: the
+engine writes `expiresAtMs: null` on grant and handoff, nothing renews it, and
+the server checks only the epoch and the device. Any member device may write a
+higher epoch and so take a run at any time ([P09 Sync][P09]'s `staleLease` check does
+exactly that), which the Design's "read-only until the lease expires" does not
+match. Accept's lease read is not atomic with the append ([I71 An append can land after a revocation][I71]). None of these
+lets an older epoch write. [D14' The journal is the fence][D14'] replaces the lease with the journal fence
+([ADR-0036 The journal is the fence][ADR-0036], built by [I80 Build the journal fence][I80]), which supersedes this ADR's lease design once
+qualified; until then the lease runs as qualified.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0036]: 0036-the-journal-is-the-fence.md
 [D13]: ../plan/bootstrap/02-decision-log.md#d13
 [D14]: ../plan/bootstrap/02-decision-log.md#d14
+[D14']: ../plan/bootstrap/02-decision-log.md#d14p
 [D15]: ../plan/bootstrap/02-decision-log.md#d15
 [D34]: ../plan/bootstrap/02-decision-log.md#d34
+[I51]: ../issues/0051-actors-or-the-engine.md
+[I71]: ../issues/0071-an-append-can-land-after-a-revocation.md
+[I80]: ../issues/0080-build-the-journal-fence.md
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09

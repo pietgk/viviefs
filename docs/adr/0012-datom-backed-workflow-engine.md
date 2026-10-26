@@ -8,7 +8,7 @@ Date: 2026-09-20
 
 Qualifying gate: [P06 Workflow engine crash matrix][P06]
 
-Related: [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D39 One engine everywhere][D39]. [Architecture section 9](../plan/bootstrap/03-architecture.md),
+Related: [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D39 One engine everywhere][D39], [D39' One engine, one journal, one fence][D39']. [ADR-0036 The journal is the fence][ADR-0036] (the journal fence). [Architecture section 9](../plan/bootstrap/03-architecture.md),
 [research/01](../plan/bootstrap/research/01-effect-v4-durable-execution.md).
 
 ## Problem
@@ -26,6 +26,13 @@ everything as datoms. One engine, one journal format, on device and server.
 Effect Cluster (`ClusterWorkflowEngine`) is the later scale-out path behind the
 same interface.
 
+**One engine, one journal, one fence** (amendment 2026-10-26, [D39' One engine, one journal, one fence][D39'], [D14' The journal is the fence][D14'], [I51 Actors or the engine][I51]).
+Effect Cluster is no longer the scale-out path: it fences by time only, keeps
+its journal in `MessageStorage` rather than the log, and assumes runners that
+are always reachable, which a device is not. Server scale-out is more runners
+writing on the journal fence ([ADR-0036 The journal is the fence][ADR-0036]); Cluster stays possible behind
+`WorkflowEngine` only if a measured load needs its routing in memory ([I8 Engine scale-out and a multi-runner server][I8]).
+
 Workflows are versioned by name (`Inspection.v3`). Effect has no versioning
 API. Activity names are unique and stable within a version. Old versions ship
 until drained. Activities must not suspend (a suspending activity re-runs on
@@ -35,7 +42,8 @@ Id shapes (`O{org}/W{exec}`, `/A{name}#{attempt}`, `/D{name}`, `/C{name}`) are
 decided. [P06 Workflow engine crash matrix][P06] pinned journal attributes ([D44 Never rename, never migrate][D44]): `viviefs/workflow/started`,
 `viviefs/workflow/result`, `viviefs/activity/exit`, `viviefs/deferred/exit`,
 `viviefs/clock/wake-at`, `viviefs/lease/holder`. Lease holder is LWW; fencing is
-by epoch. Other journal facts are write-once.
+by epoch until the journal fence replaces it ([ADR-0036 The journal is the fence][ADR-0036], [I80 Build the journal fence][I80]). Other journal
+facts are write-once.
 
 ## Trade-offs
 
@@ -90,10 +98,16 @@ Evidence: [2026-09-20-p06.md](../evidence/2026-09-20-p06.md).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0036]: 0036-the-journal-is-the-fence.md
 [D10]: ../plan/bootstrap/02-decision-log.md#d10
+[D14']: ../plan/bootstrap/02-decision-log.md#d14p
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D39]: ../plan/bootstrap/02-decision-log.md#d39
+[D39']: ../plan/bootstrap/02-decision-log.md#d39p
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
+[I51]: ../issues/0051-actors-or-the-engine.md
+[I8]: ../issues/0008-engine-scale-out.md
+[I80]: ../issues/0080-build-the-journal-fence.md
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06
 [P07]: ../plan/bootstrap/06-qualification-gates.md#p07
 [P10]: ../plan/bootstrap/06-qualification-gates.md#p10

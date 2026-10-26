@@ -20,9 +20,12 @@ To decide: reproduce it first in a test that interleaves the two (a probe or a s
 
 2026-10-09: Reproduced. [`apps/evidence-server/src/revocation-race.integration.test.ts`](../../apps/evidence-server/src/revocation-race.integration.test.ts) runs the evidence server's composition (sync RPCs over HTTP, PGlite log, OIDC verifier against the fake issuer) with one test seam: the server's log store holds a device's append until the test releases it, so the interleaving is pinned without sleeps. Alice, a member of `acme`, sends an `Append`; it passes `requireMembership` and every accept check and waits at `store.append`; the operator's `revoke` returns at once (nothing it takes is held by the append) and `isMember` reads false; then the append is released. The `Append` acks `ok`, the revocation's datom is at seq 6, and the changeset's three datoms land at seq 7, 8 and 9, after it. Control: an `Append` sent after the revoke gets `MembershipMissing`. A passing test pins the race and the control; the invariant (no datom of the changeset after the revocation) is an `it.live.fails` known-bug test that keeps `verify` green and turns red once the window is closed, either by rejecting the append or by ordering it before the revocation. The window is not specific to the gate: every accept read between the membership check and `store.append` (tx lookups, `blobs.has`, lease and write-once reads) is an await where a concurrent revoke can commit.
 
+2026-10-26: [I51](0051-actors-or-the-engine.md) found the same window in accept's lease read: two takeovers can both read the old epoch and both land. Today's fence still refuses an older epoch, so nothing unsafe follows yet, but [I80 Build the journal fence][I80]'s journal fence checks the run's head in one step with the append and needs this fix first. In phase 3 this issue comes before [I80][I80].
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D124]: ../plan/bootstrap/02-decision-log.md#d124
 [I54]: 0054-trust-encryption-and-who-may-sign-in.md
 [I69]: 0069-accept-checks-every-change.md
 [I70]: 0070-research-access-from-membership-to-enterprise.md
+[I80]: 0080-build-the-journal-fence.md

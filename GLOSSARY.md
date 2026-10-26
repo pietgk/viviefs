@@ -143,8 +143,10 @@ transaction.
 _Avoid_: event, row, record
 
 **Entity**:
-The thing a fact is about, such as one list or one photo. It is the subject
-`e` of datoms; its id may encode its parent for strict composition.
+The thing a fact is about, such as one list, one photo or one workflow run. A
+type and an id; the subject `e` of datoms; its id may encode its parent for
+strict composition. Most entities only have facts said about them; a workflow
+run also acts.
 _Avoid_: object, document
 
 **Derived id**:
@@ -213,8 +215,9 @@ origin by authority, with defaults per kind of origin ([D116 Trust levels and wh
 _Avoid_: trust score
 
 **actor**:
-Who made a change: a person, or the server. The envelope field naming the
-author of a changeset; a field name only, there is no Actor entity or type.
+Who is accountable for a change: the signed-in identity authority checked
+before accepting it. Today a person or the server. An envelope field; the
+kind of identity is a fact about that identity, not part of the envelope.
 _Avoid_: Actor as an entity or type name, author
 
 **Acceptance time**:

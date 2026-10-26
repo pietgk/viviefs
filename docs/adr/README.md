@@ -22,7 +22,7 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | [0011](0011-log-store-pattern.md) | Log store pattern, read models, compaction and analytics | Qualified | [P04 Log store conformance][P04], [P05 Changesets and projections][P05] |
 | [0012](0012-datom-backed-workflow-engine.md) | Durable execution: Effect Workflow API over one datom-backed engine | Qualified | [P06 Workflow engine crash matrix][P06] |
 | [0013](0013-device-durability.md) | Device durability: resume on launch, notifications, browser leader | Qualified ([P07 Device resume E2E][P07]); [P17 Browser engine leader][P17] unverified | [P07 Device resume E2E][P07], [P17 Browser engine leader][P17] |
-| [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority | Qualified | [P09 Sync][P09] |
+| [0014](0014-leases-fencing-and-server-authority.md) | Leases, fencing and server authority (lease design to be superseded by [ADR-0036 The journal is the fence][ADR-0036]) | Qualified | [P09 Sync][P09] |
 | [0015](0015-deferreds-vs-machines.md) | Human steps as deferreds; workflows own progress | Qualified | [P06 Workflow engine crash matrix][P06], [P09 Sync][P09] |
 | [0016](0016-commands-and-server-validation.md) | Commands, server validation and rejection | Qualified | [P09 Sync][P09] |
 | [0017](0017-sync-outbox-and-cursor-stream.md) | Sync: outbox and cursor stream over Effect RPC | Qualified | [P09 Sync][P09] |
@@ -44,6 +44,7 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | [0033](0033-the-presenter-pattern.md) | The Presenter pattern | Proposed, unverified | Presenter conformance gate ([I62 The Presenter conformance gate][I62]), to come |
 | [0034](0034-origin-trust.md) | Origin trust | Proposed, unverified | named when built ([I64 Build origin trust][I64]) |
 | [0035](0035-accepting-a-change.md) | Accepting a change | Proposed, unverified | [P09 Sync][P09] extended ([I69 Accept checks every change][I69]), to come |
+| [0036](0036-the-journal-is-the-fence.md) | The journal is the fence | Proposed, unverified | [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09] again, when built ([I80 Build the journal fence][I80]) |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. **Accepted** is a human status given on the pattern's
@@ -71,11 +72,13 @@ decision alone ([ADR-0026 Verify - Qualify - Teach][ADR-0026], amended 2026-09-2
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0026]: 0026-verify-qualify-teach.md
+[ADR-0036]: 0036-the-journal-is-the-fence.md
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
 [D88]: ../plan/bootstrap/02-decision-log.md#d88
 [I62]: ../issues/0062-presenter-conformance-gate.md
 [I64]: ../issues/0064-build-origin-trust.md
 [I69]: ../issues/0069-accept-checks-every-change.md
+[I80]: ../issues/0080-build-the-journal-fence.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P02]: ../plan/bootstrap/06-qualification-gates.md#p02
 [P03]: ../plan/bootstrap/06-qualification-gates.md#p03

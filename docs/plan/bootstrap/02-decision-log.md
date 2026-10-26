@@ -36,11 +36,13 @@ Reference > Decisions, and a reference to a decision anywhere on the site links 
 | <a id="d11"></a>D11 | Human steps as deferreds | A human step is a `DurableDeferred` inside the workflow. **Workflows own durable business progress; machines and atoms own ephemeral interaction.** A killed app resumes at "waiting for step X" and the UI rebuilds. | Clean split between durable and ephemeral state. |
 | <a id="d13"></a>D13 | Server holds workflow state | The sync server holds full workflow state (execution, journal, pending deferreds and clocks) so another device can resume. The server stores it and never runs device workflow code. | Needed for device switching; still just storage. |
 | <a id="d14"></a>D14 | Leases with fencing | One lease per execution, renewed while active, with a fencing counter. Stale holders' writes are rejected; other devices show the execution read-only until the lease expires. | Activities have real side effects that cannot be merged afterwards. |
+| <a id="d14p"></a>D14' | The journal is the fence | As [D14 Leases with fencing][D14] for its purpose (one writer per run; a stale writer refused), with the lease replaced by the journal. Every engine fact (the start, an activity's start and exit, a clock, the result) names the engine fact of its run it follows; authority accepts it only if that is still the run's head, checked in one step with the append ([I71 An append can land after a revocation][I71]). A takeover is always allowed: whoever is up to date writes on the head. A writer that is behind is refused, and so is everything it built on, so a run is always one history. Outside inputs (deferred completions, [D11 Human steps as deferreds][D11], [D40 Server-side human steps][D40]) are write-once on their own entity and do not move the head. The holder is derived: whoever wrote the head. Only the holder resumes on its own; another device continues when a person asks; a server runner takes over a run whose head has not moved within its running step's timeout; an online writer may claim a step before acting. No lease datom, epoch or heartbeat. A "lost lease" in [D15 Server authority after a lost lease][D15] and [P14 Quarantine after a lost lease][P14] now reads as a refused history, and [D103 Nodes and authority][D103]'s duty "fence leases" as "fence each run's journal". Decided in [I51](../../issues/0051-actors-or-the-engine.md) ([ADR-0036 The journal is the fence][ADR-0036]); built by [I80 Build the journal fence][I80]; until then the lease runs and is safe ([ADR-0014 Leases, fencing and server authority][ADR-0014]). | A lease beside the journal is a second record of who runs a run, which can disagree with the first and needs liveness to move. Write-once facts alone let a spliced history in (an offline phone's later steps on top of another device's step); fencing each history by its head closes that, with nothing to expire. |
 | <a id="d15"></a>D15 | Server authority after a lost lease | Server authoritative. A device that lost its lease drops its divergent journal entries and replays from the server. User content (photos, recordings, drafts) is never dropped; it is quarantined for human resolution. | Idempotency keys make side effects harmless; user work is never silently lost. |
 | <a id="d20"></a>D20 | Crash matrix as the merge bar | The engine's merge bar is a crash matrix: engine tests with `TestClock` killing at every boundary, plus a simulator force-quit E2E. | In-memory-only durability proves nothing. |
 | <a id="d24"></a>D24 | Durable clocks and notifications | Long `DurableClock` sleeps write a `wake_at` datom and schedule a local notification (expo-notifications; Android `alarmClock` delivery for time-critical). The engine sweeps due clocks on launch and foreground; expo-background-task sweeps opportunistically. Notification actions complete the matching `DurableDeferred`. | Turns "resume on next launch" into mechanism. |
 | <a id="d25"></a>D25 | Browser engine leader | Browser: one leader tab per profile runs the engine (Web Locks); other tabs render and forward events via BroadcastChannel. Each browser profile counts as one device for leases. | Several tabs are several engines on one OPFS database. |
 | <a id="d39"></a>D39 | One engine everywhere | One engine: our datom-backed `WorkflowEngine` on device and server alike. Effect Cluster (`ClusterWorkflowEngine`) is the later scale-out path behind the same interface. | One journal format is the point of [D31 One datom log][D31]. |
+| <a id="d39p"></a>D39' | One engine, one journal, one fence | As [D39 One engine everywhere][D39]: our datom-backed engine on device and server alike. Scale-out on the server is more runners writing on the journal head ([D14' The journal is the fence][D14']): each sweeps for runs whose head has not moved within their step's timeout and claims before acting. Effect Cluster is not the scale-out path: it fences by time only, keeps its journal in `MessageStorage` (a work queue with claims and deletes, which fits the log poorly), and assumes runners that are always reachable, which a device is not. It stays possible behind `WorkflowEngine` if a measured load needs its routing in memory ([I8 Engine scale-out and a multi-runner server][I8]). Decided in [I51](../../issues/0051-actors-or-the-engine.md) ([ADR-0036 The journal is the fence][ADR-0036]). | One journal format was [D39 One engine everywhere][D39]'s point; Cluster would add a second journal and a second fence. |
 | <a id="d40"></a>D40 | Server-side human steps | Server-side human steps (a reviewer approves on the web) write a deferred-completion datom under `O{org}/W{exec}/D{name}` in the same changeset as the review. It syncs down; the device engine resumes. Push is only a wake-up hint. | Signals become ordinary datoms: deduplicated, fenced, traced, auditable. |
 
 <a id="d31-d51"></a>
@@ -295,6 +297,23 @@ From [I56](../../issues/0056-one-shape-at-every-level.md), the sixth ticket of
 | <a id="d134"></a>D134 | Presenting in any modality | A frame reaches a person through a surface of any modality: a screen (text, diagrams, pictures), a speaker (speech, music), haptics, or ways not known yet. A screen is one kind. The Presenter's contract already names no modality. An agent reads a frame through a tool, not a surface. "Surface" is map 3's leading candidate for the word. It clashes with the `Surface` component of React Native Paper and Material, with "API surface" and "attack surface", and with vivief's Surface, whose six modes are all visual. "Screen" stays in existing text until map 3, and where the meaning is visual ([D73 Links and routing][D73]). | A screen is one way to present. Naming the visual case as the general one would make every other way an exception. The word clashes, so it waits, by the map's rule. |
 | <a id="d135"></a>D135 | Effect's names first | A concept Effect already names takes Effect's name and meaning. A new name is checked against Effect's modules (the core and `ai`, `cluster`, `eventlog`, `persistence`, `reactivity`, `rpc`, `sql`, `workflow`) before it is adopted. A deliberate difference says why, as [ADR-0006 One datom log as the substrate][ADR-0006], [ADR-0016 Commands, server validation and rejection][ADR-0016] and [ADR-0017 Sync: outbox and cursor stream over Effect RPC][ADR-0017] do for EventLog. Where the stack runs this already holds: Service, Layer, Schema, Workflow, Activity, Durable clock, Reactivity, Atom, Rpc and Sql are used as Effect means them. Not compared yet: `ai` and most of `cluster`. [I78 Research: Effect's vocabulary against ours][I78] compares them before map 3, and [I51 Actors or the engine][I51] reads `cluster` (Entity, Sharding, Singleton) first. Known clashes: Envelope, Journal (`EventJournal`), Entity, Decision and "decide" (`ai/Decision`, `DecisionModel.decide`), Tool, Prompt. | We build on Effect and keep its source in the repository. vivief's concepts were written before anyone read it, so taking them over could rename or reinvent what Effect already has. An agent that knows Effect then reads our code the way Effect's own documentation does. |
 
+<a id="d136-d141"></a>
+## Actors or the engine (2026-10-26)
+
+From [I51](../../issues/0051-actors-or-the-engine.md), the seventh ticket of
+[the foundation concepts map](../foundation-concepts/map.md), grilled with the human on
+[the review page](../../research/2026-10-24-actors-or-the-engine-review.html) and in conversation over three rounds.
+[ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] records [D136-D141 Actors or the engine][D136-D141] among the foundation concepts; [ADR-0036 The journal is the fence][ADR-0036] records [D14' The journal is the fence][D14'] and [D39' One engine, one journal, one fence][D39'], which amend [D14 Leases with fencing][D14] and [D39 One engine everywhere][D39] and are placed after them.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d136"></a>D136 | The actor level is the durable workflow | vivief's two handler levels are a command (the function) and a durable workflow (the actor). The workflow is the actor's type and each execution one actor: its identity `O{org}/W{exec}`, its state the journal, its typed protocol the workflow's schemas and its deferreds, its mailbox the outside inputs ([D11 Human steps as deferreds][D11], [D40 Server-side human steps][D40]), its lifecycle started, suspended, interrupted, done, and one writer at a time ([D14' The journal is the fence][D14']). Supervision is resume from the journal (restart), failure as data (escalate) and interrupt (stop). There is no actor runtime: the engine, the projector and query atoms stay separate parts. Effect builds its own durable workflow on Cluster's Entity; ours is built on the log. Shown by [P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07] and [P09 Sync][P09]. `vivief:handler-levels` is adopted in this form; `vivief:actor-runtime`: keep ours. "actor" keeps its meaning as the envelope field ([D141 The actor is the accountable identity][D141]). | Every property of vivief's actor already has an answer in the execution, and two are stronger: its state survives a crash, and its fence holds across devices, not only across servers. A second runtime would duplicate it. |
+| <a id="d137"></a>D137 | One meaning of entity | An entity is a thing with an identity, a type and an id, that facts are about: a person, a location, a list, a photo, a workflow run. Some entity types also act: they have a protocol and one writer at a time. The execution is the only one today. Effect's Cluster `Entity` is an entity type that acts; its runtime (sharding, a mailbox in memory, `MessageStorage`) is not adopted ([D39' One engine, one journal, one fence][D39']). In code Effect's `Entity` names the type and our `entity` an instance's id; the word for an entity that acts is map 3's. | The two share their core, an identity facts are about; what differs is whether it acts. Calling it a clash would split one idea in two. |
+| <a id="d138"></a>D138 | A workflow, or a cursor | Work that must not lose progress on a crash is a workflow. Anything else rebuilds from its own acknowledged cursor and runs as a scoped Layer with a Schedule retry, with no supervisor. A recurring server job that must have one owner is a server workflow that loops on a durable clock, so it needs no Singleton or ClusterCron. Drain before close stays a rule for owned resources; a workflow needs no drain, because an interrupted run resumes. `viviefs:drain-before-close`: keep ours. | Every loop in sight (sync pull, trace export, compaction, projector catch-up) reads from a cursor it advances only on acknowledgement, so a crash loses nothing. A supervisor tree would be a second lifecycle beside Effect's scopes. |
+| <a id="d139"></a>D139 | No event bus | Reactivity invalidation routes a change inside a process ([D42 Live reads with query atoms][D42]); between `node`s each consumer reads the log from its own cursor ([ADR-0017 Sync: outbox and cursor stream over Effect RPC][ADR-0017]); a push is only a wake-up hint carrying no logic ([D40 Server-side human steps][D40]). No broker. `vivief:event-broker`: reject; `vivief:cross-cutting-needs`: keep ours. | A broker would carry every commit twice, and the second copy would need its own deduplication, ordering, retention and access checks, which the log already has. |
+| <a id="d140"></a>D140 | Commands and the engine are the handler runtime | What vivief asks of an `effectHandler` runtime, ViViEfs has in commands (the function level) and the engine (the actor level): the queue is the deferreds and the outbox, failure is typed errors and journaled exits. A model call is an activity ([D111 Faster and enriching implementations][D111]). A handler written as instructions for a model is a skill, vivief's Markdown/LLM strategy in [D132 Four states at every level][D132]'s lens, not a part of the runtime. `vivief:effect-handler-runtime-needs`: keep ours. | A model's output already enters through an activity, journaled, with its origin. A second door would go around both. |
+| <a id="d141"></a>D141 | The actor is the accountable identity | The envelope's `actor` is the authenticated identity accountable for a changeset, the one authority checked ([D124 One checkpoint][D124]'s first question). Today a person or the server (the server rejects an actor that is not the signed-in caller, `ActorMismatch`). An agent writing in a person's session has that person as actor; inside a server workflow, the server; in both the model is the origin ([D58' Envelope names the origin][D58'], [D115 Origin trust][D115]). Whether an agent may have its own identity is [I54 Trust, encryption and who may sign in][I54]'s. The kind of identity is a fact about that identity, read when access is decided, not an envelope field. vivief's actor category (`vivief:provenance`, "actor-type defaults") is not adopted: trust stays on the origin. | "A person or the server" was the list of identities that can sign in today, not the meaning. With trust on the origin, nothing needs the actor's kind on every changeset. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -303,6 +322,7 @@ From [I56](../../issues/0056-one-shape-at-every-level.md), the sixth ticket of
 [ADR-0010]: ../../adr/0010-entity-ids-and-defining-attributes.md
 [ADR-0011]: ../../adr/0011-log-store-pattern.md
 [ADR-0012]: ../../adr/0012-datom-backed-workflow-engine.md
+[ADR-0014]: ../../adr/0014-leases-fencing-and-server-authority.md
 [ADR-0016]: ../../adr/0016-commands-and-server-validation.md
 [ADR-0017]: ../../adr/0017-sync-outbox-and-cursor-stream.md
 [ADR-0019]: ../../adr/0019-ui-state-ownership-and-query-atoms.md
@@ -312,9 +332,11 @@ From [I56](../../issues/0056-one-shape-at-every-level.md), the sixth ticket of
 [ADR-0026]: ../../adr/0026-verify-qualify-teach.md
 [ADR-0032]: ../../adr/0032-what-viviefs-is-about.md
 [ADR-0033]: ../../adr/0033-the-presenter-pattern.md
+[ADR-0036]: ../../adr/0036-the-journal-is-the-fence.md
 [D1]: #d1
 [D100]: #d100
 [D101]: #d101
+[D103]: #d103
 [D105]: #d105
 [D106]: #d106
 [D107]: #d107
@@ -338,6 +360,11 @@ From [I56](../../issues/0056-one-shape-at-every-level.md), the sixth ticket of
 [D130-D135]: #d130-d135
 [D132]: #d132
 [D134]: #d134
+[D136-D141]: #d136-d141
+[D14]: #d14
+[D14']: #d14p
+[D141]: #d141
+[D15]: #d15
 [D2]: #d2
 [D22]: #d22
 [D24]: #d24
@@ -353,6 +380,8 @@ From [I56](../../issues/0056-one-shape-at-every-level.md), the sixth ticket of
 [D36']: #d36p
 [D37]: #d37
 [D38]: #d38
+[D39]: #d39
+[D39']: #d39p
 [D40]: #d40
 [D42]: #d42
 [D44]: #d44
@@ -418,9 +447,11 @@ From [I56](../../issues/0056-one-shape-at-every-level.md), the sixth ticket of
 [I67]: ../../issues/0067-minting-entity-id-segments.md
 [I68]: ../../issues/0068-uniqueness-as-an-acceptance-rule.md
 [I69]: ../../issues/0069-accept-checks-every-change.md
+[I71]: ../../issues/0071-an-append-can-land-after-a-revocation.md
 [I76]: ../../issues/0076-verify-verdict-not-kept-per-commit.md
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I8]: ../../issues/0008-engine-scale-out.md
+[I80]: ../../issues/0080-build-the-journal-fence.md
 [I9]: ../../issues/0009-product-apps-as-app-pairs.md
 [P01]: 06-qualification-gates.md#p01
 [P03]: 06-qualification-gates.md#p03
