@@ -79,6 +79,8 @@ So it may be the abstraction above all of these: one shape every decision, ADR, 
 
 2026-10-24: [I56 One shape at every level?][I56] gives the shape no role in the problem-to-conclusion statement. That statement is [D98 Vision - View - Effects][D98]'s loop at the decision level, a lens ([D132 Four states at every level][D132], [D98' Vision - View - Effects, at every level][D98']): a review page is hot, the human settling a round is the frontier, the decision log is warm, and the ADR and glossary are cold. What constrains an agent at the data level is the split between decide and evolve: a command cannot write, and a projector cannot decide ([D130 One shape at the data level][D130]). Input for map 3: the human's kinds of intent, from a WayFinder map, a grilling with docs, a grilling, a prompt and one decision down to a button press, ordered by how abstract the intent is ([D132][D132]), are the strongest case so far for "abstraction" as the wider word; a pattern keeps its delivered meaning, and an app is not one. Whether "abstraction" or "pattern" names what ViViEfs delivers is map 3's. "Where can an agent still write bad code that passes" goes with map 4.
 
+2026-10-27: map 3 started. "Abstraction" or "pattern" is decided in [I90 Pattern, concept, contract, abstraction][I90] Pattern, concept, contract, abstraction, which comments here on what is left.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0025]: ../adr/0025-ai-robust-guardrails.md
@@ -99,3 +101,4 @@ So it may be the abstraction above all of these: one shape every decision, ADR, 
 [I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md
 [I34]: 0034-vivief-as-the-source-of-viviefs-concepts.md
 [I56]: 0056-one-shape-at-every-level.md
+[I90]: 0090-pattern-concept-contract-abstraction.md

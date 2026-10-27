@@ -67,6 +67,8 @@ to stay as he wrote it.
 
 2026-10-24: Input from [I56 One shape at every level?][I56]. [I78 Research: Effect's vocabulary against ours][I78] compares Effect's vocabulary with ours, and its clashes (Envelope, Journal, Entity, Decision and "decide", Tool, Prompt) are words this issue's linker must tell apart ([D135 Effect's names first][D135]). "Surface" is map 3's leading candidate for what a frame reaches a person through, and it clashes with React Native Paper's and Material's `Surface` component ([D134 Presenting in any modality][D134]).
 
+2026-10-27: map 3 started. Decided in [I94 Words in another project's sense][I94] Words in another project's sense, after [I89 How a word is chosen and written][I89]; built in [I95 Build the glossary linker as decided][I95] Build the glossary linker as decided, inside map 3.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0027]: ../adr/0027-developer-experience-planes.md
@@ -80,3 +82,6 @@ to stay as he wrote it.
 [I33]: 0033-ideas-batch-abstractions-that-constrain-agents.md
 [I56]: 0056-one-shape-at-every-level.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
+[I89]: 0089-how-a-word-is-chosen-and-written.md
+[I94]: 0094-words-in-another-projects-sense.md
+[I95]: 0095-build-the-glossary-linker-as-decided.md

@@ -50,6 +50,8 @@ Let a reader point at any word on a docs page and get an explanation when one ex
 
 2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is the docs site, after [I26 Glossary links on words that are not our terms][I26] (the same linker).
 
+2026-10-27: map 3 started. [I94 Words in another project's sense][I94] Words in another project's sense decides [I26 Glossary links on words that are not our terms][I26] and comments here on this issue's trigger.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
@@ -58,3 +60,4 @@ Let a reader point at any word on a docs page and get an explanation when one ex
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I27]: 0027-docs-dev-server-unreliable-and-without-search.md
 [I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md
+[I94]: 0094-words-in-another-projects-sense.md

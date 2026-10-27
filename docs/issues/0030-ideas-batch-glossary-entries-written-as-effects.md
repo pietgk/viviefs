@@ -108,6 +108,8 @@ What this could give:
 
 2026-10-24: [I56 One shape at every level?][I56] settled where the shape is foundation: the data level, where a command decides, authority accepts and the projector evolves, a workflow runs over its journal, and activities are the only door to the world ([D130 One shape at the data level][D130]). An effect form fits the terms that are steps over kept state (Command, Projector, Workflow, Activity, IntentComposer, and accepting), not reads or things (Datom, Read model, Gate). The changeset is the step, and `State'` is the log after accept ([D131 The changeset is the step][D131]). The sketch's "super high" level is the lens, the same four states at every level ([D132 Four states at every level][D132]), not a handler. What is left is the formula's names, which are map 3's, after [I78 Research: Effect's vocabulary against ours][I78] compares Effect's vocabulary with ours ([D135 Effect's names first][D135]).
 
+2026-10-27: map 3 started. The formula's names are decided in [I88 Effect and the effect handler][I88] Effect and the effect handler, which comments here on what is left.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D130]: ../plan/bootstrap/02-decision-log.md#d130
@@ -124,3 +126,4 @@ What this could give:
 [I29]: 0029-ideas-batch-agents-that-record-a-replayable-run.md
 [I56]: 0056-one-shape-at-every-level.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
+[I88]: 0088-effect-and-the-effect-handler.md

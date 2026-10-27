@@ -16,8 +16,11 @@ The two are parallel ([D132 Four states at every level][D132]: a changeset is th
 
 ## Comments
 
+2026-10-27: map 3 started. Decided and resolved in [I92 Map 2's new words][I92] Map 2's new words.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0035]: ../adr/0035-accepting-a-change.md
 [D132]: ../plan/bootstrap/02-decision-log.md#d132
 [D133]: ../plan/bootstrap/02-decision-log.md#d133
+[I92]: 0092-map-2s-new-words.md
