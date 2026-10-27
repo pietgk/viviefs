@@ -631,7 +631,8 @@ accepted.
 
 **Accepted**:
 An ADR or a guide that a person has reviewed and agreed to, after its gates
-passed on that commit. An ADR is accepted on its pattern's guide.
+passed on that commit. An ADR is accepted on its pattern's guide; one that
+records intent, with no pattern and no gate, is accepted directly ([D65' Intent records accepted directly][D65']).
 
 **Delivered**:
 A pattern that is finished: its claims are proven, its exemplar passes verify,
@@ -762,6 +763,7 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
 [D58']: docs/plan/bootstrap/02-decision-log.md#d58p
+[D65']: docs/plan/bootstrap/02-decision-log.md#d65p
 [D94]: docs/plan/bootstrap/02-decision-log.md#d94
 [D95]: docs/plan/bootstrap/02-decision-log.md#d95
 [D96]: docs/plan/bootstrap/02-decision-log.md#d96

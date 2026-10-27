@@ -2,7 +2,7 @@
 
 Summary: ViViEfs is its own repository: a reference stack for an Expo app and its backend, proven on one evidence-collection exemplar.
 
-Status: Proposed, unverified
+Status: Accepted (2026-10-27, directly, [D65' Intent records accepted directly][D65'])
 
 Date: 2026-09-20
 
@@ -76,8 +76,8 @@ One repo, one exemplar, a slot for later product app pairs (`<product>-client` +
 
 ### Observed
 
-Not yet run. The repository exists; the exemplar app is a named slot until its
-gates pass.
+Accepted by the human on 2026-10-27 in [I55 Accept the foundation concepts][I55], as amended by [I59 Bring ADR-0002 and the vision page in line with I47][I59]. The
+repository exists; the exemplar app is a named slot until its gates pass.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
@@ -92,7 +92,9 @@ gates pass.
 [D55]: ../plan/bootstrap/02-decision-log.md#d55
 [D55']: ../plan/bootstrap/02-decision-log.md#d55p
 [D6]: ../plan/bootstrap/02-decision-log.md#d6
+[D65']: ../plan/bootstrap/02-decision-log.md#d65p
 [D7]: ../plan/bootstrap/02-decision-log.md#d7
 [D95]: ../plan/bootstrap/02-decision-log.md#d95
+[I55]: ../issues/0055-accept-the-foundation-concepts.md
 [I59]: ../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md
 [P08]: ../plan/bootstrap/06-qualification-gates.md#p08

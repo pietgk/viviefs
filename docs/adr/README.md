@@ -10,7 +10,7 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | ADR | Decision | Status | Qualifying gate |
 | --- | --- | --- | --- |
 | [0001](0001-record-architectural-decisions.md) | Record architectural decisions | Proposed, unverified | none (process) |
-| [0002](0002-purpose-scope-and-exemplar.md) | Purpose, scope and the evidence-collection exemplar | Proposed, unverified | none (intent) |
+| [0002](0002-purpose-scope-and-exemplar.md) | Purpose, scope and the evidence-collection exemplar | Accepted | none (intent) |
 | [0003](0003-effect-v4-as-backbone.md) | Effect v4 as the backbone | Qualified | [P01 Platform on SDK 58][P01] |
 | [0004](0004-expo-sdk-58-platform-baseline.md) | Expo SDK 58 and Hermes platform baseline | Qualified | [P01 Platform on SDK 58][P01] |
 | [0005](0005-sqlite-drivers.md) | SQLite drivers: official Effect drivers with expo-sqlite fallback | Qualified | [P02 SQLite drivers][P02] |
@@ -40,7 +40,7 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | [0029](0029-effect-reference-and-language-service.md) | Effect reference subtree and language service | Qualified | verify |
 | [0030](0030-verify-qualify-clis-as-effect-cli.md) | Verify and qualify CLIs as Effect CLI | Qualified | verify |
 | [0031](0031-typescript-strictness-flags.md) | TypeScript strictness flags from Effect, evaluated | Qualified | verify |
-| [0032](0032-what-viviefs-is-about.md) | What ViViEfs is about and its foundation concepts | Proposed, unverified | none (intent) |
+| [0032](0032-what-viviefs-is-about.md) | What ViViEfs is about and its foundation concepts | Accepted | none (intent) |
 | [0033](0033-the-presenter-pattern.md) | The Presenter pattern | Proposed, unverified | Presenter conformance gate ([I62 The Presenter conformance gate][I62]), to come |
 | [0034](0034-origin-trust.md) | Origin trust | Proposed, unverified | named when built ([I64 Build origin trust][I64]) |
 | [0035](0035-accepting-a-change.md) | Accepting a change | Proposed, unverified | [P09 Sync][P09] extended ([I69 Accept checks every change][I69]), to come |
@@ -52,6 +52,8 @@ Every record starts as **Proposed, unverified**. A gate pass with linked evidenc
 moves it to **Qualified**. **Accepted** is a human status given on the pattern's
 guide (concept, design, implementation and review in one template), not on the
 decision alone ([ADR-0026 Verify - Qualify - Teach][ADR-0026], amended 2026-09-29).
+An intent record, with no pattern and no gate (0001, 0002, 0032), is accepted
+directly by the human ([D65' Intent records accepted directly][D65']).
 
 ## Conventions
 
@@ -76,6 +78,7 @@ decision alone ([ADR-0026 Verify - Qualify - Teach][ADR-0026], amended 2026-09-2
 [ADR-0026]: 0026-verify-qualify-teach.md
 [ADR-0036]: 0036-the-journal-is-the-fence.md
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
+[D65']: ../plan/bootstrap/02-decision-log.md#d65p
 [D88]: ../plan/bootstrap/02-decision-log.md#d88
 [I62]: ../issues/0062-presenter-conformance-gate.md
 [I64]: ../issues/0064-build-origin-trust.md

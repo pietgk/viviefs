@@ -136,6 +136,8 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 
 2026-10-08: [I49](0049-projection-one-concept-or-several-patterns.md) leaves inputs for maps not yet charted. **Map 3:** Frame and Trust level are open if they clash; Frame and Origin link only when capitalised on the docs site (`EVERYDAY_TERMS`). **Map 5:** a Surface takes frames ([D109 Frame and frame subscription][D109]), a one-row frame for one entity is revisitable, and trust signals render from a frame's companion columns ([D115 Origin trust][D115]). **Map 6:** `vivief:provenance` and `vivief:trust-strategies` are settled by [I49 Projection: one concept or several patterns][I49] as adopted direction ([D115][D115]-[D117 Trust strategies as commit paths][D117], [ADR-0034](../adr/0034-origin-trust.md)); the actor category for agents stays open ([I51 Actors or the engine][I51]).
 
+2026-10-27: map 2 is done. [I55](0055-accept-the-foundation-concepts.md) checked that every one of the 101 map-2 rows has a disposition in an Answer of I47-[I59 Bring ADR-0002 and the vision page in line with I47][I59], and the human accepted [ADR-0032](../adr/0032-what-viviefs-is-about.md): ViViEfs is about app creation, and its foundation is twelve concepts read as one turn, with all five of vivief's `concepts` adopted in ViViEfs's form and the set left open ([D160 The foundation concepts][D160]). Inputs for **map 3**: the words foundation concept, `Contract`, `effectHandler`, surface and `node`, and a "like X, except Y" glossary line per term where it helps a newcomer ([D162 Portability, two halves][D162]). For **map 4**: [I21 Test the glossary with a reader outside software][I21] judges whether those lines help. Maps 3-6 are not charted yet; map 3 waits for [I78 Research: Effect's vocabulary against ours][I78].
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0019]: ../adr/0019-ui-state-ownership-and-query-atoms.md
@@ -149,6 +151,8 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 [D109]: ../plan/bootstrap/02-decision-log.md#d109
 [D115]: ../plan/bootstrap/02-decision-log.md#d115
 [D117]: ../plan/bootstrap/02-decision-log.md#d117
+[D160]: ../plan/bootstrap/02-decision-log.md#d160
+[D162]: ../plan/bootstrap/02-decision-log.md#d162
 [D29]: ../plan/bootstrap/02-decision-log.md#d29
 [D31]: ../plan/bootstrap/02-decision-log.md#d31
 [D32]: ../plan/bootstrap/02-decision-log.md#d32
@@ -175,6 +179,8 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 [I51]: 0051-actors-or-the-engine.md
 [I55]: 0055-accept-the-foundation-concepts.md
 [I56]: 0056-one-shape-at-every-level.md
+[I59]: 0059-bring-adr-0002-and-the-vision-in-line-with-i47.md
+[I78]: 0078-research-effect-vocabulary-against-ours.md
 [I9]: 0009-product-apps-as-app-pairs.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P10]: ../plan/bootstrap/06-qualification-gates.md#p10

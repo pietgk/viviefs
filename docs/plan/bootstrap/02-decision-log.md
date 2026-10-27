@@ -122,6 +122,7 @@ to `docs/research/` with the other `.lavish/` pages, [D68 Research records][D68]
 | <a id="d63"></a>D63 | Acceptance on the guide | A guide's `index` frontmatter holds `pattern`, `adrs`, `gates`, `exemplar`, `exercises`, `status` (`draft` \| `in review` \| `accepted`) and `accepted` (date). When the human accepts a guide, one commit marks it accepted and its ADRs `Accepted` with the date and a link to the guide. Before that commit the guide's gates run on it and pass; the commit message names the ledger run. `verify` checks that an ADR is Accepted only if an accepted guide names it, that an accepted guide's ADRs are all Accepted, and that only a Qualified ADR becomes Accepted. `verify` does not read the ledger. The agent records only what the human said. | Acceptance means qualified and taught, on current inputs; CI must not go red because a gate is stale. |
 | <a id="d64"></a>D64 | Agents read the guides | Agents read guides from the MDX sources in the repo; outside agents use `llms.txt`. `AGENTS.md` gets one line pointing at the guide index. A skill per pattern only for a real multi-step procedure, and it links to the guide page. `.agents/patterns/` stays about Effect itself. | One source ([D30 One source for humans and agents][D30]). |
 | <a id="d65"></a>D65 | Guide inventory and order | ADRs that are not patterns are accepted on three non-pattern guides: Working in viviefs (0024, 0025, 0027-0031), Verify, Qualify, Teach (0026) and Stack baseline (0003-0005). 0001 and 0002 are accepted directly. Guide order: log store (settles the template), durable workflow, identity, then the other pattern guides (changesets and projections, device durability, interaction state and live reads, sync, tracing and telemetry sinks, links and routing) and the three non-pattern guides. [P12 UI on every platform][P12]'s grilling decides whether UI on every platform is its own guide. | One lifecycle for every ADR; "add a gate" and "add a project" are what agents need a guide for. |
+| <a id="d65p"></a>D65' | Intent records accepted directly | As [D65 Guide inventory and order][D65], and an ADR that records intent, with no pattern and no qualifying gate, is accepted directly by the human, without a guide: 0001, 0002 and [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]. Its Observed entry says when and where the human accepted it. The ADRs it links keep their own status, each waiting on its gate and its pattern's guide. `verify`'s list of ADRs accepted directly (`tools/verify/src/guides.ts`) and the glossary's Accepted entry say so. Decided in [I55 Accept the foundation concepts][I55]. | An intent record has no claim for a gate to prove and no pattern whose guide could carry it; map 2's destination is the human accepting [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] itself. |
 | <a id="d66"></a>D66 | Exercise tracks | Exercises live in `exercises/<pattern>/NN.MM-name/{problem,solution}/` (one Nx project per track, `kind:tool`, [D57 Where docs and exercises live][D57]), with no `explainer/` (the concept is in the guide). Our own layout check in `verify` replaces `ai-hero-cli lint`. One test per exercise runs against both folders: the solution must pass and the problem must fail with the expected assertion (a positive control). The log-store track is written by hand; an `exercise` generator in `@viviefs/generators` comes with the durable workflow track and is the first generator to qualify [ADR-0024 Repository structure][ADR-0024]. | A stub that already passes teaches nothing; two real tracks shape the generator. |
 | <a id="d67"></a>D67 | Exemplar links to its guide | Each exemplar project's `project.json` `metadata.guide` names its guide; its README and entry-module TSDoc link the guide page. `verify` fails when a guide names an exemplar that does not point back, or a project points at a guide that does not exist. | [D29 Teaching is a delivery gate][D29]'s link becomes mechanical. |
 | <a id="d68"></a>D68 | Research records | The `.lavish/` pages move as-is to `docs/research/` as dated research records, linked from the site and never the source of a guide's claims. What a guide needs from them is rewritten into guide pages that cite evidence. The overview "How a pattern is delivered" becomes the site's first page; its Lavish copy moves to `docs/research/` too. `.lavish/` is a scratch area again. | Research stays a record; guides stay canonical. |
@@ -366,6 +367,19 @@ decide the items. [01-vision-and-scope](01-vision-and-scope.md) carries the list
 | <a id="d158"></a>D158 | The out-of-scope list, item by item | The one out-of-scope list is 01-vision-and-scope's, six items in [D100 Out of scope means not yet][D100]'s form. **Not yet at all**: (A) code on a guaranteed schedule while the app is closed, where due work must stay a fact in the log and resuming need only the journal ([D3 Resume on next launch][D3], [D24 Durable clocks and notifications][D24], [D14' The journal is the fence][D14']); (B) two writers on one workflow execution at once, merged afterwards, one item for the two that said it twice, where several people must still work on one run through its outside inputs ([D11 Human steps as deferreds][D11], [D40 Server-side human steps][D40]) and a refused history strands no user content ([D147 User content outside the journal][D147]). **Production only, learnable in the lab**: (C) production hosting, deployment and telemetry ([I7 Production hosting, deployment and telemetry backend][I7], whose `Decide when:` gains the lab trigger); (D) several servers with organizations spread across them ([I58 Several servers in the lab][I58]), added because [D101 Lab and production][D101] named it and the list lacked it; (E) engine scale-out, worded as [D39' One engine, one journal, one fence][D39'] has it ([I8 Engine scale-out and a multi-runner server][I8]); (F) the server-independent mode, unchanged ([D104 The server-independent goal][D104], [D105 What must stay possible][D105]). Features map 2 deferred with a `Decide when:` (live co-editing, agent accounts, signing, group encryption, a server copy of quarantine) stay in their issues: the list is for scope where a decision now could close a door. | [D101 Lab and production][D101] asked the list to say per item lab or not yet; two items said one thing twice, one named the Cluster path [D39' One engine, one journal, one fence][D39'] dropped, and "rejected" was the word [D100 Out of scope means not yet][D100] rejects. |
 | <a id="d159"></a>D159 | Product choices stay with the consumer app | Each consumer app makes its own product-specific choices (BirVana's XState and voice ADRs, for example) in its own apps, features and attribute namespace ([D106 Consumer app shape][D106]); the stack's ADRs and guides take none of them. This is an In scope rule in 01-vision-and-scope, no longer an out-of-scope item. Where a consumer app keeps its own ADRs is decided with the first one ([D55' Consumer apps live here][D55']). | Under [D100 Out of scope means not yet][D100] every out-of-scope item should one day be possible; the stack taking on one product's choices never should, which is the coupling [D55 Exemplar first, product apps later][D55] and [D55' Consumer apps live here][D55'] avoid. |
 
+<a id="d160-d162"></a>
+## The foundation concepts (2026-10-27)
+
+From [I55](../../issues/0055-accept-the-foundation-concepts.md), the last ticket of map 2 and of phase 1, decided with the human on
+[the review page](../../research/2026-10-27-accept-the-foundation-concepts-review.html). It settles the map's three remaining rows; every one of the
+101 map-2 rows now has a disposition in an Answer of I47-[I59 Bring ADR-0002 and the vision page in line with I47][I59].
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d160"></a>D160 | The foundation concepts | A foundation concept is an idea the [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] stage built on. [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] lists twelve in one table, ordered as one turn: pattern; datom and the one log; command and changeset; authority and accepting a change; read model and projector; Presenter, frame and surface; origin and origin trust; durable workflow and its journal; sync; identity and access; encryption that narrows; tamper-evident history. Each row has a plain sentence, what it came from in vivief, its decisions, its owning pattern ([D82 Patterns build on each other][D82]) and the gate that shows it or the issue that will. All five of vivief's `concepts` are adopted, each in the form it landed: `Datom` stands ([D118 What a datom needs from storage][D118]), `Projection`'s read side is the Presenter with trust as origin trust ([D107 The Presenter pattern][D107], [D115 Origin trust][D115]), `Surface` is a surface of any modality ([D134 Presenting in any modality][D134]), `Contract` is accepting a change ([D124 One checkpoint][D124]), `effectHandler` is the shape at the data level and the durable workflow ([D130 One shape at the data level][D130], [D136 The actor level is the durable workflow][D136]). The set is not closed: patterns build on each other and new ones join ([D82][D82]), as [D125 Acceptance rules][D125] decided for the six contract sub-types. The shape above the code ([D132 Four states at every level][D132]) and Vision - View - Effects stay a lens and a name, not rows. "Foundation concept" is the map's working word; it clashes with [D82][D82]'s concept (an idea with no contract of its own) and goes to map 3 with `Contract`, `effectHandler`, surface and `node`. `vivief:five-concepts`: adopt, open. | vivief's strongest teaching move is one short list a newcomer holds as one loop; the table keeps it. Closing the set would make access and the Presenter, both added by map 2, a breach of the model instead of the way the stack grows. |
+| <a id="d161"></a>D161 | Libs stay one per pattern and implementation | A lib is one pattern's core or one of its implementations, tagged by layer and platform ([D52 Four project kinds][D52]-[D54 Three tag dimensions][D54]); libs are not regrouped by concept. Code maps to the foundation concepts through the owning pattern: the pattern id is the guide folder, the suite prefix and the lib's `metadata.guides` value ([D82 Patterns build on each other][D82], [D84 Exemplar of several guides][D84]), added when the guide is written. The patterns map 2 added (Presenter, origin trust, access, the hash chain) get their libs when phase 3 builds them. `vivief:concept-aligned-packages`: keep ours. | Grouping by concept would put the log store on op-sqlite and on Postgres in one package, against the boundary lint that keeps a platform's code apart. vivief's goal, that the code says the concepts, is met by the pattern id. |
+| <a id="d162"></a>D162 | Portability, two halves | Lock-in: keep ours. A pattern's claim is not that it maps to something conventional but that it runs on something conventional under the same suite ([D110 The reference implementation][D110], [D123 The final choice is the pattern][D123]), shown by [P04 Log store conformance][P04] on four stores. Newcomers: a glossary line per term where it helps, in the form "like X, except Y" (a datom is like an EAV row, except it is never updated in place), handed to map 3; whether the lines help is judged by [I21 Test the glossary with a reader outside software][I21]'s reader test in map 4. The "except" is required: a bare equivalence teaches the wrong thing. `vivief:portability`: keep ours for lock-in, hand the newcomer half to map 3. | vivief's mapping table answered perceived lock-in, which a shared suite answers better. Nothing here yet tells a developer from elsewhere what they already know a term as, and the glossary's _Avoid_ lines say only which word not to use. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -409,15 +423,18 @@ decide the items. [01-vision-and-scope](01-vision-and-scope.md) carries the list
 [D120]: #d120
 [D121]: #d121
 [D122]: #d122
+[D123]: #d123
 [D124]: #d124
 [D125]: #d125
 [D127]: #d127
 [D128]: #d128
 [D129]: #d129
 [D13]: #d13
+[D130]: #d130
 [D130-D135]: #d130-d135
 [D132]: #d132
 [D134]: #d134
+[D136]: #d136
 [D136-D141]: #d136-d141
 [D137]: #d137
 [D14]: #d14
@@ -478,6 +495,7 @@ decide the items. [01-vision-and-scope](01-vision-and-scope.md) carries the list
 [D60]: #d60
 [D61]: #d61
 [D62]: #d62
+[D65]: #d65
 [D67]: #d67
 [D68]: #d68
 [D69]: #d69
@@ -488,6 +506,7 @@ decide the items. [01-vision-and-scope](01-vision-and-scope.md) carries the list
 [D8]: #d8
 [D80]: #d80
 [D82]: #d82
+[D84]: #d84
 [D86]: #d86
 [D87]: #d87
 [D88]: #d88
@@ -504,6 +523,7 @@ decide the items. [01-vision-and-scope](01-vision-and-scope.md) carries the list
 [I15]: ../../issues/0015-identity-keys-and-trust.md
 [I16]: ../../issues/0016-roles-and-self-service-membership.md
 [I17]: ../../issues/0017-local-deletion-after-revoked-membership.md
+[I21]: ../../issues/0021-test-the-glossary-with-a-reader.md
 [I25]: ../../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I3]: ../../issues/0003-api-reference-for-effect-services.md
 [I33]: ../../issues/0033-ideas-batch-abstractions-that-constrain-agents.md
@@ -519,6 +539,7 @@ decide the items. [01-vision-and-scope](01-vision-and-scope.md) carries the list
 [I56]: ../../issues/0056-one-shape-at-every-level.md
 [I57]: ../../issues/0057-out-of-scope-items-in-adr-trade-offs.md
 [I58]: ../../issues/0058-several-servers-in-the-lab.md
+[I59]: ../../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md
 [I60]: ../../issues/0060-server-independent-mode.md
 [I61]: ../../issues/0061-rename-evidence-mobile-to-evidence-client.md
 [I63]: ../../issues/0063-the-columnar-copy.md

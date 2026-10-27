@@ -1,16 +1,16 @@
 # ADR-0032: What ViViEfs is about and its foundation concepts
 
-Summary: ViViEfs is about app creation: people and AI agents building apps and their proven parts in one shared language, checked by gates for what we built and by learning for the language.
+Summary: ViViEfs is about app creation: people and AI agents building apps and their proven parts in one shared language, checked by gates for what we built and by learning for the language. Its foundation is twelve concepts read as one turn, from a command deciding a changeset to a Presenter answering a surface, each a pattern that can be done another way under the same suite.
 
-Status: Proposed, unverified
+Status: Accepted (2026-10-27, directly, [D65' Intent records accepted directly][D65'])
 
 Date: 2026-10-07
 
-Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
-gate that already shows it, or names the gate to come.
+Qualifying gate: none (intent). Each foundation concept names the gate that
+shows it, or the issue that will, in the table under Foundation concepts.
 
 Related: [D95 App creation][D95], [D96 Two verifications][D96], [D97 Our languages by type][D97], [D98 Vision - View - Effects][D98], [D99 Facts kept, meaning derived][D99], [D100 Out of scope means not yet][D100], [D101 Lab and production][D101], [D102 Tools are apps][D102], [D55' Consumer apps live here][D55'], [D103 Nodes and authority][D103], [D104 The server-independent goal][D104], [D105 What must stay possible][D105],
-[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [D149-D157 Trust, encryption and who may sign in][D149-D157], [D158 The out-of-scope list, item by item][D158], [D159 Product choices stay with the consumer app][D159]. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
+[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [D149-D157 Trust, encryption and who may sign in][D149-D157], [D158 The out-of-scope list, item by item][D158], [D159 Product choices stay with the consumer app][D159], [D160 The foundation concepts][D160], [D161 Libs stay one per pattern and implementation][D161], [D162 Portability, two halves][D162], [D65' Intent records accepted directly][D65']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
 from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]; [ADR-0036 The journal is the fence][ADR-0036] (the journal is the fence), from [I51 Actors or the engine][I51]; [ADR-0037 Access][ADR-0037] (access) and [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] (tamper-evidence and proof of authorship), from [I54 Trust, encryption and who may sign in][I54]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
 (claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
 [The foundation concepts map](../plan/foundation-concepts/map.md).
@@ -82,9 +82,56 @@ nodes is the case to protect ([I48 The server-independent goal, and what an app 
 saying what must stay possible and lab or not yet ([D158 The out-of-scope list, item by item][D158]); a consumer app's
 product choices are not on it, because they stay with that app for good ([D159 Product choices stay with the consumer app][D159], [I59 Bring ADR-0002 and the vision page in line with I47][I59]).
 
-**Foundation concepts.** Which of vivief's concepts become ViViEfs's
-foundation is decided by I48-[I54 Trust, encryption and who may sign in][I54] and [I56 One shape at every level?][I56] and recorded here; [I55 Accept the foundation concepts][I55] accepts the
-whole.
+**Foundation concepts ([D160 The foundation concepts][D160]).** A foundation concept is an idea the
+[P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] stage built on. There are twelve, read top to bottom as one turn: a
+command decides a changeset of datoms naming its origin, authority accepts it
+having asked access and chains it, sync carries it, the projector builds read
+models, and a Presenter answers a surface with a frame; long work runs as a
+workflow whose journal is in the same log; each is a pattern, so each can be
+done another way that passes the same suite. All five of vivief's `concepts`
+are adopted, each in the form below; the set is not closed, because patterns
+build on each other and new ones join ([D82 Patterns build on each other][D82], as [D125 Acceptance rules][D125] did for the six contract
+sub-types). The paragraphs after the table are the detail.
+
+| # | Foundation concept | In one plain sentence | From vivief | Decisions | Owning pattern | Shown by |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | Pattern | A part built once with one promise, several ways to keep it, and a check every way must pass. | Portability, its lock-in half | [D82 Patterns build on each other][D82], [D110 The reference implementation][D110], [D123 The final choice is the pattern][D123] | every pattern | [P04 Log store conformance][P04] |
+| 2 | Datom and the one log | Every fact is one small record, kept forever in one log per organization. | `Datom`, stands | [ADR-0006 One datom log as the substrate][ADR-0006], [D118-D123 The datom and its store][D118-D123] | log store | [P04 Log store conformance][P04] |
+| 3 | Command and changeset | A command decides what should change and returns it as one batch, without writing it. | `effectHandler`, the function | [D36' Shared commands, as built][D36'], [D130 One shape at the data level][D130], [D131 The changeset is the step][D131] | changesets | [P05 Changesets and projections][P05] |
+| 4 | Authority and accepting a change | One place decides whether a batch counts: may this writer do it, is it well formed, does the data stay valid. | `Contract`, its placement | [D103 Nodes and authority][D103], [D124-D129 Accepting a change][D124-D129], [ADR-0035 Accepting a change][ADR-0035] | changesets (acceptance rules) | [P09 Sync][P09]; every rule: [P09][P09] extended ([I69 Accept checks every change][I69]) |
+| 5 | Read model and projector | What the facts mean is worked out from the log and can be thrown away and rebuilt. | - | [D37 Log store tables][D37], [D99 Facts kept, meaning derived][D99] | changesets | [P05 Changesets and projections][P05] |
+| 6 | Presenter, frame and surface | A screen, or a speaker, asks for data and keeps receiving the latest answer. | `Projection`, its read side; `Surface` | [D107 The Presenter pattern][D107]-[D114 Partial sync on demand][D114], [D134 Presenting in any modality][D134], [ADR-0033 The Presenter pattern][ADR-0033] | Presenter | [P05 Changesets and projections][P05], [P08 UI three-way prototype][P08] in part; the Presenter gate ([I62 The Presenter conformance gate][I62]) |
+| 7 | Origin and origin trust | Every batch says where it came from, and how far we trust that source can change at once. | `Projection`, its trust scope | [D58' Envelope names the origin][D58'], [D115 Origin trust][D115]-[D117 Trust strategies as commit paths][D117], [ADR-0034 Origin trust][ADR-0034] | origin trust | named when built ([I64 Build origin trust][I64]) |
+| 8 | Durable workflow and its journal | Work that must not lose progress writes down each step, so it resumes where it stopped. | `effectHandler`, the actor | [ADR-0012 Durable execution over one datom-backed engine][ADR-0012], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [ADR-0036 The journal is the fence][ADR-0036] | durable workflow | [P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07]; the fence: [P06][P06], [P09 Sync][P09] again ([I80 Build the journal fence][I80]) |
+| 9 | Sync | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | Sync Contract | [ADR-0017 Sync: outbox and cursor stream over Effect RPC][ADR-0017], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'] | sync | [P09 Sync][P09]; conflicts: [P05 Changesets and projections][P05], [P09][P09] again ([I81 Build conflicts decided at accept][I81]) |
+| 10 | Identity and access | Every change is accountable to someone, and one decision says what they may write and receive. | `Projection`, its access scope | [ADR-0022 Identity and organization isolation][ADR-0022], [D150 Access around sync and commands][D150]-[D154 Whoever grants is the actor][D154], [ADR-0037 Access][ADR-0037] | identity, access | [P11 Identity][P11]; the contract: [P11][P11] again ([I84 Build the access pattern][I84]) |
+| 11 | Encryption that narrows | Locking a value limits who can open it, and never gives anyone access. | `Projection`, its encryption scope | [ADR-0023 Data at rest and crypto-shredding][ADR-0023], [D149 Encryption levels][D149] | encrypted store | [P15 Encrypted store][P15], [P16 Crypto-shredding][P16] |
+| 12 | Tamper-evident history | Each organization's history is a chain in which any change to the past shows. | Verified segments | [D155 A hash chain per organization][D155], [D156 Levels of proof of authorship][D156], [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] | log store | [P09 Sync][P09] again ([I85 Build the hash chain][I85]) |
+
+The shape above the code and its four states ([D132 Four states at every level][D132]) are a lens, not a
+concept, and Vision - View - Effects names the loop the table reads as; both
+stay paragraphs. Code maps to the concepts through the owning pattern: a lib
+is one pattern's core or one of its implementations, and names its pattern in
+`metadata.guides` once the guide exists ([D161 Libs stay one per pattern and implementation][D161], [D84 Exemplar of several guides][D84]). The newcomer's question,
+"what is this like where I come from", is answered in the glossary, not here
+([D162 Portability, two halves][D162]). The words `Contract`, `effectHandler`, surface, `node` and foundation
+concept itself wait for map 3.
+
+**Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
+one installation of an app that keeps all or part of an organization's data
+and writes changes to it; a device is the `node` a person uses. Authority is a
+set of duties for an organization: accept or reject each change, order the
+accepted ones, grant membership, fence each run's journal ([D14' The journal is the fence][D14']). Today one `node`, the server,
+holds all of them: client-server is the one authority model, read as a
+peer-to-peer system in which one `node` carries the server's authority. The
+server already writes into the log the way a device does; what sets it apart
+is authority, not data. Tools are apps but not `node`s. [P09 Sync][P09] (sync with
+server authority) and [P11 Identity][P11] (identity and organization isolation) show the one
+model today; the server-independent mode ([I60 Server-independent mode][I60]) names its own gate when it is picked up: a
+paired exemplar doing the same operation in both modes. Until then, [D105 What must stay possible][D105] lists
+what must stay possible. A consumer app is `<product>-client` +
+`<product>-server` ([D106 Consumer app shape][D106]). `node` waits for map 3 for its glossary entry,
+because it clashes with Node.js.
 
 **Presenters and origin trust ([D107-D117 Presenters and origin trust][D107-D117], [I49 Projection: one concept or several patterns][I49]).** A screen asks a Presenter
 for data with a query written as data, gets a frame and keeps a frame
@@ -189,22 +236,6 @@ a level an app chooses ([ADR-0038 Tamper-evidence and proof of authorship][ADR-0
 [P11 Identity][P11]; the access contract is to be shown by [P11][P11] again ([I84 Build the access pattern][I84]), the chain by
 [P09 Sync][P09] again ([I85 Build the hash chain][I85]), erasure by [P16 Crypto-shredding][P16].
 
-**Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
-one installation of an app that keeps all or part of an organization's data
-and writes changes to it; a device is the `node` a person uses. Authority is a
-set of duties for an organization: accept or reject each change, order the
-accepted ones, grant membership, fence each run's journal ([D14' The journal is the fence][D14']). Today one `node`, the server,
-holds all of them: client-server is the one authority model, read as a
-peer-to-peer system in which one `node` carries the server's authority. The
-server already writes into the log the way a device does; what sets it apart
-is authority, not data. Tools are apps but not `node`s. [P09 Sync][P09] (sync with
-server authority) and [P11 Identity][P11] (identity and organization isolation) show the one
-model today; the server-independent mode ([I60 Server-independent mode][I60]) names its own gate when it is picked up: a
-paired exemplar doing the same operation in both modes. Until then, [D105 What must stay possible][D105] lists
-what must stay possible. A consumer app is `<product>-client` +
-`<product>-server` ([D106 Consumer app shape][D106]). `node` waits for map 3 for its glossary entry,
-because it clashes with Node.js.
-
 Revisit when a learner's failure shows the languages above are not the ones
 people and agents actually use, or when a gate shows the shape at a level above
 the code, where [D132 Four states at every level][D132] keeps it a lens.
@@ -223,6 +254,17 @@ the code, where [D132 Four states at every level][D132] keeps it a lens.
   draws for research records.
 - **Amending [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002]** instead of a new record would mix scope and the exemplar
   with eight tickets of concept decisions; [ADR-0002][ADR-0002] keeps what ViViEfs builds.
+- **vivief's five as a closed set**, everything else a pattern composing them,
+  is one short list a newcomer can hold. It would make every new pattern
+  (access and the Presenter, both added by map 2) a breach of the model
+  rather than the way the stack grows. The table keeps the short list without
+  closing it ([D160 The foundation concepts][D160]).
+- **Libs grouped by concept**, as vivief's packages are, would put the log
+  store on op-sqlite and on Postgres in one package, against the boundary
+  lint that keeps a platform's code apart ([D52 Four project kinds][D52], [D161 Libs stay one per pattern and implementation][D161]).
+- **Out-of-scope items**: none made harder. This record states the rule ([D100 Out of scope means not yet][D100])
+  and the list's home ([D158 The out-of-scope list, item by item][D158]); each decision it links names what it makes
+  harder in its own ADR.
 
 ## Failure-handling
 
@@ -230,8 +272,8 @@ the code, where [D132 Four states at every level][D132] keeps it a lens.
   guide or glossary, not closed as the learner's mistake ([D96 Two verifications][D96]). Map 4 decides
   how that finding is collected.
 - A decision that makes an out-of-scope item harder without saying so is a
-  review finding once [I57 Out-of-scope items in an ADR's trade-offs][I57] adds the Trade-offs line.
-- No gate checks this record; it is intent until [I55 Accept the foundation concepts][I55].
+  review finding.
+- No gate checks this record; the human accepted it directly in [I55 Accept the foundation concepts][I55] ([D65' Intent records accepted directly][D65']).
 
 ## Outcome
 
@@ -243,13 +285,19 @@ entries match it.
 
 ### Observed
 
-Not yet run.
+Accepted by the human on 2026-10-27 in [I55 Accept the foundation concepts][I55], with every one of the 101 map-2
+rows disposed of in an Answer of I47-[I59 Bring ADR-0002 and the vision page in line with I47][I59]. The glossary's ViViEfs and App
+creation entries match it.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: 0002-purpose-scope-and-exemplar.md
 [ADR-0006]: 0006-one-datom-log.md
+[ADR-0012]: 0012-datom-backed-workflow-engine.md
 [ADR-0016]: 0016-commands-and-server-validation.md
+[ADR-0017]: 0017-sync-outbox-and-cursor-stream.md
+[ADR-0022]: 0022-identity-and-organization-isolation.md
+[ADR-0023]: 0023-data-at-rest-and-crypto-shredding.md
 [ADR-0026]: 0026-verify-qualify-teach.md
 [ADR-0033]: 0033-the-presenter-pattern.md
 [ADR-0034]: 0034-origin-trust.md
@@ -266,17 +314,35 @@ Not yet run.
 [D104]: ../plan/bootstrap/02-decision-log.md#d104
 [D105]: ../plan/bootstrap/02-decision-log.md#d105
 [D106]: ../plan/bootstrap/02-decision-log.md#d106
+[D107]: ../plan/bootstrap/02-decision-log.md#d107
 [D107-D117]: ../plan/bootstrap/02-decision-log.md#d107-d117
+[D110]: ../plan/bootstrap/02-decision-log.md#d110
+[D114]: ../plan/bootstrap/02-decision-log.md#d114
+[D115]: ../plan/bootstrap/02-decision-log.md#d115
+[D117]: ../plan/bootstrap/02-decision-log.md#d117
 [D118-D123]: ../plan/bootstrap/02-decision-log.md#d118-d123
+[D123]: ../plan/bootstrap/02-decision-log.md#d123
 [D124-D129]: ../plan/bootstrap/02-decision-log.md#d124-d129
+[D125]: ../plan/bootstrap/02-decision-log.md#d125
+[D130]: ../plan/bootstrap/02-decision-log.md#d130
 [D130-D135]: ../plan/bootstrap/02-decision-log.md#d130-d135
+[D131]: ../plan/bootstrap/02-decision-log.md#d131
 [D132]: ../plan/bootstrap/02-decision-log.md#d132
+[D134]: ../plan/bootstrap/02-decision-log.md#d134
 [D136-D141]: ../plan/bootstrap/02-decision-log.md#d136-d141
 [D14']: ../plan/bootstrap/02-decision-log.md#d14p
 [D142-D148]: ../plan/bootstrap/02-decision-log.md#d142-d148
+[D149]: ../plan/bootstrap/02-decision-log.md#d149
 [D149-D157]: ../plan/bootstrap/02-decision-log.md#d149-d157
+[D150]: ../plan/bootstrap/02-decision-log.md#d150
+[D154]: ../plan/bootstrap/02-decision-log.md#d154
+[D155]: ../plan/bootstrap/02-decision-log.md#d155
+[D156]: ../plan/bootstrap/02-decision-log.md#d156
 [D158]: ../plan/bootstrap/02-decision-log.md#d158
 [D159]: ../plan/bootstrap/02-decision-log.md#d159
+[D160]: ../plan/bootstrap/02-decision-log.md#d160
+[D161]: ../plan/bootstrap/02-decision-log.md#d161
+[D162]: ../plan/bootstrap/02-decision-log.md#d162
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
@@ -287,7 +353,11 @@ Not yet run.
 [D44']: ../plan/bootstrap/02-decision-log.md#d44p
 [D52]: ../plan/bootstrap/02-decision-log.md#d52
 [D55']: ../plan/bootstrap/02-decision-log.md#d55p
+[D58']: ../plan/bootstrap/02-decision-log.md#d58p
+[D65']: ../plan/bootstrap/02-decision-log.md#d65p
 [D68]: ../plan/bootstrap/02-decision-log.md#d68
+[D82]: ../plan/bootstrap/02-decision-log.md#d82
+[D84]: ../plan/bootstrap/02-decision-log.md#d84
 [D93]: ../plan/bootstrap/02-decision-log.md#d93
 [D95]: ../plan/bootstrap/02-decision-log.md#d95
 [D96]: ../plan/bootstrap/02-decision-log.md#d96
@@ -310,15 +380,24 @@ Not yet run.
 [I58]: ../issues/0058-several-servers-in-the-lab.md
 [I59]: ../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md
 [I60]: ../issues/0060-server-independent-mode.md
+[I62]: ../issues/0062-presenter-conformance-gate.md
+[I64]: ../issues/0064-build-origin-trust.md
+[I69]: ../issues/0069-accept-checks-every-change.md
 [I70]: ../issues/0070-research-access-from-membership-to-enterprise.md
 [I8]: ../issues/0008-engine-scale-out.md
+[I80]: ../issues/0080-build-the-journal-fence.md
 [I81]: ../issues/0081-build-conflicts-decided-at-accept.md
 [I84]: ../issues/0084-build-the-access-pattern.md
 [I85]: ../issues/0085-build-the-hash-chain.md
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
+[P04]: ../plan/bootstrap/06-qualification-gates.md#p04
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06
 [P07]: ../plan/bootstrap/06-qualification-gates.md#p07
+[P08]: ../plan/bootstrap/06-qualification-gates.md#p08
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09
+[P10]: ../plan/bootstrap/06-qualification-gates.md#p10
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11
 [P14]: ../plan/bootstrap/06-qualification-gates.md#p14
+[P15]: ../plan/bootstrap/06-qualification-gates.md#p15
 [P16]: ../plan/bootstrap/06-qualification-gates.md#p16

@@ -14,6 +14,9 @@ has a disposition in a ticket's Answer, and the human has accepted one foundatio
 ADR that states what ViViEfs is about and its foundation concepts, linking the
 decisions that chose them.
 
+**Reached on 2026-10-27** ([I55 Accept the foundation concepts][I55]): every row has a disposition, and the human
+accepted [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032].
+
 ## Notes
 
 - **Plan, don't do.** Tickets end in decisions: the decision log (numbered on from
@@ -56,6 +59,7 @@ decisions that chose them.
 - [I53](../../issues/0053-sync-and-conflict.md): sync is in the foundation on purpose; vivief's Sync Contract is three parts we have; authority decides a human conflict at accept against the writer's cursor and writes it as a fact a command resolves; a set is entities, with no cardinality; no text CRDT until live co-editing; one checkpoint enforces trust; user content never lives only in a journal, and quarantine keeps a rejected change's user content on the device ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34']). Added I81-[I83 Live co-editing of text][I83].
 - [I54](../../issues/0054-trust-encryption-and-who-may-sign-in.md): access is decided at accept and at sync's filter, never in a read, as a pattern with an AuthZEN-shaped contract and today's membership code as its reference implementation; encryption narrows and never grants, at a level each attribute chooses, the per-subject key the reference; an identity is who a request or a change is accountable to, Effect's `EventLog.Identity` a self-certifying one; agent accounts deferred; whoever grants is the actor; a hash chain per organization built now; proof of authorship at a level an app chooses, signing deferred ([D149-D157 Trust, encryption and who may sign in][D149-D157]; [ADR-0037 Access][ADR-0037], [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038]). Added I84-[I87 Group and role encryption levels][I87].
 - [I59](../../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md): [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] and the vision page in line with [I47 What ViViEfs is about][I47]: the out-of-scope list is the vision page's alone, six items each saying what must stay possible and lab or not yet (guaranteed work while closed and two writers on one run not yet at all; hosting, several servers, engine scale-out and the server-independent mode learnable in the lab); a consumer app's product choices are an In scope rule, not an item ([D158 The out-of-scope list, item by item][D158], [D159 Product choices stay with the consumer app][D159]; [ADR-0002][ADR-0002] amended).
+- [I55](../../issues/0055-accept-the-foundation-concepts.md): all five of vivief's `concepts` adopted in the forms they landed and the set left open; [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] lists twelve foundation concepts in one table read as one turn, each with its owning pattern and the gate that shows it; libs stay one per pattern core and implementation; portability's lock-in half is ours, its newcomer half ("like X, except Y") map 3's; an intent record is accepted directly; the 101 rows checked; [ADR-0032][ADR-0032] and [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] accepted ([D160 The foundation concepts][D160]-[D162 Portability, two halves][D162], [D65' Intent records accepted directly][D65']).
 
 ## Not yet specified
 
@@ -98,12 +102,15 @@ decisions that chose them.
 [D149-D157]: ../bootstrap/02-decision-log.md#d149-d157
 [D158]: ../bootstrap/02-decision-log.md#d158
 [D159]: ../bootstrap/02-decision-log.md#d159
+[D160]: ../bootstrap/02-decision-log.md#d160
+[D162]: ../bootstrap/02-decision-log.md#d162
 [D34']: ../bootstrap/02-decision-log.md#d34p
 [D36']: ../bootstrap/02-decision-log.md#d36p
 [D39']: ../bootstrap/02-decision-log.md#d39p
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D55']: ../bootstrap/02-decision-log.md#d55p
 [D58']: ../bootstrap/02-decision-log.md#d58p
+[D65']: ../bootstrap/02-decision-log.md#d65p
 [D94]: ../bootstrap/02-decision-log.md#d94
 [D95-D102]: ../bootstrap/02-decision-log.md#d95-d102
 [D98']: ../bootstrap/02-decision-log.md#d98p
@@ -111,6 +118,7 @@ decisions that chose them.
 [I46]: ../../issues/0046-review-the-vivief-inventory.md
 [I47]: ../../issues/0047-what-viviefs-is-about.md
 [I54]: ../../issues/0054-trust-encryption-and-who-may-sign-in.md
+[I55]: ../../issues/0055-accept-the-foundation-concepts.md
 [I56]: ../../issues/0056-one-shape-at-every-level.md
 [I60]: ../../issues/0060-server-independent-mode.md
 [I64]: ../../issues/0064-build-origin-trust.md
