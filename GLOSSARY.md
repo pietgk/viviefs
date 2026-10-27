@@ -361,7 +361,15 @@ by content hash, referenced by a datom, not held in the log.
 
 **Personal attribute**:
 A kind of fact about a person that must be erasable on request. Marked so its
-values are encrypted per subject for crypto-shredding.
+values are encrypted per subject for crypto-shredding: the subject encryption
+level.
+
+**Encryption level**:
+How far a kind of fact is locked, by who holds the key that opens its values:
+open, subject (one key per person, for erasure), group (members only, not the
+operator) or role. Chosen per attribute; it narrows who can read and never
+grants access ([D149 Encryption levels][D149]). The word waits for map 3.
+_Avoid_: aperture, seal, trust level
 
 **External identifier**:
 An id another system gives a thing, such as the KvK number the Dutch Chamber
@@ -376,11 +384,21 @@ history stays whole but their data becomes unreadable. Erasure by destroying the
 per-subject key; the log stays intact.
 
 **Tamper-evidence**:
-Being able to tell afterwards that stored history was changed. Not provided
-yet: stored history is trusted, not provable.
+Being able to tell afterwards that stored history was changed. Each
+organization's accepted history is a hash chain every device recomputes, so a
+rewrite is caught ([D155 A hash chain per organization][D155]); not built yet.
 _Avoid_: tamper-proof, immutable storage
 
 ## Identity
+
+**Identity**:
+Who a request or a change is answerable to: a person, the server, or an agent
+account. It proves itself with a credential, today an access token from a
+provider account, later a key bound to it; the envelope's actor is an identity
+([D152 One meaning of identity][D152]). One whose credential is its own key, with no one vouching, is
+self-certifying, as Effect's `EventLog.Identity`. A device and a provider
+account are not identities.
+_Avoid_: user, principal, account (alone)
 
 **Identity provider**:
 The outside service people sign in with, such as a company login. It
@@ -440,12 +458,12 @@ _Avoid_: mock identity, stub auth
 **Bearer authentication**:
 The server's front door: no request gets in without a valid access token. It
 verifies the token before any handler runs. Authentication only; authorization
-is membership, actor and lease.
+is the access decision.
 _Avoid_: auth middleware
 
 **Caller**:
-Who sent one request to the server, once that is verified. A person and the
-provider account they signed in with.
+Who sent one request to the server, once that is verified. An identity (today
+a person) and the provider account it signed in with.
 _Avoid_: principal, current user, session
 
 **Person**:
@@ -455,8 +473,23 @@ _Avoid_: user, member, Actor
 
 **Membership**:
 A person's right to act in one organization. Granted and revoked only by the
-server.
-_Avoid_: access, role (roles are carried, not enforced yet)
+server, with whoever granted it as the actor ([D154 Whoever grants is the actor][D154]); the first rule of
+the access decision.
+_Avoid_: access, role (a role is a later access step)
+
+**Access decision**:
+The answer to whether an identity may do something: write this change, or
+receive this part of the data. Made by authority at accept and at sync's filter
+for one request of subject, action, resource and context, as of a position;
+an error denies ([D151 The access pattern][D151]). Always the two words: a decision alone is a
+decision-log entry.
+_Avoid_: permission check, authz, policy decision
+
+**Agent account**:
+An identity of its own for an AI agent that acts on its own, created by a
+person. It signs in, holds a membership and roles, and is refused what only a
+person may do ([D153 Agent accounts][D153]). Not built yet.
+_Avoid_: bot user, service user
 
 **Server-only attribute**:
 A kind of fact only the server may write, such as membership. Only
@@ -719,6 +752,12 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D133]: docs/plan/bootstrap/02-decision-log.md#d133
 [D144]: docs/plan/bootstrap/02-decision-log.md#d144
 [D148]: docs/plan/bootstrap/02-decision-log.md#d148
+[D149]: docs/plan/bootstrap/02-decision-log.md#d149
+[D151]: docs/plan/bootstrap/02-decision-log.md#d151
+[D152]: docs/plan/bootstrap/02-decision-log.md#d152
+[D153]: docs/plan/bootstrap/02-decision-log.md#d153
+[D154]: docs/plan/bootstrap/02-decision-log.md#d154
+[D155]: docs/plan/bootstrap/02-decision-log.md#d155
 [D2]: docs/plan/bootstrap/02-decision-log.md#d2
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p

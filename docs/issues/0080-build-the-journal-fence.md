@@ -34,6 +34,8 @@ From [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-a
 
 2026-10-26: From [I53 Sync and conflict][I53] ([D147 User content outside the journal][D147]): an activity that captures user content writes it as a domain changeset and returns its id; a journal value never holds user content alone, so a refused history strands none. A rule for the durable-workflow pattern. [ADR-0036 The journal is the fence][ADR-0036]'s failure-handling now names [D147][D147] and [D148 Quarantine is rejected user content][D148]. [I81 Build conflicts decided at accept][I81] (conflicts at accept) follows this issue in phase 3.
 
+2026-10-27: From [I54 Trust, encryption and who may sign in][I54] ([the review page](../research/2026-10-26-trust-encryption-and-sign-in-review.html)), finding F1: the lease check compares `envelope.device`, which the device chooses (`libs/sync/server/src/server.ts`:577, :596). The journal fence reads the chain, never `envelope.device`, and [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09] include a writer that names another device. [I85 Build the hash chain][I85] follows this issue, since both change accept.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0014]: ../adr/0014-leases-fencing-and-server-authority.md
@@ -44,7 +46,9 @@ From [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-a
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
 [I51]: 0051-actors-or-the-engine.md
 [I53]: 0053-sync-and-conflict.md
+[I54]: 0054-trust-encryption-and-who-may-sign-in.md
 [I71]: 0071-an-append-can-land-after-a-revocation.md
 [I81]: 0081-build-conflicts-decided-at-accept.md
+[I85]: 0085-build-the-hash-chain.md
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09

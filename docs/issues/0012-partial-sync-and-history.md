@@ -20,12 +20,18 @@ Raised in the [P11 Identity][P11] grilling (2026-09-27): roles are carried, not 
 
 2026-10-26: Confirmed by [I53 Sync and conflict][I53] ([the review page](../research/2026-10-26-sync-and-conflict-review.html), section 6). When the trigger fires, the sync details to decide: what the server sends for a Presenter's query (entity prefixes, [D120 Minted and derived id segments][D120], or attribute namespaces as vivief started); one cursor per organization with a filter, or one per query; and how a partial `node` sends a basis for data it holds only in part. Fixed already: a basis is a server cursor and authority decides conflicts ([D34' Per-attribute conflict policies, decided at accept][D34']), so a partial `node` never has to. `Decide when:` unchanged.
 
+2026-10-27: From [I54 Trust, encryption and who may sign in][I54] ([the review page](../research/2026-10-26-trust-encryption-and-sign-in-review.html)), [D150 Access around sync and commands][D150], [D151 The access pattern][D151]: sync's filter is an access decision ([ADR-0037 Access][ADR-0037]). When this fires, "what may this replica receive" is the access pattern's optional search capability, relations as facts are its third step, and the direction for a read scope stands: a strict-composition subtree, with accept refusing a changeset that spans two. If a replica may then hold data its reader may not see, access returns to the read.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0037]: ../adr/0037-access.md
 [D114]: ../plan/bootstrap/02-decision-log.md#d114
 [D120]: ../plan/bootstrap/02-decision-log.md#d120
+[D150]: ../plan/bootstrap/02-decision-log.md#d150
+[D151]: ../plan/bootstrap/02-decision-log.md#d151
 [D18]: ../plan/bootstrap/02-decision-log.md#d18
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [I53]: 0053-sync-and-conflict.md
+[I54]: 0054-trust-encryption-and-who-may-sign-in.md
 [I63]: 0063-the-columnar-copy.md
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11

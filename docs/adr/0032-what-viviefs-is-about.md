@@ -10,9 +10,9 @@ Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
 gate that already shows it, or names the gate to come.
 
 Related: [D95 App creation][D95], [D96 Two verifications][D96], [D97 Our languages by type][D97], [D98 Vision - View - Effects][D98], [D99 Facts kept, meaning derived][D99], [D100 Out of scope means not yet][D100], [D101 Lab and production][D101], [D102 Tools are apps][D102], [D55' Consumer apps live here][D55'], [D103 Nodes and authority][D103], [D104 The server-independent goal][D104], [D105 What must stay possible][D105],
-[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
-from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]; [ADR-0036 The journal is the fence][ADR-0036] (the journal is the fence), from [I51 Actors or the engine][I51]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
-(claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54 Trust, encryption and who may sign in][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
+[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [D149-D157 Trust, encryption and who may sign in][D149-D157]. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
+from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]; [ADR-0036 The journal is the fence][ADR-0036] (the journal is the fence), from [I51 Actors or the engine][I51]; [ADR-0037 Access][ADR-0037] (access) and [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] (tamper-evidence and proof of authorship), from [I54 Trust, encryption and who may sign in][I54]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
+(claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
 [The foundation concepts map](../plan/foundation-concepts/map.md).
 
 ## Problem
@@ -170,6 +170,23 @@ a journal, and quarantine keeps the user content of a rejected change on the
 device until a person resolves it. Sync is shown by [P09 Sync][P09]; conflicts decided at
 accept are to be shown by [P05 Changesets and projections][P05] and [P09][P09] again ([I81 Build conflicts decided at accept][I81]), quarantine by [P14 Quarantine after a lost lease][P14].
 
+**Trust, encryption and who may sign in ([D149-D157 Trust, encryption and who may sign in][D149-D157], [I54 Trust, encryption and who may sign in][I54]).**
+Access is one decision made on authority where every change and every replica
+passes: at accept, for what may be written, and at sync's filter, for what a
+replica receives; a read carries no access rule. Access is a pattern whose
+reference implementation is today's membership, server-only attributes and
+declared writes, behind one request of subject, action, resource and context,
+with roles, relations and policies as later implementations ([ADR-0037 Access][ADR-0037]).
+Encryption narrows who can open a value and never grants it: it serves erasure
+and data at rest, at a level each attribute chooses, the per-subject key of
+crypto-shredding the reference. An identity is who a request or a change is
+accountable to, a person, the server or an agent account, proved by a
+credential; whoever grants is the actor. Each organization's accepted history
+is a hash chain every device recomputes, and who wrote a changeset is shown at
+a level an app chooses ([ADR-0038 Tamper-evidence and proof of authorship][ADR-0038]). Identity and membership are shown by
+[P11 Identity][P11]; the access contract is to be shown by [P11][P11] again ([I84 Build the access pattern][I84]), the chain by
+[P09 Sync][P09] again ([I85 Build the hash chain][I85]), erasure by [P16 Crypto-shredding][P16].
+
 **Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
 one installation of an app that keeps all or part of an organization's data
 and writes changes to it; a device is the `node` a person uses. Authority is a
@@ -236,6 +253,8 @@ Not yet run.
 [ADR-0034]: 0034-origin-trust.md
 [ADR-0035]: 0035-accepting-a-change.md
 [ADR-0036]: 0036-the-journal-is-the-fence.md
+[ADR-0037]: 0037-access.md
+[ADR-0038]: 0038-tamper-evidence-and-proof-of-authorship.md
 [D1]: ../plan/bootstrap/02-decision-log.md#d1
 [D100]: ../plan/bootstrap/02-decision-log.md#d100
 [D101]: ../plan/bootstrap/02-decision-log.md#d101
@@ -253,6 +272,7 @@ Not yet run.
 [D136-D141]: ../plan/bootstrap/02-decision-log.md#d136-d141
 [D14']: ../plan/bootstrap/02-decision-log.md#d14p
 [D142-D148]: ../plan/bootstrap/02-decision-log.md#d142-d148
+[D149-D157]: ../plan/bootstrap/02-decision-log.md#d149-d157
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
@@ -288,9 +308,12 @@ Not yet run.
 [I70]: ../issues/0070-research-access-from-membership-to-enterprise.md
 [I8]: ../issues/0008-engine-scale-out.md
 [I81]: ../issues/0081-build-conflicts-decided-at-accept.md
+[I84]: ../issues/0084-build-the-access-pattern.md
+[I85]: ../issues/0085-build-the-hash-chain.md
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06
 [P07]: ../plan/bootstrap/06-qualification-gates.md#p07
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11
 [P14]: ../plan/bootstrap/06-qualification-gates.md#p14
+[P16]: ../plan/bootstrap/06-qualification-gates.md#p16

@@ -45,6 +45,8 @@ intent and unverified until the named gate. [GLOSSARY.md](../../GLOSSARY.md) def
 | [0034](0034-origin-trust.md) | Origin trust | Proposed, unverified | named when built ([I64 Build origin trust][I64]) |
 | [0035](0035-accepting-a-change.md) | Accepting a change | Proposed, unverified | [P09 Sync][P09] extended ([I69 Accept checks every change][I69]), to come |
 | [0036](0036-the-journal-is-the-fence.md) | The journal is the fence | Proposed, unverified | [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09] again, when built ([I80 Build the journal fence][I80]) |
+| [0037](0037-access.md) | Access | Proposed, unverified | [P11 Identity][P11] again, when built ([I84 Build the access pattern][I84]) |
+| [0038](0038-tamper-evidence-and-proof-of-authorship.md) | Tamper-evidence and proof of authorship | Proposed, unverified | [P09 Sync][P09] again, when the chain is built ([I85 Build the hash chain][I85]) |
 
 Every record starts as **Proposed, unverified**. A gate pass with linked evidence
 moves it to **Qualified**. **Accepted** is a human status given on the pattern's
@@ -79,6 +81,8 @@ decision alone ([ADR-0026 Verify - Qualify - Teach][ADR-0026], amended 2026-09-2
 [I64]: ../issues/0064-build-origin-trust.md
 [I69]: ../issues/0069-accept-checks-every-change.md
 [I80]: ../issues/0080-build-the-journal-fence.md
+[I84]: ../issues/0084-build-the-access-pattern.md
+[I85]: ../issues/0085-build-the-hash-chain.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P02]: ../plan/bootstrap/06-qualification-gates.md#p02
 [P03]: ../plan/bootstrap/06-qualification-gates.md#p03

@@ -51,6 +51,8 @@ It sketches three deployments: an **enterprise hub** (today), **enterprise with 
 
 2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): acceptance rules are written against a read model so any `node` holding authority can run them ([D125 Acceptance rules][D125], [D105 What must stay possible][D105] (2)). With several `node`s an access check must not read permissions older than the change it guards, Zanzibar's new enemy problem. [I70 Research: access from membership to enterprise][I70] found that a single `tx` cannot play Zanzibar's consistency token away from one authority, because an offline writer can still deliver an older `tx`; a frontier of each writer's progress can ([D105][D105] (4)), and today the server's cursor plays that role ([2026-10-09 Access from membership to enterprise](../research/2026-10-09-access-from-membership-to-enterprise.md)).
 
+2026-10-27: From [I54 Trust, encryption and who may sign in][I54] ([the review page](../research/2026-10-26-trust-encryption-and-sign-in-review.html)), [D151 The access pattern][D151], [D152 One meaning of identity][D152], [D155 A hash chain per organization][D155], [D156 Levels of proof of authorship][D156]: inputs for this mode. A self-certifying identity, whose credential is its own key (Effect's `EventLog.Identity`), is what it adds beside identities the server vouches for. The access contract's position `at` leaves room for a frontier, and a revocation concurrent with a write under shared authority is decided here. Comparing chain heads between devices, which catches a different history shown to a new device, is deferred here. The **signed and bound elsewhere** level of proof of authorship, and the group encryption level ([I87 Group and role encryption levels][I87]), go with it.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0007]: ../adr/0007-hybrid-logical-clock.md
@@ -63,8 +65,14 @@ It sketches three deployments: an **enterprise hub** (today), **enterprise with 
 [D119]: ../plan/bootstrap/02-decision-log.md#d119
 [D123]: ../plan/bootstrap/02-decision-log.md#d123
 [D125]: ../plan/bootstrap/02-decision-log.md#d125
+[D151]: ../plan/bootstrap/02-decision-log.md#d151
+[D152]: ../plan/bootstrap/02-decision-log.md#d152
+[D155]: ../plan/bootstrap/02-decision-log.md#d155
+[D156]: ../plan/bootstrap/02-decision-log.md#d156
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [I15]: 0015-identity-keys-and-trust.md
 [I53]: 0053-sync-and-conflict.md
+[I54]: 0054-trust-encryption-and-who-may-sign-in.md
 [I58]: 0058-several-servers-in-the-lab.md
 [I70]: 0070-research-access-from-membership-to-enterprise.md
+[I87]: 0087-group-and-role-encryption-levels.md

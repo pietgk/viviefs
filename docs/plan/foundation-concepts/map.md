@@ -54,6 +54,7 @@ decisions that chose them.
 - [I56](../../issues/0056-one-shape-at-every-level.md): the shape is a foundation concept at the data level (a command decides, authority accepts, the projector evolves; a workflow over its journal) and a lens above it, four states at every level, with kinds of intent from a WayFinder map to a button press; the changeset is the step and the log after accept is `State'`; a verified commit is a commit on which verify is green; a frame reaches a person through a surface of any modality; Effect's names first ([D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98']). Added I76-[I78 Research: Effect's vocabulary against ours][I78].
 - [I51](../../issues/0051-actors-or-the-engine.md): the actor level is the durable workflow, one execution per actor; no actor runtime, supervision tree or event bus (a workflow, or a cursor); commands and the engine are the handler runtime; one meaning of entity, some entity types act; the actor is the accountable identity; a run's journal is its own fence, so one engine, one journal and one fence, and Cluster is not needed ([D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39']; [ADR-0036 The journal is the fence][ADR-0036]). Added [I80 Build the journal fence][I80].
 - [I53](../../issues/0053-sync-and-conflict.md): sync is in the foundation on purpose; vivief's Sync Contract is three parts we have; authority decides a human conflict at accept against the writer's cursor and writes it as a fact a command resolves; a set is entities, with no cardinality; no text CRDT until live co-editing; one checkpoint enforces trust; user content never lives only in a journal, and quarantine keeps a rejected change's user content on the device ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34']). Added I81-[I83 Live co-editing of text][I83].
+- [I54](../../issues/0054-trust-encryption-and-who-may-sign-in.md): access is decided at accept and at sync's filter, never in a read, as a pattern with an AuthZEN-shaped contract and today's membership code as its reference implementation; encryption narrows and never grants, at a level each attribute chooses, the per-subject key the reference; an identity is who a request or a change is accountable to, Effect's `EventLog.Identity` a self-certifying one; agent accounts deferred; whoever grants is the actor; a hash chain per organization built now; proof of authorship at a level an app chooses, signing deferred ([D149-D157 Trust, encryption and who may sign in][D149-D157]; [ADR-0037 Access][ADR-0037], [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038]). Added I84-[I87 Group and role encryption levels][I87].
 
 ## Not yet specified
 
@@ -81,6 +82,8 @@ decisions that chose them.
 [ADR-0033]: ../../adr/0033-the-presenter-pattern.md
 [ADR-0034]: ../../adr/0034-origin-trust.md
 [ADR-0036]: ../../adr/0036-the-journal-is-the-fence.md
+[ADR-0037]: ../../adr/0037-access.md
+[ADR-0038]: ../../adr/0038-tamper-evidence-and-proof-of-authorship.md
 [D103-D106]: ../bootstrap/02-decision-log.md#d103-d106
 [D107-D117]: ../bootstrap/02-decision-log.md#d107-d117
 [D118-D123]: ../bootstrap/02-decision-log.md#d118-d123
@@ -90,6 +93,7 @@ decisions that chose them.
 [D136-D141]: ../bootstrap/02-decision-log.md#d136-d141
 [D14']: ../bootstrap/02-decision-log.md#d14p
 [D142-D148]: ../bootstrap/02-decision-log.md#d142-d148
+[D149-D157]: ../bootstrap/02-decision-log.md#d149-d157
 [D34']: ../bootstrap/02-decision-log.md#d34p
 [D36']: ../bootstrap/02-decision-log.md#d36p
 [D39']: ../bootstrap/02-decision-log.md#d39p
@@ -112,5 +116,6 @@ decisions that chose them.
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I80]: ../../issues/0080-build-the-journal-fence.md
 [I83]: ../../issues/0083-live-co-editing-of-text.md
+[I87]: ../../issues/0087-group-and-role-encryption-levels.md
 [P01]: ../bootstrap/06-qualification-gates.md#p01
 [P10]: ../bootstrap/06-qualification-gates.md#p10
