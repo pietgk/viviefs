@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I59: ADR-0002 and the vision page, in line with I47 (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-old { opacity: 0.7; text-decoration: line-through; text-decoration-thickness: 1px; }
+  .cr-quote { border-left: 3px solid var(--color-base-content); border-left-color: color-mix(in oklab, var(--color-base-content) 30%, transparent); padding-left: 0.9rem; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I59</span>
+    <span class="badge badge-outline">2026-10-27, round 1, answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">ADR-0002 and the vision page, in line with I47</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md">I59 Bring ADR-0002 and the vision page in line with I47</a> asks for an amendment note on <a class="cr-link" href="../adr/0002-purpose-scope-and-exemplar.md">ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar</a> and edits to <a class="cr-link" href="../plan/bootstrap/01-vision-and-scope.md">01-vision-and-scope</a>, so that both say what map 2 decided. Most of it is wording that follows from decisions already made. The part that is yours to decide is the Out of scope list: per item, what must stay possible (<b>D100 Out of scope means not yet</b>), and whether it is production only, and so learnable in the lab, or not yet at all (<b>D101 Lab and production</b>).</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in five lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li><b>Six places in ADR-0002 and the vision page are out of date</b>: "only the exemplar lives here", the <code class="cr-inline">-mobile</code> pair, no link to what ViViEfs is about, "an Expo app together with its backend", a "central sync server" with no word for authority, and "lease handoff" (section 1).</li>
+      <li><b>Of today's seven Out of scope items, one is already in D100's form</b> (the server-independent mode, from I48). Two say almost the same thing (several people on one execution; multi-writer merge) and one names a path D39' dropped (Cluster).</li>
+      <li><b>Proposal: six items, sorted three ways</b>: two not yet at all (guaranteed work while closed; two writers on one run), three learnable in the lab (production hosting; several servers, which D101 named but the list lacks; engine scale-out), and the server-independent mode, learnable in the lab, unchanged (section 2).</li>
+      <li><b>Product-specific choices of the consumer apps is not a "not yet"</b>: it is a boundary that stays. Proposal: move it to In scope as a rule, "each consumer app makes its own product choices; the stack's ADRs take none".</li>
+      <li><b>ADR-0002 gets one amendment paragraph</b> and points to the vision page as the one Out of scope list; the vision page is edited in place. Drafts of both are in sections 3 and 4; questions in section 5.</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">Round 1, answered (2026-10-27)</h2>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <p>The human agreed with the recommended answer to Q1-Q7; Q8 was left open and the drafts were written as recommended, the form I59 itself asks for (an amendment note on ADR-0002, the vision page edited in place). Recorded as <b>D158 The out-of-scope list, item by item</b> and <b>D159 Product choices stay with the consumer app</b>.</p>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>A and B not yet at all; B is one item for the two that said it twice.</li>
+      <li>C, D, E and F learnable in the lab; D (several servers, I58) added; I7's <code class="cr-inline">Decide when:</code> gains the lab trigger.</li>
+      <li>G is an In scope rule; where a consumer app keeps its ADRs is decided with the first one.</li>
+      <li>Map 2's deferred features stay in their issues.</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. What is out of date, and the decision that changed it</h2>
+  <div class="cr-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th>Where</th><th>Says today</th><th>Changed by</th><th>Proposed</th></tr></thead>
+      <tbody>
+        <tr><td>ADR-0002 Design; vision, Consumers</td><td>"Only the evidence-collection exemplar lives here for now (D55)"</td><td>D55' Consumer apps live here</td><td>The consumer apps live in this repository; the first arrives once the exemplar is more mature.</td></tr>
+        <tr><td>ADR-0002 Design, Outcome; vision, Consumers</td><td><code class="cr-inline">apps/&lt;product&gt;-mobile</code> + <code class="cr-inline">apps/&lt;product&gt;-server</code></td><td>D106 Consumer app shape</td><td><code class="cr-inline">apps/&lt;product&gt;-client</code> + <code class="cr-inline">apps/&lt;product&gt;-server</code></td></tr>
+        <tr><td>ADR-0002 (nothing)</td><td>Says what ViViEfs builds, not what it is about</td><td>D95 App creation, ADR-0032</td><td>A link: what ViViEfs is about is ADR-0032's; ADR-0002 keeps what it builds.</td></tr>
+        <tr><td>Vision, Why ViViEfs exists</td><td>"a modern Expo app together with its backend"</td><td>D103 Nodes and authority; the glossary's ViViEfs entry</td><td>"apps: today an Expo app for phone and web, and a Node.js server that holds authority for every organization". Names today's apps, no topology beyond them.</td></tr>
+        <tr><td>Vision, In scope</td><td>"Offline-first data with a central sync server, server authoritative"</td><td>D103, D142 Sync from the start</td><td>"Offline-first data synced with the <code class="cr-inline">node</code> that holds authority, today the server"</td></tr>
+        <tr><td>Vision, The exemplar</td><td>"lease handoff to another device"</td><td>D14' The journal is the fence</td><td>"handoff to another device" (a lease today; the journal fence once I80 builds it)</td></tr>
+        <tr><td>ADR-0002 and vision, Out of scope</td><td>Two lists, worded as final</td><td>D100, D101</td><td>One list, on the vision page, each item in D100's form (section 2). ADR-0002 points to it.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cr-src">ADR-0002 lists five out-of-scope items, the vision page seven; the vision page's list is a superset. Keeping one list is D30 One source for humans and agents applied, and I57 already points every ADR's Trade-offs at the vision page's list.</p>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">2. The Out of scope items, one by one</h2>
+  <p>Each card shows today's line, what has changed since it was written, and the proposal: the item's new wording, what must stay possible, and lab or not yet. <b>Not yet at all</b> means no lab run teaches it, because the reason is a platform limit or a design choice, not production. <b>Learnable in the lab</b> means only production is missing: it can be qualified on a laptop, for learning, when the issue's <code class="cr-inline">Decide when:</code> fires or you schedule it.</p>
+
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-4 space-y-1">
+      <h3 class="font-semibold">Not yet at all</h3>
+      <ul class="list-disc pl-5 text-sm"><li>A. Guaranteed work while the app is closed</li><li>B. Two writers on one workflow execution, merged</li></ul>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-4 space-y-1">
+      <h3 class="font-semibold">Learnable in the lab</h3>
+      <ul class="list-disc pl-5 text-sm"><li>C. Production hosting and telemetry (I7)</li><li>D. Several servers (I58), <i>new on the list</i></li><li>E. Engine scale-out (I8)</li><li>F. Server-independent mode (I60), unchanged</li></ul>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-4 space-y-1">
+      <h3 class="font-semibold">Not a "not yet": a rule</h3>
+      <ul class="list-disc pl-5 text-sm"><li>G. Product-specific choices of the consumer apps, moved to In scope</li></ul>
+    </div></div>
+  </div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">A. Guaranteed work while the app is closed <span class="badge badge-sm badge-outline">not yet at all</span></h3>
+    <p class="cr-quote cr-old">Code running on a guaranteed schedule while the app is closed. The OS only guarantees local notifications; background tasks are opportunistic (D3, D24).</p>
+    <p><b>Since then:</b> nothing changed the reason. iOS still guarantees only a local notification. What D14' added is that the holder of a run is derived from its journal, so due work never lives in memory: a <code class="cr-inline">wake_at</code> datom and the run's head say what is due and who wrote last.</p>
+    <p><b>Proposed:</b> Code running on a guaranteed schedule while the app is closed. The OS only guarantees local notifications; background tasks are opportunistic (D3, D24). <b>Must stay possible:</b> due work is a fact in the log, never a timer in memory (a <code class="cr-inline">wake_at</code> datom, the run's journal), and resuming needs only the journal, so a later OS guarantee or a background task can pick it up by the same sweep (D24, D14'). <b>Not yet at all:</b> the limit is the platform's; a lab cannot lift it.</p>
+    <p class="cr-src">Worked example: a reminder is due at 09:00 while the phone is in a drawer. Today the notification fires, the person taps it, the app launches and sweeps due clocks. If iOS one day guarantees a background run, the same sweep runs there: nothing in the engine waits on a process that was alive.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">B. Two writers on one workflow execution, merged afterwards <span class="badge badge-sm badge-outline">not yet at all</span> <span class="badge badge-sm badge-warning">two items become one</span></h3>
+    <p class="cr-quote cr-old">Several people editing the same workflow execution at once (rejected in D13).</p>
+    <p class="cr-quote cr-old">Multi-writer merge of workflow executions (D14): one lease holder at a time.</p>
+    <p><b>Since then:</b> D14' replaced the lease with the journal fence: one writer at a time, a writer that is behind is refused, and a run is always one history. "Rejected" is the word D100 rejects. And the two lines are one thing seen twice: several people at once on one execution <i>is</i> several writers whose histories would need merging. What several people already do together is feed one run through its outside inputs: a reviewer approves on the web while the phone holds the run (D11, D40), write-once on their own entity, not moving the head.</p>
+    <p><b>Proposed:</b> Two writers on one workflow execution at once, their histories merged afterwards. A run has one writer at a time and is always one history; a writer that is behind is refused (D14'), because an activity's side effects cannot be merged afterwards. <b>Must stay possible:</b> several people, on any device or the server, work on one run through its outside inputs, write-once on their own entity, which never move the head (D11, D40); a refused history strands no user content (D147, D148). <b>Not yet at all:</b> a design choice, not a production gap; no app has asked.</p>
+    <p class="cr-src">Worked example: the field worker's phone holds the evidence run; the reviewer approves on the web at the same time. Not two writers: the approval completes a deferred, the phone reads it on its next step. Two writers would be the phone and a tablet both uploading the photo step offline; one is refused, and its photo, a domain changeset, is still kept (D147).</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">C. Production hosting, deployment and telemetry <span class="badge badge-sm badge-outline">learnable in the lab</span></h3>
+    <p class="cr-quote cr-old">Production hosting, deployment topology and production telemetry backends.</p>
+    <p><b>Since then:</b> D101 made the lab a place to learn production shapes. Part of this already runs in the lab: Keycloak (P11) and Jaeger and otel-lgtm (P10) as digest-pinned Apple Container images. I7 holds the open questions (where the server runs, TLS, which telemetry backend, the web app's sign-in session) with <code class="cr-inline">Decide when:</code> the first consumer app leaves the lab.</p>
+    <p><b>Proposed:</b> Production hosting, deployment topology and production telemetry backends (I7). <b>Must stay possible:</b> the server is a composition of Layers configured from its environment, telemetry leaves through OTLP to any backend (the P10 sinks are the lab's), and identity is any OIDC provider behind the <code class="cr-inline">Identity</code> service (D47). <b>Production only, learnable in the lab</b> (a local Kubernetes with the server, Postgres, Keycloak and an OTLP backend). I7's <code class="cr-inline">Decide when:</code> gains "or the human schedules it for learning in the lab", as I8 and I60 have.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">D. Several servers, organizations spread across them <span class="badge badge-sm badge-outline">learnable in the lab</span> <span class="badge badge-sm badge-warning">new on the list</span></h3>
+    <p><b>Why add it:</b> D101 names it, with engine scale-out, as the two items learnable in the lab, and I59 asks the list to say so; but the list has no such line. I58 holds it, <code class="cr-inline">Decide when:</code> a consumer app needs organizations on more than one server, or you schedule it.</p>
+    <p><b>Proposed:</b> Several servers, with organizations spread across them (I58). Today one server holds authority for every organization (D103). <b>Must stay possible:</b> authority is held per organization, so which <code class="cr-inline">node</code> holds an organization's authority can differ between organizations; every request and changeset names its organization and the server never trusts a client's (D18); <code class="cr-inline">tx</code> is corrected against the <code class="cr-inline">node</code> holding authority, not "the server" (D118-D123). <b>Production only, learnable in the lab.</b></p>
+    <p class="cr-src">Not the same as F: here each organization still has one authority, only not all on the same server. F moves or shares an organization's authority.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">E. Engine scale-out <span class="badge badge-sm badge-outline">learnable in the lab</span> <span class="badge badge-sm badge-warning">names a dropped path</span></h3>
+    <p class="cr-quote cr-old">Horizontal scale-out of the workflow engine (Effect Cluster is the later path, D39).</p>
+    <p><b>Since then:</b> D39' One engine, one journal, one fence: scale-out is more runners writing on the journal head; Cluster is not the path (it fences by time only, keeps a second journal, assumes always-reachable runners), and stays possible behind <code class="cr-inline">WorkflowEngine</code> if a measured load needs it.</p>
+    <p><b>Proposed:</b> Horizontal scale-out of the server's workflow engine: more runners writing on each run's journal head (D39', I8). <b>Must stay possible:</b> the head check is made in one step with the append (D14'), a runner claims a step before acting, and <code class="cr-inline">WorkflowEngine</code> stays the one interface, so Cluster stays possible behind it. <b>Production only, learnable in the lab.</b></p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">F. Server-independent mode <span class="badge badge-sm badge-outline">learnable in the lab</span> <span class="badge badge-sm badge-success">already in D100's form</span></h3>
+    <p class="cr-quote">A server-independent mode: a group keeps working without its original operator, with authority moved to another <code class="cr-inline">node</code> or shared by all (D104, I60). Must stay possible: [D105's seven]. Learnable in the lab (D101).</p>
+    <p><b>Proposed:</b> unchanged. I54 made it easier (a hash chain makes forwarded history checkable; <b>signed and bound elsewhere</b> is its proof of authorship, D156), and no map-2 decision made a D105 item harder. The ADRs' Trade-offs already say so one by one.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">G. Product-specific choices of the consumer apps <span class="badge badge-sm badge-outline">a rule, not a "not yet"</span></h3>
+    <p class="cr-quote cr-old">Product-specific decisions of the consumer apps (for example BirVana's XState and voice ADRs).</p>
+    <p><b>Since then:</b> the consumer apps live here (D55'), each a <code class="cr-inline">&lt;product&gt;-client</code> + <code class="cr-inline">&lt;product&gt;-server</code> with its own features and attribute namespace (D106). So product choices will be made in this repository; what stays out is the stack taking them on. That is not "out for now, never ruled out": it is who owns what, and it should never stop being true. Under D100 every line of the list should one day be possible; this one should not.</p>
+    <p><b>Proposed:</b> remove it from Out of scope and add to In scope: "Each consumer app makes its own product-specific choices (BirVana's XState and voice ADRs, for example) in its own apps, features and attribute namespace (D106); the stack's ADRs and guides take none of them (D55')." Where a consumer app keeps its own ADRs is decided with the first one.</p>
+    <p class="cr-src">The alternative, keeping it in the list as "not yet at all", reads as if the stack might one day adopt BirVana's voice ADRs, which is the coupling D55 and D55' both avoid.</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">Not proposed for the list</h3>
+    <p>Map 2 deferred several features, each an issue with a <code class="cr-inline">Decide when:</code>: live co-editing of text (I83), agent accounts (I86), signed changesets (D156, I15), group and role encryption levels (I87), a server copy of quarantine (I11). Proposal: they stay in their issues and the Schedule, not on the list. The list is for scope that shapes the architecture, where a decision now could close a door; each of these has its door already named in its decision (the envelope's room for a signature, the conflict policy per attribute, and so on).</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. Draft: the amendment note on ADR-0002</h2>
+  <p>As ADR-0011 and ADR-0016 carry theirs: a bold-headed paragraph in Design, the original text kept as history. Placed after the paragraph on the exemplar; the five-item list below it gets a one-line pointer.</p>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3 text-sm">
+    <p><b>What ViViEfs is about, the consumer apps and the Out of scope list</b> (amendment 2026-10-27, D95 App creation, D55' Consumer apps live here, D106 Consumer app shape, D100 Out of scope means not yet, D101 Lab and production, I59). What ViViEfs is about, app creation, is ADR-0032's; this record keeps what ViViEfs builds. The consumer apps live in this repository too, built on the stack and improving it by using it; the first arrives once the exemplar is more mature. Each is <code class="cr-inline">apps/&lt;product&gt;-client</code> + <code class="cr-inline">apps/&lt;product&gt;-server</code>, so "only the exemplar lives here for now" and the <code class="cr-inline">-mobile</code> pair above no longer hold. Each consumer app makes its own product-specific choices; the stack's ADRs take none. The one Out of scope list is the vision page's, where each item says what must stay possible and whether it is learnable in the lab; the list below is the one this record started with.</p>
+    <p>Also: Related gains D55', D95, D100, D101, D106 and ADR-0032; Outcome Expected reads "a slot for later product app pairs" as amended above. Status stays <code class="cr-inline">Proposed, unverified</code>.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. Draft: the vision page</h2>
+  <p>Edited in place: the page is a plan, not a record. Changes only; everything else stays.</p>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3 text-sm">
+    <p><b>Why ViViEfs exists (D1).</b> "A reference stack for building apps, today an Expo app for phone and web and a Node.js server that holds authority for every organization (D103), in a development environment that is <b>AI-robust</b>: ..." and a new last line: "What ViViEfs is about, app creation, is ADR-0032's; this page says what it builds."</p>
+    <p><b>Consumers.</b> "Apps built on this stack: BirVana (...), an ERP frontend and a GRC frontend (complyj domain). They live in this repository (D55'), each an <code class="cr-inline">apps/&lt;product&gt;-client</code> + <code class="cr-inline">apps/&lt;product&gt;-server</code> (D106); the first arrives once the exemplar is more mature."</p>
+    <p><b>The exemplar.</b> "Plus: crash and resume (force-quit mid-workflow), handoff to another device (D14'), sync."</p>
+    <p><b>In scope.</b> "Offline-first data synced with the <code class="cr-inline">node</code> that holds authority, today the server (D103, D142)." "Durable execution ... one engine, one journal format (D39')." Plus G's rule.</p>
+    <p><b>Out of scope (for now).</b> A one-line lead: "Out for now, never ruled out (D100). Each item says what must stay possible, and whether it is production only, and so learnable in the lab, or not yet at all (D101)." Then A to F as in section 2.</p>
+  </div></div>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">5. Questions, round 1</h2>
+  <p>One per item, then the drafts. Each recommended answer is first.</p>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 Guaranteed work while closed')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. A: guaranteed work while the app is closed, not yet at all?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="as proposed: not yet at all, due work stays a fact in the log"> As proposed: not yet at all; due work stays a fact in the log (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="learnable in the lab"> Learnable in the lab (say what the lab would show)</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 Two writers on one run')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. B: merge the two workflow-writer items into one, not yet at all?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="as proposed: one item, not yet at all, outside inputs must stay possible"> As proposed: one item; outside inputs are what must stay possible (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="keep two items, each reworded"> Keep two items, each reworded in D100's form</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Production hosting')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. C: production hosting learnable in the lab, and I7's Decide when gains the lab trigger?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="as proposed: learnable in the lab, I7 gains the lab trigger"> As proposed (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="learnable in the lab, I7 unchanged"> Learnable in the lab; I7's <code class="cr-inline">Decide when:</code> unchanged</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Several servers')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. D: add several servers (I58) to the list, learnable in the lab?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="as proposed: add it, learnable in the lab"> As proposed: add it (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="fold it into C, production hosting"> Fold it into C, production hosting</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 Engine scale-out')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. E: engine scale-out reworded to D39', learnable in the lab?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="as proposed"> As proposed (recommended)</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q6', 'Q6 Product-specific choices')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. G: product-specific choices move from Out of scope to an In scope rule?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="as proposed: an In scope rule, where product ADRs live decided with the first consumer app"> As proposed: an In scope rule; where product ADRs live is decided with the first consumer app (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="keep it out of scope, not yet at all"> Keep it Out of scope, as "not yet at all"</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q7', 'Q7 Server-independent mode and new items')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q7. F unchanged, and map 2's deferred features stay off the list?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="as proposed: F unchanged, deferred features stay in their issues"> As proposed (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="add some deferred features to the list"> Add some to the list (name them in the notes)</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q8', 'Q8 The drafts')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q8. The drafts in sections 3 and 4: one amendment paragraph on ADR-0002, its list pointing to the vision page, the vision page edited in place?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="as drafted"> As drafted (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="as drafted, with changes in the notes"> As drafted, with changes (notes)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="rewrite ADR-0002 in place instead of an amendment note"> Rewrite ADR-0002 in place instead of an amendment note</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <p class="cr-src">Recorded afterwards: I59's Answer, one decision row (D158, the Out of scope list item by item), the two documents, I7's <code class="cr-inline">Decide when:</code>, the map's Decisions so far, and the handover.</p>
+</section>
+
+</div>
+</body>
+</html>

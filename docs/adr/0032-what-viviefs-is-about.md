@@ -10,7 +10,7 @@ Qualifying gate: none (intent). Each foundation concept map 2 adopts cites the
 gate that already shows it, or names the gate to come.
 
 Related: [D95 App creation][D95], [D96 Two verifications][D96], [D97 Our languages by type][D97], [D98 Vision - View - Effects][D98], [D99 Facts kept, meaning derived][D99], [D100 Out of scope means not yet][D100], [D101 Lab and production][D101], [D102 Tools are apps][D102], [D55' Consumer apps live here][D55'], [D103 Nodes and authority][D103], [D104 The server-independent goal][D104], [D105 What must stay possible][D105],
-[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [D149-D157 Trust, encryption and who may sign in][D149-D157]. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
+[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [D149-D157 Trust, encryption and who may sign in][D149-D157], [D158 The out-of-scope list, item by item][D158], [D159 Product choices stay with the consumer app][D159]. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
 from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]; [ADR-0036 The journal is the fence][ADR-0036] (the journal is the fence), from [I51 Actors or the engine][I51]; [ADR-0037 Access][ADR-0037] (access) and [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] (tamper-evidence and proof of authorship), from [I54 Trust, encryption and who may sign in][I54]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
 (claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
 [The foundation concepts map](../plan/foundation-concepts/map.md).
@@ -78,7 +78,9 @@ now, never ruled out. Each item says what must stay possible, and every ADR says
 which out-of-scope items it makes harder ([I57 Out-of-scope items in an ADR's trade-offs][I57]). Some items can be qualified in
 the lab, for learning, without being production: several servers ([I58 Several servers in the lab][I58]) and
 engine scale-out ([I8 Engine scale-out and a multi-runner server][I8]). Client-server read as peer-to-peer with server-signed
-nodes is the case to protect ([I48 The server-independent goal, and what an app is to a device and a node][I48]).
+nodes is the case to protect ([I48 The server-independent goal, and what an app is to a device and a node][I48]). The list itself is 01-vision's, six items each
+saying what must stay possible and lab or not yet ([D158 The out-of-scope list, item by item][D158]); a consumer app's
+product choices are not on it, because they stay with that app for good ([D159 Product choices stay with the consumer app][D159], [I59 Bring ADR-0002 and the vision page in line with I47][I59]).
 
 **Foundation concepts.** Which of vivief's concepts become ViViEfs's
 foundation is decided by I48-[I54 Trust, encryption and who may sign in][I54] and [I56 One shape at every level?][I56] and recorded here; [I55 Accept the foundation concepts][I55] accepts the
@@ -273,6 +275,8 @@ Not yet run.
 [D14']: ../plan/bootstrap/02-decision-log.md#d14p
 [D142-D148]: ../plan/bootstrap/02-decision-log.md#d142-d148
 [D149-D157]: ../plan/bootstrap/02-decision-log.md#d149-d157
+[D158]: ../plan/bootstrap/02-decision-log.md#d158
+[D159]: ../plan/bootstrap/02-decision-log.md#d159
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
@@ -304,6 +308,7 @@ Not yet run.
 [I56]: ../issues/0056-one-shape-at-every-level.md
 [I57]: ../issues/0057-out-of-scope-items-in-adr-trade-offs.md
 [I58]: ../issues/0058-several-servers-in-the-lab.md
+[I59]: ../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md
 [I60]: ../issues/0060-server-independent-mode.md
 [I70]: ../issues/0070-research-access-from-membership-to-enterprise.md
 [I8]: ../issues/0008-engine-scale-out.md

@@ -354,6 +354,18 @@ Checking the code found that the log does not say who granted a membership: the 
 | <a id="d156"></a>D156 | Levels of proof of authorship | Who wrote a changeset is shown at one of three levels, chosen per app and holding for every changeset of an organization from a named point in its chain: **server vouches**, the reference: authority checks the access token and the actor; **signed**: each device holds a key, created at sign-in and kept in the Keychain, the Keystore or as a non-exportable WebCrypto key, bound to its identity by a fact in the chain so a key added in someone's name is visible to their devices, and it signs the authored bytes apart from authority's acceptance; **signed and bound elsewhere**: the binding signed by the identity provider or by another of the person's devices (vivief's device link), which proves authorship against the operator and is what [I60 Server-independent mode][I60] needs. The envelope keeps room for a signature ([D105 What must stay possible][D105] (5)). **signed** is deferred, `Decide when:` an app needs proof of who wrote what (the first app that makes audit claims), or a `node` accepts from a peer ([I15 Identity, keys and trust][I15]). vivief's principle is adopted: a person's identity, a device's signing key, a transport key and the provider-account mapping stay distinct, and a key never authorizes. Every device signs in through OIDC on its own; no device vouches for another while there is an identity provider. A device applies the cursor stream unchecked ([D146 One checkpoint enforces trust][D146]); a `node` that accepts from a peer runs the same checkpoint and, once changesets are signed, checks the signature. `vivief:transport-identity-apart-from-authorization`: adopt the principle, keys deferred; `vivief:peer-validation-as-contract`: defer to [I15][I15] with [I60][I60]; `viviefs:device-and-local-replica`: stands. | A key the server alone binds proves nothing against the operator; with the bindings in the chain it shows a key added in someone's name. Keys on three platforms, with loss and rotation, are pure cost until something other than the server checks a signature, so the encoding is pinned now and the keys wait. |
 | <a id="d157"></a>D157 | The device after a revoked membership | After a membership is revoked the device keeps the organization's copy read-only. Deleting it is a courtesy an app may turn on, never security: a modified client keeps what it received. The revoked person's quarantined content ([D148 Quarantine is rejected user content][D148]) stays until they discard it or remove the account. [I17 Local deletion after a revoked membership][I17] stays deferred with [P16 Crypto-shredding][P16]. | What a device received cannot be recalled; promising deletion would claim a security no client can give. |
 
+<a id="d158-d159"></a>
+## The out-of-scope list (2026-10-27)
+
+From [I59](../../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md), the fifth ticket of phase 1, decided with the human on
+[the review page](../../research/2026-10-27-adr-0002-and-vision-review.html). [D100 Out of scope means not yet][D100] and [D101 Lab and production][D101] set the form; these
+decide the items. [01-vision-and-scope](01-vision-and-scope.md) carries the list; [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] is amended to point to it.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d158"></a>D158 | The out-of-scope list, item by item | The one out-of-scope list is 01-vision-and-scope's, six items in [D100 Out of scope means not yet][D100]'s form. **Not yet at all**: (A) code on a guaranteed schedule while the app is closed, where due work must stay a fact in the log and resuming need only the journal ([D3 Resume on next launch][D3], [D24 Durable clocks and notifications][D24], [D14' The journal is the fence][D14']); (B) two writers on one workflow execution at once, merged afterwards, one item for the two that said it twice, where several people must still work on one run through its outside inputs ([D11 Human steps as deferreds][D11], [D40 Server-side human steps][D40]) and a refused history strands no user content ([D147 User content outside the journal][D147]). **Production only, learnable in the lab**: (C) production hosting, deployment and telemetry ([I7 Production hosting, deployment and telemetry backend][I7], whose `Decide when:` gains the lab trigger); (D) several servers with organizations spread across them ([I58 Several servers in the lab][I58]), added because [D101 Lab and production][D101] named it and the list lacked it; (E) engine scale-out, worded as [D39' One engine, one journal, one fence][D39'] has it ([I8 Engine scale-out and a multi-runner server][I8]); (F) the server-independent mode, unchanged ([D104 The server-independent goal][D104], [D105 What must stay possible][D105]). Features map 2 deferred with a `Decide when:` (live co-editing, agent accounts, signing, group encryption, a server copy of quarantine) stay in their issues: the list is for scope where a decision now could close a door. | [D101 Lab and production][D101] asked the list to say per item lab or not yet; two items said one thing twice, one named the Cluster path [D39' One engine, one journal, one fence][D39'] dropped, and "rejected" was the word [D100 Out of scope means not yet][D100] rejects. |
+| <a id="d159"></a>D159 | Product choices stay with the consumer app | Each consumer app makes its own product-specific choices (BirVana's XState and voice ADRs, for example) in its own apps, features and attribute namespace ([D106 Consumer app shape][D106]); the stack's ADRs and guides take none of them. This is an In scope rule in 01-vision-and-scope, no longer an out-of-scope item. Where a consumer app keeps its own ADRs is decided with the first one ([D55' Consumer apps live here][D55']). | Under [D100 Out of scope means not yet][D100] every out-of-scope item should one day be possible; the stack taking on one product's choices never should, which is the coupling [D55 Exemplar first, product apps later][D55] and [D55' Consumer apps live here][D55'] avoid. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -380,6 +392,7 @@ Checking the code found that the log does not say who granted a membership: the 
 [D100]: #d100
 [D101]: #d101
 [D103]: #d103
+[D104]: #d104
 [D105]: #d105
 [D106]: #d106
 [D107]: #d107
@@ -413,6 +426,7 @@ Checking the code found that the log does not say who granted a membership: the 
 [D142-D148]: #d142-d148
 [D145]: #d145
 [D146]: #d146
+[D147]: #d147
 [D148]: #d148
 [D149]: #d149
 [D15]: #d15
@@ -432,6 +446,7 @@ Checking the code found that the log does not say who granted a membership: the 
 [D27]: #d27
 [D28]: #d28
 [D29]: #d29
+[D3]: #d3
 [D30]: #d30
 [D31]: #d31
 [D33']: #d33p
@@ -455,6 +470,7 @@ Checking the code found that the log does not say who granted a membership: the 
 [D52]: #d52
 [D53]: #d53
 [D54]: #d54
+[D55]: #d55
 [D55']: #d55p
 [D57]: #d57
 [D58]: #d58
@@ -512,6 +528,7 @@ Checking the code found that the log does not say who granted a membership: the 
 [I67]: ../../issues/0067-minting-entity-id-segments.md
 [I68]: ../../issues/0068-uniqueness-as-an-acceptance-rule.md
 [I69]: ../../issues/0069-accept-checks-every-change.md
+[I7]: ../../issues/0007-production-hosting-and-telemetry-backend.md
 [I70]: ../../issues/0070-research-access-from-membership-to-enterprise.md
 [I71]: ../../issues/0071-an-append-can-land-after-a-revocation.md
 [I76]: ../../issues/0076-verify-verdict-not-kept-per-commit.md

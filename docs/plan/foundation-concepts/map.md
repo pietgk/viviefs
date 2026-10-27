@@ -55,6 +55,7 @@ decisions that chose them.
 - [I51](../../issues/0051-actors-or-the-engine.md): the actor level is the durable workflow, one execution per actor; no actor runtime, supervision tree or event bus (a workflow, or a cursor); commands and the engine are the handler runtime; one meaning of entity, some entity types act; the actor is the accountable identity; a run's journal is its own fence, so one engine, one journal and one fence, and Cluster is not needed ([D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39']; [ADR-0036 The journal is the fence][ADR-0036]). Added [I80 Build the journal fence][I80].
 - [I53](../../issues/0053-sync-and-conflict.md): sync is in the foundation on purpose; vivief's Sync Contract is three parts we have; authority decides a human conflict at accept against the writer's cursor and writes it as a fact a command resolves; a set is entities, with no cardinality; no text CRDT until live co-editing; one checkpoint enforces trust; user content never lives only in a journal, and quarantine keeps a rejected change's user content on the device ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34']). Added I81-[I83 Live co-editing of text][I83].
 - [I54](../../issues/0054-trust-encryption-and-who-may-sign-in.md): access is decided at accept and at sync's filter, never in a read, as a pattern with an AuthZEN-shaped contract and today's membership code as its reference implementation; encryption narrows and never grants, at a level each attribute chooses, the per-subject key the reference; an identity is who a request or a change is accountable to, Effect's `EventLog.Identity` a self-certifying one; agent accounts deferred; whoever grants is the actor; a hash chain per organization built now; proof of authorship at a level an app chooses, signing deferred ([D149-D157 Trust, encryption and who may sign in][D149-D157]; [ADR-0037 Access][ADR-0037], [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038]). Added I84-[I87 Group and role encryption levels][I87].
+- [I59](../../issues/0059-bring-adr-0002-and-the-vision-in-line-with-i47.md): [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] and the vision page in line with [I47 What ViViEfs is about][I47]: the out-of-scope list is the vision page's alone, six items each saying what must stay possible and lab or not yet (guaranteed work while closed and two writers on one run not yet at all; hosting, several servers, engine scale-out and the server-independent mode learnable in the lab); a consumer app's product choices are an In scope rule, not an item ([D158 The out-of-scope list, item by item][D158], [D159 Product choices stay with the consumer app][D159]; [ADR-0002][ADR-0002] amended).
 
 ## Not yet specified
 
@@ -75,6 +76,7 @@ decisions that chose them.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
 [ADR-0007]: ../../adr/0007-hybrid-logical-clock.md
 [ADR-0010]: ../../adr/0010-entity-ids-and-defining-attributes.md
 [ADR-0011]: ../../adr/0011-log-store-pattern.md
@@ -94,6 +96,8 @@ decisions that chose them.
 [D14']: ../bootstrap/02-decision-log.md#d14p
 [D142-D148]: ../bootstrap/02-decision-log.md#d142-d148
 [D149-D157]: ../bootstrap/02-decision-log.md#d149-d157
+[D158]: ../bootstrap/02-decision-log.md#d158
+[D159]: ../bootstrap/02-decision-log.md#d159
 [D34']: ../bootstrap/02-decision-log.md#d34p
 [D36']: ../bootstrap/02-decision-log.md#d36p
 [D39']: ../bootstrap/02-decision-log.md#d39p
