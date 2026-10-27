@@ -1,6 +1,6 @@
 # I78: Research: Effect's vocabulary against ours
 
-Status: ready-for-agent
+Status: resolved
 
 Category: enhancement
 
@@ -26,9 +26,15 @@ Start with the clashes already found: Envelope (ours: the label on a changeset; 
 
 Write the record in `docs/research/`, as [I70](0070-research-access-from-membership-to-enterprise.md)'s, with a table per module. Map 3 waits for it; [I51](0051-actors-or-the-engine.md) reads `cluster` itself first, because Cluster's Entity is Effect's answer to vivief's actors. Feeds [I26](0026-glossary-links-on-words-that-are-not-our-terms.md).
 
+## Answer
+
+Researched on 2026-10-27 in [2026-10-27 Effect's vocabulary against ours](../research/2026-10-27-effect-vocabulary-against-ours.md), from the vendored `effect` 4.0.5 source. Every name this issue lists exists in 4.0.5 (`ai`, `cluster`, `persistence` and `eventlog` import as `effect/ai` and so on, all marked unstable), and the code imports none of those four. The six clashes hold: Envelope, Journal, Decision and Prompt keep our meaning and the glossary marks Effect's; Entity is settled in meaning ([D137 One meaning of entity][D137]) and only wording remains; Tool clashes inside our own text, because [D134 Presenting in any modality][D134]'s "an agent reads a frame through a tool" is Effect's sense. New clashes: Effects in Vision - View - Effects (in Effect an `Effect` is work not yet run and an `Exit` what happened), Worker (Effect's `workers/Worker`; Effect's word for ours is runner), Deferred (ours is Effect's `DurableDeferred`), `tx`, Command (`effect/cli`), session, model, and the glossary's "tag" for a service where Effect 4 says key. Ideas we lack, mostly for map 6: tool calls left unresolved so each runs as an activity or command, tool approval and annotations, `Persistable` and `PersistedCache` (a stored `Exit` reused instead of rerun, [I29 Ideas batch: agents that record a replayable run][I29]), a model's `ProviderName` and `ModelName` for its origin ([I64 Build origin trust][I64]), `gen_ai.*` telemetry, and `McpServer` as where a tool of ours reaches an agent. Nothing is decided; the record ends with the questions map 3's charting asks.
+
 ## Comments
 
 2026-10-26: [I51](0051-actors-or-the-engine.md) read `cluster` ([the review page](../research/2026-10-24-actors-or-the-engine-review.html), sections 2 and 8-10). Entity is not a clash of meaning ([D137 One meaning of entity][D137]): an entity is a thing with an identity that facts are about, and Effect's `Entity` is an entity type that acts; what remains is wording, Effect's `Entity` naming the type and ours an instance's id. Cluster's runtime is not adopted ([D39' One engine, one journal, one fence][D39']), and `cluster/Envelope` (a transport envelope between entities) stays a clash with ours.
+
+2026-10-27: Resolved by [the record](../research/2026-10-27-effect-vocabulary-against-ours.md); map 3, the words, is charted next with [I26 Glossary links on words that are not our terms][I26].
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
@@ -38,6 +44,10 @@ Write the record in `docs/research/`, as [I70](0070-research-access-from-members
 [ADR-0017]: ../adr/0017-sync-outbox-and-cursor-stream.md
 [D102]: ../plan/bootstrap/02-decision-log.md#d102
 [D130]: ../plan/bootstrap/02-decision-log.md#d130
+[D134]: ../plan/bootstrap/02-decision-log.md#d134
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
 [D137]: ../plan/bootstrap/02-decision-log.md#d137
 [D39']: ../plan/bootstrap/02-decision-log.md#d39p
+[I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
+[I29]: 0029-ideas-batch-agents-that-record-a-replayable-run.md
+[I64]: 0064-build-origin-trust.md

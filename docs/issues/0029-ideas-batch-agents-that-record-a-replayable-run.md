@@ -71,6 +71,8 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 
 2026-10-26: [I51](0051-actors-or-the-engine.md) reviewed it. Confirmed for map 6, narrowed: an agent run written as a workflow, its model calls and tool actions as activities, already replays one run from its journal with no model call ([D136 The actor level is the durable workflow][D136], [D140 Commands and the engine are the handler runtime][D140]; the review page's example d). What this issue adds is a recording kept for the *next* run, keyed by its input and handed back to the agent when the app has drifted; that is not the journal. The `Decide when:` is unchanged.
 
+2026-10-27: [I78 Research: Effect's vocabulary against ours][I78] found Effect ideas for this batch ([the record](../research/2026-10-27-effect-vocabulary-against-ours.md), question 12): `LanguageModel` can leave tool calls unresolved so each runs as an activity or a registered command; a model's tool can require approval, which could be a durable deferred; `Persistable`, `Persistence` and `PersistedCache` store a request's `Exit` and reuse it instead of rerunning, Effect's name for replay without the model outside a workflow; `ai/Model`'s `ProviderName` and `ModelName` and `ai/Telemetry`'s `gen_ai.*` attributes can name a model's origin and its spans. Map 6 decides which, if any, it takes.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D136]: ../plan/bootstrap/02-decision-log.md#d136
@@ -82,5 +84,6 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 [I24]: 0024-ideas-batch-andrej-karpathy-understanding.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I51]: 0051-actors-or-the-engine.md
+[I78]: 0078-research-effect-vocabulary-against-ours.md
 [P12]: ../plan/bootstrap/06-qualification-gates.md#p12
 [P13]: ../plan/bootstrap/06-qualification-gates.md#p13
