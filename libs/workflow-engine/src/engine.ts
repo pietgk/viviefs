@@ -157,9 +157,9 @@ export const engineLayer: Layer.Layer<
 
     /**
      * Causing span (D58): each envelope names the span that caused the
-     * write. Facts the engine writes on its own carry the durable span of
+     * write. Facts the workflow engine writes on its own carry the durable span of
      * their entity. Facts an outside caller asked for (start, lease grant
-     * and handoff, deferred completion) carry the caller's live span when
+     * and handoff, durable deferred completion) carry the caller's live span when
      * there is one; the trace projector turns it into a link.
      */
     const durable = (exec: string, entity: string) =>
@@ -305,7 +305,7 @@ export const engineLayer: Layer.Layer<
           options.deferredName,
         )
         const rows = yield* rowsOf(options.executionId)
-        // A deferred completes once. A repeat (a clock re-fired on replay,
+        // A durable deferred completes once. A repeat (a clock re-fired on replay,
         // a caller retrying) must not wake the run: the wake preempts a
         // replay that has already read the stored exit, and it replays
         // into the same repeat forever. A run whose wake was lost to a
@@ -444,7 +444,7 @@ export const engineLayer: Layer.Layer<
       runs.set(exec, state)
       // Workflow bodies emit no live spans: a replay re-runs the body, so
       // they would duplicate on every resume (Effect's own activity and
-      // deferred spans have random ids). The trace projector derives
+      // durable deferred spans have random ids). The trace projector derives
       // durable spans from the journal instead. Activity bodies turn live
       // tracing back on under their durable span (see activityExecute).
       state.fiber = yield* entry

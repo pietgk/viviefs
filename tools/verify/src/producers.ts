@@ -2,7 +2,7 @@
  * Coverage producers (D77): `unit`, `integration` and `storybook` are each one
  * Vitest run from the workspace root, over the projects whose `project.json`
  * declares the producer's target. Coverage is limited to the files the
- * registry gives to that producer, so a file is judged only by its owner.
+ * evidence registry gives to that producer, so a file is judged only by its owner.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'

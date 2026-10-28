@@ -46,7 +46,7 @@ up as the reason instead of as missing spans.
 <Sample path="libs/datom/src/log-store.ts" region="compact" />
 
 **To let compaction go on, catch the slow consumer up.** Read from its own
-cursor, deliver, acknowledge the last `seq` delivered, then compact.
+acknowledged cursor, deliver, acknowledge the last `seq` delivered, then compact.
 Acknowledging first and delivering after looks the same until a crash in
 between: then compaction removes facts that were never delivered.
 

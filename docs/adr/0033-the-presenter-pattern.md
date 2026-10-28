@@ -13,14 +13,14 @@ Related: [D107 The Presenter pattern][D107], [D108 The query is data][D108], [D1
 atoms, now the reference implementation), [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] and [D37 Log store tables][D37] (the log store and
 the analytics projection, now one implementation), [ADR-0034 Origin trust][ADR-0034] (origin trust),
 [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] (foundation concepts). Opened by [I49 Projection: one concept or several patterns][I49]; [I62 The Presenter conformance gate][I62] (the gate), [I63 The columnar copy as a Presenter implementation][I63] (the
-columnar copy), [I12 Partial sync, history consolidation and client data access][I12] and [I53 Sync and conflict][I53] (partial sync on demand), [I31 Ideas batch: DataFrames as a universal data format][I31] (engines).
+columnar copy), [I12 Partial sync, history consolidation and client data access][I12] and [I53 Sync and conflict][I53] (partial sync on demand), [I31 Ideas batch: DataFrames as a universal data format][I31] (workflow engines).
 
 ## Problem
 
 vivief names one concept, `Projection`, for query, access, encryption,
 delivery, freshness and trust scope. ViViEfs has each of those it has as a
 separate part with its own gate: SQL over read models and the projector ([P05 Changesets and projections][P05]),
-query atoms with invalidation keys ([P05][P05], [P08 UI three-way prototype][P08]), cursors ([P04 Log store conformance][P04], [P09 Sync][P09], [P10 Trace projection][P10]), the
+query atoms with invalidation keys ([P05][P05], [P08 UI three-way prototype][P08]), acknowledged cursors ([P04 Log store conformance][P04], [P09 Sync][P09], [P10 Trace projection][P10]), the
 server's membership check on every pull, push, lease and command ([P11 Identity][P11]), and
 encryption for data at rest and erasure ([ADR-0023 Data at rest and crypto-shredding][ADR-0023]). It had no name for the
 whole a screen asks of, and no answer for data a log store cannot hold
@@ -59,7 +59,7 @@ afterwards, so it runs only where that input is held.
 entity is a one-row frame. Freshness is committed, or committed plus my open
 changesets ([D42 Live reads with query atoms][D42]). Gathering commits in batches; each batch invalidates the
 frame's keys and the frame grows. The frame subscription ends with its screen;
-the gathering activity is durable. Cursor consumers stay their own pattern.
+the gathering activity is durable. Consumers of an acknowledged cursor stay their own pattern.
 
 **The reference implementation ([D110 The reference implementation][D110]).** Every implementation returns the
 reference's frame for the same query at the same `tx`. SQLite read models with
@@ -98,7 +98,7 @@ a screen a frame does not fit.
   lets a replica hold data its reader may not see ([I54 Trust, encryption and who may sign in][I54]).
 - **vivief's meaning of "projection"** would give the word two meanings, since
   the projector does not make Projections.
-- **One engine everywhere** (DuckDB or Polars as the frame): DuckDB in a React
+- **One workflow engine everywhere** (DuckDB or Polars as the frame): DuckDB in a React
   Native app is a one-maintainer module and Polars has nothing for it ([I31 Ideas batch: DataFrames as a universal data format][I31]). A
   contract with implementations is the log store's move again.
 - **Raw SQL per screen**, as today, cannot be passed past one store.

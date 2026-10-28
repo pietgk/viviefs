@@ -6,7 +6,7 @@ teaching.
 
 | Mode | Question | Mechanism | When |
 |---|---|---|---|
-| **Verify** | Does the code keep its contract? | Staged `verify` gate, registry of file treatments, evidence lockfile, lint boundaries, budgets | Every change. Done = green. |
+| **Verify** | Does the code keep its contract? | Staged `verify` gate, evidence registry of file treatments, evidence lockfile, lint boundaries, budgets | Every change. Done = green. |
 | **Qualify** | Is this claim about the stack or a pattern true? | Numbered gates with retained probes, positive controls, fingerprinted append-only ledger, sequential full run | Before depending on a claim, and whenever its inputs change |
 | **Teach** | Can a human or an LLM learn it from what we wrote? | Concept page, exercise whose solution passes in `verify`, lesson citing gate evidence | Before a pattern counts as delivered |
 
@@ -39,20 +39,20 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
     exercise track's solutions pass and problems fail as expected, without coverage, because teaching material is
     not evidence of production code.
   - integration: one Vitest run over the suites and tests that need a real store or server: log-store and changesets
-    suites on each store, the engine suites and the projection suite on sqlite-node and PGlite.
+    suites on each store, the workflow engine suites and the projection suite on sqlite-node and PGlite.
   - ui: stories with play + a11y (jsdom until [P12 UI on every platform][P12], [D72 UI on every platform][D72]), Playwright web smoke (from [P13 Links and routing][P13]).
   - quality: production builds, gated JS bundle size, docs site, diagrams, `guides` (every guide in the shape of
     the guide template; ADR and guide statuses, exemplar links and exercise tracks agree), and `evidence`: this
-    run's coverage, suites and stories judged against the registry and the evidence lockfile.
+    run's coverage, suites and stories judged against the evidence registry and the evidence lockfile.
 - Fail fast between stages, collect all failures within a stage. `verify help` is generated from the executed table.
 - "Done" is mechanical: green `verify`, with a path rule for docs-only diffs (inherited from web-interview; the
   escape hatch must stay a path rule, not judgment).
 - Never loosen a gate to make it pass. Disputes about a gate go to a human.
-- **Registry** ([D75 Evidence vocabulary][D75], [D76 Eleven file treatments][D76]): every production file has one file treatment, the verify step that produces its evidence
+- **Evidence registry** ([D75 Evidence vocabulary][D75], [D76 Eleven file treatments][D76]): every production file has one file treatment, the verify step that produces its evidence
   and the verdict applied, with a rationale. A file is judged only by its owning producer; another producer reaching
   it is informational. Suites are named `<pattern>/<aspect>` and live with their contract ([D80 Where tests live][D80], 04-repo-structure).
 - **Evidence lockfile** (`evidence-baseline.json`, [D77 Coverage producers][D77]): each owning producer's exact per-file coverage, the coverage
-  provider, the registry digest and the bundle-size references. It is a lockfile, not a target: a regression fails,
+  provider, the evidence registry digest and the bundle-size references. It is a lockfile, not a target: a regression fails,
   and an unrecorded improvement fails until `pnpm verify baseline` records it. Baseline runs every producer three
   times and refuses to write when a tuple differs, because a varying tuple is a flaky test.
 - **Budgets** (mobile): JS bundle size is gated now (Effect deep imports vs barrel measured in research/02). Cold
@@ -95,7 +95,7 @@ on the pattern's guide, the teaching material in one guide template, so "taught"
   whose suite checks it; every ADR is named by one guide; gates and ADRs are named, linked references ([D86 Named, linked references][D86]).
 - **One source**: docs pages are canonical; AGENTS.md is a short map; skills are thin procedures linking to guides.
 - Key lessons to plan early: the determinism rule, the basis check in changesets, HLC edge cases, "can it ever move?
-  then it is a reference", deferreds vs machines, crash and resume seen in the trace.
+  then it is a reference", durable deferreds vs machines, crash and resume seen in the trace.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

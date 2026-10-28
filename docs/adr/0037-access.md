@@ -51,7 +51,7 @@ decide(
 ```
 
 - A changeset is a batch: one evaluation per touched entity, combined with AND.
-- `at` is the cursor today; a holder epoch with its sequence when authority
+- `at` is the sync cursor today; a holder epoch with its sequence when authority
   moves; a frontier when authority is shared.
 - A write check reads the state at `at`, before the changeset, with the
   changeset's own writes in each evaluation's context.

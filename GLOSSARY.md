@@ -43,7 +43,7 @@ reference ([D178 Growth watched, not capped][D178]).
 | **Identity and access** | Every change is accountable to someone, and one decision says what they may write and receive. | [Identity](#identity), [Membership](#membership), [Access decision](#access-decision) |
 | **Encryption that narrows** | Locking a value limits who can open it, and never gives anyone access. | [Encryption level](#encryption-level), [Crypto-shredding](#crypto-shredding) |
 | **Tamper-evident history** | Each organization's history is a chain in which any change to the past shows. | [Tamper-evidence](#tamper-evidence) |
-| **Sync** | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | [Outbox](#outbox), [Cursor](#cursor), [Conflict datom](#conflict-datom) |
+| **Sync** | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | [Outbox](#outbox), [Sync cursor](#sync-cursor), [Conflict datom](#conflict-datom) |
 | **Read model and projector** | What the facts mean is worked out from the log and can be thrown away and rebuilt. | [Read model](#read-model), [Projector](#projector) |
 | **Presenter, frame and surface** | A screen, or a speaker, asks for data and keeps receiving the latest answer. | [Presenter](#presenter), [Frame](#frame), [Frame subscription](#frame-subscription) |
 | **Durable workflow and its journal** | Work that must not lose progress writes down each step, so it resumes where it stopped. | [Workflow](#workflow), [Activity](#activity), [Journal](#journal) |
@@ -193,6 +193,16 @@ _Avoid_: module, domain package
 Shared code with no business meaning of its own, such as storage or tracing, used by features and apps.
 _Avoid_: util, common, shared
 
+**Tool**:
+An app for the people and agents who build apps, such as the checks run before every merge.
+An app whose users are the people and agents building apps, often run from the
+command line or in CI: `verify`, `qualify`, the generators, `exercise`
+([D102 Tools are apps][D102]). It lives in `tools/`, a project kind no product
+app depends on ([D52 Four project kinds][D52]); it is an app but not a `node`
+([D103 Nodes and authority][D103], [D194 Tool is an app for those who build apps][D194]).
+_Not_: Effect's `Tool`, an operation a model may call, written "a model's tool";
+`verify` offered to an agent over MCP is both.
+
 **Effect**:
 The TypeScript library this whole stack is written with.
 It makes errors, dependencies and side effects visible in the types. Effect v4,
@@ -203,7 +213,7 @@ described and not yet run; how it ended is its `Exit`
 
 **Service**:
 A named capability that code asks for instead of building it itself, such as "the log store".
-In Effect it is a tag with an interface; which implementation answers is decided
+In Effect it is a key (`Context.Service`) with an interface; which implementation answers is decided
 where the app is put together, by a Layer.
 
 **Layer**:
@@ -221,14 +231,16 @@ never runs under a live operation.
 **Datom**:
 One fact the system knows, such as "this list's title is Site visit", stored once and never changed.
 Written `[e, a, v, tx, op, cs]`: entity, attribute, value, transaction id,
-assert or retract, changeset. Each datom is its own transaction.
+assert or retract, changeset. Each datom is its own transaction; its `tx` is its
+HLC time, not `Effect.tx` nor a database transaction.
 _Like_: a row of an entity-attribute-value table, except that it is never
 updated in place ([D162 Portability, two halves][D162]).
 _Avoid_: event, row, record
 
 **Entity**:
 The thing a fact is about, such as one list, one photo or one workflow run.
-A type and an id; the subject `e` of datoms; its id may encode its parent for
+An entity type and an entity id, in the sense of Effect Cluster's `EntityType`
+and `EntityId` ([D196 Entity type and entity id][D196]); the subject `e` of datoms; its id may encode its parent for
 strict composition. Most entities only have facts said about them; a workflow
 run also acts.
 _Like_: Effect Cluster's `Entity`, except that ours is anything facts are about,
@@ -324,7 +336,9 @@ _Avoid_: handler (alone, for this meaning)
 What someone asks to happen, before it is checked: a person, an agent or an outside source.
 An effect in its first phase; the input to a command; not a datom. A clock
 firing, a sync arriving or an activity's exit is not an intent
-([D167 Intent: what someone asks to happen][D167]).
+([D167 Intent: what someone asks to happen][D167], [D190 Intent keeps its word][D190]).
+_Like_: Android's `Intent`, except that ours comes from a person, an agent or an
+outside source, and a command checks it before anything is written.
 
 **IntentComposer**:
 The part of a screen that helps a user put together a request step by step before it is sent.
@@ -357,17 +371,21 @@ commit)
 
 **Commit datom**:
 The last fact of a changeset, which makes all of it appear at once.
-It is write-once and carries the changeset's manifest and basis; the changeset's
+It is write-once and carries the changeset manifest and the basis; the changeset's
 envelope travels alongside it.
 
-**Manifest**:
+**Changeset manifest**:
 The packing list of a changeset: how many facts and files it has, so nothing is applied half.
 The count and hash of its members (and file references) that must be satisfied
-before it is applied.
+before it is applied ([D192 Changeset manifest][D192]).
+_Like_: Expo's update manifest, except that it lists one changeset's facts and
+files, not an app update's assets.
+_Not_: the web app manifest, which names an installable web app.
+_Avoid_: manifest (alone, our word until [D192][D192])
 
 **Basis**:
 The point a change was made from: how far its writer had caught up with the server.
-The server cursor the writer had pulled; authority uses it at accept to notice
+The sync cursor the writer had pulled; authority uses it at accept to notice
 that someone else changed the same thing since
 ([D34' Per-attribute conflict policies, decided at accept][D34']).
 
@@ -379,13 +397,20 @@ Write-once.
 The label on a changeset: who made it, on which device, and why.
 One fixed-shape record per changeset, keyed by `cs`: actor, device, lease epoch,
 trace context, command name, acceptance time. Stored in the `changesets` table,
-not as datoms; a self-committed datom has its own.
+not as datoms; a self-committed datom has its own
+([D188 Journal and Envelope keep their words][D188]).
+_Not_: Effect's `Envelope` (Cluster) and RPC message envelopes, which wrap one
+message in transit.
 _Avoid_: headers, metadata datoms
 
 **actor**:
 Who is accountable for a change: the signed-in identity authority checked before accepting it.
 Today a person or the server. An envelope field; the kind of identity is a fact
-about that identity, not part of the envelope.
+about that identity, not part of the envelope ([D191 actor keeps its word][D191]).
+_Like_: an audit log's actor, such as GitHub's `actor`, except that authority
+checked it before accepting the change.
+_Not_: the actor model's actor (vivief's, Akka's), which here is a workflow run
+([D136 The actor level is the durable workflow][D136]).
 _Avoid_: Actor as an entity or type name, author
 
 **Acceptance time**:
@@ -421,7 +446,11 @@ Where the content of a change came from: a person, a mail account, a website, a 
 Named in the envelope as a reference to an origin entity, apart from the actor
 who committed the change; an enriching change also names its inputs' origins
 ([D58' Envelope names the origin][D58'], [D115 Origin trust][D115]). Not the
-causing span, which is the step that caused a write.
+causing span, which is the step that caused a write
+([D189 Origin keeps its word][D189]).
+_Like_: the web's origin, except that ours names any source of content (a person,
+a mail account, a website, a model), is recorded on each changeset, and how far
+it is trusted can change.
 
 **Origin trust**:
 How far an organization trusts one source, so trust can be withdrawn from everything it produced at once.
@@ -471,8 +500,9 @@ Being signed in on one device.
 The tokens that prove a provider account recently authenticated at the identity
 provider, with their state: signed in, or sign-in needed. It keeps the server's
 statement about that account (its person and organizations), fetched at every
-sign-in. Signing out ends it. A device has at most one active. The only thing
-called a session.
+sign-in. Signing out ends it. A device has at most one active. A bare "session" is not
+ours ([D197 Evidence registry, and the code names follow in one issue][D197]).
+_Not_: Effect's `Chat` session, a conversation with a model, which we call a chat.
 _Avoid_: login state, identity
 
 **Provider account**:
@@ -582,10 +612,14 @@ _Avoid_: cache, local store
 A device's queue of changes waiting until the server has confirmed it got them.
 The device queue of changesets waiting to be acknowledged by the server.
 
-**Cursor**:
+**Sync cursor**:
 A bookmark: how far a device has caught up with the server's list of changes.
-The server sequence position a replica has confirmed; first sync keeps one
-cursor per organization. Not the trace cursor.
+The server sequence position a replica has confirmed; first sync keeps one sync
+cursor per organization. It is an acknowledged cursor, as the trace cursor is
+([D193 Sync cursor][D193]).
+_Like_: a database or paging cursor, except that it is stored and moves only when
+the device confirms what it received.
+_Avoid_: cursor (alone, our word until [D193][D193])
 
 **Acknowledged cursor**:
 A bookmark that moves only after the other side confirmed it received everything before it.
@@ -662,14 +696,23 @@ key.
 
 **Journal**:
 The record of what a workflow run has done so far, so it can carry on after a restart.
-The datoms recording an execution's activity results, deferred completions,
-clocks, leases and result.
+The datoms recording an execution's activity results, durable deferred
+completions, clocks, leases and result
+([D188 Journal and Envelope keep their words][D188]).
+_Like_: Temporal's event history, except that it is facts in the same log as the
+data, and it fences the run ([ADR-0036 The journal is the fence][ADR-0036]).
+_Not_: Effect's `EventJournal`, which stores a whole event log; the log is never
+called a journal.
 _Avoid_: history, event history
 
-**Deferred**:
+**Durable deferred**:
 A point where a workflow waits for something from outside, such as a person's approval.
 A durable wait completed from outside (a person, the server, a notification
-action).
+action): Effect's `DurableDeferred`; its completion is journaled under
+`viviefs/deferred/exit` ([D187 Durable deferred][D187]).
+_Not_: Effect's `Deferred`, an in-memory cell completed once and gone after a
+restart.
+_Avoid_: deferred (alone, our word until [D187][D187])
 
 **Durable clock**:
 A wait in a workflow that still ends on time after a restart.
@@ -684,21 +727,32 @@ Fenced, and renewed while active.
 The counter that tells an old lease from a newer one.
 The fencing counter on a lease; journal writes under a stale epoch are rejected.
 
-**Engine**:
+**Workflow engine**:
 The part that runs workflows and keeps their journals, the same on every device and on the server.
-Our datom-backed implementation of Effect's `WorkflowEngine`.
+Our datom-backed implementation of Effect's `WorkflowEngine`
+([ADR-0012 Durable execution over one datom-backed workflow engine][ADR-0012], [D186 Workflow engine and workflow runner][D186]).
+_Not_: a JavaScript engine such as Hermes, or a database engine.
+_Avoid_: engine (alone, our word until [D186][D186])
 
-**Worker**:
-The program on a device or on the server that runs workflows.
-The device or server process that runs workflow executions; Temporal vocabulary
-in [D2 Temporal model][D2], not a separate product.
+**Workflow runner**:
+A program on a device or on the server that runs the workflow engine.
+The process that hosts a workflow engine and runs workflow executions: today the
+app on each device and one on the server. Server scale-out is more workflow
+runners writing on each run's journal head
+([I8 Workflow engine scale-out and more workflow runners on the server][I8]).
+_Like_: Temporal's worker or an Effect Cluster runner, except that a device runs
+one too, and the journal, not a shard, fences it
+([ADR-0036 The journal is the fence][ADR-0036]).
+_Not_: Effect's `workers/Worker`, a worker thread such as the OPFS worker the web
+log store runs SQLite in.
+_Avoid_: worker (our word until [D186 Workflow engine and workflow runner][D186]), runner (alone)
 
 ## Tracing
 
 **Durable span**:
 One step of a workflow as it appears in a trace, built from the stored facts so it is never lost.
 Derived by the trace projector from journal facts: from its entity's start fact
-and end fact. A deferred has no start fact, so its span has zero length. Never
+and end fact. A durable deferred has no start fact, so its span has zero length. Never
 produced by a live tracer.
 _Avoid_: bracket facts, journal span
 
@@ -720,6 +774,7 @@ The step that caused a write, as named on the write's label.
 The span an envelope names as the cause: the caller's live span when an outside
 caller asked (start, approval, lease handoff), else the durable span of the
 fact's entity.
+_Not_: Effect's `Cause`, the full reason an effect failed.
 _Avoid_: envelope origin
 
 **Trace projector**:
@@ -834,7 +889,8 @@ _Avoid_: producer (alone), runner
 **File treatment**:
 For one source file, how verify shows that it works.
 The verify step that produces its evidence and the verdict applied to it; every
-production file has exactly one, with a written rationale, in the registry.
+production file has exactly one, with a written rationale, in the evidence
+registry.
 _Avoid_: treatment (alone), evidence owner, coverage owner
 
 **Verdict**:
@@ -857,15 +913,18 @@ _Like_: a test runner's suite, except that it checks one promise of a pattern
 and runs against every implementation of it.
 _Avoid_: conformance probe, test suite (a test file), host checks
 
-**Registry**:
+**Evidence registry**:
 The reviewed list of every source file and how it is checked.
 Every production file with its file treatment, rationale and suites; filesystem
-rules only discover files.
+rules only discover files
+([D197 Evidence registry, and the code names follow in one issue][D197]).
+_Not_: Effect's `AtomRegistry`, which runs atoms, and `EventLog`'s `Registry`.
+_Avoid_: registry (alone, our word until [D197][D197])
 
 **Evidence lockfile**:
 The saved record of exactly how much of each file the tests reach, so a drop is noticed.
 Each owning producer's exact per-file coverage, the providers' names and
-versions, the registry digest and the bundle-size references; written only by
+versions, the evidence registry digest and the bundle-size references; written only by
 `pnpm verify baseline`.
 _Avoid_: coverage baseline (as a target), ratchet
 
@@ -883,10 +942,12 @@ A stub, a failing test and a reference solution that passes in verify.
 
 [ADR-0002]: docs/adr/0002-purpose-scope-and-exemplar.md
 [ADR-0003]: docs/adr/0003-effect-v4-as-backbone.md
+[ADR-0012]: docs/adr/0012-datom-backed-workflow-engine.md
 [ADR-0032]: docs/adr/0032-what-viviefs-is-about.md
 [ADR-0033]: docs/adr/0033-the-presenter-pattern.md
 [ADR-0034]: docs/adr/0034-origin-trust.md
 [ADR-0035]: docs/adr/0035-accepting-a-change.md
+[ADR-0036]: docs/adr/0036-the-journal-is-the-fence.md
 [D102]: docs/plan/bootstrap/02-decision-log.md#d102
 [D103]: docs/plan/bootstrap/02-decision-log.md#d103
 [D104]: docs/plan/bootstrap/02-decision-log.md#d104
@@ -932,8 +993,19 @@ A stub, a failing test and a reference solution that passes in verify.
 [D177]: docs/plan/bootstrap/02-decision-log.md#d177
 [D178]: docs/plan/bootstrap/02-decision-log.md#d178
 [D181]: docs/plan/bootstrap/02-decision-log.md#d181
-[D2]: docs/plan/bootstrap/02-decision-log.md#d2
+[D186]: docs/plan/bootstrap/02-decision-log.md#d186
+[D187]: docs/plan/bootstrap/02-decision-log.md#d187
+[D188]: docs/plan/bootstrap/02-decision-log.md#d188
+[D189]: docs/plan/bootstrap/02-decision-log.md#d189
+[D190]: docs/plan/bootstrap/02-decision-log.md#d190
+[D191]: docs/plan/bootstrap/02-decision-log.md#d191
+[D192]: docs/plan/bootstrap/02-decision-log.md#d192
+[D193]: docs/plan/bootstrap/02-decision-log.md#d193
+[D194]: docs/plan/bootstrap/02-decision-log.md#d194
+[D196]: docs/plan/bootstrap/02-decision-log.md#d196
+[D197]: docs/plan/bootstrap/02-decision-log.md#d197
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
+[D52]: docs/plan/bootstrap/02-decision-log.md#d52
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
 [D58']: docs/plan/bootstrap/02-decision-log.md#d58p
 [D65']: docs/plan/bootstrap/02-decision-log.md#d65p
@@ -944,4 +1016,5 @@ A stub, a failing test and a reference solution that passes in verify.
 [D98]: docs/plan/bootstrap/02-decision-log.md#d98
 [D98']: docs/plan/bootstrap/02-decision-log.md#d98p
 [I60]: docs/issues/0060-server-independent-mode.md
+[I8]: docs/issues/0008-engine-scale-out.md
 [P04]: docs/plan/bootstrap/06-qualification-gates.md#p04

@@ -1,6 +1,6 @@
 /**
  * P09 sync contract. Effect RPC, append-and-acknowledge up, one
- * organization cursor stream down. Client and server are adapters;
+ * organization sync cursor stream down. Client and server are adapters;
  * this package is the shared core. P11 authenticates every RPC.
  */
 export {

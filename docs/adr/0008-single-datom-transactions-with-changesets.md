@@ -21,7 +21,7 @@ command, one actor, one trace).
 
 Each datom is its own transaction on the wire and in storage. Atomicity across
 several datoms comes from **changesets**. A changeset becomes visible when its
-commit datom arrives, carrying a manifest (count + hash of members, and file
+commit datom arrives, carrying a changeset manifest (count + hash of members, and file
 references). Conflicts are ordered by the commit `tx`. The commit records its
 basis; the server checks, per attribute policy, whether touched attributes
 changed since.
@@ -44,12 +44,12 @@ and `viviefs/changeset/abort` ([D44 Never rename, never migrate][D44]).
 ## Trade-offs
 
 Keeps the one-datom shorthand, adds atomic multi-attribute changes enforced
-once by the projector, and makes drafts native. The cost is manifest gating and
+once by the projector, and makes drafts native. The cost is changeset manifest gating and
 basis checks, which are subtle on long-lived open changesets.
 
 ## Failure-handling
 
-[P05 Changesets and projections][P05]: manifest gating, commit ordering, basis check per policy, `cs == tx`
+[P05 Changesets and projections][P05]: changeset manifest gating, commit ordering, basis check per policy, `cs == tx`
 shorthand, abort and expiry. Positive control: a changeset missing one member
 stays invisible; completing it makes all members visible at once.
 
@@ -64,7 +64,7 @@ always keyed by `cs`.
 
 2026-09-20. Ledger pass `2026-09-20T19-57-57.045Z-1dba2339`. Fourteen checks on
 sqlite-node, PGlite, iOS, Android and web. An incomplete changeset stayed
-invisible; completing the manifest made all members visible at once. `cs == tx`
+invisible; completing the changeset manifest made all members visible at once. `cs == tx`
 self-commits, abort, and 24h expiry held. Evidence:
 [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
 

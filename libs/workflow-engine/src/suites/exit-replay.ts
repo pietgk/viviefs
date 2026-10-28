@@ -104,7 +104,7 @@ export const typedFailuresSurviveAKill = (
     const executionId = yield* Exits.executionId(payload)
 
     // Session 1: run until the workflow waits on the gate, then drop the
-    // session: the in-memory engine state is gone, the journal stays.
+    // session: the in-memory workflow engine state is gone, the journal stays.
     yield* Effect.scoped(
       Effect.gen(function* () {
         const ctx = yield* Layer.build(session(openStore, clock))

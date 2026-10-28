@@ -1,13 +1,13 @@
 /**
  * What `execute` returns for a run it awaited (I74).
  *
- * A run that suspends reports `Suspended` as its result. When a deferred's
+ * A run that suspends reports `Suspended` as its result. When a durable deferred's
  * completion preempts it (Effect's `deferredDone`, which marks the instance
  * suspended and interrupts the run) after `Workflow.intoResult` has already
  * decided that result, Effect delivers the interrupt at the run's next
  * interruptible step, so the run exits interrupted instead. That depends on
  * scheduling, so the decision lives here, where unit tests cover every case,
- * rather than in the engine, whose coverage comes from the suites.
+ * rather than in the workflow engine, whose coverage comes from the suites.
  */
 import * as Cause from 'effect/Cause'
 import * as Exit from 'effect/Exit'

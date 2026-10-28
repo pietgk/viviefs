@@ -21,7 +21,7 @@ local-first privacy.
 ## Design
 
 Trace context (`traceId`, `spanId`, `sampled`) is stored in every changeset's
-envelope ([D58 Envelope per changeset][D58]). A trace projector reads the log from its own cursor and emits
+envelope ([D58 Envelope per changeset][D58]). A trace projector reads the log from its own trace cursor and emits
 spans with deterministic ids derived from `executionId + activity + attempt`.
 Replays emit nothing new for stored results; new attempts link to previous
 ones. Extending that scheme to changeset ids for command spans is new, not
@@ -30,7 +30,7 @@ grilled; keep it only if [P10 Trace projection][P10] needs command spans.
 Export through Effect's native OTLP exporter (`effect/observability`,
 JSON serialization, `fetch`). No `@opentelemetry/*` dependencies. Live
 `withSpan` / `Effect.fn` inside activities is parented to the durable spans.
-The tracing backend is never the store the engine reads from.
+The tracing backend is never the store the workflow engine reads from.
 
 Telemetry sink is a pattern with three implementations behind one OTLP/HTTP
 endpoint config: **motel** (default: local, no container, SQLite, agent
@@ -46,7 +46,7 @@ behind a contract so it can be swapped.
 ## Failure-handling
 
 [P03 OTLP and motel][P03]: a known span arrives in motel from the simulator; physical-device path
-documented (LAN binding or cursor catch-up). Positive control: wrong endpoint
+documented (LAN binding or trace cursor catch-up). Positive control: wrong endpoint
 produces no motel entry and no crash.
 
 [P10 Trace projection][P10]: crash-and-resume produces one trace with deterministic span ids, no
@@ -69,7 +69,7 @@ dependency.
 the iOS simulator and the Android emulator into motel 0.2.8. A
 wrong-endpoint export (`http://127.0.0.1:27687`) completed without a
 crash and left no motel row for that token. The physical-device path is
-documented as LAN binding (`MOTEL_OTEL_HOST=0.0.0.0`) or cursor catch-up
+documented as LAN binding (`MOTEL_OTEL_HOST=0.0.0.0`) or trace cursor catch-up
 ([P10 Trace projection][P10]). motel 0.2.8 does not start against Effect RC 116; the probe runs
 it from `vendor/motel` with Effect `4.0.0-beta.90` overrides. Evidence:
 [2026-09-20-p03.md](../evidence/2026-09-20-p03.md),
@@ -79,7 +79,7 @@ it from `vendor/motel` with Effect `4.0.0-beta.90` overrides. Evidence:
 clean tree (`4e880f3a`), re-run `2026-09-26T19-13-20.728Z-5a9f3d50` after
 the ledger fingerprint was widened. One crash-and-resume execution on sqlite-node and
 on PGlite: `step-one` killed after its body ran, a launch sweep resumed it,
-`fetch` retried, a caller completed a deferred, a durable clock fired. The
+`fetch` retried, a caller completed a durable deferred, a durable clock fired. The
 trace projector derived 7 durable spans in one trace, with entity-keyed ids
 that a fresh trace cursor derived again identically. `step-one` ran twice
 and has one span; `fetch #2` links `fetch #1`. A refused send kept the trace
@@ -93,7 +93,7 @@ one trace per execution, linked to the caller's span rather than nested in
 it; a pinned `viviefs/activity/started` start fact per attempt; the causing
 span rule for envelopes; live spans only in activity bodies; the projector
 posts OTLP/JSON itself instead of using the batching `OtlpTracer`;
-zero-length deferred spans; `sampled` recorded and not yet honoured. [P10 Trace projection][P10]
+zero-length durable deferred spans; `sampled` recorded and not yet honoured. [P10 Trace projection][P10]
 did not need command spans, so ids are not extended to changesets. Not
 measured: the projector on a device, `sampled`. Evidence:
 [2026-09-26-p10.md](../evidence/2026-09-26-p10.md).

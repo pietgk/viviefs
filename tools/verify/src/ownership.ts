@@ -1,6 +1,6 @@
 /**
  * verify static / ownership (ADR-0024, D76). Every Nx project declares a kind
- * tag, and every production file has exactly one registry entry whose shape
+ * tag, and every production file has exactly one evidence registry entry whose shape
  * its file treatment allows. Pure over injected data; `check-ownership.ts`
  * reads the repository and runs it.
  */

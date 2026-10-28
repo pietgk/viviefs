@@ -77,7 +77,7 @@ are journaled and replayed ([D2 Temporal model][D2], [P06 Workflow engine crash 
 now, never ruled out. Each item says what must stay possible, and every ADR says
 which out-of-scope items it makes harder ([I57 Out-of-scope items in an ADR's trade-offs][I57]). Some items can be qualified in
 the lab, for learning, without being production: several servers ([I58 Several servers in the lab][I58]) and
-engine scale-out ([I8 Engine scale-out and a multi-runner server][I8]). Client-server read as peer-to-peer with server-signed
+workflow engine scale-out ([I8 Workflow engine scale-out and more workflow runners on the server][I8]). Client-server read as peer-to-peer with server-signed
 nodes is the case to protect ([I48 The server-independent goal, and what an app is to a device and a node][I48]). The list itself is 01-vision's, six items each
 saying what must stay possible and lab or not yet ([D158 The out-of-scope list, item by item][D158]); a consumer app's
 product choices are not on it, because they stay with that app for good ([D159 Product choices stay with the consumer app][D159], [I59 Bring ADR-0002 and the vision page in line with I47][I59]).
@@ -104,8 +104,8 @@ sub-types). The paragraphs after the table are the detail.
 | 5 | Read model and projector | What the facts mean is worked out from the log and can be thrown away and rebuilt. | - | [D37 Log store tables][D37], [D99 Facts kept, meaning derived][D99] | changesets | [P05 Changesets and projections][P05] |
 | 6 | Presenter, frame and surface | A screen, or a speaker, asks for data and keeps receiving the latest answer. | `Projection`, its read side; `Surface` | [D107 The Presenter pattern][D107]-[D114 Partial sync on demand][D114], [D134 Presenting in any modality][D134], [ADR-0033 The Presenter pattern][ADR-0033] | Presenter | [P05 Changesets and projections][P05], [P08 UI three-way prototype][P08] in part; the Presenter gate ([I62 The Presenter conformance gate][I62]) |
 | 7 | Origin and origin trust | Every batch says where it came from, and how far we trust that source can change at once. | `Projection`, its trust scope | [D58' Envelope names the origin][D58'], [D115 Origin trust][D115]-[D117 Trust strategies as commit paths][D117], [ADR-0034 Origin trust][ADR-0034] | origin trust | named when built ([I64 Build origin trust][I64]) |
-| 8 | Durable workflow and its journal | Work that must not lose progress writes down each step, so it resumes where it stopped. | `effectHandler`, the actor | [ADR-0012 Durable execution over one datom-backed engine][ADR-0012], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [ADR-0036 The journal is the fence][ADR-0036] | durable workflow | [P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07]; the fence: [P06][P06], [P09 Sync][P09] again ([I80 Build the journal fence][I80]) |
-| 9 | Sync | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | Sync Contract | [ADR-0017 Sync: outbox and cursor stream over Effect RPC][ADR-0017], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'] | sync | [P09 Sync][P09]; conflicts: [P05 Changesets and projections][P05], [P09][P09] again ([I81 Build conflicts decided at accept][I81]) |
+| 8 | Durable workflow and its journal | Work that must not lose progress writes down each step, so it resumes where it stopped. | `effectHandler`, the actor | [ADR-0012 Durable execution over one datom-backed workflow engine][ADR-0012], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [ADR-0036 The journal is the fence][ADR-0036] | durable workflow | [P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07]; the fence: [P06][P06], [P09 Sync][P09] again ([I80 Build the journal fence][I80]) |
+| 9 | Sync | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | Sync Contract | [ADR-0017 Sync: outbox and sync cursor stream over Effect RPC][ADR-0017], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'] | sync | [P09 Sync][P09]; conflicts: [P05 Changesets and projections][P05], [P09][P09] again ([I81 Build conflicts decided at accept][I81]) |
 | 10 | Identity and access | Every change is accountable to someone, and one decision says what they may write and receive. | `Projection`, its access scope | [ADR-0022 Identity and organization isolation][ADR-0022], [D150 Access around sync and commands][D150]-[D154 Whoever grants is the actor][D154], [ADR-0037 Access][ADR-0037] | identity, access | [P11 Identity][P11]; the contract: [P11][P11] again ([I84 Build the access pattern][I84]) |
 | 11 | Encryption that narrows | Locking a value limits who can open it, and never gives anyone access. | `Projection`, its encryption scope | [ADR-0023 Data at rest and crypto-shredding][ADR-0023], [D149 Encryption levels][D149] | encrypted store | [P15 Encrypted store][P15], [P16 Crypto-shredding][P16] |
 | 12 | Tamper-evident history | Each organization's history is a chain in which any change to the past shows. | Verified segments | [D155 A hash chain per organization][D155], [D156 Levels of proof of authorship][D156], [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] | log store | [P09 Sync][P09] again ([I85 Build the hash chain][I85]) |
@@ -198,23 +198,23 @@ the durable workflow: each execution is one actor, its state the journal, its
 mailbox the outside inputs, one writer at a time, restarted by resuming from
 its journal. There is no actor runtime and no supervision tree: work that must
 not lose progress is a workflow, anything else rebuilds from its cursor. There
-is no event bus: Reactivity in process, the cursor stream between `node`s,
-push only a hint. Commands and the engine are the handler runtime; a model
+is no event bus: Reactivity in process, the sync cursor stream between `node`s,
+push only a hint. Commands and the workflow engine are the handler runtime; a model
 call is an activity. An entity is a thing with an identity that facts are
 about, and some entity types act; the execution is one. The envelope's actor
 is the identity authority checked; the model is an origin. A run's journal is
-its own fence ([ADR-0036 The journal is the fence][ADR-0036]), so one engine, one journal and one fence serve
+its own fence ([ADR-0036 The journal is the fence][ADR-0036]), so one workflow engine, one journal and one fence serve
 device and server, and Effect Cluster is not needed. Shown by [P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07] and
 [P09 Sync][P09]; the fence is to be shown by [P06][P06] and [P09][P09] again.
 
 **Sync and conflict ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [I53 Sync and conflict][I53]).** Sync is in the foundation on
 purpose: the first app runs on devices offline for days with a server and people who
-switch devices, and the engine, domain data and sync share one log; vivief made
+switch devices, and the workflow engine, domain data and sync share one log; vivief made
 sync possible from its first phase too and deferred only the build. vivief's
 Sync Contract is three parts ViViEfs has: the conflict policy, the organization
 as scope with partial sync on demand later, and the journal fence as the claim.
 The `node` holding authority decides a human conflict when it accepts a change,
-against the cursor its writer had pulled, and writes the conflict as a fact a
+against the sync cursor its writer had pulled, and writes the conflict as a fact a
 command resolves. An attribute holds one value; a set is entities, one per
 member. Text has no CRDT until two people type in one text at once. One
 checkpoint is the one place trust is enforced. User content never lives only in

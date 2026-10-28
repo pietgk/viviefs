@@ -1,8 +1,8 @@
 /**
  * Trace projector (D32, P10). Reads the log from its trace cursor, derives
  * durable spans from the end facts it finds, sends them to the trace sink,
- * and advances the cursor only after the sink acknowledged (acknowledged
- * cursor).
+ * and advances the trace cursor only after the sink acknowledged (an
+ * acknowledged cursor).
  *
  * The trace cursor is the log store's acknowledged cursor for the consumer
  * `trace/<sink>`, registered when the projector starts. Compaction never
@@ -11,7 +11,7 @@
  * instead of losing spans. A disabled projector is still registered, so
  * enabling it later exports the whole backlog.
  *
- * Delivery is at least once: a kill between `send` and the cursor write
+ * Delivery is at least once: a kill between `send` and the trace cursor write
  * sends the same spans again with the same entity-keyed ids.
  */
 import { LogStore, type Cursor, type EnvelopeType, type StoredDatomType } from '@viviefs/datom'
@@ -37,7 +37,7 @@ export type ExportResult = {
 export class TraceProjector extends Context.Service<
   TraceProjector,
   {
-    /** One tick: read one batch from the cursor, derive, send, advance. */
+    /** One tick: read one batch from the trace cursor, derive, send, advance. */
     readonly exportOnce: Effect.Effect<ExportResult, SinkRejected | SqlError>
     readonly cursor: Effect.Effect<Cursor, SqlError>
   }

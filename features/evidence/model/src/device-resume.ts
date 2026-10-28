@@ -10,7 +10,7 @@ import * as WorkflowEngine from 'effect/workflow/WorkflowEngine'
 
 /**
  * Evidence-collection device-resume exemplar (D23, D24). Upload is a
- * retryable activity; reviewer approval is a deferred. Parking at a
+ * retryable activity; reviewer approval is a durable deferred. Parking at a
  * boundary is the app's UploadWork implementation, not this definition.
  */
 export const Approval = DurableDeferred.make('approval')

@@ -154,7 +154,7 @@ export const PutBlob = Rpc.make('PutBlob', {
   error: Schema.Union([BlobHashMismatch, MembershipMissing]),
 })
 
-/** A member completes a deferred in their organization (D40, P11 Q7). */
+/** A member completes a durable deferred in their organization (D40, P11 Q7). */
 export const CompleteDeferred = Rpc.make('CompleteDeferred', {
   payload: {
     org: Schema.String,

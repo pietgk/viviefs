@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I91: Effect's names against ours (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-quote { border-left: 3px solid var(--color-base-content); border-left-color: color-mix(in oklab, var(--color-base-content) 30%, transparent); padding-left: 0.9rem; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .mermaid { background: var(--color-base-200); border-radius: 0.5rem; padding: 1rem; }
+  del { opacity: 0.6; }
+  ins { text-decoration: none; background: color-mix(in oklab, var(--color-success) 22%, transparent); padding: 0 0.15rem; border-radius: 0.2rem; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 3, Vocabulary - I91</span>
+    <span class="badge badge-outline">2026-10-28, rounds 1-2 answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Effect's names against ours</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0091-effects-names-against-ours.md">I91 Effect's names against ours</a> settles every clash <a class="cr-link" href="../issues/0078-research-effect-vocabulary-against-ours.md">I78 Research: Effect's vocabulary against ours</a> found between Effect's names and ours, and the six platform clashes <a class="cr-link" href="../issues/0089-how-a-word-is-chosen-and-written.md">I89 How a word is chosen and written</a>'s sweep added. Each word gets <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d170">D170 One word only where it matches</a>'s test: if our sense and the other project's share their core, the bare word stays with a <code class="cr-inline">_Like_</code> line; if not, a compound, or the bare word with a <code class="cr-inline">_Not_</code> line, weighed and recorded (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d174">D174 Like, Not and Avoid lines</a>). A compound is written whole every time (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d172">D172 The compound, every time</a>).</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 1, Q1-Q12 all A (2026-10-28): Workflow engine and Workflow runner, Worker retired; Durable deferred; Journal and Envelope keep their words with their lines; Origin, Intent and actor keep theirs with <code class="cr-inline">_Like_</code> lines; Changeset manifest; Sync cursor; Tool is D102's app; "prompt" is not a term; entity type and entity id in Effect's sense; the small marks as section 7's table. Round 2, Q13-Q15 all A: one issue for the code names and P17's name (I99), the retire checks and hand-overs as written. Recorded as D186-D197; see <a class="cr-link" href="../issues/0091-effects-names-against-ours.md">I91's Answer</a>.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in seven lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li>Decision, Command and "decide" were settled by <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d169">D169 A command decides</a>; Effects by <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d168">D168</a>. They are not asked again (section 1).</li>
+      <li>Twelve words are left, plus a handful of small marks. Section 2 runs the test on each, with counts.</li>
+      <li>Durable execution has the most at stake: Engine and Worker become <b>Workflow engine</b> and <b>Workflow runner</b>, Deferred becomes <b>Durable deferred</b>, Journal keeps its word (section 3).</li>
+      <li>Origin, Intent and actor share their core with the web's origin, Android's <code class="cr-inline">Intent</code> and an audit log's actor: the bare word stays with a <code class="cr-inline">_Like_</code> line (section 4).</li>
+      <li>Manifest and Cursor become <b>Changeset manifest</b> and <b>Sync cursor</b>: the app shell needs the platforms' manifests, and "cursor" already means two of ours and an editor (section 5).</li>
+      <li>Tool keeps the word for <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d102">D102 Tools are apps</a>'s app, with Effect's written "a model's tool"; "prompt" is not a term (section 6).</li>
+      <li>Round 1 (section 8) asks twelve questions. Round 2 will settle what follows from them: code identifiers, the retire checks, and the sentences each answer rewrites.</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. Already settled, not asked again</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>Where settled</th><th>What the glossary says now</th></tr></thead>
+    <tbody>
+      <tr><td>Decision</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d169">D169 A command decides</a></td><td><code class="cr-inline">_Not_</code>: Effect's <code class="cr-inline">Decision</code>, a model's answer about one input: an enrichment, with the model as origin.</td></tr>
+      <tr><td>Command, "decide"</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d169">D169 A command decides</a></td><td><code class="cr-inline">_Not_</code>: Effect's <code class="cr-inline">DecisionModel.decide</code>, nor a command-line command (<code class="cr-inline">effect/cli</code>'s <code class="cr-inline">Command</code>).</td></tr>
+      <tr><td>Effect, effect, Effects</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d163">D163</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d164">D164</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d168">D168</a></td><td>Two entries told apart by case; Vision - View - Effects is one entry.</td></tr>
+      <tr><td>Effect handler, handler</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d165">D165 The effect handler</a></td><td>A compound; "handler" alone keeps Effect's meaning.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="opacity-80">vivief has no stake in this ticket's words beyond actor, which <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d136">D136 The actor level is the durable workflow</a> already disposed of (vivief's actor is a workflow run here). Nothing of vivief's is asked again.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. Every word against the test</h2>
+  <p>"Core shared?" is <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d137">D137 One meaning of entity</a>'s test. "Uses" counts whole-word matches in the living documents (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d173">D173</a>'s list: glossary, AGENTS.md, ADRs, plan pages without the decision log and the inventory rows, guides, open issues), 2026-10-28 at <code class="cr-inline">1d846dfe5</code>; the count includes other senses.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>Ours today</th><th>The other senses</th><th>Core shared?</th><th>Uses</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr><td>Engine</td><td>The part that runs workflows and keeps their journals</td><td>A JavaScript engine (Hermes, which React Native runs on); a database engine (SQLite, Postgres)</td><td>No</td><td>323 bare, 55 "workflow engine"</td><td><b>Workflow engine</b>, Effect's <code class="cr-inline">WorkflowEngine</code></td></tr>
+      <tr><td>Worker, runner</td><td>Worker: the program that runs workflows (Temporal's word, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d2">D2</a>); runner in D14', D39', ADR-0036</td><td>Effect's <code class="cr-inline">workers/Worker</code> (a worker thread; our OPFS worker); Effect Cluster's <code class="cr-inline">Runner</code>; a test runner</td><td>Worker: no. Runner: with Cluster's, yes</td><td>worker 62, runner 58</td><td><b>Workflow runner</b>; Worker retired</td></tr>
+      <tr><td>Deferred</td><td>A durable wait completed from outside</td><td>Effect's <code class="cr-inline">Deferred</code> (in memory, gone on restart); plain English (postponed)</td><td>No; Effect's <code class="cr-inline">DurableDeferred</code> is ours</td><td>188 (about 70 ours)</td><td><b>Durable deferred</b>, as Durable clock</td></tr>
+      <tr><td>Journal</td><td>One workflow run's record, its fence</td><td>Effect's <code class="cr-inline">EventJournal</code> (a whole event log's store); <code class="cr-inline">Effect.tx</code>'s journal (internal)</td><td>Partly: both are kept for replay; ours is one run's, never the log</td><td>275</td><td>Keep, <code class="cr-inline">_Like_</code> Temporal's event history, <code class="cr-inline">_Not_</code> <code class="cr-inline">EventJournal</code></td></tr>
+      <tr><td>Envelope</td><td>The stored label of a changeset</td><td>Effect's <code class="cr-inline">cluster/Envelope</code>, <code class="cr-inline">Message</code>'s envelopes, <code class="cr-inline">RpcMessage</code>: a transport wrapper for one message</td><td>No: ours holds no datoms and is kept for good</td><td>156</td><td>Keep, <code class="cr-inline">_Not_</code> line (the name is in the sync RPC, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d44p">D44'</a>)</td></tr>
+      <tr><td>Origin</td><td>Where a change's content came from; trust belongs to it</td><td>The web's origin (scheme, host, port), the browser's security boundary</td><td><b>Yes</b>: provenance that trust is decided by</td><td>155 (44 "origin trust")</td><td>Keep, <code class="cr-inline">_Like_</code> line</td></tr>
+      <tr><td>Intent</td><td>What someone asks to happen, before it is checked</td><td>Android's <code class="cr-inline">Intent</code>: "an abstract description of an operation to be performed"</td><td><b>Yes</b>: a request for something to happen, handled elsewhere</td><td>see <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d167">D167</a></td><td>Keep, <code class="cr-inline">_Like_</code> line</td></tr>
+      <tr><td>actor</td><td>The envelope field: who is accountable for a change</td><td>The actor model (Akka, Erlang, vivief's actor); an audit log's actor (GitHub's <code class="cr-inline">actor</code>)</td><td>With the audit log's, yes; with the actor model's, no</td><td>247</td><td>Keep, <code class="cr-inline">_Like_</code> and <code class="cr-inline">_Not_</code> lines</td></tr>
+      <tr><td>Manifest</td><td>The count and hash of a changeset's members</td><td>Expo's app manifest and update manifest; the web app manifest; a package manifest</td><td>With Expo's update manifest, partly; with the web app manifest, no</td><td>38</td><td><b>Changeset manifest</b></td></tr>
+      <tr><td>Cursor</td><td>How far a device has caught up (sync)</td><td>Our own trace cursor; a database cursor; Cursor the editor (in AGENTS.md and two ADRs)</td><td>With a database or paging cursor, yes; but two of ours share the bare word</td><td>193 (16 trace, 23 acknowledged)</td><td><b>Sync cursor</b></td></tr>
+      <tr><td>Tool</td><td>No entry yet; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d102">D102</a>: an app for those who build apps</td><td>Effect's <code class="cr-inline">ai/Tool</code>: an operation a model may call</td><td>No</td><td>268 (108 are <code class="cr-inline">tools/</code> paths)</td><td>New entry Tool, <code class="cr-inline">_Not_</code> Effect's</td></tr>
+      <tr><td>Prompt</td><td>Not a term; one of <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a>'s kinds of intent</td><td>Effect's <code class="cr-inline">ai/Prompt</code> (all messages a model receives), an MCP prompt, <code class="cr-inline">cli/Prompt</code></td><td>No: Effect alone has three</td><td>55, almost all plain English</td><td>Not a term; I92 names the kind of intent</td></tr>
+      <tr><td>Entity type, entity id</td><td>The parts of an entity, in prose</td><td>Effect Cluster's <code class="cr-inline">EntityType</code>, <code class="cr-inline">EntityId</code></td><td><b>Yes</b></td><td>-</td><td>Used in Effect's sense, no entries; no word yet for an entity type that acts</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. Durable execution: engine, runner, deferred, journal</h2>
+  <p>What runs where, in the words recommended. The bare words are left to the other projects: an OPFS worker, a Cluster runner, a JavaScript engine, Effect's in-memory <code class="cr-inline">Deferred</code>.</p>
+  <pre class="mermaid">
+flowchart LR
+  subgraph dev["A device (phone, browser)"]
+    wr1["workflow runner: the app"] --> we1["workflow engine"]
+    opfs["OPFS worker (a web worker thread)"]
+    hermes["JavaScript engine (Hermes)"]
+  end
+  subgraph srv["The server"]
+    wr2["workflow runner"] --> we2["workflow engine"]
+    wr3["more workflow runners, I8"] -.-> we2
+  end
+  we1 --> j["journal: one run's facts in the log"]
+  we2 --> j
+  j --> dd["durable deferred: waits for a person"]
+  j --> dc["durable clock: waits for a time"]
+  cl["Effect Cluster runner: not used, D39'"]
+  </pre>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">The entries, recommended</h3>
+<pre class="cr-code">**Workflow engine**:
+The part that runs workflows and keeps their journals, the same on every device and on the server.
+Our datom-backed implementation of Effect's `WorkflowEngine`
+([ADR-0012]).
+_Not_: a JavaScript engine such as Hermes, or a database engine.
+_Avoid_: engine (alone, our word until D18x)
+
+**Workflow runner**:
+A program on a device or on the server that runs the workflow engine.
+The process that hosts a workflow engine and runs workflow executions;
+today the app on each device and one on the server. Server scale-out
+is more workflow runners writing on each run's journal head ([I8]).
+_Like_: Temporal's worker or an Effect Cluster runner, except that a
+device runs one too and the journal, not a shard, fences it
+([ADR-0036]).
+_Not_: Effect's `workers/Worker`, a worker thread such as the OPFS
+worker the web log store runs SQLite in.
+_Avoid_: worker (our word until D18x), runner (alone)
+
+**Durable deferred**:
+A point where a workflow waits for something from outside, such as a person's approval.
+A durable wait completed from outside (a person, the server, a
+notification action): Effect's `DurableDeferred`; its completion is
+journaled under `viviefs/deferred/exit`.
+_Not_: Effect's `Deferred`, an in-memory cell completed once and
+gone after a restart.
+_Avoid_: deferred (alone, our word until D18x)
+
+**Journal**:
+The record of what a workflow run has done so far, so it can carry on after a restart.
+(precise part as today)
+_Like_: Temporal's event history, except that it is facts in the same
+log as the data, and it fences the run ([ADR-0036]).
+_Not_: Effect's `EventJournal`, which stores a whole event log; the
+log is never called a journal.
+_Avoid_: history, event history</pre>
+    </div></div>
+    <div class="space-y-4">
+      <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+        <h3 class="font-semibold">Worked examples, before and after</h3>
+        <p class="cr-quote">ADR-0036: "assumes <del>runners</del> <ins>Cluster runners</ins> that are always reachable. A device cannot be a <del>runner</del> <ins>Cluster runner</ins>, so ..."</p>
+        <p class="cr-quote">ADR-0036: "A <del>server runner</del> <ins>workflow runner on the server</ins> takes over a run whose head has not moved ..."</p>
+        <p class="cr-quote">Vision page: "Durable execution in the Temporal sense: workflows, <del>workers</del> <ins>workflow runners</ins>, retryable activities ..."</p>
+        <p class="cr-quote">I8's title: "<del>Engine</del> <ins>Workflow engine</ins> scale-out and a multi-runner server" (pnpm refs fix then rewrites every reference).</p>
+        <p class="cr-quote">Glossary, Journal: "The datoms recording an execution's activity results, <del>deferred completions</del> <ins>durable deferred completions</ins>, clocks, leases and result."</p>
+      </div></div>
+      <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+        <h3 class="font-semibold">Why not the alternatives</h3>
+        <ul class="list-disc pl-6 space-y-1">
+          <li><b>Engine with a <code class="cr-inline">_Not_</code> line</b>: 323 bare uses would stay short, but "the engine" in a React Native repo also reads as Hermes, and Effect already has the compound we mean (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135 Effect's names first</a>). The lib is already <code class="cr-inline">libs/workflow-engine</code> and the gates say "Workflow engine crash matrix".</li>
+          <li><b>Worker kept as Temporal's word</b>: our own code already uses worker for the OPFS web worker, and Effect's <code class="cr-inline">Worker</code> is a thread. Temporal's worker is the only one that means ours, and it appears in three lists.</li>
+          <li><b>Workflow engine only, no runner term</b>: possible; prose would say "a server running the workflow engine". But I8, ADR-0036 and the vision page speak of several runners on one journal head, and need a noun.</li>
+          <li><b>Deferred with a <code class="cr-inline">_Not_</code> line</b>: Effect names ours <code class="cr-inline">DurableDeferred</code> and its own <code class="cr-inline">Deferred</code> is used in our code's upstream issue; Durable clock already follows <code class="cr-inline">DurableClock</code>. The pinned <code class="cr-inline">viviefs/deferred/exit</code> stays (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d44">D44</a>).</li>
+          <li><b>Journal as a compound</b> ("run journal"): Effect's <code class="cr-inline">workflow</code> module never says journal, and ADR-0036's title, D14' and D39' all use it; the risk runs the other way (calling the log a journal), which the <code class="cr-inline">_Not_</code> line names.</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. Origin, Intent, actor, Envelope: the bare word stays</h2>
+  <p>Three platform words share their core with ours, so <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d170">D170</a> keeps the bare word and asks only for a <code class="cr-inline">_Like_</code> line. Envelope does not share its core, but its name is in the sync RPC, which never renames.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Origin: the web's origin is the same idea, narrower</h3>
+      <p>A browser decides what a script may do by where it came from: its origin, scheme, host and port. We decide how far to trust a change's content by where it came from: its origin (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d115">D115 Origin trust</a>). Provenance as the basis for trust is the shared core.</p>
+<pre class="cr-code">_Like_: the web's origin, except that ours names any source
+of content (a person, a mail account, a website, a model), is
+recorded on each changeset, and how far it is trusted can change.</pre>
+      <p class="text-sm opacity-80">A website as an origin is then the web's origin in our sense too, which is the example that helps most.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Intent: Android's <code class="cr-inline">Intent</code> is the same idea</h3>
+      <p>Android: an <code class="cr-inline">Intent</code> is "an abstract description of an operation to be performed", which another component carries out. Ours: what someone asks to happen, which a command checks (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d167">D167</a>).</p>
+<pre class="cr-code">_Like_: Android's `Intent`, except that ours comes from a person,
+an agent or an outside source, and a command checks it before
+anything is written.</pre>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">actor: an audit log's actor, not the actor model's</h3>
+      <p>GitHub's <code class="cr-inline">actor</code> and audit logs generally mean who did it: our sense. The actor model's actor (Akka, Erlang, vivief) is a process with a mailbox, which <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d136">D136</a> mapped to a workflow run. No library our code uses names an actor (effect-machine has none; Effect's source mentions the word three times in prose).</p>
+<pre class="cr-code">_Like_: an audit log's actor, such as GitHub's `actor`, except
+that authority checked it before accepting the change.
+_Not_: the actor model's actor (vivief's, Akka's), which here is
+a workflow run ([D136]).
+_Avoid_: Actor as an entity or type name, author</pre>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Envelope: a different core, a pinned name</h3>
+      <p>Effect uses envelope for a transport wrapper in three places; it carries the message and lives for one delivery. Ours carries no datoms, is stored per changeset for good, and is named in the sync RPC (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d44p">D44'</a>), so a compound would split prose from code for good. Both carry the same trace fields, which is why the mark matters.</p>
+<pre class="cr-code">_Not_: Effect's `Envelope` (Cluster) and RPC message envelopes,
+which wrap one message in transit.</pre>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. Manifest and Cursor: compounds</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Changeset manifest</h3>
+      <p>Ours is only ever a changeset's. The app shell (<a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p12">P12 UI on every platform</a>) is next in the Schedule, and it will need the web app manifest and Expo's manifests in their own sense. Expo's update manifest shares our core (a list of the parts and their hashes, applied only when all are there); the web app manifest does not (an app's name and icons).</p>
+<pre class="cr-code">**Changeset manifest**:
+The packing list of a changeset: how many facts and files it has, so nothing is applied half.
+The count and hash of its members (and file references) that must
+be satisfied before it is applied.
+_Like_: Expo's update manifest, except that it lists one changeset's
+facts and files, not an app update's assets.
+_Not_: the web app manifest, which names an installable web app.
+_Avoid_: manifest (alone, our word until D18x)</pre>
+      <p class="cr-quote">ADR-0008: "commit datom arrives, carrying <del>a manifest</del> <ins>its changeset manifest</ins> (count + hash of members ..."</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Sync cursor</h3>
+      <p>The bare word means two of ours today (the entry says "Not the trace cursor"), and the docs site links "Cursor" the editor to our entry (<a class="cr-link" href="../issues/0026-glossary-links-on-words-that-are-not-our-terms.md">I26</a>'s observed case). A compound joins the family that already exists: sync cursor, trace cursor, and acknowledged cursor for what both are.</p>
+<pre class="cr-code">**Sync cursor**:
+A bookmark: how far a device has caught up with the server's list of changes.
+The server sequence position a replica has confirmed; first sync
+keeps one sync cursor per organization. It is an acknowledged
+cursor, as the trace cursor is.
+_Like_: a database or paging cursor, except that it is stored and
+moves only when the device confirms what it received.
+_Avoid_: cursor (alone, our word until D18x)</pre>
+      <p class="cr-quote">Start here, Sync: "[Outbox], [<del>Cursor</del> <ins>Sync cursor</ins>], [Conflict datom]"</p>
+    </div></div>
+  </div>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">The bare word with marks instead</h3>
+    <p><b>Manifest</b>: 38 uses, all changeset ones; a <code class="cr-inline">_Like_</code> and a <code class="cr-inline">_Not_</code> line would do today, until the app shell's pages say "manifest" in Expo's sense next to ours. <b>Cursor</b>: a <code class="cr-inline">_Like_</code> line and the heading in lower case ("cursor", as "actor" and "effect" are) would stop the editor's link, but would leave our two cursors on one bare word.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">6. Tool and prompt</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Tool: D102's app keeps the word</h3>
+      <p>Plain English "tool" (something you use to do work) is D102's sense; Effect's <code class="cr-inline">Tool</code> is a narrow technical one, and the code imports nothing from <code class="cr-inline">effect/ai</code>. <code class="cr-inline">tools/</code> is a project kind (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d52">D52</a>), and <code class="cr-inline">verify</code> and <code class="cr-inline">qualify</code> are called tools throughout. Effect's sense is written as a compound: "a model's tool".</p>
+<pre class="cr-code">**Tool**:
+An app for the people and agents who build apps, such as the checks run before every merge.
+An app whose users are the people and agents building apps, often
+run from the command line or in CI: `verify`, `qualify`, the
+generators, `exercise` ([D102]). It lives in `tools/`, a project
+kind no product app depends on ([D52]); it is an app but not a
+`node` ([D103]).
+_Not_: Effect's `Tool`, an operation a model may call, written "a
+model's tool"; `verify` offered to an agent over MCP is both.</pre>
+      <p class="text-sm opacity-80">D134's "an agent reads a frame through a tool" is a decision row and stays as written; no living document repeats it.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Prompt: not a term</h3>
+      <p>Effect itself has three prompts: <code class="cr-inline">ai/Prompt</code> (every message a model receives: system, history, tool results), an MCP prompt (a named template a server offers) and <code class="cr-inline">cli/Prompt</code> (a terminal question). D132's "a prompt" is a person's request to an agent, one user message inside Effect's <code class="cr-inline">Prompt</code>. Every living use is plain English (a hook "on every prompt", OIDC's <code class="cr-inline">prompt=login</code>).</p>
+      <p>Recommended: bare "prompt" never becomes a term; <a class="cr-link" href="../issues/0092-map-2s-new-words.md">I92 Map 2's new words</a>, which names the kinds of intent, names this one with that constraint (for example "a request to an agent").</p>
+    </div></div>
+  </div>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Tool the other way round</h3>
+    <p>Give Effect's sense the bare word and D102's a compound ("builder tool"). Agents and their docs say tool for a model's tool all day, and map 6 brings tool calls into the journal. Cost: <code class="cr-inline">tools/</code> and the project kind keep the old word in every path, and plain English already says tool for <code class="cr-inline">verify</code>.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">7. Entity's wording and the small marks</h2>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Entity type, entity id, and an entity type that acts</h3>
+    <p>Effect Cluster already splits an entity into <code class="cr-inline">EntityType</code> ("a kind of entity") and <code class="cr-inline">EntityId</code> ("one entity instance within an entity type"): the same parts as ours, so prose uses both words in Effect's sense with no entries of their own; Entity's precise part says "an entity type and an entity id". Effect has no word for an entity type that acts, since every Cluster <code class="cr-inline">Entity</code> acts; ours has one kind that acts, the workflow run (an execution). Recommended: no word until a second kind acts; "a workflow run" says it.</p>
+  </div></div>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>The other sense</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr><td>Service ("tag")</td><td>Effect 4's <code class="cr-inline">Context</code> says key, never tag</td><td>Service's entry: "In Effect it is a <del>tag</del> <ins>key (<code class="cr-inline">Context.Service</code>)</ins> with an interface". No line: same meaning.</td></tr>
+      <tr><td>Registry</td><td>Effect's <code class="cr-inline">AtomRegistry</code>, which our IntentComposer code uses, and <code class="cr-inline">EventLog</code>'s <code class="cr-inline">Registry</code></td><td><b>Evidence registry</b>, the compound, as its file <code class="cr-inline">evidence-registry.ts</code> and its neighbour Evidence lockfile; <code class="cr-inline">_Avoid_</code>: registry (alone).</td></tr>
+      <tr><td>session</td><td>Effect's <code class="cr-inline">Chat</code>: "stateful conversation sessions"</td><td>Sign-in session: "The only thing called a session" becomes <code class="cr-inline">_Not_</code>: Effect's <code class="cr-inline">Chat</code> session, a conversation with a model, which we call a chat.</td></tr>
+      <tr><td><code class="cr-inline">tx</code>, transaction</td><td><code class="cr-inline">Effect.tx</code> and <code class="cr-inline">TxRef</code>; a SQL transaction (which our log store uses)</td><td>Datom's precise part: "transaction id" gains "(its HLC time; not <code class="cr-inline">Effect.tx</code>, nor a database transaction)". <code class="cr-inline">tx</code> is pinned and not a term.</td></tr>
+      <tr><td>cause</td><td>Effect's <code class="cr-inline">Cause</code>: the full reason an effect failed</td><td>Causing span gains <code class="cr-inline">_Not_</code>: Effect's <code class="cr-inline">Cause</code>, the reason an effect failed.</td></tr>
+      <tr><td>model</td><td><code class="cr-inline">ai/Model</code> (an AI model: ours too), <code class="cr-inline">schema/Model</code></td><td>No line: "model" alone is an AI model in plain English and in Effect; Read model is already two words.</td></tr>
+      <tr><td>compaction, drain, scope</td><td><code class="cr-inline">EventLog</code>'s <code class="cr-inline">groupCompaction</code>, <code class="cr-inline">Stream.drain</code>, <code class="cr-inline">Scope</code> (a lifetime)</td><td>No entry and no line: none is a term (Drain before close is already a compound). If a range of data ever needs a name, not "scope". Left to plain English and <a class="cr-link" href="../issues/0094-words-in-another-projects-sense.md">I94</a>'s mark.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">8. Questions, round 1 (answered: all A)</h2>
+  <p class="opacity-80">Each is independent of the others. Round 2 follows from the answers: which code identifiers become issues, the three retire checks per retired word (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d173">D173</a>), and the living sentences each answer rewrites.</p>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 Engine, worker, runner')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. Engine, Worker and runner</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: Workflow engine and Workflow runner, both compounds written every time; Worker retired; bare engine, worker and runner left to the other projects"> <span><b>A. Workflow engine and Workflow runner</b> (recommended), the entries in section 3. Worker is retired; the bare words go to Hermes, the OPFS worker, Cluster and test runners.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: Workflow engine only; Worker retired with no runner term"> <span><b>B. Workflow engine only</b>; Worker retired, and prose says "a server running the workflow engine".</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: Engine and Worker keep their bare words, each with a _Not_ line"> <span><b>C. Bare words with <code class="cr-inline">_Not_</code> lines.</b></span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 Deferred')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. Deferred</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: Durable deferred, the compound, after DurableDeferred; bare deferred left to Effect's Deferred and plain English; viviefs/deferred/exit stays"> <span><b>A. Durable deferred</b> (recommended), as Durable clock follows <code class="cr-inline">DurableClock</code>; the pinned attribute stays.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: Deferred keeps its word with a _Not_ line for Effect's Deferred"> <span><b>B. Deferred stays</b>, with a <code class="cr-inline">_Not_</code> line for Effect's in-memory <code class="cr-inline">Deferred</code>.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Journal and Envelope')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. Journal and Envelope</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: both keep their words; Journal gains _Like_ Temporal's event history and _Not_ Effect's EventJournal (the log is never called a journal); Envelope gains _Not_ Effect's transport envelopes"> <span><b>A. Both stay, with the lines in sections 3 and 4</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: compounds: run journal and changeset envelope"> <span><b>B. Compounds</b>: "run journal" and "changeset envelope". Cost: 431 uses, ADR-0036's title, and an envelope whose code name stays <code class="cr-inline">Envelope</code>.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Origin')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. Origin</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: Origin stays, with a _Like_ line for the web's origin"> <span><b>A. Stays, <code class="cr-inline">_Like_</code> the web's origin</b> (recommended): the core is shared.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: Origin stays, with a _Not_ line for the web's origin"> <span><b>B. Stays, <code class="cr-inline">_Not_</code> the web's origin</b>: if you read the cores as different.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="C: a compound such as content origin"> <span><b>C. A compound</b> ("content origin"). Cost: a foundation concept's name, ADR-0034's title, 155 uses.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 Intent')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. Intent</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="A: Intent stays, with a _Like_ line for Android's Intent"> <span><b>A. Stays, <code class="cr-inline">_Like_</code> Android's <code class="cr-inline">Intent</code></b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="B: Intent stays, with a _Not_ line for Android's Intent"> <span><b>B. Stays, <code class="cr-inline">_Not_</code> Android's.</b></span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q6', 'Q6 actor')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. actor</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="A: actor stays, _Like_ an audit log's actor, _Not_ the actor model's (a workflow run here, D136)"> <span><b>A. Stays, with a <code class="cr-inline">_Like_</code> and a <code class="cr-inline">_Not_</code> line</b> (recommended), section 4.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="B: a compound such as accountable actor, written every time; the envelope field stays actor"> <span><b>B. A compound</b> ("accountable actor"); the RPC field stays <code class="cr-inline">actor</code>.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q7', 'Q7 Manifest')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q7. Manifest</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="A: Changeset manifest, the compound, with _Like_ Expo's update manifest and _Not_ the web app manifest"> <span><b>A. Changeset manifest</b> (recommended), section 5.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="B: Manifest stays, with _Like_ Expo's update manifest and _Not_ the web app manifest"> <span><b>B. Manifest stays</b>, with the same two lines.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q8', 'Q8 Cursor')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q8. Cursor</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="A: Sync cursor, the compound; trace cursor and acknowledged cursor stay; bare cursor left to databases and the editor"> <span><b>A. Sync cursor</b> (recommended), section 5.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="B: cursor stays, heading in lower case, with a _Like_ line"> <span><b>B. "cursor" stays</b>, its heading in lower case so the editor is not linked, with a <code class="cr-inline">_Like_</code> line.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q9', 'Q9 Tool')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q9. Tool</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q9" value="A: new entry Tool for D102's app, in Apps and code, _Not_ Effect's Tool written a model's tool"> <span><b>A. Tool is D102's app</b> (recommended), section 6; Effect's is "a model's tool".</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q9" value="B: tool goes to Effect's sense; D102's app becomes a compound such as builder tool"> <span><b>B. The other way round</b>: D102's app takes a compound.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q10', 'Q10 Prompt')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q10. Prompt</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q10" value="A: prompt is not a term; I92 names D132's kind of intent, not with bare prompt"> <span><b>A. Not a term</b> (recommended); I92 names the kind of intent with that constraint.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q10" value="B: Prompt becomes a term (the person's request to an agent) with a _Not_ line for Effect's three"> <span><b>B. A term</b>, the person's request to an agent, with a <code class="cr-inline">_Not_</code> line for Effect's three.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q11', 'Q11 Entity wording')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q11. Entity type, entity id, an entity type that acts</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q11" value="A: entity type and entity id used in Effect's sense, no entries; no word for an acting entity type until a second kind acts"> <span><b>A. Effect's parts, no word for acting yet</b> (recommended), section 7.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q11" value="B: as A, plus a term for an entity type that acts, such as acting entity"> <span><b>B. As A, plus a term</b> ("acting entity") now.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q12', 'Q12 Small marks')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q12. The small marks</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q12" value="A: as section 7's table: Service says key; Evidence registry; Sign-in session _Not_ Chat; Datom's tx clause; Causing span _Not_ Cause; model, compaction, drain, scope left to plain English"> <span><b>A. As section 7's table</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q12" value="B: as the table, but Registry keeps its bare word with a _Not_ line"> <span><b>B. As the table, but Registry stays</b> with a <code class="cr-inline">_Not_</code> line.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">9. Round 2: code, a gate's name, the retire checks, hand-overs (answered: all A)</h2>
+  <p>Round 1 retires seven bare words as our terms: engine, worker, deferred, manifest, cursor, registry, and runner (never a term, but our prose used it). The prose of the living documents, code comments and JSDoc included, is rewritten in this ticket's commit (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d173">D173</a>). A code identifier becomes an issue; a pinned name never changes.</p>
+
+  <h3 class="text-lg font-semibold">The code names the words touch</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>Pinned, stays</th><th>Identifiers in our sense (not pinned)</th></tr></thead>
+    <tbody>
+      <tr><td>engine</td><td><code class="cr-inline">libs/workflow-engine</code> already says it</td><td><code class="cr-inline">EngineConfig</code>, <code class="cr-inline">EngineSweep</code> (<code class="cr-inline">libs/workflow-engine</code>); P17's name in <code class="cr-inline">tools/qualification/src/gates.ts</code></td></tr>
+      <tr><td>worker</td><td>-</td><td>none: every <code class="cr-inline">Worker</code> in code is a web worker thread (<code class="cr-inline">runOpfsWorker</code>, <code class="cr-inline">p0N-opfs-worker.ts</code>), the sense left to the bare word</td></tr>
+      <tr><td>deferred</td><td><code class="cr-inline">viviefs/deferred/exit</code> (D44); the RPC <code class="cr-inline">CompleteDeferred</code> (D44')</td><td><code class="cr-inline">completeDeferred</code>, <code class="cr-inline">scheduleDeferredNotification</code>, <code class="cr-inline">DeferredNotificationData</code>, <code class="cr-inline">serverDeferred</code></td></tr>
+      <tr><td>manifest</td><td>the <code class="cr-inline">manifest</code> column of <code class="cr-inline">changesets</code>; the RPC error <code class="cr-inline">ManifestRejected</code></td><td><code class="cr-inline">CommitManifest</code> (the commit datom's value: the changeset manifest and the basis), <code class="cr-inline">fileManifest</code></td></tr>
+      <tr><td>cursor</td><td>the sync RPC's <code class="cr-inline">cursor</code> fields</td><td><code class="cr-inline">readCursor</code>, <code class="cr-inline">writeCursor</code>, <code class="cr-inline">CursorRow</code> (sync client). <code class="cr-inline">Cursor</code> in <code class="cr-inline">libs/datom</code> and the trace projector, and the projector's <code class="cr-inline">loadCursor</code>, are log positions of any consumer: acknowledged cursors, not sync cursors</td></tr>
+      <tr><td>registry</td><td>-</td><td><code class="cr-inline">RegistryEntry</code>, <code class="cr-inline">RegistryContext</code> (<code class="cr-inline">tools/verify</code>)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">A gate named with the bare word</h3>
+    <p><a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p17">P17 Browser engine leader</a> ("only one tab runs the engine") reads to a web developer as a browser's rendering engine (Blink, WebKit). It has never run, so no ledger entry has the name; the name is in <code class="cr-inline">gates.ts</code> and the gate table, which change together, and <code class="cr-inline">tools/qualification</code> is in every gate's input fingerprint, so the change belongs with phase 3's qualification batch. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d25">D25 Browser engine leader</a> is a decision row and keeps its name.</p>
+  </div></div>
+
+  <h3 class="text-lg font-semibold">The three checks for each retired word (D173)</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Retired</th><th>1. Persisted names and identifiers</th><th>2. A planned concept that needs the bare word</th><th>3. A later meaning</th></tr></thead>
+    <tbody>
+      <tr><td>engine</td><td>Identifiers and P17's name: Q13, Q14</td><td>None in open issues or maps 4-6; P17 is the workflow engine</td><td><code class="cr-inline">_Avoid_</code> on Workflow engine names D18x</td></tr>
+      <tr><td>worker</td><td>None in our sense</td><td>None; the OPFS worker is the other sense, already the code's</td><td>On Workflow runner</td></tr>
+      <tr><td>runner</td><td>None (never an identifier in our sense)</td><td>A test runner and the acceptance rule runner (<a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69</a>) are compounds already</td><td>On Workflow runner</td></tr>
+      <tr><td>deferred</td><td>Pinned stay; four identifiers: Q13</td><td>None; "deferred" for a postponed item is plain English</td><td>On Durable deferred</td></tr>
+      <tr><td>manifest</td><td>Pinned stay; two identifiers: Q13</td><td>The app shell's web and Expo manifests: the reason for the compound</td><td>On Changeset manifest</td></tr>
+      <tr><td>cursor</td><td>Pinned stay; three identifiers: Q13</td><td>None; trace cursor and acknowledged cursor are compounds</td><td>On Sync cursor</td></tr>
+      <tr><td>registry</td><td>Two identifiers: Q13</td><td>Registered commands (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d127">D127</a>) never say "registry"; Effect's <code class="cr-inline">AtomRegistry</code> is the other sense</td><td>On Evidence registry</td></tr>
+    </tbody>
+  </table></div>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q13', 'Q13 Code identifiers')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q13. The code identifiers</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q13" value="A: one issue for phase 3's qualification batch renames every identifier in the table to the compound, pinned names untouched"> <span><b>A. One issue, every identifier in the table</b> (recommended), in phase 3's qualification batch beside the <a class="cr-link" href="../issues/0061-rename-evidence-mobile-to-evidence-client.md">I61</a> rename, since both change gate inputs. The issue decides each new name (for example <code class="cr-inline">WorkflowEngineConfig</code>, <code class="cr-inline">completeDurableDeferred</code>, <code class="cr-inline">readSyncCursor</code>, <code class="cr-inline">EvidenceRegistryEntry</code>).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q13" value="B: one issue, but identifiers inside a module whose name carries the context stay (EngineConfig in libs/workflow-engine, readCursor in libs/sync, RegistryEntry beside evidence-registry.ts)"> <span><b>B. One issue, the module's name as context</b>: an identifier stays where its module already names the context (<code class="cr-inline">EngineConfig</code> in <code class="cr-inline">libs/workflow-engine</code>, <code class="cr-inline">readCursor</code> in <code class="cr-inline">libs/sync</code>); only the rest is renamed.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q14', 'Q14 P17 name')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q14. P17's name</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q14" value="A: rename P17 to Workflow engine leader in a browser, in Q13's issue, gates.ts and the gate table together"> <span><b>A. "Workflow engine leader in a browser"</b> (recommended), in Q13's issue: <code class="cr-inline">gates.ts</code> and the gate table together.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q14" value="B: P17 keeps its name"> <span><b>B. Keep "Browser engine leader"</b>, as D25 named it.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q15', 'Q15 Retire checks and hand-overs')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q15. The retire checks and the hand-overs</h3>
+    <p class="text-sm">The checks as the table above, recorded in I91's Answer. Two open titles change: <a class="cr-link" href="../issues/0008-engine-scale-out.md">I8</a> becomes "Workflow engine scale-out and more workflow runners on the server", and <a class="cr-link" href="../issues/0014-physical-devices-and-notification-tap.md">I14</a> "... a notification tap that completes a durable deferred". Comments on <a class="cr-link" href="../issues/0092-map-2s-new-words.md">I92</a> (name D132's prompt kind of intent without bare "prompt") and <a class="cr-link" href="../issues/0094-words-in-another-projects-sense.md">I94</a> (the bare words now left to other projects: engine, worker, runner, deferred, manifest, cursor, registry, tool in a model's sense, prompt, session, scope; the Cursor editor case is gone with Sync cursor).</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q15" value="A: as written"> <span><b>A. As written</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q15" value="B: as written, with changes in the notes"> <span><b>B. With changes</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<footer class="cr-src">Sources: <a class="cr-link" href="2026-10-27-effect-vocabulary-against-ours.md">I78's record</a> and <code class="cr-inline">repos/effect/packages/effect/src/</code> at <code class="cr-inline">effect@4.0.5</code> (<code class="cr-inline">workflow/</code>, <code class="cr-inline">workers/Worker.ts</code>, <code class="cr-inline">cluster/Runner.ts</code>, <code class="cr-inline">cluster/Envelope.ts</code>, <code class="cr-inline">cluster/EntityType.ts</code>, <code class="cr-inline">cluster/EntityId.ts</code>, <code class="cr-inline">eventlog/EventJournal.ts</code>, <code class="cr-inline">Deferred.ts</code>, <code class="cr-inline">Scope.ts</code>, <code class="cr-inline">reactivity/AtomRegistry.ts</code>, <code class="cr-inline">ai/Tool.ts</code>, <code class="cr-inline">ai/Prompt.ts</code>, <code class="cr-inline">ai/Chat.ts</code>); <code class="cr-inline">@typeonce/effect-machine</code> 0.38.0; <code class="cr-inline">GLOSSARY.md</code>; the decision log (D2, D14', D39', D44, D44', D52, D102, D103, D115, D132, D134-D137, D141, D163-D180); ADR-0008, ADR-0012, ADR-0036; the vision page; I8, I26, I92, I94. Counts: whole-word search over the living documents, 2026-10-28, at <code class="cr-inline">1d846dfe5</code>. Android's <code class="cr-inline">Intent</code>, the web's origin, Expo's manifests, the web app manifest and GitHub's <code class="cr-inline">actor</code> from general knowledge, not checked against their docs today.</footer>
+
+</div>
+</body>
+</html>

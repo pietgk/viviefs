@@ -22,7 +22,7 @@ datoms and checked by its dispatcher on every effect, whatever handler
 produced it, with violations recorded as datoms. ViViEfs said its server
 revalidates every changeset, invariants included ([D36 Shared commands][D36]). Reading the code for
 [I50 Contracts checked as data or by commands][I50] found that the server does not re-execute the command ([ADR-0016 Commands, server validation and rejection][ADR-0016] Observed)
-and checks only structure: membership, actor, manifest, organization, catalog,
+and checks only structure: membership, actor, changeset manifest, organization, catalog,
 files, lease and write-once. A rule that lives in a command, such as
 `renameList` refusing a blank title, runs only on the device, so a crafted or
 buggy client commits a blank title and the server accepts it. And [I49 Projection: one concept or several patterns][I49] made

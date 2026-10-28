@@ -37,7 +37,7 @@ path aliases), Nx sync generators, inferred tasks. Free module-boundary rule
 (no paid Powerpack). Every project is `@viviefs/<name>`.
 
 Ownership: every `project.json` declares tags; unclassified projects fail
-verify. Evidence is owned per file, in the registry (amendment 2026-09-30,
+verify. Evidence is owned per file, in the evidence registry (amendment 2026-09-30,
 [D76 Eleven file treatments][D76], [ADR-0026 Verify - Qualify - Teach][ADR-0026]).
 
 **Where tests live** (amendment 2026-09-30, [D80 Where tests live][D80]). A suite ships with the
@@ -63,7 +63,7 @@ Powerpack is rejected so enforcement stays on the free rule.
 ## Failure-handling
 
 verify's static stage runs typecheck, lint (including module boundaries),
-lint-scope, and the ownership registry check. An unclassified project or a
+lint-scope, and the evidence registry check. An unclassified project or a
 file outside lint fails the stage.
 
 ## Outcome
@@ -85,7 +85,7 @@ with the defect, next to one without it. `pnpm verify` is green on the repo
 (25 projects classified).
 
 2026-10-01, Evidence ownership ([D75-D80 Evidence ownership design review][D75-D80]). The ownership step now fails a
-production file without a registry entry, a stale or duplicate entry, an empty
+production file without an evidence registry entry, a stale or duplicate entry, an empty
 rationale, a shape its file treatment does not allow (a "re-export" with code,
 a "named slot" that is not `export {}`, an unknown gate or suite), and a
 `project.json` that still declares `evidenceOwner`

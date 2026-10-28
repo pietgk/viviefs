@@ -51,7 +51,7 @@ guaranteed timer, old workflow versions ship side by side, a central sync server
 exists.
 
 Out of scope for now: guaranteed work while the app is closed, multi-writer
-merge of executions, production hosting, engine scale-out, product-specific
+merge of executions, production hosting, workflow engine scale-out, product-specific
 choices of consumer apps.
 
 ## Trade-offs

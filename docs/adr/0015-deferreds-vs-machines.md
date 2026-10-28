@@ -1,4 +1,4 @@
-# ADR-0015: Human steps as deferreds; workflows own progress
+# ADR-0015: Human steps as durable deferreds; workflows own progress
 
 Summary: A human step is a durable deferred in the workflow; machines and atoms own only ephemeral interaction.
 
@@ -22,12 +22,12 @@ device workflow without the server running that workflow's code.
 
 A human step is a `DurableDeferred` inside the workflow. **Workflows own
 durable business progress; machines and atoms own ephemeral interaction.** A
-killed app resumes at the deferred; the UI rebuilds from read models plus
+killed app resumes at the durable deferred; the UI rebuilds from read models plus
 interaction state from scratch.
 
 Server-side human steps (a reviewer approves on the web) write a
 deferred-completion datom under `O{org}/W{exec}/D{name}` in the same changeset
-as the review. It syncs down; the device engine resumes. Push is only a
+as the review. It syncs down; the device workflow engine resumes. Push is only a
 wake-up hint. Signals become ordinary datoms: deduplicated, fenced, traced,
 auditable.
 
@@ -39,7 +39,7 @@ cannot stash durable progress in component state.
 
 ## Failure-handling
 
-[P06 Workflow engine crash matrix][P06] covers deferred waits in the crash matrix. [P09 Sync][P09] covers deferred completion
+[P06 Workflow engine crash matrix][P06] covers durable deferred waits in the crash matrix. [P09 Sync][P09] covers durable deferred completion
 from the server.
 
 ## Outcome
@@ -51,11 +51,11 @@ datoms.
 
 ### Observed
 
-2026-09-20. [P06 Workflow engine crash matrix][P06]: kill during a deferred wait resumed at "waiting for approval";
-completing the deferred continued the workflow. Evidence:
+2026-09-20. [P06 Workflow engine crash matrix][P06]: kill during a durable deferred wait resumed at "waiting for approval";
+completing the durable deferred continued the workflow. Evidence:
 [2026-09-20-p06.md](../evidence/2026-09-20-p06.md).
 
-2026-09-22. [P09 Sync][P09]: the server appends a self-committed deferred exit
+2026-09-22. [P09 Sync][P09]: the server appends a self-committed durable deferred exit
 (`server.deferred`, no device lease). The waiting device pulls that datom and
 `Wait` finishes `{ok: true}`. The server does not run the workflow. Not
 Accepted. Evidence:

@@ -18,7 +18,7 @@ Writing [I25 Ideas batch: understanding and maintaining code bases][I25], a page
 
 | Text on the page | Meant | Linked to |
 | --- | --- | --- |
-| `architecture, workflow, sequence` (archify's diagram kinds) | a kind of diagram | Workflow (durable work on the engine) |
+| `architecture, workflow, sequence` (archify's diagram kinds) | a kind of diagram | Workflow (durable work on the workflow engine) |
 | `Cursor's index` | the `Cursor` editor | Cursor (a sync position) |
 | `Nextcloud with shared cursors` | mouse pointers of other people | Cursor |
 | `The diagram editor Bausteinsicht builds on` | uses | Builds on (a pattern relation) |
@@ -48,7 +48,7 @@ This repo has the problem waiting already: the plans call vivief, complyj and we
 
 - How does an author mark a passage, a quote, a table or a whole page as "not our terms": a block quote, a directive such as `:::foreign`, a comment marker, front matter, or a per-folder rule like `KEPT_AS_WRITTEN` for paths?
 - Should a mark stop glossary links only, or [D87 References resolved when rendered][D87] references too (ids of another repo)?
-- Should every new glossary term name its context (`Sibling Repo`, `Code Effect`), and should existing bare terms (Workflow, Cursor, Attribute, Engine) be renamed that way, or only marked where they clash?
+- Should every new glossary term name its context (`Sibling Repo`, `Code Effect`), and should existing bare terms (Workflow, Cursor, Attribute, Workflow engine) be renamed that way, or only marked where they clash?
 - Should a source table or a quote of another project be detected without a mark, for example every block quote?
 - Should `verify` report terms linked in a marked passage, or a term whose sense is ambiguous, so a human decides?
 - Is a short list of words with more than one sense in our own docs (workflow, cursor, attribute, app) worth adding to the `EVERYDAY_TERMS` rule, or is a mark enough?

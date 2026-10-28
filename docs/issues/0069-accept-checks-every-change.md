@@ -12,7 +12,7 @@ Found: 2026-10-09
 
 The server's accept checks only structure, so a rule that lives in a command never reaches authority: a crafted changeset setting `evidence/list-title` to a blank string is accepted, although `renameList` refuses it on the device. Build [D124 One checkpoint][D124]-[D127 Registered commands][D127]: registered commands with declared writes, an acceptance rule runner in accept judged no worse, and the suite that proves it.
 
-From [I50 Contracts checked as data or by commands][I50] ([ADR-0035 Accepting a change][ADR-0035]). [ADR-0016 Commands, server validation and rejection][ADR-0016]'s Observed section already records that the server "does not re-execute the command"; `accept` in `libs/sync/server/src/server.ts` checks membership, actor, manifest, server-only attributes, organization, catalog, files, lease and write-once.
+From [I50 Contracts checked as data or by commands][I50] ([ADR-0035 Accepting a change][ADR-0035]). [ADR-0016 Commands, server validation and rejection][ADR-0016]'s Observed section already records that the server "does not re-execute the command"; `accept` in `libs/sync/server/src/server.ts` checks membership, actor, changeset manifest, server-only attributes, organization, catalog, files, lease and write-once.
 
 ### What to build
 

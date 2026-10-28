@@ -1,6 +1,6 @@
-# ADR-0012: Durable execution over one datom-backed engine
+# ADR-0012: Durable execution over one datom-backed workflow engine
 
-Summary: Effect's Workflow API runs on our own datom-backed engine, the same on device and server.
+Summary: Effect's Workflow API runs on our own datom-backed workflow engine, the same on device and server.
 
 Status: Qualified
 
@@ -13,8 +13,8 @@ Related: [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D
 
 ## Problem
 
-Device and server need the same Temporal-style model (workflows, workers,
-retryable activities, replay from stored activity results). Effect Cluster is
+Device and server need the same Temporal-style model (workflows, workflow
+runners, retryable activities, replay from stored activity results). Effect Cluster is
 the scale-out path, not the on-device path. Inventing a parallel workflow API
 would split the stack.
 
@@ -22,16 +22,16 @@ would split the stack.
 
 Use Effect's `Workflow` / `Activity` / `DurableDeferred` / `DurableClock` API
 everywhere, over **our** implementation of `WorkflowEngine.Encoded` that stores
-everything as datoms. One engine, one journal format, on device and server.
+everything as datoms. One workflow engine, one journal format, on device and server.
 Effect Cluster (`ClusterWorkflowEngine`) is the later scale-out path behind the
 same interface.
 
-**One engine, one journal, one fence** (amendment 2026-10-26, [D39' One engine, one journal, one fence][D39'], [D14' The journal is the fence][D14'], [I51 Actors or the engine][I51]).
+**One workflow engine, one journal, one fence** (amendment 2026-10-26, [D39' One engine, one journal, one fence][D39'], [D14' The journal is the fence][D14'], [I51 Actors or the engine][I51]).
 Effect Cluster is no longer the scale-out path: it fences by time only, keeps
-its journal in `MessageStorage` rather than the log, and assumes runners that
-are always reachable, which a device is not. Server scale-out is more runners
-writing on the journal fence ([ADR-0036 The journal is the fence][ADR-0036]); Cluster stays possible behind
-`WorkflowEngine` only if a measured load needs its routing in memory ([I8 Engine scale-out and a multi-runner server][I8]).
+its journal in `MessageStorage` rather than the log, and assumes Cluster runners
+that are always reachable, which a device is not. Server scale-out is more
+workflow runners writing on the journal fence ([ADR-0036 The journal is the fence][ADR-0036]); Cluster stays possible behind
+`WorkflowEngine` only if a measured load needs its routing in memory ([I8 Workflow engine scale-out and more workflow runners on the server][I8]).
 
 Workflows are versioned by name (`Inspection.v3`). Effect has no versioning
 API. Activity names are unique and stable within a version. Old versions ship
@@ -47,8 +47,8 @@ facts are write-once.
 
 ## Trade-offs
 
-Custom engine instead of Cluster-on-device. Cluster on a killed mobile app is
-untested territory ([P07 Device resume E2E][P07], now run). Public Effect interfaces only: no private engine
+Custom workflow engine instead of Cluster-on-device. Cluster on a killed mobile app is
+untested territory ([P07 Device resume E2E][P07], now run). Public Effect interfaces only: no private workflow engine
 hooks. `Workflow.intoResult` is uninterruptible, so an in-process kill is a
 self-interrupt of the interruptible child after the crash hook opens, not
 `Effect.never` plus an outer `Fiber.interrupt`.
@@ -56,7 +56,7 @@ self-interrupt of the interruptible child after the crash hook opens, not
 ## Failure-handling
 
 [P06 Workflow engine crash matrix][P06] is the crash matrix: kill before an activity, during it, after it before
-the journal write, during a deferred wait, during a clock, during a lease
+the journal write, during a durable deferred wait, during a clock, during a lease
 handoff, and during a content-hash file upload. Every case resumes; every
 external effect is observable at most once thanks to idempotency keys.
 Positive control: the same matrix on `WorkflowEngine.layerMemory` fails the
@@ -67,7 +67,7 @@ durability cases.
 ### Expected
 
 One workflow API on device and server. Replay is re-run plus journaled exits.
-In-memory engine is not durability.
+In-memory workflow engine is not durability.
 
 ### Observed
 
@@ -83,14 +83,14 @@ Evidence:
 
 2026-09-26, found after [P10 Trace projection][P10]. Replay did not return the exit the first run
 saw. The journal stored a failure as its printed cause, so a typed activity
-failure, a typed deferred failure or a workflow's typed result came back on
+failure, a typed durable deferred failure or a workflow's typed result came back on
 replay as a string that the activity's error schema could not decode: a run
 that caught `CheckFailed` by tag died with a `SchemaError` after a resume.
 Defects and interruptions were flattened into failures. Exit values in
 `viviefs/activity/exit`, `viviefs/deferred/exit` and
 `viviefs/workflow/result` now keep the whole encoded cause through Effect's
-JSON exit codec (the one its cluster engine persists); `workflow/result` is
-encoded with the workflow's own schemas, because Effect's engine contract
+JSON exit codec (the one its cluster workflow engine persists); `workflow/result` is
+encoded with the workflow's own schemas, because Effect's workflow engine contract
 hands workflow results over typed. The attribute names are unchanged and the
 old `{_tag: "Failure", error}` value still decodes ([D44 Never rename, never migrate][D44]). [P06 Workflow engine crash matrix][P06] gained the
 check "typed failures survive a kill", which fails on the old encoding.

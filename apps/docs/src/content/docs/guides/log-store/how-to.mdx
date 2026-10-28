@@ -1,6 +1,6 @@
 ---
 title: How-to
-description: Add a store implementation, append facts a retry cannot duplicate, read from a cursor, and hold compaction for a consumer.
+description: Add a store implementation, append facts a retry cannot duplicate, read from a log position, and hold compaction for a consumer.
 ---
 
 import Sample from '../../../../components/Sample.astro'
@@ -41,7 +41,7 @@ second fact. Exercise 01.01 is exactly this mistake.
 mints below a fact it holds, and it refuses a `tx` from too far in the future
 (`FutureSkew`).
 
-## Read the log from a cursor
+## Read the log from a position
 
 Keep the last `seq` you processed, call `streamFrom(seq, limit)` until it
 returns nothing, and store the new position only after the work is done. A

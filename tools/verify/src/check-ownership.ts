@@ -1,6 +1,6 @@
 /**
  * verify static / ownership: reads the projects, the production files and the
- * registry, and applies the rules in `ownership.ts` (ADR-0024, D76).
+ * evidence registry, and applies the rules in `ownership.ts` (ADR-0024, D76).
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'

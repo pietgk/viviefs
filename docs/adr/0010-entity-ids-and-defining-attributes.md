@@ -25,7 +25,7 @@ parent, shared lifetime, can never move. Declared per entity type. Guideline:
 
 - Root: `O{org}/...`. Organization is the isolation unit.
 - Composition examples: list -> todo, order -> line, execution -> journal
-  entries (`O{org}/W{exec}/A{activity}#{attempt}`), deferreds
+  entries (`O{org}/W{exec}/A{activity}#{attempt}`), durable deferreds
   (`O{org}/W{exec}/D{name}`).
 - Everything else uses reference attributes.
 
@@ -39,7 +39,7 @@ owner (id parent or owner reference) is visible. Orphaned writes to
 user-content types raise a human conflict (never silent loss).
 
 Prefix power: authorization, compaction, export and Reactivity keys all work by
-prefix. First sync is full-store per organization (one cursor), not prefix
+prefix. First sync is full-store per organization (one sync cursor), not prefix
 subscriptions.
 
 **Server-only roots** (amendment 2026-09-27, [P11 Identity][P11] grilling; qualified by [P11][P11]).

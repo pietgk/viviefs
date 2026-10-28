@@ -21,7 +21,7 @@ silently dropped.
 ## Design
 
 The sync server holds full workflow state (execution, journal, pending
-deferreds and clocks) so another device can resume. The server stores it and
+durable deferreds and clocks) so another device can resume. The server stores it and
 **never runs device workflow code**.
 
 One lease per execution, renewed while active, with a fencing counter (lease
@@ -62,7 +62,7 @@ Accepted. Evidence:
 [2026-09-22-p09.md](../evidence/2026-09-22-p09.md).
 
 2026-10-26, found in [I51 Actors or the engine][I51] by reading the code. The lease never expires: the
-engine writes `expiresAtMs: null` on grant and handoff, nothing renews it, and
+workflow engine writes `expiresAtMs: null` on grant and handoff, nothing renews it, and
 the server checks only the epoch and the device. Any member device may write a
 higher epoch and so take a run at any time ([P09 Sync][P09]'s `staleLease` check does
 exactly that), which the Design's "read-only until the lease expires" does not

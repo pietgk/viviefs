@@ -23,11 +23,11 @@ intents are the triggers.
 
 Long `DurableClock` sleeps write a `wake_at` datom and schedule a local
 notification (expo-notifications; Android `alarmClock` delivery for
-time-critical). The engine sweeps due clocks on launch and foreground;
+time-critical). The workflow engine sweeps due clocks on launch and foreground;
 expo-background-task sweeps opportunistically. Notification actions complete
 the matching `DurableDeferred`. Push from the server is only a wake-up hint.
 
-Browser: one leader tab per profile runs the engine (Web Locks); other tabs
+Browser: one leader tab per profile runs the workflow engine (Web Locks); other tabs
 render and forward events via BroadcastChannel. Each browser profile counts as
 one device for leases.
 
@@ -41,20 +41,20 @@ election the native apps do not need.
 
 [P07 Device resume E2E][P07]: Maestro via agent-device force-quits mid-upload and mid-wait on iOS
 simulator **and** Android emulator; relaunch resumes; a scheduled local
-notification tap completes a deferred; the trace shows crash and resume.
-Positive control: without the engine sweep on launch, the workflow does not
+notification tap completes a durable deferred; the trace shows crash and resume.
+Positive control: without the workflow engine sweep on launch, the workflow does not
 resume. [P07][P07] fails if the Android emulator fails.
 
-[P17 Browser engine leader][P17]: two tabs, one engine; killing the leader promotes the other, which
+[P17 Browser engine leader][P17]: two tabs, one workflow engine; killing the leader promotes the other, which
 resumes; followers render and forward. Positive control: without the lock, two
-engines are detected. [P17][P17] is follow-on, not foundation closure.
+workflow engines are detected. [P17][P17] is follow-on, not foundation closure.
 
 ## Outcome
 
 ### Expected
 
 Force-quit mid-workflow resumes on next launch. Notifications complete
-deferreds. One engine per browser profile.
+deferreds. One workflow engine per browser profile.
 
 ### Observed
 
@@ -62,11 +62,11 @@ deferreds. One engine per browser profile.
 mid-upload and mid-wait resumed on iOS simulator and Android emulator when
 `EngineSweep` ran on launch; without the sweep the workflow stayed parked.
 Motel showed `p07.park` and `p07.resume` for the mid-upload token on both
-platforms. Completing the `approval` deferred after relaunch finished
+platforms. Completing the `approval` durable deferred after relaunch finished
 `DeviceResume.v1`. Maestro YAML did not itself deliver the kill (iOS replay
 daemon had no session; Android saw the Expo developer menu); `simctl` /
 `adb force-stop` did. A SpringBoard/shade tap on "[P07 Device resume E2E][P07] approval" was not
-observed; the deferred completed via last-notification-response or a host
+observed; the durable deferred completed via last-notification-response or a host
 `runtime:eval` of the in-app complete hook. [P17 Browser engine leader][P17] not run. Evidence:
 [2026-09-21-p07.md](../evidence/2026-09-21-p07.md).
 

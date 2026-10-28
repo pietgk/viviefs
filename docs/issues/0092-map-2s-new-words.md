@@ -28,6 +28,8 @@ The words:
 
 ## Comments
 
+2026-10-28: [I91 Effect's names against ours][I91]: "prompt" is never a glossary term, since Effect alone has three (`ai/Prompt`, an MCP prompt, `cli/Prompt`); name [D132 Four states at every level][D132]'s person's request to an agent without the bare word ([D195 Prompt is not a term][D195]). There is no word yet for an entity type that acts; a workflow run says it ([D196 Entity type and entity id][D196]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D101]: ../plan/bootstrap/02-decision-log.md#d101
@@ -37,7 +39,10 @@ The words:
 [D132]: ../plan/bootstrap/02-decision-log.md#d132
 [D133]: ../plan/bootstrap/02-decision-log.md#d133
 [D134]: ../plan/bootstrap/02-decision-log.md#d134
+[D195]: ../plan/bootstrap/02-decision-log.md#d195
+[D196]: ../plan/bootstrap/02-decision-log.md#d196
 [I77]: 0077-change-has-two-meanings.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
 [I88]: 0088-effect-and-the-effect-handler.md
 [I89]: 0089-how-a-word-is-chosen-and-written.md
+[I91]: 0091-effects-names-against-ours.md

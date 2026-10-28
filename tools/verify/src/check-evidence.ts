@@ -1,6 +1,6 @@
 /**
  * verify quality / evidence: judges this verify run's coverage producers
- * against the registry and the evidence lockfile (`evidence.ts`).
+ * against the evidence registry and the evidence lockfile (`evidence.ts`).
  */
 import { SUITES } from '@viviefs/testing'
 import { REGISTRY } from './evidence-registry.ts'

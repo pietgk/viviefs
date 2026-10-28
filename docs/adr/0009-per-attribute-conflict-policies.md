@@ -23,14 +23,14 @@ Conflict policy is declared per attribute in its Schema:
 | Policy | Used for | Behaviour |
 | --- | --- | --- |
 | LWW | domain scalars | highest commit `tx` wins |
-| write-once, fenced | journal facts, deferred completions, lease grants, changeset commit/abort | first valid write under a valid lease wins; others rejected |
+| write-once, fenced | journal facts, durable deferred completions, lease grants, changeset commit/abort | first valid write under a valid lease wins; others rejected |
 | human conflict | references, evidence attachments, approvals, user content | both values kept; a conflict datom raised; a person resolves |
 
 The conflict-datom attribute name is `viviefs/conflict`. [P05 Changesets and projections][P05] materialises
 conflicts in `projection_conflicts`; authority writes them as log datoms ([D34' Per-attribute conflict policies, decided at accept][D34']).
 
 **Decided at accept** (amendment 2026-10-26, [D34' Per-attribute conflict policies, decided at accept][D34'], [D144 A set is entities][D144], [I53 Sync and conflict][I53]). A commit's basis
-is the server cursor its writer had pulled when the command ran. The `node`
+is the sync cursor its writer had pulled when the command ran. The `node`
 holding authority decides a human conflict at accept: a fact for the same
 entity and attribute accepted after the basis from another device is a
 conflict (the writer's own earlier outbox is not), and authority appends a

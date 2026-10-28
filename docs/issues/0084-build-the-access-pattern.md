@@ -16,7 +16,7 @@ From [I54 Trust, encryption and who may sign in][I54] ([the review page](../rese
 
 ### What to build
 
-1. **The contract.** `decide(evaluations, at)` in the shape of the AuthZEN request: one evaluation per touched entity, AND, `at` the cursor, the state before the changeset with its writes in context, an error a deny, and the closed reason set (`MembershipMissing`, `ServerOnlyAttribute`, `UnknownCommand`, `WriteOutsideCommand`, `Forbidden`).
+1. **The contract.** `decide(evaluations, at)` in the shape of the AuthZEN request: one evaluation per touched entity, AND, `at` the sync cursor, the state before the changeset with its writes in context, an error a deny, and the closed reason set (`MembershipMissing`, `ServerOnlyAttribute`, `UnknownCommand`, `WriteOutsideCommand`, `Forbidden`).
 2. **The reference implementation.** Membership, server-only attributes and [I69 Accept checks every change][I69]'s declared writes behind it; accept asks it first ([D124 One checkpoint][D124]) and `Pull` asks it for `sync.pull` on the organization; the device runs it early.
 3. **The suite** `access/decisions`: the conformance rows of step 1, including the same log before and after a revocation and an implementation that errors.
 4. **Who grants.** The operator signs in and holds an operator role; `grant` and `revoke` write with the operator's identity as actor; `server` stays the actor only for what the server decides itself. Only a person may create an identity.

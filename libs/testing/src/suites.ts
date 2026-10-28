@@ -2,7 +2,7 @@
  * The suite catalogue (D75, D80): every suite's id, the pattern whose contract
  * it checks, and the gate that records its claim. The one place a suite is
  * declared. Vitest defines one test tag per suite from it, so a test tagged
- * with an unknown suite fails, and `verify` checks registry entries against it.
+ * with an unknown suite fails, and `verify` checks evidence registry entries against it.
  * A suite's checks live with its contract, in that lib's `src/suites/`.
  */
 

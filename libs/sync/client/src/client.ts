@@ -1,5 +1,5 @@
 /**
- * Device sync: outbox up, organization cursor down.
+ * Device sync: outbox up, organization sync cursor down.
  * Optimistic domain changesets are open locally until the server
  * acknowledges the commit. A typed rejection aborts the open
  * changeset, rebuilds read models, and leaves the rest of the

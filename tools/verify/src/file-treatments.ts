@@ -1,7 +1,7 @@
 /**
  * File treatments (D75, D76): how one production file's behaviour is shown
  * in `verify`. Each names the verify step that produces its evidence and the
- * verdict applied to it. The registry (`evidence-registry.ts`) gives every
+ * verdict applied to it. The evidence registry (`evidence-registry.ts`) gives every
  * production file exactly one, with a written rationale.
  */
 import ts from 'typescript'

@@ -22,7 +22,7 @@ Start with a review page that writes the shape out on ViViEfs's real code at eac
 
 - a command: read model and intent to a changeset ([D36 Shared commands][D36]);
 - the projector: changeset to read models ([D37 Log store tables][D37], [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]);
-- an activity and a workflow: journaled results, replay ([D2 Temporal model][D2], [ADR-0012 Durable execution over one datom-backed engine][ADR-0012]);
+- an activity and a workflow: journaled results, replay ([D2 Temporal model][D2], [ADR-0012 Durable execution over one datom-backed workflow engine][ADR-0012]);
 - a change: a diff to `verify`'s verdict;
 - a gate: a claim to evidence ([D93 Claims in front][D93]);
 - a guide: a decision to a lesson a learner tries ([D96 Two verifications][D96]);

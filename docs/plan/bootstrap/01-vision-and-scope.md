@@ -11,7 +11,7 @@ builds ([D95 App creation][D95]).
 It combines four ideas that are usually separate:
 
 1. **Effect** as the backbone: typed errors, services and layers as ports, Schema at every boundary.
-2. **Durable execution** in the Temporal sense: workflows, workers, retryable activities, replay using stored
+2. **Durable execution** in the Temporal sense: workflows, workflow runners, retryable activities, replay using stored
    activity results, on the device as well as on the server.
 3. **One datom log** as the single substrate for the durable journal, domain data, sync and tracing.
 4. **Component-based React UI** with an explicit split between UI, logic and data.
@@ -37,7 +37,7 @@ Plus: crash and resume (force-quit mid-workflow), handoff to another device ([D1
 ## In scope
 
 - Expo SDK 58 app (iOS, Android, web) and a Node Effect server.
-- Durable execution on device (resume on next launch) and server, one engine, one journal format ([D39' One engine, one journal, one fence][D39']).
+- Durable execution on device (resume on next launch) and server, one workflow engine, one journal format ([D39' One engine, one journal, one fence][D39']).
 - Offline-first data synced with the `node` that holds authority, today the server ([D103 Nodes and authority][D103], [D142 Sync from the start][D142]).
 - Tracing derived from the log, local-first telemetry sinks.
 - Docs site, exercises and lessons as part of delivery.
@@ -72,8 +72,8 @@ Trade-offs names the items it makes harder ([I57 Out-of-scope items in an ADR's 
   organization's authority can differ between organizations; every request and changeset names its organization
   and the server never trusts a client's ([D18 Organization isolation on the server][D18]); `tx` is corrected against the `node` holding authority, not
   "the server" ([D118-D123 The datom and its store][D118-D123]). Production only, learnable in the lab.
-- Horizontal scale-out of the server's workflow engine: more runners writing on each run's journal head ([D39' One engine, one journal, one fence][D39'],
-  [I8 Engine scale-out and a multi-runner server][I8]). Must stay possible: the head check is made in one step with the append ([D14' The journal is the fence][D14']), a runner claims a
+- Horizontal scale-out of the server's workflow engine: more workflow runners writing on each run's journal head ([D39' One engine, one journal, one fence][D39'],
+  [I8 Workflow engine scale-out and more workflow runners on the server][I8]). Must stay possible: the head check is made in one step with the append ([D14' The journal is the fence][D14']), a workflow runner claims a
   step before acting, and `WorkflowEngine` stays the one interface, so Effect Cluster stays possible behind it.
   Production only, learnable in the lab.
 - A server-independent mode: a group keeps working without its original operator, with authority moved
