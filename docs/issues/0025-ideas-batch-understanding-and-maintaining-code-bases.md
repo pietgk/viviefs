@@ -93,7 +93,7 @@ The idea to keep: the picture is the goal. One simplified, intuitive diagram per
 
 The original repo, [vivief ("Vision View Effect")](https://github.com/pietgk/vivief) (`~/ws/vivief`, home of DevAC), overlaps with these tools in most places:
 
-- **The core formula.** `effectHandler = (state, intent) => (state', [intent'])`, which we now say as `(Context, Intent) => (Context', [Effects])`. vivief: "This is the entire pattern"; HTTP, state machines, routing and code analysis all map to it ([foundation](https://github.com/pietgk/vivief/blob/main/docs/contract/foundation.md#5-effects-the-universal-abstraction) section 5, [effectHandler](https://github.com/pietgk/vivief/blob/main/docs/claude/concepts-effecthandler.md)). Effects are data, and "observability is projection over effect datoms".
+- **The core formula.** `effectHandler = (state, intent) => (state', [intent'])`, which ViViEfs names the effect handler and writes per handler in its own terms, not as one formula ([D165 The effect handler][D165], [D166 No formula with names of its own][D166]). vivief: "This is the entire pattern"; HTTP, state machines, routing and code analysis all map to it ([foundation](https://github.com/pietgk/vivief/blob/main/docs/contract/foundation.md#5-effects-the-universal-abstraction) section 5, [effectHandler](https://github.com/pietgk/vivief/blob/main/docs/claude/concepts-effecthandler.md)). Effects are data, and "observability is projection over effect datoms".
 - **Vision and View as a loop.** Vision is the why (specs, intent, architecture); View is the what, where, when and how (code, diagrams, tests). Code is extracted into effects, effects are presented as diagrams and views, and views are validated against the vision ([foundation](https://github.com/pietgk/vivief/blob/main/docs/contract/foundation.md#3-vision--view-the-core-loop) section 3).
 - **Rules that lift effects.** Rules turn low-level effects (a function call in a file under `routers/`) into high-level ones (a service), and that makes C4 views, domain effects and drift detection possible: a rule that should match but does not is drift. LLMs propose rules, humans accept them, systems run them.
 - **Two worlds.** Push as much as possible into the deterministic world (extraction, validation, diagram generation), so humans and LLMs work on what is not deterministic (intent, design, decisions).
@@ -155,6 +155,8 @@ Fog to chart, in no order:
 
 [ADR-0029]: ../adr/0029-effect-reference-and-language-service.md
 [D120]: ../plan/bootstrap/02-decision-log.md#d120
+[D165]: ../plan/bootstrap/02-decision-log.md#d165
+[D166]: ../plan/bootstrap/02-decision-log.md#d166
 [D30]: ../plan/bootstrap/02-decision-log.md#d30
 [D31]: ../plan/bootstrap/02-decision-log.md#d31
 [D32]: ../plan/bootstrap/02-decision-log.md#d32

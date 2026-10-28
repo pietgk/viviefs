@@ -58,6 +58,8 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 
 ## Decisions so far
 
+- [I88 Effect and the effect handler][I88] (2026-10-28): effect has one meaning, named by phase (asked for, proposed, happened); Effect and effect are told apart by case, and the docs linker matches case; the effect handler is a compound term (a command, accept, a workflow body), with no formula of its own; an intent is what someone asks to happen; Vision - View - Effects is one entry; a command decides, marked against `DecisionModel.decide` ([D163 One meaning of effect, named by phase][D163]-[D169 A command decides][D169]).
+
 ## Not yet specified
 
 - Code identifiers a word decision touches, each an issue once found.
@@ -75,6 +77,8 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D135]: ../bootstrap/02-decision-log.md#d135
 [D137]: ../bootstrap/02-decision-log.md#d137
 [D162]: ../bootstrap/02-decision-log.md#d162
+[D163]: ../bootstrap/02-decision-log.md#d163
+[D169]: ../bootstrap/02-decision-log.md#d169
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [I21]: ../../issues/0021-test-the-glossary-with-a-reader.md
@@ -87,6 +91,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [I7]: ../../issues/0007-production-hosting-and-telemetry-backend.md
 [I77]: ../../issues/0077-change-has-two-meanings.md
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
+[I88]: ../../issues/0088-effect-and-the-effect-handler.md
 [I89]: ../../issues/0089-how-a-word-is-chosen-and-written.md
 [I94]: ../../issues/0094-words-in-another-projects-sense.md
 [I95]: ../../issues/0095-build-the-glossary-linker-as-decided.md

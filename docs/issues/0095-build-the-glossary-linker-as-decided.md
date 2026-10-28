@@ -20,7 +20,11 @@ Done when the cases in [I26 Glossary links on words that are not our terms][I26]
 
 ## Comments
 
+2026-10-28: built by [I88 Effect and the effect handler][I88] because its entries needed it ([D164 Effect and effect, told apart by case][D164]): `termFinder` in `apps/docs/src/lib/references.ts` matches a term as written before any case, a name in `PROPER_NOUNS` keeps its capitals in its anchor (`#Effect`), and `parseGlossary` rejects two entries that share an anchor. This ticket builds the rest on it.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D164]: ../plan/bootstrap/02-decision-log.md#d164
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
+[I88]: 0088-effect-and-the-effect-handler.md
 [I94]: 0094-words-in-another-projects-sense.md

@@ -29,11 +29,16 @@ Rows settled here, from [the vivief inventory](../research/2026-10-06-vivief-inv
 
 ## Comments
 
+2026-10-28: from [I88 Effect and the effect handler][I88]. Worked entries to start from: effect and Effect handler ([D163 One meaning of effect, named by phase][D163]-[D169 A command decides][D169]), the first lower-case entry and the first with a "like X, except Y" line. Also for this ticket, from [I30 Ideas batch: glossary entries written as effects][I30]: vivief's quick reference lists each deprecated term with what replaced it and why (`Analyser` became `Extractor`, "clearer: it extracts data into seeds"); does an Avoid line say why?
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
 [D137]: ../plan/bootstrap/02-decision-log.md#d137
 [D162]: ../plan/bootstrap/02-decision-log.md#d162
+[D163]: ../plan/bootstrap/02-decision-log.md#d163
+[D169]: ../plan/bootstrap/02-decision-log.md#d169
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
+[I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
 [I88]: 0088-effect-and-the-effect-handler.md

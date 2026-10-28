@@ -15,6 +15,7 @@ import {
   findReferences,
   firstSentence,
   gateReference,
+  glossaryAnchor,
   newestEvidence,
   onlyReference,
   parseDecisions,
@@ -283,6 +284,15 @@ describe('glossary terms in prose (D94)', () => {
       '**Effect**:',
       'The TypeScript library this stack is written with.',
       '',
+      '**Vision - View - Effects**:',
+      'The loop this project runs at every level.',
+      '',
+      '**effect**:',
+      'Something that happens and makes a difference.',
+      '',
+      '**Effect handler**:',
+      'A step that decides which effects follow.',
+      '',
       '**HLC**:',
       'The clock that orders every fact.',
     ].join('\n'),
@@ -293,6 +303,14 @@ describe('glossary terms in prose (D94)', () => {
     expect(terms[0]).toEqual({ term: 'Pattern', anchor: 'pattern', summary: 'A proven way to build one part of an app.' })
     expect(terms[1]?.anchor).toBe('guide-template')
     expect(() => parseGlossary('**Empty**:\n')).toThrow(/"Empty" has no definition/)
+  })
+
+  it('gives a name its capitals in its anchor, so a word and a name never share one', () => {
+    expect(terms.filter(({ term }) => term.toLowerCase() === 'effect').map(({ anchor }) => anchor)).toEqual(['Effect', 'effect'])
+    expect(glossaryAnchor('Effect handler')).toBe('effect-handler')
+    expect(() => parseGlossary('**Read model**:\nA table.\n\n**Read Model**:\nAnother.')).toThrow(
+      /"Read model" and "Read Model" share the anchor #read-model/,
+    )
   })
 
   it('finds terms and plurals in any case, the longest term first, whole words only', () => {
@@ -307,8 +325,15 @@ describe('glossary terms in prose (D94)', () => {
 
   it('links an everyday word only as the glossary writes it, mid-sentence', () => {
     expect(found('the CLI command runs; it sends a Command. Command at the start is not one')).toEqual(['Command'])
-    expect(found('Vision - View - Effects, a side effect, built with Effect')).toEqual(['Effect'])
+    expect(found('Vision - View - Effects, built with Effect')).toEqual(['Vision - View - Effects', 'Effect'])
     expect(termForms('Effect')).toEqual(['Effect'])
     expect(termForms('Activity')).toEqual(['Activity', 'Activities'])
+  })
+
+  it('tells a name from the word with the same letters by case', () => {
+    expect(found('a side effect, built with Effect; effects follow from an effect handler')).toEqual(['effect', 'Effect', 'effects', 'effect handler'])
+    const byTerm = (text: string) => termFinder(terms)(text).map(({ term }) => term.term)
+    expect(byTerm('a side effect, built with Effect')).toEqual(['effect', 'Effect'])
+    expect(byTerm('Effects follow. An EFFECT')).toEqual(['effect', 'effect'])
   })
 })

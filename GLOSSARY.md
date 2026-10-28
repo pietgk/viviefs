@@ -26,6 +26,15 @@ same way: gates verify what we built, learning verifies the language ([D96 Two v
 Today its apps are an Expo app (phone and web) and a Node.js server, which
 holds authority for every organization ([D103 Nodes and authority][D103]). Successor in spirit to vivief.
 
+**Vision - View - Effects**:
+The loop this project runs at every level: what we intend, what we show, and
+what actually happens. Vision is what we intend and decide (decisions, ADRs,
+claims); Effects is what actually happened (the log, evidence, traces), an
+effect in its last phase; View is what a person or an agent sees and learns
+from (guides, diagrams, the app's screens). A gate is one turn, a guide another,
+a grilling a third ([D98 Vision - View - Effects][D98], [D98' Vision - View - Effects, at every level][D98'], [D168 Vision - View - Effects, one entry][D168]). The three words are not terms on their own:
+View is not React Native's `View`, and Effects is not the library.
+
 **App creation**:
 Building apps, and the proven parts and tools later apps are built with, by
 people and AI agents together; using a part in a real app is how it gets
@@ -116,7 +125,36 @@ _Avoid_: util, common, shared
 **Effect**:
 The TypeScript library this whole stack is written with; it makes errors,
 dependencies and side effects visible in the types. Effect v4, pinned to one
-exact version for `effect` and every `@effect` package ([ADR-0003 Effect v4 as the backbone][ADR-0003]).
+exact version for `effect` and every `@effect` package ([ADR-0003 Effect v4 as the backbone][ADR-0003]). An `Effect`
+value is an effect described and not yet run; how it ended is its `Exit`
+([D164 Effect and effect, told apart by case][D164]).
+
+**effect**:
+Something that happens and makes a difference: a fact written, a message
+sent, a screen redrawn, a model asked. An effect passes through phases, and
+the stack names each: asked for (an intent), proposed (a changeset), happened
+(a fact in the log, an activity's journaled exit). The library writes an
+effect down as a value of its type `Effect` before it runs, and calls how it
+ended an `Exit`: that is how it carries one effect through its phases, not
+another meaning. Write effect alone only where the phase does not matter. A
+read makes no difference, so it is not an effect. Written in lower case, and
+reworded at the start of a sentence, where it would read as the library
+([D163 One meaning of effect, named by phase][D163], [D164 Effect and effect, told apart by case][D164]).
+
+**Effect handler**:
+A step that takes what is known and an effect asked for, and decides which
+effects follow, without making them happen. A command is one (a read model
+and an intent in, a changeset or a `DomainError` out), authority's accept
+another (the log and a changeset in, accepted facts or a `Rejection` out), and
+a workflow body a third, over its journal; reads and pure helpers are not
+([D165 The effect handler][D165], [D130 One shape at the data level][D130], [D136 The actor level is the durable workflow][D136]). Each keeps its signature in its own
+terms, with no formula of its own ([D166 No formula with names of its own][D166]). Like Elm's `update`, except that what it returns is
+proposed and counts only once accepted. vivief's `effectHandler`, in this
+form. Not an effect handler of algebraic effects (OCaml 5, Koka), which
+resumes a paused computation; Effect has no effect handler, and a handler
+alone keeps Effect's meaning, the code behind a declared operation such as an
+`Rpc`.
+_Avoid_: handler (alone, for this meaning)
 
 **Service**:
 A named capability that code asks for instead of building it itself, such as
@@ -299,11 +337,16 @@ data. A pure Effect function `(readModel, intent) -> changeset or
 DomainError`, registered with its intent Schema, a version name and the
 attributes it may write; it runs on the device, and authority accepts what it
 produced ([D127 Registered commands][D127], [ADR-0035 Accepting a change][ADR-0035]). The workflow engine's journal is the one writer
-that is not a command.
+that is not a command. A command decides what should change, in event
+sourcing's sense (decide, beside evolve, [D130 One shape at the data level][D130], [D169 A command decides][D169]); not Effect's
+`DecisionModel.decide`, where a model answers a question about one input. Not
+a command-line command (`effect/cli`'s `Command`).
 
 **Intent**:
-What the user asked for, before it is checked. The input to a command; not a
-datom.
+What someone asks to happen, before it is checked: a person, an agent or an
+outside source. An effect in its first phase; the input to a command; not a
+datom. A clock firing, a sync arriving or an activity's exit is not an intent
+([D167 Intent: what someone asks to happen][D167]).
 
 **Acceptance rule**:
 A rule every change must keep, whoever made it, checked when the change is
@@ -590,7 +633,8 @@ sink. It is the log store's acknowledged cursor for the consumer
 **Decision**:
 An answer agreed in a design discussion, numbered `D<n>` and named. Recorded in
 the decision log with its reason; accepted intent until a gate proves the
-claims it rests on.
+claims it rests on. Not Effect's `Decision`, a model's answer about one input:
+that answer is an enrichment, with the model as its origin ([D111 Faster and enriching implementations][D111]).
 
 **ADR**:
 A short document that records one important decision and why it was made, so
@@ -750,7 +794,9 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D125]: docs/plan/bootstrap/02-decision-log.md#d125
 [D126]: docs/plan/bootstrap/02-decision-log.md#d126
 [D127]: docs/plan/bootstrap/02-decision-log.md#d127
+[D130]: docs/plan/bootstrap/02-decision-log.md#d130
 [D133]: docs/plan/bootstrap/02-decision-log.md#d133
+[D136]: docs/plan/bootstrap/02-decision-log.md#d136
 [D144]: docs/plan/bootstrap/02-decision-log.md#d144
 [D148]: docs/plan/bootstrap/02-decision-log.md#d148
 [D149]: docs/plan/bootstrap/02-decision-log.md#d149
@@ -759,6 +805,13 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D153]: docs/plan/bootstrap/02-decision-log.md#d153
 [D154]: docs/plan/bootstrap/02-decision-log.md#d154
 [D155]: docs/plan/bootstrap/02-decision-log.md#d155
+[D163]: docs/plan/bootstrap/02-decision-log.md#d163
+[D164]: docs/plan/bootstrap/02-decision-log.md#d164
+[D165]: docs/plan/bootstrap/02-decision-log.md#d165
+[D166]: docs/plan/bootstrap/02-decision-log.md#d166
+[D167]: docs/plan/bootstrap/02-decision-log.md#d167
+[D168]: docs/plan/bootstrap/02-decision-log.md#d168
+[D169]: docs/plan/bootstrap/02-decision-log.md#d169
 [D2]: docs/plan/bootstrap/02-decision-log.md#d2
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
@@ -767,5 +820,7 @@ right. A stub, a failing test and a reference solution that passes in verify.
 [D94]: docs/plan/bootstrap/02-decision-log.md#d94
 [D95]: docs/plan/bootstrap/02-decision-log.md#d95
 [D96]: docs/plan/bootstrap/02-decision-log.md#d96
+[D98]: docs/plan/bootstrap/02-decision-log.md#d98
+[D98']: docs/plan/bootstrap/02-decision-log.md#d98p
 [I60]: docs/issues/0060-server-independent-mode.md
 [P04]: docs/plan/bootstrap/06-qualification-gates.md#p04

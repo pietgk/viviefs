@@ -25,8 +25,11 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 
 ## Comments
 
+2026-10-28: [I88 Effect and the effect handler][I88] settled one of the two: the linker tells Effects in Vision - View - Effects from Effect by the phrase's own entry (the longest term wins), and Effect from effect by case ([D164 Effect and effect, told apart by case][D164]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D164]: ../plan/bootstrap/02-decision-log.md#d164
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I32]: 0032-ideas-batch-explain-any-word-on-demand.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md

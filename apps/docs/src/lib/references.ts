@@ -277,21 +277,32 @@ export type GlossaryTerm = {
   readonly summary: string
 }
 
-/** A glossary entry's anchor: `Guide template` -> `guide-template`. */
+/**
+ * A glossary entry's anchor: `Guide template` -> `guide-template`. A name
+ * keeps its capitals, so `Effect` (the library, `#Effect`) and effect (the
+ * word, `#effect`) each have their own.
+ */
 export const glossaryAnchor = (term: string): string =>
-  term
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, '')
+  (PROPER_NOUNS.includes(term) ? term : term.toLowerCase())
+    .replace(/[^A-Za-z0-9 -]/g, '')
     .trim()
     .replace(/ +/g, '-')
 
 /** Every glossary entry, `**Term**:` then its definition up to the blank line or `_Avoid_`. */
-export const parseGlossary = (source: string): ReadonlyArray<GlossaryTerm> =>
-  [...source.matchAll(/^\*\*([^*]+)\*\*:\n([\s\S]*?)(?=\n_Avoid_|\n\n|$)/gm)].map(([, term = '', definition = '']) => {
+export const parseGlossary = (source: string): ReadonlyArray<GlossaryTerm> => {
+  const terms = [...source.matchAll(/^\*\*([^*]+)\*\*:\n([\s\S]*?)(?=\n_Avoid_|\n\n|$)/gm)].map(([, term = '', definition = '']) => {
     const summary = firstSentence(plainText(definition))
     if (summary === '') throw new Error(`${GLOSSARY}: "${term}" has no definition (D94).`)
     return { term, anchor: glossaryAnchor(term), summary }
   })
+  const seen = new Map<string, string>()
+  for (const { term, anchor } of terms) {
+    const other = seen.get(anchor)
+    if (other !== undefined) throw new Error(`${GLOSSARY}: "${other}" and "${term}" share the anchor #${anchor}.`)
+    seen.set(anchor, term)
+  }
+  return terms
+}
 
 /**
  * Terms that are also everyday words in these docs link only when written
@@ -318,7 +329,10 @@ export const EVERYDAY_TERMS = [
   'Worker',
 ]
 
-/** Names that have no plural: "Effects" in "Vision - View - Effects" is not Effect. */
+/**
+ * Names, matched only as written, with no plural: "Effects" in
+ * "Vision - View - Effects" is not Effect, and "effect" is the word, not the library.
+ */
 const PROPER_NOUNS = ['Effect', 'ViViEfs', 'IntentComposer']
 
 /** The forms of a term a page may use: as written, and its plural. */
@@ -341,13 +355,14 @@ export const termFinder = (terms: ReadonlyArray<GlossaryTerm>) => {
   const forms = terms
     .flatMap((term) => termForms(term.term).map((form) => ({ form, term })))
     .sort((a, b) => b.form.length - a.form.length)
-  const byForm = new Map(forms.map(({ form, term }) => [form.toLowerCase(), term]))
+  // A form as written wins over the same letters in another case: `Effect` and `effect` are two terms.
+  const asWritten = new Map(forms.map(({ form, term }) => [form, term]))
+  const anyCase = new Map(forms.filter(({ term }) => !isExact(term.term)).map(({ form, term }) => [form.toLowerCase(), term]))
   const pattern = new RegExp(`(?<![\\w-])(?:${forms.map(({ form }) => escapeRegExp(form)).join('|')})(?![\\w-])`, 'gi')
   return (text: string): ReadonlyArray<FoundTerm> =>
     [...text.matchAll(pattern)].flatMap((match) => {
-      const term = byForm.get(match[0].toLowerCase())
+      const term = asWritten.get(match[0]) ?? anyCase.get(match[0].toLowerCase())
       if (term === undefined) return []
-      if (isExact(term.term) && !termForms(term.term).includes(match[0])) return []
       // At the start of a sentence any word is capitalised, so it says nothing.
       if (EVERYDAY_TERMS.includes(term.term) && /(?:^|[.!?:]\s*)$/.test(text.slice(0, match.index).trimEnd())) return []
       return [{ start: match.index, end: match.index + match[0].length, term }]
