@@ -37,7 +37,7 @@ Decided with the human on 2026-10-28 in three rounds, on [the review page](../re
 
 **Round 3.** Growth is watched, not capped: what a newcomer must hold is Start here; `verify`'s new `glossary` step reports the number of terms and any term no living document uses, and each map's acceptance reviews the terms it added ([D178 Growth watched, not capped][D178]).
 
-**Review after the rounds.** The human found "kept on their phone" in Quarantine sloppy where browsers and laptops are devices too: a definition names the general thing, and a platform appears only as an example ([D179 A definition names the general thing][D179]). Eight entries were corrected, and at the human's request the living documents were swept the same way ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032], [ADR-0033 The Presenter pattern][ADR-0033], [ADR-0036 The journal is the fence][ADR-0036], the log-store lesson on time, [I11 Quarantine of user content after a lost lease][I11], [I14 Physical devices, and a notification tap that completes a deferred][I14], [I28 Alchemy: infrastructure as Effects][I28], [I32 Ideas batch: explain any word on demand][I32], [I61 Rename evidence-mobile to evidence-client][I61], [I63 The columnar copy as a Presenter implementation][I63], [I67 Minting entity id segments][I67], [I80 Build the journal fence][I80]); Frame subscription, which had only a hover line, got a precise part from [D109 Frame and frame subscription][D109].
+**Review after the rounds.** The human found "kept on their phone" in Quarantine sloppy where browsers and laptops are devices too: a definition names the general thing, and a platform appears only as an example ([D179 A definition names the general thing][D179]). Eight entries were corrected, and at the human's request the living documents were swept the same way ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032], [ADR-0033 The Presenter pattern][ADR-0033], [ADR-0036 The journal is the fence][ADR-0036], the log-store lesson on time, [I11 Quarantine of user content after a lost lease][I11], [I14 Physical devices, and a notification tap that completes a deferred][I14], [I28 Alchemy: infrastructure as Effects][I28], [I32 Ideas batch: explain any word on demand][I32], [I61 Rename evidence-mobile to evidence-client][I61], [I63 The columnar copy as a Presenter implementation][I63], [I67 Minting entity id segments][I67], [I80 Build the journal fence][I80]); Frame subscription, which had only a hover line, got a precise part from [D109 Frame and frame subscription][D109]. The same review found that a hand-written link to a site page shows no preview while a glossary link with the same words does: every link in a page's text previews ([D90' A preview on every link in the text][D90']), built in [I97 A preview on every link in a page's text][I97].
 
 | Row | Disposition |
 | --- | --- |
@@ -76,6 +76,7 @@ Checks before a word is retired ([D173 What a word change rewrites, and where it
 [D177]: ../plan/bootstrap/02-decision-log.md#d177
 [D178]: ../plan/bootstrap/02-decision-log.md#d178
 [D179]: ../plan/bootstrap/02-decision-log.md#d179
+[D90']: ../plan/bootstrap/02-decision-log.md#d90p
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [D94']: ../plan/bootstrap/02-decision-log.md#d94p
 [I11]: 0011-quarantine-after-a-lost-lease.md
@@ -93,3 +94,4 @@ Checks before a word is retired ([D173 What a word change rewrites, and where it
 [I91]: 0091-effects-names-against-ours.md
 [I92]: 0092-map-2s-new-words.md
 [I96]: 0096-accept-the-vocabulary.md
+[I97]: 0097-a-preview-on-every-link-in-a-pages-text.md

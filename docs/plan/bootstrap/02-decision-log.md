@@ -178,6 +178,7 @@ From the human's review of the docs site with the log-store guide. Review page:
 | <a id="d88"></a>D88 | Names and summaries | Every decision has a name (the Name column of this log); every ADR has a one-line `Summary:` under its title (the template has it); every gate has the `name` and `summary` in `gates.ts`. A reference renders as id and name; its preview shows the summary. | A what or why that cannot be said in one line is not understood yet; naming makes every reference readable. |
 | <a id="d89"></a>D89 | Decisions in the reference | The site renders this decision log in place as Reference > Decisions, each decision row with an anchor (`#d37`, `#d33p` for [D33' Hybrid logical clock for tx][D33']), so every decision reference lands on its row. The rest of `docs/plan/` stays on GitHub. | Decisions are reference; plans are working documents. |
 | <a id="d90"></a>D90 | Hover previews | A reference link shows a preview card (kind, id and name, summary) on hover and on keyboard focus: our own small script in the docs site, data written into the link at build time. | Starlight has no preview and no plugin offers one; a preview checks a reference without leaving the page. |
+| <a id="d90p"></a>D90' | A preview on every link in the text | As [D90 Hover previews][D90], and every link in a page's text shows a preview card, not only a reference: a link to a site page shows the kind Page, the page's title and its first sentence (its frontmatter description, a README's first sentence, an ADR's Summary). The sidebar and the page's table of contents stay plain, as navigation. [D94 A glossary a newcomer can read][D94]'s first-use rule is unchanged, so no link is added; the card's kind tells a glossary link from a page link with the same words. Found in the human's review of [I89 How a word is chosen and written][I89]: on How a pattern is delivered, the first "ADRs" (a glossary link) previews and a later hand-written "ADRs" (a link to the ADR list) does not. Built in [I97 A preview on every link in a page's text][I97]. Not chosen: a glossary term's card on a hand-written link with that label only (Evidence, Guides and research links stay plain), and previews for references only, as today. | Two links that look the same and behave differently teach a reader that hovering is unreliable; one rule, anything blue in the text previews, is what a reference implementation should show. |
 | <a id="d91"></a>D91 | The exercise loop | `pnpm exercise` prints a learner's verdict instead of Vitest's output: "not yet" with the failing assertion, the file to edit and the lesson, or "done" with the reference solution to compare and the next lesson. Every lesson's Your turn explains the loop, from the guide template. | The first run is red by design; the learner needs to know that, and where to go next. |
 
 <a id="d92-d94p"></a>
@@ -559,6 +560,7 @@ and ran the charting's rule on every single-word term.
 [D88]: #d88
 [D89]: #d89
 [D9]: #d9
+[D90]: #d90
 [D93]: #d93
 [D94]: #d94
 [D94']: #d94p
@@ -621,6 +623,7 @@ and ran the charting's rule on every single-word term.
 [I92]: ../../issues/0092-map-2s-new-words.md
 [I94]: ../../issues/0094-words-in-another-projects-sense.md
 [I96]: ../../issues/0096-accept-the-vocabulary.md
+[I97]: ../../issues/0097-a-preview-on-every-link-in-a-pages-text.md
 [P01]: 06-qualification-gates.md#p01
 [P03]: 06-qualification-gates.md#p03
 [P04]: 06-qualification-gates.md#p04
