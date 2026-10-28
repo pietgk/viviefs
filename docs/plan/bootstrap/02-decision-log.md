@@ -180,7 +180,7 @@ From the human's review of the docs site with the log-store guide. Review page:
 | <a id="d90"></a>D90 | Hover previews | A reference link shows a preview card (kind, id and name, summary) on hover and on keyboard focus: our own small script in the docs site, data written into the link at build time. | Starlight has no preview and no plugin offers one; a preview checks a reference without leaving the page. |
 | <a id="d91"></a>D91 | The exercise loop | `pnpm exercise` prints a learner's verdict instead of Vitest's output: "not yet" with the failing assertion, the file to edit and the lesson, or "done" with the reference solution to compare and the next lesson. Every lesson's Your turn explains the loop, from the guide template. | The first run is red by design; the learner needs to know that, and where to go next. |
 
-<a id="d92-d94"></a>
+<a id="d92-d94p"></a>
 ## Claims, issues and the glossary (2026-10-02)
 
 From the human's third review of the docs site. Review page:
@@ -191,6 +191,7 @@ From the human's third review of the docs site. Review page:
 | <a id="d92"></a>D92 | Issues as records | Open issues are files: `docs/issues/NNNN-slug.md`, numbered like ADRs and never reused, id `I<n>` (`I1`), titled `# I1: <title>`, with `Status:` (the triage roles `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`, plus `resolved`), `Category:` (`bug` or `enhancement`), an optional `Effort:` and `Blocked by:`, and a `## What` section whose first sentence is the preview. Tickets an effort's spec breaks into live there too. The site renders them as Reference > Issues with a status badge, and `I1` anywhere renders as a named link; an unknown id fails the build. The deferred decisions and other open items move there. `docs/agents/issue-tracker.md` is adapted; the vendored skills are not; "#42" said in conversation means `I42`, because a bare `#N` already names upstream GitHub issues in the docs. | Open items lived in four places without ids; the triage and ticket skills need one tracker, and the docs need ids they can link. |
 | <a id="d93"></a>D93 | Claims in front | A gate proves exactly one claim: a statement the stack depends on that could be false. P is for proof; gate ids stay `Pnn` (the ledger's 168 runs, 80 file names and hundreds of references keep them). `gates.ts` holds each gate's `claim`, equal to the "Fact to establish" of the plan's gate table. A generated Reference > Claims page shows per gate its claim, pass condition, positive control, the ADRs that depend on it and its evidence notes; a gate reference links there and its preview shows the claim. The Evidence chapter becomes Claims and evidence. `Claim` is a glossary term. | The reader meets claims, not checks; a rename would rewrite machine-written history for one letter. |
 | <a id="d94"></a>D94 | A glossary a newcomer can read | Every glossary definition starts with one plain sentence that someone outside software understands; the preview shows it, and the precise part follows. Missing terms are added (claim, evidence note, ADR, decision, contract, qualified, accepted, delivered, Effect, service, layer); "green" leaves the docs for "passes verify". The site links the first use of each term on a page (term or plural, any case, whole words; not in headings, code or links), terms that are also everyday words only in their glossary sense (a short reviewed list), and terms inside definitions to their entries. Each term has an anchor; a definition without a first sentence fails the build. The human tests the rewrite with a reader outside software. | A reader outside software did not understand "pattern"; links help only if the definitions they show are plain. |
+| <a id="d94p"></a>D94' | The hover line | As [D94 A glossary a newcomer can read][D94], and an entry's first source line is its hover line: one plain sentence alone on that line, ending in a full stop, at most 120 characters, with no code font and no reference; the precise part starts on the next line. The docs site shows that line whole when the term is hovered, and the glossary page sets it on a line of its own; the build fails an entry whose first line breaks a rule. Whether the sentence is plain stays the human's review and [I21 Test the glossary with a reader outside software][I21]'s reader test. Found while deciding [I89 How a word is chosen and written][I89]: the preview showed the first source line, cut mid-sentence for 67 of 123 terms, since the parser stopped a definition at its first line break. Not chosen: "first sentence" kept and found by a pattern (it stops at "e.g." or a version number), and a limit of 100 characters. | The hover was meant to be a short, easy line; making it the first line makes it a thing the build can check and a writer can see. |
 
 <a id="d95-d102"></a>
 ## What ViViEfs is about (2026-10-07)
@@ -397,6 +398,25 @@ step, an activity that calls a model, and Vision - View - Effects.
 | <a id="d168"></a>D168 | Vision - View - Effects, one entry | The glossary has one entry for the phrase, which explains all three words; none is a term on its own, and the linker links the phrase, never "view" alone. Effects is what actually happened, an effect in its last phase ([D163 One meaning of effect, named by phase][D163]). This is the entry [D98 Vision - View - Effects][D98] and [D98' Vision - View - Effects, at every level][D98'] asked for. Not chosen: three entries, and the phrase with Vision alone. | View clashes with React Native's `View` and with the glossary's own Avoid lines for read model and Presenter; Effects alone would repeat effect. |
 | <a id="d169"></a>D169 | A command decides | "Decide" stays [D130 One shape at the data level][D130]'s verb for a command, in prose, not a glossary term: event sourcing's decide, beside evolve. The Command entry says it is not Effect's `DecisionModel.decide`, where a model answers a question about one input, nor a command-line command (`effect/cli`); the Decision entry says it is not Effect's `Decision`, whose answer is an enrichment with the model as origin ([D111 Faster and enriching implementations][D111]). Not chosen: "propose" (it loses the bridge to event sourcing) and the verb unmarked. | An activity can call `DecisionModel.decide` one line before a command decides; the marks keep the two apart without giving up the name event sourcing readers know. |
 
+<a id="d170-d178"></a>
+## How a word is chosen and written (2026-10-28)
+
+From [I89](../../issues/0089-how-a-word-is-chosen-and-written.md), the second ticket of map 3, decided with the human on
+[the review page](../../research/2026-10-28-how-a-word-is-chosen-and-written-review.html), which set vivief's quick reference beside the glossary
+and ran the charting's rule on every single-word term.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d170"></a>D170 | One word only where it matches | A single word is a glossary term only where its meaning matches our own use and the libraries we use; otherwise the term is a compound that names its context (a workflow runner, an OPFS worker), and compounds are welcome wherever they make communication clearer. The libraries we use: Effect, checked fully ([D135 Effect's names first][D135]); the platforms and libraries our code imports or runs on, the web platform, Node.js, React Native and Expo, SQLite, Postgres, OpenTelemetry and TypeScript; and the vocabularies a decision borrows on purpose, Temporal's ([D2 Temporal model][D2]) and event sourcing's ([D130 One shape at the data level][D130]). Matches means [D137 One meaning of entity][D137]'s test: the two senses share their core, and our entry says what differs. Where the cores differ, the ticket that takes the word weighs a compound against the bare word with a "not X's" mark and records why it chose. `vivief:names-that-carry-context`: adopt, as this rule. Not chosen: Effect alone (Origin and Intent would pass, though a web or Expo developer reads them otherwise), any well-known meaning in software (App, Server and Gate would fail, and the check has no end), and a compound for every clash without weighing a mark. | The charting's rule (the human, 2026-10-27) needs a test anyone can run before a ticket can apply it; naming the libraries bounds the check, and [D137 One meaning of entity][D137]'s shared core is the test the glossary already passed once. |
+| <a id="d171"></a>D171 | Every term passes the rule | The rule applies to every glossary term, today's included. [I89 How a word is chosen and written][I89]'s sweep of the 67 single-word terms is the first pass, recorded in its Answer: 46 stand, 4 need only a mark (Entity, Identity, Blob, Suite), 11 clash and are held by [I90 Pattern, concept, contract, abstraction][I90], [I91 Effect's names against ours][I91] and [I92 Map 2's new words][I92], and 6 clash and were held by none: Origin, Manifest, Intent, Cursor, Engine and actor, which join [I91][I91], widened to the platforms' names. [I96 Accept the vocabulary][I96] checks that every term has passed. Not chosen: a new ticket for the six (Intent overlaps [I92][I92]'s kinds of intent), and new and touched words only (two standards in one glossary, and the map's destination unchecked). | Map 3's destination is a glossary where every term means one thing; a rule that only new words meet would not reach it. |
+| <a id="d172"></a>D172 | The compound, every time | Where a term is a compound, living documents write the compound every time they mean our sense, not only at first use; the bare word is left to the other project's sense or to plain English, and the docs site never links it. A term that becomes a compound leaves the linker's list of everyday terms. Code identifiers follow only through issues ([D173 What a word change rewrites, and where it is written][D173]). Not chosen: the compound at first use on a page and the bare word after (agents and search read passages, not pages), and the compound in the glossary only. | A compound written only once leaves the bare word to carry both senses in the next sentence, which is the ambiguity the compound was chosen to remove. |
+| <a id="d173"></a>D173 | What a word change rewrites, and where it is written | A ticket that changes a word rewrites, in the same commit, the prose of the glossary, AGENTS.md, guides (with their lessons and exercises), ADR bodies, plan pages, open issues, and code comments and JSDoc. It keeps as written decision-log rows, resolved issues' Answers and research records; the new entry's Avoid line names the old word so an old record can be read. Before a word is retired its Answer records three checks: no persisted name or code identifier uses it in the retired sense, or an issue is opened; no planned concept (open issues, maps 4-6, the Schedule) needs the bare word for another meaning; and if the word is later given a new meaning, its entry says what old records meant by it. A code identifier becomes an issue for the build phase; pinned names never change ([D44 Never rename, never migrate][D44], [D44' Never rename, never migrate, the RPC too][D44']). A decision-log row records each rule and each word where alternatives were weighed; a mark that only says another project's sense goes in the glossary alone; no ADR unless a word changes what an architectural record means. Not chosen: code comments left for their identifier's issue. | Map 3's Notes, as [I88 Effect and the effect handler][I88] used them; the one gap it showed is that a comment is prose a reader meets beside the code. |
+| <a id="d174"></a>D174 | Like, Not and Avoid lines | A glossary entry may end with up to three labelled lines, each at most once and in this order: `_Like_` (what a newcomer may already know it as, written "X, except Y", [D162 Portability, two halves][D162]), `_Not_` (another project's sense of the same word) and `_Avoid_`. A same-core mark under [D170 One word only where it matches][D170] is a `_Like_` line; a different-core mark a `_Not_` line. The docs build fails an unknown label, a label out of order or repeated, and a `_Like_` line without "except"; the glossary page puts each line on its own line, and links no term in a `_Not_` or `_Avoid_` line. A line that tells one of our terms from another ("not the trace cursor") stays in the precise part. The marks [I88 Effect and the effect handler][I88] and earlier tickets wrote inline move into lines. Not chosen: inline prose (the "except" stays a review rule, and [I94 Words in another project's sense][I94]'s linker has no list to read), and `_Like_` alone as a line. | Labels make [D162 Portability, two halves][D162]'s rule a check the build runs, let a reader find another project's sense in one place, and give the linker the other senses as data. |
+| <a id="d175"></a>D175 | A retired word names its decision | A word we used and retired stays on the new entry's `_Avoid_` line with the decision that retired it, whose row holds the reason: `worker (our word until [D17x ...])`. A synonym we never used, and a word reserved for something else, stay as they are, with a bracket where the reason is not plain. There is no separate list of replaced words. `vivief:deprecated-terms`: adopt the reason, kept in the decision row. Not chosen: a reason for every Avoid word (about 135 words on 64 lines, most with a reason the definition already gives), and a table of replaced words at the end (a second place to keep in step). | vivief's Reason column taught the new word better than its definition; the decision row already holds that reason, and a reader of an old record looks on the entry. |
+| <a id="d176"></a>D176 | The glossary opens with its thesis | The glossary opens with [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]'s summary as its thesis, kept in step with it, then how to read an entry ([D94' The hover line][D94'], [D174 Like, Not and Avoid lines][D174]), then Start here: the twelve foundation concepts in the order of the one turn, each with its plain sentence and its entries. `vivief:glossary-shape`: adopt the thesis-first opening; not vivief's formula, since there is none ([D166 No formula with names of its own][D166]). Not chosen: the thesis without Start here, and fixing only the opening's outdated sentence. | The old opening predated [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] and said what ViViEfs builds, not what it is about; 123 terms need a way in. |
+| <a id="d177"></a>D177 | Groups follow the one turn | The glossary's groups follow the order of the one turn: the project, patterns, apps and code, facts and the log, changes and accept, origin and trust, identity and access, encryption and tamper-evidence, sync, reading, durable execution, then tracing, decisions and evidence, and validation. A new term goes in the group of the foundation concept it serves. Anchors are per term, so no link moves. Not chosen: splitting only Architecture (Data stays at 43 terms), one group per owning pattern (the process and project words have none), and the seven groups as they were. | Start here and the body then read in the same order, and the two largest groups, which each mixed several concerns, are gone. |
+| <a id="d178"></a>D178 | Growth watched, not capped | What a newcomer must hold is Start here, the twelve foundation concepts ([D160 The foundation concepts][D160]); the rest of the glossary is reference and grows with the patterns. `verify` reports, without failing, the number of terms and any term no living document outside the glossary uses; each map's acceptance reviews the terms it added and removes or justifies an unused one, [I96 Accept the vocabulary][I96] first. `vivief:surface-area-as-risk`: adopt the measure of what a newcomer holds, not vivief's trims. Not chosen: a cap on the number of terms (arbitrary, and it pushes needed words out of the glossary rather than out of the stack), and no measure. | The glossary went from 81 to 123 terms in four weeks; vivief's reviews counted what a developer must hold at once, which is the number that hurts. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -452,6 +472,7 @@ step, an activity that calls a model, and Vision - View - Effects.
 [D131]: #d131
 [D132]: #d132
 [D134]: #d134
+[D135]: #d135
 [D136]: #d136
 [D136-D141]: #d136-d141
 [D137]: #d137
@@ -473,8 +494,13 @@ step, an activity that calls a model, and Vision - View - Effects.
 [D155]: #d155
 [D156]: #d156
 [D157]: #d157
+[D160]: #d160
 [D162]: #d162
 [D163]: #d163
+[D166]: #d166
+[D170]: #d170
+[D173]: #d173
+[D174]: #d174
 [D18]: #d18
 [D2]: #d2
 [D22]: #d22
@@ -533,6 +559,8 @@ step, an activity that calls a model, and Vision - View - Effects.
 [D89]: #d89
 [D9]: #d9
 [D93]: #d93
+[D94]: #d94
+[D94']: #d94p
 [D95]: #d95
 [D96]: #d96
 [D98]: #d98
@@ -584,7 +612,14 @@ step, an activity that calls a model, and Vision - View - Effects.
 [I85]: ../../issues/0085-build-the-hash-chain.md
 [I86]: ../../issues/0086-agent-accounts.md
 [I87]: ../../issues/0087-group-and-role-encryption-levels.md
+[I88]: ../../issues/0088-effect-and-the-effect-handler.md
+[I89]: ../../issues/0089-how-a-word-is-chosen-and-written.md
 [I9]: ../../issues/0009-product-apps-as-app-pairs.md
+[I90]: ../../issues/0090-pattern-concept-contract-abstraction.md
+[I91]: ../../issues/0091-effects-names-against-ours.md
+[I92]: ../../issues/0092-map-2s-new-words.md
+[I94]: ../../issues/0094-words-in-another-projects-sense.md
+[I96]: ../../issues/0096-accept-the-vocabulary.md
 [P01]: 06-qualification-gates.md#p01
 [P03]: 06-qualification-gates.md#p03
 [P04]: 06-qualification-gates.md#p04

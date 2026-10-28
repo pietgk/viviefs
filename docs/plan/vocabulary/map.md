@@ -21,8 +21,9 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
   our own use and the libraries we use, inside and outside, as entity did
   ([D137 One meaning of entity][D137]); otherwise a compound that names its context (a workflow runner, an
   OPFS worker, a test runner). Compounds are welcome where they make
-  communication clearer. Effect's names come first ([D135 Effect's names first][D135]). [I89 How a word is chosen and written][I89] makes this a
-  decision.
+  communication clearer. Effect's names come first ([D135 Effect's names first][D135]). Decided in [I89 How a word is chosen and written][I89]: the
+  libraries and the test are named, every term passes the rule, and a compound
+  is written whole every time ([D170 One word only where it matches][D170]-[D172 The compound, every time][D172]).
 - **Do, not only plan.** A ticket writes its glossary entries and edits the
   living documents its word decision forces, in the same commit, so the
   repository never holds both words. [I26 Glossary links on words that are not our terms][I26]'s linker is built inside the map
@@ -36,11 +37,16 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
   code identifier uses it in the retired sense, or an issue is opened; (2) no
   planned concept (open issues, maps 4-6, the Schedule) needs the bare word for
   another meaning; (3) if the word is later given a new meaning, its entry says
-  what old records meant by it.
+  what old records meant by it. Decided, with code comments added to what is
+  rewritten ([D173 What a word change rewrites, and where it is written][D173]).
 - **Where a word decision is written.** A decision-log row (numbered on from
   [D162 Portability, two halves][D162]) for each rule and each word where alternatives were weighed. A mark that
   only says another project's sense goes in the glossary alone. No ADR unless a
-  word changes what an architectural record means.
+  word changes what an architectural record means ([D173 What a word change rewrites, and where it is written][D173]).
+- **How an entry is written.** The first line is the hover line ([D94' The hover line][D94']); then
+  `_Like_`, `_Not_` and `_Avoid_` lines ([D174 Like, Not and Avoid lines][D174]); a retired word names its
+  decision ([D175 A retired word names its decision][D175]); a new term goes in the group of the foundation concept it
+  serves ([D177 Groups follow the one turn][D177]). How to write one: [`docs/agents/domain.md`](../../agents/domain.md).
 - **Dispositions.** As map 2: _adopt_, _keep ours_, _reject_, _defer_ (with a
   `Decide when:`), _hand to map N_, or _stands_.
 - **One session per ticket.** Skills `grilling` and `domain-modeling`; a review
@@ -59,11 +65,11 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 ## Decisions so far
 
 - [I88 Effect and the effect handler][I88] (2026-10-28): effect has one meaning, named by phase (asked for, proposed, happened); Effect and effect are told apart by case, and the docs linker matches case; the effect handler is a compound term (a command, accept, a workflow body), with no formula of its own; an intent is what someone asks to happen; Vision - View - Effects is one entry; a command decides, marked against `DecisionModel.decide` ([D163 One meaning of effect, named by phase][D163]-[D169 A command decides][D169]).
+- [I89 How a word is chosen and written][I89] (2026-10-28): a single word only where it matches, the libraries and the test named; every term passes the rule, and six clashes no ticket held joined [I91 Effect's names against ours][I91]; the compound every time; the rewrite rules with code comments; `_Like_`, `_Not_` and `_Avoid_` lines; a retired word names its decision; the glossary opens with its thesis and Start here, and its groups follow the one turn; the first line is the hover line, after the preview was found cut mid-sentence; growth watched, not capped, reported by `verify` ([D170 One word only where it matches][D170]-[D178 Growth watched, not capped][D178], [D94' The hover line][D94']).
 
 ## Not yet specified
 
 - Code identifiers a word decision touches, each an issue once found.
-- Whether the glossary's groups change ([I89 How a word is chosen and written][I89] may answer it).
 
 ## Out of scope
 
@@ -79,8 +85,16 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D162]: ../bootstrap/02-decision-log.md#d162
 [D163]: ../bootstrap/02-decision-log.md#d163
 [D169]: ../bootstrap/02-decision-log.md#d169
+[D170]: ../bootstrap/02-decision-log.md#d170
+[D172]: ../bootstrap/02-decision-log.md#d172
+[D173]: ../bootstrap/02-decision-log.md#d173
+[D174]: ../bootstrap/02-decision-log.md#d174
+[D175]: ../bootstrap/02-decision-log.md#d175
+[D177]: ../bootstrap/02-decision-log.md#d177
+[D178]: ../bootstrap/02-decision-log.md#d178
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
+[D94']: ../bootstrap/02-decision-log.md#d94p
 [I21]: ../../issues/0021-test-the-glossary-with-a-reader.md
 [I26]: ../../issues/0026-glossary-links-on-words-that-are-not-our-terms.md
 [I28]: ../../issues/0028-alchemy-infrastructure-as-effects.md
@@ -93,6 +107,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I88]: ../../issues/0088-effect-and-the-effect-handler.md
 [I89]: ../../issues/0089-how-a-word-is-chosen-and-written.md
+[I91]: ../../issues/0091-effects-names-against-ours.md
 [I94]: ../../issues/0094-words-in-another-projects-sense.md
 [I95]: ../../issues/0095-build-the-glossary-linker-as-decided.md
 [I96]: ../../issues/0096-accept-the-vocabulary.md

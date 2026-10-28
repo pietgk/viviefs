@@ -209,7 +209,7 @@ and the exercise loop was not explained. Decided as [D87-D91 References, names a
 
 ## 11. Review round 3 (2026-10-02): issues, claims, the glossary
 
-Decided as [D92-D94 Claims, issues and the glossary][D92-D94] (review page
+Decided as [D92 Issues as records][D92]-[D94 A glossary a newcomer can read][D94] (review page
 [2026-10-02 Claims, issues and glossary review](../../research/2026-10-02-claims-issues-glossary-review.html)); built
 the same day, in the agreed order:
 
@@ -261,7 +261,6 @@ the same day, in the agreed order:
 [D90]: ../bootstrap/02-decision-log.md#d90
 [D91]: ../bootstrap/02-decision-log.md#d91
 [D92]: ../bootstrap/02-decision-log.md#d92
-[D92-D94]: ../bootstrap/02-decision-log.md#d92-d94
 [D93]: ../bootstrap/02-decision-log.md#d93
 [D94]: ../bootstrap/02-decision-log.md#d94
 [I20]: ../../issues/0020-trace-projector-on-devices.md

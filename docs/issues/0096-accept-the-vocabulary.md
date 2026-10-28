@@ -27,8 +27,12 @@ The human accepts the glossary in this session. [I21 Test the glossary with a re
 
 ## Comments
 
+2026-10-28: from [I89 How a word is chosen and written][I89]. Two more checks for the Answer: every glossary term has passed the single-word rule ([D171 Every term passes the rule][D171]; [I89][I89]'s Answer holds the first sweep), and the terms map 3 added are reviewed against `verify`'s `glossary` report, an unused term removed or justified ([D178 Growth watched, not capped][D178]). The first report (2026-10-28): 123 terms; Token verifier and Bearer authentication are used in no living document, only in READMEs and code.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D171]: ../plan/bootstrap/02-decision-log.md#d171
+[D178]: ../plan/bootstrap/02-decision-log.md#d178
 [I21]: 0021-test-the-glossary-with-a-reader.md
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md

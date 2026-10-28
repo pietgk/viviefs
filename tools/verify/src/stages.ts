@@ -242,6 +242,16 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'glossary',
+        blurb: "the glossary's size and any term no living document uses, reported, never failing",
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-glossary.ts'],
+          },
+        ],
+      },
+      {
         name: 'evidence',
         blurb: 'coverage, suites and stories of this run hold against the registry and the lockfile',
         invocations: [

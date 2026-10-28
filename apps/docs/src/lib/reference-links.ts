@@ -24,6 +24,7 @@ import {
   decisionAnchor,
   findReferences,
   GLOSSARY,
+  GLOSSARY_LABELS,
   glossaryAnchor,
   glossaryTerms,
   lookupReference,
@@ -166,12 +167,12 @@ const linkedReference = (label: string, catalog: Catalog, where: string, owned: 
   return reference
 }
 
-/** Whether a text node follows an `_Avoid_` marker in its paragraph. */
-const afterAvoid = (node: unknown, tree: Tree): boolean => {
+/** Whether a text node follows a `_Not_` or `_Avoid_` label in its paragraph (D174). */
+const afterOtherSense = (node: unknown, tree: Tree): boolean => {
   const parent = tree.parent(node as never) as Phrasing | undefined
   const index = tree.indexOf(node as never)
   if (parent?.children === undefined || index === undefined) return false
-  return parent.children.slice(0, index).some((child) => child.type === 'emphasis' && textOf(child) === 'Avoid')
+  return parent.children.slice(0, index).some((child) => child.type === 'emphasis' && ['Not', 'Avoid'].includes(textOf(child)))
 }
 
 /** The term a glossary entry paragraph defines (`**Term**:`), or null for other text. */
@@ -206,8 +207,8 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           // A glossary entry's own term, in bold, is what is being defined.
           if (isGlossary && type === 'strong') return
         }
-        // A glossary entry's Avoid list names words that are not the term.
-        if (isGlossary && afterAvoid(node, context)) return
+        // A glossary entry's Not and Avoid lines name other senses and other words.
+        if (isGlossary && afterOtherSense(node, context)) return
         let terms = pageTerms
         if (isGlossary) {
           let paragraph: { readonly type: string } | undefined = context.parent(node)
@@ -250,9 +251,14 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
   }
 }
 
-/** Gives each glossary entry its anchor (`#guide-template`, D94). */
+/**
+ * Gives each glossary entry its anchor (`#guide-template`, D94), and puts its
+ * hover line, its precise part and each `_Like_`, `_Not_` and `_Avoid_` line
+ * on lines of their own (D94', D174).
+ */
 export const glossaryAnchors = (): HastPluginEntry => ({ fileURL }) => {
   if (!fileURL || !fileURLToPath(fileURL).endsWith(`/${GLOSSARY}`)) return null
+  const lineBreak = () => ({ type: 'element' as const, tagName: 'br', properties: {}, children: [] })
   return {
     name: 'viviefs-glossary-anchors',
     element: {
@@ -262,6 +268,25 @@ export const glossaryAnchors = (): HastPluginEntry => ({ fileURL }) => {
         if (first?.type !== 'element' || first.tagName !== 'strong') return
         if (second?.type !== 'text' || !second.value.startsWith(':')) return
         context.setProperty(node, 'id', glossaryAnchor(context.textContent(first)))
+        const children = node.children.slice(1)
+        for (const [index, child] of children.entries()) {
+          const before = children[index - 1]
+          const startsLine = before?.type === 'text' && before.value.endsWith('\n')
+          if (startsLine && child.type === 'element' && child.tagName === 'em' && GLOSSARY_LABELS.some((label) => label === context.textContent(child))) {
+            context.insertBefore(child, lineBreak())
+          }
+        }
+        // The hover line is the entry's first line: it ends at the line break after the one that follows `:`.
+        const from = (child: (typeof children)[number]) => (child === second ? second.value.indexOf('\n') + 1 : 0)
+        const ending = children.find((child) => child.type === 'text' && child.value.indexOf('\n', from(child)) >= 0)
+        if (ending?.type !== 'text') return
+        const at = ending.value.indexOf('\n', from(ending))
+        const rest = ending.value.slice(at + 1)
+        const next = children[children.indexOf(ending) + 1]
+        const labelNext = next?.type === 'element' && next.tagName === 'em' && GLOSSARY_LABELS.some((label) => label === context.textContent(next))
+        // A label on the next line already starts a line of its own.
+        if (rest === '' && labelNext) return
+        context.replaceNode(ending, [{ type: 'text', value: ending.value.slice(0, at) }, lineBreak(), { type: 'text', value: `\n${rest}` }])
       },
     },
   }

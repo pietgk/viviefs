@@ -215,16 +215,16 @@
         "statements": "34/38"
       },
       "apps/docs/src/lib/reference-links.ts": {
-        "branches": "116/129",
-        "functions": "26/26",
-        "lines": "125/125",
-        "statements": "158/164"
+        "branches": "137/150",
+        "functions": "31/31",
+        "lines": "141/141",
+        "statements": "181/187"
       },
       "apps/docs/src/lib/references.ts": {
-        "branches": "87/91",
-        "functions": "38/38",
-        "lines": "129/129",
-        "statements": "164/164"
+        "branches": "112/116",
+        "functions": "41/41",
+        "lines": "156/156",
+        "statements": "201/201"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
@@ -461,10 +461,10 @@
         "statements": "147/156"
       },
       "libs/references/src/rewrite.ts": {
-        "branches": "200/276",
+        "branches": "202/276",
         "functions": "39/40",
         "lines": "275/298",
-        "statements": "322/362"
+        "statements": "324/362"
       },
       "libs/sync/client/src/client.ts": {
         "branches": "30/34",
@@ -658,6 +658,12 @@
         "lines": "27/27",
         "statements": "27/28"
       },
+      "tools/verify/src/glossary-report.ts": {
+        "branches": "9/11",
+        "functions": "9/9",
+        "lines": "20/20",
+        "statements": "24/24"
+      },
       "tools/verify/src/guides.ts": {
         "branches": "164/203",
         "functions": "63/66",
@@ -726,5 +732,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "1ea2d88a251da9fe0bd9619aece8d60bc116b0e3e88d200ec3ba0078dc6799c3"
+  "registryDigest": "ce8c0f6b7c63be85ec77e684fd660562825bd1ac224a930a055f0f99ec879174"
 }

@@ -288,11 +288,41 @@ export const glossaryAnchor = (term: string): string =>
     .trim()
     .replace(/ +/g, '-')
 
-/** Every glossary entry, `**Term**:` then its definition up to the blank line or `_Avoid_`. */
+/** The lines an entry may end with, each at most once and in this order (D174). */
+export const GLOSSARY_LABELS = ['Like', 'Not', 'Avoid'] as const
+
+/** The longest hover line, in characters of plain text (D94'). */
+export const HOVER_LINE_LENGTH = 120
+
+/**
+ * Every glossary entry, `**Term**:` then its lines up to a blank line: the
+ * hover line, the precise part, then `_Like_`, `_Not_` and `_Avoid_` lines
+ * (D94', D174). The hover line is the first line, one plain sentence the
+ * preview card shows whole; an entry that breaks a rule fails the build.
+ */
 export const parseGlossary = (source: string): ReadonlyArray<GlossaryTerm> => {
-  const terms = [...source.matchAll(/^\*\*([^*]+)\*\*:\n([\s\S]*?)(?=\n_Avoid_|\n\n|$)/gm)].map(([, term = '', definition = '']) => {
-    const summary = firstSentence(plainText(definition))
-    if (summary === '') throw new Error(`${GLOSSARY}: "${term}" has no definition (D94).`)
+  const terms = [...source.matchAll(/^\*\*([^*]+)\*\*:\n((?:.+\n?)*)/gm)].map(([, term = '', body = '']) => {
+    const fail = (problem: string): never => {
+      throw new Error(`${GLOSSARY}: "${term}": ${problem}`)
+    }
+    const [hover = '', ...rest] = body.split('\n').filter((line) => line.trim() !== '')
+    if (hover.trim() === '') throw new Error(`${GLOSSARY}: "${term}" has no definition (D94).`)
+    const summary = hoverLine(hover, fail)
+    let last = -1
+    let like = ''
+    for (const line of rest) {
+      const label = /^_([A-Za-z]+)_:/.exec(line)?.[1]
+      if (label === undefined) {
+        if (GLOSSARY_LABELS[last] === 'Like') like += ` ${line}`
+        continue
+      }
+      const at = GLOSSARY_LABELS.indexOf(label as (typeof GLOSSARY_LABELS)[number])
+      if (at < 0) fail(`_${label}_ is not a label; an entry has _Like_, _Not_ and _Avoid_ (D174).`)
+      if (at <= last) fail('_Like_, _Not_ and _Avoid_ come once each, in that order (D174).')
+      last = at
+      if (label === 'Like') like = line
+    }
+    if (like !== '' && !/\bexcept\b/.test(like)) fail('a _Like_ line says what differs, with "except" (D162).')
     return { term, anchor: glossaryAnchor(term), summary }
   })
   const seen = new Map<string, string>()
@@ -302,6 +332,19 @@ export const parseGlossary = (source: string): ReadonlyArray<GlossaryTerm> => {
     seen.set(anchor, term)
   }
   return terms
+}
+
+/** An entry's hover line as plain text, or the rule of D94' it breaks. */
+const hoverLine = (line: string, fail: (problem: string) => never): string => {
+  if (line.includes('`')) fail("the hover line has code font; write it in plain words (D94').")
+  if (/\]\[|\]\(/.test(line)) fail("the hover line has a reference; put it in the precise part (D94').")
+  const text = plainText(line)
+  if (!/[.!?]$/.test(text)) fail(`the first line is the hover line, one whole sentence ending in a full stop (D94'): "${text}"`)
+  if (/[.!?]\s/.test(text)) fail(`the hover line has more than one sentence (D94'): "${text}"`)
+  if (text.length > HOVER_LINE_LENGTH) {
+    fail(`the hover line has ${text.length} characters; at most ${HOVER_LINE_LENGTH} (D94'): "${text}"`)
+  }
+  return text
 }
 
 /**

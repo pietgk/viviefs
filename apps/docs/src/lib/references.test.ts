@@ -266,7 +266,8 @@ describe('glossary terms in prose (D94)', () => {
   const terms = parseGlossary(
     [
       '**Pattern**:',
-      'A proven way to build one part of an app. More.',
+      'A proven way to build one part of an app.',
+      'More.',
       '_Avoid_: framework',
       '',
       '**Guide template**:',
@@ -299,10 +300,47 @@ describe('glossary terms in prose (D94)', () => {
   )
   const found = (text: string) => termFinder(terms)(text).map(({ start, end }) => text.slice(start, end))
 
-  it('reads each entry with its anchor and plain first sentence', () => {
+  it('reads each entry with its anchor and its hover line', () => {
     expect(terms[0]).toEqual({ term: 'Pattern', anchor: 'pattern', summary: 'A proven way to build one part of an app.' })
     expect(terms[1]?.anchor).toBe('guide-template')
     expect(() => parseGlossary('**Empty**:\n')).toThrow(/"Empty" has no definition/)
+  })
+
+  it("takes the whole first line as the hover line, however the precise part wraps (D94')", () => {
+    const [workflow] = parseGlossary('**Workflow**:\nA process that survives a restart.\nVersioned by name; its body\nre-runs on resume.\n')
+    expect(workflow?.summary).toBe('A process that survives a restart.')
+    // A first line that ends mid-sentence was cut off in the preview; now it fails.
+    expect(() =>
+      parseGlossary('**Workflow**:\nA multi-step process that survives the app being closed or the phone\nrestarting.\n'),
+    ).toThrow(/"Workflow": the first line is the hover line, one whole sentence ending in a full stop/)
+  })
+
+  it("holds the hover line to one short sentence without code or references (D94')", () => {
+    const entry = (line: string) => () => parseGlossary(`**Term**:\n${line}\n`)
+    expect(entry(`A ${'very '.repeat(24)}long line.`)).toThrow(/"Term": the hover line has 132 characters; at most 120/)
+    expect(entry('A `Layer` that supplies it.')).toThrow(/"Term": the hover line has code font/)
+    expect(entry('One fact ([D37 Log store tables][D37]).')).toThrow(/"Term": the hover line has a reference/)
+    expect(entry('One fact. Kept forever.')).toThrow(/"Term": the hover line has more than one sentence/)
+  })
+
+  it('reads Like, Not and Avoid lines once each and in that order, and a Like line says except (D174)', () => {
+    const [handler] = parseGlossary(
+      [
+        '**Effect handler**:',
+        'A step that decides which effects follow.',
+        'A command is one.',
+        "_Like_: Elm's `update`, except that what it returns",
+        'counts only once accepted.',
+        '_Not_: an effect handler of algebraic effects.',
+        '_Avoid_: handler (alone)',
+      ].join('\n'),
+    )
+    expect(handler?.summary).toBe('A step that decides which effects follow.')
+    const entry = (...lines: ReadonlyArray<string>) => () => parseGlossary(['**Term**:', 'One fact.', ...lines].join('\n'))
+    expect(entry('_Like_: an EAV row.')).toThrow(/"Term": a _Like_ line says what differs, with "except" \(D162\)/)
+    expect(entry('_Avoid_: row', '_Not_: a row.')).toThrow(/"Term": _Like_, _Not_ and _Avoid_ come once each, in that order/)
+    expect(entry('_Not_: a row.', '_Not_: a record.')).toThrow(/once each, in that order/)
+    expect(entry('_See_: Datom')).toThrow(/"Term": _See_ is not a label; an entry has _Like_, _Not_ and _Avoid_/)
   })
 
   it('gives a name its capitals in its anchor, so a word and a name never share one', () => {
