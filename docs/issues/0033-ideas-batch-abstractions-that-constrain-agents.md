@@ -4,7 +4,7 @@ Status: ready-for-human
 
 Category: enhancement
 
-Decide when: map 3, "abstraction" or "pattern"
+Decide when: map 4, where an agent can still write bad code that passes `verify`
 
 Found: 2026-10-04
 
@@ -81,6 +81,8 @@ So it may be the abstraction above all of these: one shape every decision, ADR, 
 
 2026-10-27: map 3 started. "Abstraction" or "pattern" is decided in [I90 Pattern, concept, contract, abstraction][I90] Pattern, concept, contract, abstraction, which comments here on what is left.
 
+2026-10-28: from [I90 Pattern, concept, contract, abstraction][I90]. Note 1 is answered: pattern stays what ViViEfs delivers, concept is the wider word, and "abstraction" stays plain English, the code's abstractions keeping Effect's names ([D181 Concept is the wider word][D181], [D182 Abstraction stays plain English][D182]). Note 4 was answered by [I56 One shape at every level?][I56]. What is left is notes 2 and 3: where can an agent still write bad code that passes `verify`, and does a type, a lint rule, a suite or a new abstraction (a generator for a feature or a command with its tests) close it. That goes with map 4.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0025]: ../adr/0025-ai-robust-guardrails.md
@@ -88,6 +90,8 @@ So it may be the abstraction above all of these: one shape every decision, ADR, 
 [ADR-0031]: ../adr/0031-typescript-strictness-flags.md
 [D130]: ../plan/bootstrap/02-decision-log.md#d130
 [D132]: ../plan/bootstrap/02-decision-log.md#d132
+[D181]: ../plan/bootstrap/02-decision-log.md#d181
+[D182]: ../plan/bootstrap/02-decision-log.md#d182
 [D26]: ../plan/bootstrap/02-decision-log.md#d26
 [D38]: ../plan/bootstrap/02-decision-log.md#d38
 [D48']: ../plan/bootstrap/02-decision-log.md#d48p

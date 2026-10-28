@@ -26,7 +26,7 @@ terms in `GLOSSARY.md`. The review page is the research record
 ## 2. Scope: what the log-store guide owns (D82, D83)
 
 Patterns build on each other; they do not nest. A candidate is a pattern when it has a contract code depends on, a
-suite and a gate; otherwise it is a concept, and it lives in the guide of the pattern whose contract defines it and
+suite and a gate; otherwise it is a concept one pattern owns ([D181 Concept is the wider word][D181]), and it lives in the guide of the pattern whose contract defines it and
 whose suite checks it. Every ADR is named by exactly one guide. The pattern id is the guide folder, the suite prefix
 and the `metadata.guides` value.
 
@@ -239,6 +239,7 @@ the same day, in the agreed order:
 [ADR-0011]: ../../adr/0011-log-store-pattern.md
 [ADR-0026]: ../../adr/0026-verify-qualify-teach.md
 [ADR-0028]: ../../adr/0028-typescript-7-cli-with-typescript-6-api.md
+[D181]: ../bootstrap/02-decision-log.md#d181
 [D33']: ../bootstrap/02-decision-log.md#d33p
 [D60]: ../bootstrap/02-decision-log.md#d60
 [D62]: ../bootstrap/02-decision-log.md#d62

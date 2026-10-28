@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I90: Pattern, concept, contract, abstraction (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-quote { border-left: 3px solid var(--color-base-content); border-left-color: color-mix(in oklab, var(--color-base-content) 30%, transparent); padding-left: 0.9rem; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .mermaid { background: var(--color-base-200); border-radius: 0.5rem; padding: 1rem; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 3, Vocabulary - I90</span>
+    <span class="badge badge-outline">2026-10-28, rounds 1-2 answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Pattern, concept, contract, abstraction</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0090-pattern-concept-contract-abstraction.md">I90 Pattern, concept, contract, abstraction</a> gives the architecture words a newcomer meets first one meaning each, under <a class="cr-link" href="../issues/0089-how-a-word-is-chosen-and-written.md">I89 How a word is chosen and written</a>'s rules: a single word only where it matches Effect and the platforms and libraries we use (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d170">D170 One word only where it matches</a>), a compound written whole every time (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d172">D172 The compound, every time</a>), and an entry that ends with <code class="cr-inline">_Like_</code>, <code class="cr-inline">_Not_</code> and <code class="cr-inline">_Avoid_</code> lines (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d174">D174 Like, Not and Avoid lines</a>). I89's sweep left three of its clashes here: Pattern, Contract and Feature. Round 1 (section 6) asks one question per word. Round 2 will settle the inventory rows and what is left of <a class="cr-link" href="../issues/0033-ideas-batch-abstractions-that-constrain-agents.md">I33 Ideas batch: abstractions that constrain agents</a>, which depend on round 1.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 1, Q1-Q5 all A (2026-10-28): concept is the wider word, with entries Concept and Foundation concept; "abstraction" stays plain English; Pattern stands with its <code class="cr-inline">_Like_</code> and <code class="cr-inline">_Not_</code> lines and <code class="cr-inline">.agents/patterns/</code> becomes <code class="cr-inline">.agents/extracts/</code>; Contract and Feature stand with theirs, and "no feature code" becomes "no production code". Round 2 (section 7): Q6 and Q7 A, the rows as the table and I33 narrowed to map 4. Recorded as D181-D185; see <a class="cr-link" href="../issues/0090-pattern-concept-contract-abstraction.md">I90's Answer</a>.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li><b>The real clash is inside our own text.</b> <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d82">D82 Patterns build on each other</a> says a candidate is a pattern when it has a contract, a suite and a gate, "otherwise it is a concept": concept means <i>not a pattern</i>. <a class="cr-link" href="../adr/0032-what-viviefs-is-about.md">ADR-0032</a>'s first foundation concept is Pattern. Pattern is then a concept and not a concept at once (section 2).</li>
+      <li><b>One small change of reading fixes it with no rename</b>: concept is the wider word, a named idea of the stack; a pattern is a concept that has a contract, a suite and a gate; every other concept is owned by one pattern. D82's rule and the guides' Concepts pages read the same; Pattern sits in the table without contradiction (section 3).</li>
+      <li><b>"Abstraction" is then not needed as a term.</b> Effect uses neither "abstraction" nor "pattern" as a name; concept is already the wider word I33 was looking for, and "a boundary you work through" is what Service, Layer and Schema already name (section 4).</li>
+      <li><b>Pattern keeps its word</b>, with a <code class="cr-inline">_Like_</code> line (a design pattern, except it is built and proven once) and a <code class="cr-inline">_Not_</code> line (a pattern something is matched against: Effect's <code class="cr-inline">Match</code>, the web's <code class="cr-inline">URLPattern</code>). One second sense lives in our own repository: <code class="cr-inline">.agents/patterns/</code> holds Effect usage notes, not patterns (section 4).</li>
+      <li><b>Contract matches Effect</b> (its sources say "the procedure contract", "the service contract" in our sense); only vivief's <code class="cr-inline">Contract</code> differs, and it already landed as accepting a change (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>). A <code class="cr-inline">_Like_</code> and a <code class="cr-inline">_Not_</code> line (section 5).</li>
+      <li><b>Feature matches</b> what a web or Nx developer calls a feature; only vivief's Feature slice differs. One stray sense: "no feature code before its gate passes" means any production code, including libs (section 5).</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. vivief's originals in one page</h2>
+  <p>What vivief said, from <code class="cr-inline">~/ws/vivief/docs/contract/vivief-concepts-v6.md</code> (v6) §1, §2.4, §3 and §11, and where each idea already landed here. Nothing below is decided again; the table is so no elegant idea is lost when the words settle.</p>
+  <div class="cr-quote space-y-2">
+    <p>"<b>Concept vs. pattern.</b> The following are patterns, not concepts: domain, bridge, artifact, slice, profile, skill. They compose the five concepts but don't extend them." <span class="cr-src">v6 §1</span></p>
+    <p>"The cross-cutting concept. A Contract declares expected behavior - simultaneously spec, test, and runtime guard." "A Contract declares. An effectHandler enforces." <span class="cr-src">v6 §2.4, §1</span></p>
+    <p>"<b>Feature</b> | Datom + Schema Contract + effectHandler (function) | Validated transformation" - the middle of three conceptual slices, Fact, Feature, Full: "Entry path for incremental adoption". <span class="cr-src">v6 §3 Conceptual Slices</span></p>
+  </div>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief</th><th>What it is there</th><th>Where it landed here</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">concept</code> (five)</td><td>Datom, Projection, Surface, Contract, effectHandler: the closed set that "models the entire platform"; a new one is rare</td><td>All five adopted in the forms they landed, as foundation concepts; the set is open (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d160">D160 The foundation concepts</a>)</td></tr>
+      <tr><td><code class="cr-inline">pattern</code> (six)</td><td>A composition of the concepts that does not extend them, earned by recurring: domain, bridge, artifact, slice, profile, skill</td><td>Ours is earned by proof, not recurrence (D82). Each of the six has its own row: domain deferred to <a class="cr-link" href="../issues/0009-product-apps-as-app-pairs.md">I9</a>; bridge not named as one pattern (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129 Boundaries and live change</a>); artifact taken as files by content hash; slice is the guide order; skill is a thin procedure linking to a guide (D30, D64)</td></tr>
+      <tr><td><code class="cr-inline">Contract</code></td><td>Spec, test and runtime guard at once; three modes (guard, aggregation, state machine), three validation points, six closed sub-types, an enforcement strategy that follows trust</td><td>Its placement (one place every write passes) and its spec-test-guard unity: accepting a change and acceptance rules (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d125">D125 Acceptance rules</a>). Aggregation is a projection; post-commit is a workflow (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d128">D128 Rules over time</a>); the six sub-types each land on one pattern's contract</td></tr>
+      <tr><td>Feature (slice)</td><td>Data and logic without a screen, the second step of adopting the concepts</td><td>Same word, other meaning: our Feature is a vertical slice from screen to server. The entry path is the guide order (D65)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Ideas worth keeping, and whether the words keep them</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>A short list a newcomer holds as one loop.</b> Kept: Start here and ADR-0032's table. The word for its rows is this ticket's question (Q1).</li>
+      <li><b>"Compose, don't extend"</b>: a pattern adds no new kind of thing. Ours says the same differently: patterns build on each other and do not nest (Builds on). Kept.</li>
+      <li><b>"A Contract declares, an effectHandler enforces"</b>: the promise is separate from what keeps it. Ours: the contract is separate from its implementations, and a suite checks every one. Kept, as Contract and Implementation.</li>
+      <li><b>One word for spec, test and guard.</b> We split it on purpose: a contract (the promise), a suite (the test), an acceptance rule (the guard at accept). The <code class="cr-inline">_Not_</code> line on Contract is where a vivief reader learns the split (Q4).</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. The words today, and where they clash</h2>
+  <p>Counted with a whole-word search over the living documents (the glossary, AGENTS.md, the docs site, ADRs, plan pages without the inventory rows, <code class="cr-inline">docs/agents</code>, open issues; the decision log not counted).</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>Uses</th><th>Our sense(s)</th><th>Other senses, by D170's list</th><th>Kind of clash</th></tr></thead>
+    <tbody>
+      <tr><td>pattern</td><td>431 in 77 files</td><td>Glossary: one contract, implementations, suites, a gate. Also <code class="cr-inline">.agents/patterns/</code>: how to write Effect code ("Those pattern files are agent extracts", AGENTS.md)</td><td>Effect <code class="cr-inline">Match</code>: "Builds pattern matchers" (<code class="cr-inline">Match.ts:2</code>); the web's <code class="cr-inline">URLPattern</code> and an input's <code class="cr-inline">pattern</code>; a glob. Effect uses "pattern" for no abstraction of its own (I78)</td><td>Other core (a shape to match). Ours is a design pattern made code and proven. One second sense in our own repo</td></tr>
+      <tr><td>concept</td><td>287 in 50</td><td>D82: an idea that is <i>not</i> a pattern, owned by one ("A concept lives in the guide of the pattern whose contract defines it"). A guide's Concepts page. Plain English ("one concept or several patterns")</td><td>None in Effect or the platforms (I78: "a clash inside ours only")</td><td>Inside ours: against foundation concept</td></tr>
+      <tr><td>foundation concept</td><td>75 in 15</td><td>D160: one of ADR-0032's twelve. Row 1 is Pattern; rows 9, 6, 10, 11 are or contain patterns (sync, Presenter, access, encrypted store); rows 2, 5 are concepts a pattern owns (datom, read model)</td><td>None</td><td>Inside ours: against D82's concept</td></tr>
+      <tr><td>contract</td><td>186 in 61</td><td>An Effect service and its types, checked by suites; an RPC's Schemas ("the sync RPC contract")</td><td>Effect's own prose, same sense: "the procedure contract" (<code class="cr-inline">rpc/Rpc.ts:6</code>), "the service contract" (<code class="cr-inline">ai/LanguageModel.ts:7</code>); no exported <code class="cr-inline">Contract</code>. vivief's <code class="cr-inline">Contract</code>: spec, test and guard</td><td>Same core with Effect; vivief differs (not a library we use, but our predecessor, read in old records)</td></tr>
+      <tr><td>feature</td><td>74 in 26</td><td>A vertical slice: <code class="cr-inline">model</code>, <code class="cr-inline">client</code>, <code class="cr-inline">server</code>, tag <code class="cr-inline">kind:feature</code>. Also "no feature code before its gate passes" (AGENTS.md, two plan pages): any production code, libs included</td><td>Nx's "feature library" (a business use case's code); a product feature; a feature flag (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129</a>, deferred). vivief's Feature slice</td><td>Same core outside; vivief differs; one stray sense in our rules</td></tr>
+      <tr><td>abstraction</td><td>68 in 9</td><td>Not a term. I33 asks whether it should name what ViViEfs delivers. Almost all uses are in I33 and the issues that discuss it</td><td>Plain English: something that hides how and limits what may be done. Effect "names its abstractions (Service, Layer) and uses neither word as a name" (I78)</td><td>None yet; the question is whether to add a term</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">The contradiction, in our own sentences</h3>
+    <pre class="cr-code">D82:      "A candidate is a pattern when it has a contract code depends on,
+           a suite and a gate; otherwise it is a concept."
+ADR-0032: "| 1 | Pattern | A part built once with one promise, ..."   (foundation concept 1)
+ADR-0032: "There are twelve, read top to bottom as one turn ... each is a pattern,
+           so each can be done another way that passes the same suite."
+log-store guide, Concepts page:
+          "The concepts below are defined by the LogStore contract and checked by
+           its suite ... ## Datom"</pre>
+    <p>Read with D82's meaning, Pattern is a foundation concept that is not a concept. And ADR-0032 says each foundation concept "is a pattern", while the Datom it lists is, by D82 and by the log-store guide, a concept the log store owns. The ADR's intent is clear (each is owned by a pattern, so it can be done another way); its words are not.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. Concept and foundation concept, three ways</h2>
+  <pre class="mermaid">
+flowchart TB
+  C["Concept<br/>a named idea of the stack"]
+  P["Pattern<br/>a concept with a contract, a suite and a gate"]
+  O["Every other concept<br/>owned by one pattern, on its guide's Concepts page"]
+  C --> P
+  C --> O
+  P --> K["Contract"]
+  P --> I["Implementations"]
+  P --> S["Suites"]
+  P --> G["Gate"]
+  F["Foundation concept<br/>one of the twelve a newcomer holds first"]
+  F -. "sync, Presenter, access" .-> P
+  F -. "datom, read model" .-> O
+  </pre>
+  <p class="cr-src">Option A drawn. The foundation concepts are a selection across both kinds, which is why the word must cover both.</p>
+
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">A. Concept is the wider word</h3>
+      <p>A concept is any named idea of the stack. A pattern is a concept that has a contract, a suite and a gate; every other concept is owned by one pattern. A foundation concept is one of the twelve.</p>
+      <p><b>Rewrites:</b> none of the 75 "foundation concept" uses. D82's row stays as written (a decision row), and a new row records the reading. Glossary: two new entries, Concept and Foundation concept, in the Patterns group; Builds on and Pattern say "a concept". ADR-0032's "each is a pattern" becomes "each is a pattern or a concept one pattern owns".</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">B. Keep D82's concept, rename foundation concept</h3>
+      <p>Concept stays "not a pattern"; the twelve get another name, such as "foundation" or "cornerstone".</p>
+      <p><b>Rewrites:</b> ADR-0032's title (and every reference name <code class="cr-inline">pnpm refs fix</code> writes from it), Start here, 75 uses. And the new word still covers patterns and concepts both, so it needs A's reading anyway.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">C. A compound for D82's sense</h3>
+      <p>D82's "concept" becomes a compound written every time, such as "pattern concept"; bare "concept" is plain English.</p>
+      <p><b>Rewrites:</b> the guide template's Concepts page and its rule, ADR-0026, Builds on, every guide. A compound for an idea people say in one word in every sentence ("a concept of the changesets pattern").</p>
+    </div></div>
+  </div>
+
+  <h3 class="text-lg font-semibold">The entries under A</h3>
+  <pre class="cr-code">**Concept**:
+A named idea people and agents use to think about the stack, such as a datom, a lease or a pattern.
+A pattern is the kind of concept that has a contract, a suite and a gate; every
+other concept is owned by one pattern and taught once, on the Concepts page of
+that pattern's guide ([D82 Patterns build on each other][D82], D181).
+_Avoid_: abstraction (for this meaning)
+
+**Foundation concept**:
+One of the twelve ideas the whole stack is built on, which a newcomer learns first.
+Listed in one table read as one turn, each with its owning pattern and the gate
+that shows it ([ADR-0032 ...][ADR-0032], [D160 The foundation concepts][D160]).
+Some are patterns, such as sync; others are concepts a pattern owns, such as the
+datom. The set is open.</pre>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. Pattern, and whether "abstraction" names anything</h2>
+  <p><b>I33's question</b>, "is abstraction a better name than pattern for what ViViEfs delivers?", came with two arguments: "abstraction" is wider (a contract, a Layer, a suite, a branded id, a Schema are abstractions and not patterns), and the kinds of intent ordered "by how abstract" (I56's comment). Under Q1's A, <b>concept</b> is already the wider word for the stack's ideas; what "abstraction" would add is the code-level sense, "a boundary you work through", which Effect already names one by one (Service, Layer, Schema). And "how abstract an intent is" is plain English, not a term.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Pattern, the entry with its marks</h3>
+      <pre class="cr-code">**Pattern**:
+A proven way to build one part of an app, written down once so every app here builds that part the same way.
+A concept with one contract, one or more implementations,
+suites every implementation passes and a gate that proves
+its claims ([D82][D82]) ... (rest as today)
+_Like_: a design pattern, except that it is built once as
+working code with checks that prove every implementation.
+_Not_: a pattern something is matched against, as in
+Effect's `Match`, the web's `URLPattern` or a file glob.
+_Avoid_: framework, template, abstraction (for this meaning)</pre>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">The second sense in our repo</h3>
+      <p><code class="cr-inline">.agents/patterns/</code> holds four files (<code class="cr-inline">effect-cli.md</code>, <code class="cr-inline">effect-schema.md</code>, <code class="cr-inline">effect-services-layers.md</code>, <code class="cr-inline">effect-vitest.md</code>), each headed "Agent extract. Source of truth: <code class="cr-inline">repos/effect/LLMS.md</code>". They are how to write Effect code, not patterns of this stack. Named in AGENTS.md (four places), <a class="cr-link" href="../adr/0029-effect-reference-and-language-service.md">ADR-0029</a> and the docs home page's diagram ("<code class="cr-inline">.agents/patterns</code> Effect itself").</p>
+      <p>"Agent extract" is already their name in prose. Renaming the folder to <code class="cr-inline">.agents/extracts/</code> makes the path say it. No pinned name, no code reads it; <code class="cr-inline">skills-lock.json</code> does not cover it.</p>
+    </div></div>
+  </div>
+  <p>A compound for Pattern ("stack pattern", "proven pattern") was weighed: the clash is with a different core (matching) that context never confuses ("the log store pattern" is never read as a regex), so under D170 a <code class="cr-inline">_Not_</code> mark is enough, and 431 uses plus ADR titles (<a class="cr-link" href="../adr/0033-the-presenter-pattern.md">ADR-0033 The Presenter pattern</a>) stay.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. Contract and Feature</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Contract</h3>
+      <pre class="cr-code">**Contract**:
+What a part of the system promises to the code that uses it, written down so a check can catch a broken promise.
+In code it is an Effect service and its types; its suites
+check that every implementation keeps it.
+_Like_: an interface, except that it also promises
+behaviour, which suites check on every implementation.
+_Not_: vivief's `Contract`, a rule checked whenever data is
+written: here that is an acceptance rule, checked at accept.
+_Avoid_: interface (alone), API (for the promise)</pre>
+      <p>Matches Effect's prose sense (I78: "Effect's sense is ours: a declared shape both sides read"). The acceptance rule's entry already says <code class="cr-inline">_Avoid_: contract (for this meaning)</code>. Where ADR-0032, <a class="cr-link" href="../adr/0023-data-at-rest-and-crypto-shredding.md">ADR-0023</a>, ADR-0034 and ADR-0037 name vivief's sub-types ("vivief's Trust Contract", "Sync Contract") they already say vivief's; ADR-0032's From vivief column writes them in code font like its other vivief names.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Feature</h3>
+      <pre class="cr-code">**Feature**:
+One piece of what the app does for its users, such as collecting evidence, kept together from screen to server.
+In code it is a vertical slice split into `model`,
+`client` and `server` projects.
+_Like_: an Nx feature library, except that it is three
+projects that reach from the screen to the server.
+_Not_: vivief's Feature slice, data and logic with no
+screen, a step in adopting its concepts.
+_Avoid_: module, domain package</pre>
+      <p>The stray sense: "No feature code before its gate passes" (AGENTS.md, <code class="cr-inline">10-open-items-and-risks.md</code>, <code class="cr-inline">bootstrap/00-next-session.md</code>) is <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d27">D27</a>'s design before code, which covers libs too (the SQLite store waited for <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p02">P02 SQLite drivers</a>). It becomes "No production code before its gate passes", the wording the inventory row already uses ("no production or feature code").</p>
+    </div></div>
+  </div>
+  <p class="cr-src">Feature stays on the docs linker's everyday-terms list (only "Feature" mid-sentence links), as it is a single word. Concept, if added, joins that list for the same reason.</p>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">6. Questions, round 1 (answered: all A)</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 Concept and foundation concept')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. What does "concept" mean, beside "foundation concept"?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: concept is the wider word; a pattern is a concept with a contract, a suite and a gate; every other concept is owned by one pattern; foundation concept is one of the twelve; new entries Concept and Foundation concept; ADR-0032's each-is-a-pattern sentence corrected"> <span><b>A. Concept is the wider word</b> (recommended), as in section 3: no rename, two new entries, D82 read as "otherwise it is a concept that one pattern owns", ADR-0032's "each is a pattern" corrected to "a pattern or a concept one pattern owns".</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: keep D82's concept as not-a-pattern; rename foundation concept"> <span><b>B. Rename foundation concept</b>; concept stays "not a pattern". Cost: ADR-0032's title and 75 uses, and the new word still spans both kinds.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: a compound for D82's sense, bare concept is plain English"> <span><b>C. A compound for D82's sense</b> ("pattern concept"), written every time. Cost: every guide's Concepts page and the guide template.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 Abstraction')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. Is "abstraction" a term?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: no; plain English only; pattern stays what ViViEfs delivers; abstraction goes on the Avoid lines of Pattern and Concept"> <span><b>A. No, plain English</b> (recommended). Pattern stays what ViViEfs delivers; the wider word is concept (Q1); Service, Layer and Schema name the code-level abstractions. "Abstraction (for this meaning)" goes on the <code class="cr-inline">_Avoid_</code> lines of Pattern and Concept.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: a glossary term for the code-level sense, above pattern"> <span><b>B. A term for the code-level sense</b>: "something code works through that hides how and limits what may be done" (Service, Layer, Schema, a branded id, a pattern). Cost: a term no rule or check uses yet; <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d178">D178</a> watches such growth.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="C: rename pattern to abstraction"> <span><b>C. Rename pattern to abstraction.</b> 431 uses, ADR-0026's delivery rule, ADR titles, the suite naming <code class="cr-inline">&lt;pattern&gt;/&lt;aspect&gt;</code> and <code class="cr-inline">metadata.guides</code>; and "abstraction" says less about proof than "pattern" does.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Pattern')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. Pattern: the bare word, and our own second sense</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: Pattern stands with a _Like_ (design pattern, except built and proven once) and a _Not_ (Match, URLPattern, glob); .agents/patterns/ renamed .agents/extracts/ with its prose, in this commit"> <span><b>A. Stands with its marks, and the folder renamed</b> (recommended): the entry in section 4; <code class="cr-inline">.agents/patterns/</code> becomes <code class="cr-inline">.agents/extracts/</code> in the same commit, with AGENTS.md, ADR-0029 and the docs home page, so the repository never holds both senses.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: Pattern stands with its marks; the folder keeps its name and the _Not_ line names it"> <span><b>B. Stands with its marks, the folder kept</b>; the precise part says "not the Effect notes in <code class="cr-inline">.agents/patterns/</code>".</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="C: a compound such as stack pattern, written every time"> <span><b>C. A compound</b> ("stack pattern"), every time, under D172.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Contract')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. Contract</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: Contract stands; _Like_ an interface except it promises behaviour checked by suites; _Not_ vivief's Contract, which is an acceptance rule checked at accept"> <span><b>A. Stands, with a <code class="cr-inline">_Like_</code> and a <code class="cr-inline">_Not_</code> line</b> (recommended), as in section 5. It matches Effect; vivief's differs and is read in old records.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: a compound such as service contract"> <span><b>B. A compound</b> ("service contract"). Cost: 186 uses, and an RPC's contract is not a service's.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="C: stands, _Not_ line only"> <span><b>C. Stands, <code class="cr-inline">_Not_</code> line only.</b></span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 Feature')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. Feature</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="A: Feature stands with a _Like_ (Nx feature library, except three projects from screen to server) and a _Not_ (vivief's Feature slice); no feature code becomes no production code"> <span><b>A. Stands with its marks, the stray sense rewritten</b> (recommended), as in section 5: "No feature code before its gate passes" becomes "No production code before its gate passes" in AGENTS.md and the two plan pages.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="B: a compound such as feature slice"> <span><b>B. A compound</b> ("feature slice"), every time. Cost: the <code class="cr-inline">features/</code> folder and <code class="cr-inline">kind:feature</code> tag keep the bare word.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="C: stands with its marks; feature code kept"> <span><b>C. Stands with its marks</b>, "feature code" kept.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">7. Round 2: the rows and what is left of I33 (answered: all A)</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>The inventory's question</th><th>Proposed disposition</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:concept-vs-pattern</code>, <code class="cr-inline">viviefs:pattern</code></td><td>Earned by proof here, by recurrence there: does a shape that recurs but has no gate need a stage before "pattern"? Can concept and pattern keep our meanings?</td><td><b>keep ours</b>, with concept as the wider word (Q1). No new stage: a candidate whose contract, suite and gate are planned is already a pattern whose ADR is Proposed, unverified; Qualified and Delivered are the later stages. A shape that recurs with no contract of its own is a concept owned by a pattern. vivief's "compose, don't extend" is kept as Builds on.</td></tr>
+      <tr><td><code class="cr-inline">vivief:contract</code>, <code class="cr-inline">viviefs:contract</code></td><td>One word or two?</td><td><b>keep ours</b>: one word, Effect's sense; vivief's <code class="cr-inline">Contract</code> landed as accepting a change and acceptance rules (D124, D125) and is named on the <code class="cr-inline">_Not_</code> line (Q4).</td></tr>
+      <tr><td><code class="cr-inline">viviefs:project-kinds-and-boundaries</code></td><td>vivief's Feature slice and our Feature share a word; does one change?</td><td><b>stands</b>: the four project kinds unchanged; Feature keeps its word, vivief's slice on the <code class="cr-inline">_Not_</code> line (Q5).</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">I33, note by note</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>1. Abstraction or pattern?</b> Answered by Q1 and Q2.</li>
+      <li><b>2. "Make bad code unrepresentable"</b> and <b>3. more abstractions for agents</b>: the open part is "where can an agent still write bad code that passes verify, and is the answer a type, a lint rule, a suite or a new abstraction (such as a generator for a feature slice or a command with its tests)". Its 2026-10-24 comment already sent this to map 4.</li>
+      <li><b>4. Problem to conclusion</b>: given a place by I56 (Vision - View - Effects at the decision level, a lens). Nothing left.</li>
+    </ul>
+  </div></div>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q6', 'Q6 The rows')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. The three rows</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="A: as the table: keep ours, keep ours, stands; no stage before a pattern"> <span><b>A. As the table</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="B: as the table, plus a named stage before a pattern (a candidate)"> <span><b>B. As the table, plus a named stage</b> before a pattern, "candidate", for a shape that recurs with no contract yet: a glossary term and a place in the guides index.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q7', 'Q7 What is left of I33')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q7. What is left of I33</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="A: narrowed to where an agent can still write bad code that passes verify, and whether the answer is a type, lint, suite or new abstraction; Decide when: map 4"> <span><b>A. Narrowed, to map 4</b> (recommended): a comment records notes 1 and 4 as answered, and its <code class="cr-inline">Decide when:</code> becomes map 4, for "where can an agent still write bad code that passes verify, and what closes it".</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="B: resolved; open a new map-4 issue for bad code that passes verify"> <span><b>B. Resolve I33</b> and open a new issue for the map-4 question.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<footer class="cr-src">Sources: <code class="cr-inline">~/ws/vivief/docs/contract/vivief-concepts-v6.md</code> §1, §2.4, §3, §11; <a class="cr-link" href="2026-10-06-vivief-inventory.md">the vivief inventory</a>, map-3 rows; <a class="cr-link" href="2026-10-27-effect-vocabulary-against-ours.md">I78's record</a>; <code class="cr-inline">repos/effect/packages/effect/src/Match.ts</code>, <code class="cr-inline">rpc/Rpc.ts</code>; <code class="cr-inline">GLOSSARY.md</code>; ADR-0026, ADR-0029, ADR-0032; the decision log (D27, D82, D124-D129, D160-D162, D170-D178); the log-store guide's Concepts page; <code class="cr-inline">.agents/patterns/</code>; <code class="cr-inline">features/evidence/model/project.json</code>. Counts: whole-word search, 2026-10-28, at <code class="cr-inline">ca7a19033</code>. Nx's feature library and the web's <code class="cr-inline">URLPattern</code> from general knowledge, not checked against their docs today.</footer>
+
+</div>
+</body>
+</html>

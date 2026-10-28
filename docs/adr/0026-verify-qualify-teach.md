@@ -98,8 +98,8 @@ lockfile, written by `pnpm verify baseline` alone.
 
 **Guides map onto patterns without repeating each other** (amendment
 2026-10-01, Log-store guide design review, [D81 What a lesson is][D81]-[D86 Named, linked references][D86]). Patterns build on each
-other; they do not nest. A concept lives in the guide of the pattern whose
-contract defines it and whose suite checks it, and every ADR is named by exactly
+other; they do not nest. A concept that is not a pattern lives in the guide of
+the pattern whose contract defines it and whose suite checks it, and every ADR is named by exactly
 one guide. A lesson is one page that teaches one idea and ends in its exercise
 section, with recall before and after and one primary source. A project's
 `metadata.guides` is a list, because one project can be the exemplar of two

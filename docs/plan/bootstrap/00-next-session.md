@@ -66,7 +66,7 @@ grilling decision).
 
 ## Rules for the scaffolding session
 
-- Do not write feature code before its gate passes. Probes and exemplars are allowed; they are retained, not
+- Do not write production code before its gate passes. Probes and exemplars are allowed; they are retained, not
   thrown away.
 - Pin exact versions: `effect@4.0.0-rc.<n>` and all `@effect/*` at the same version (they release together), Expo
   SDK 58 beta, then stable when it lands.
