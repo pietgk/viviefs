@@ -47,7 +47,7 @@ wrong, the gate fails.
 ## The map
 
 Read it from top to bottom: a decision becomes an ADR, the ADR's claims go
-through gates, the exemplar applies the pattern, and the guide ties it
+through gates, the exemplar is built to its design, and the guide ties it
 together for people and agents. Dashed arrows are links that `verify`
 checks.
 
@@ -55,9 +55,9 @@ checks.
 flowchart TB
   GR["Grilling decision"] --> ADR["ADR<br/>problem, design, trade-offs,<br/>claims, qualifying gate"]
   ADR -- "claims" --> GATE
-  ADR -- "shapes" --> EX
+  ADR -- "design" --> EX
   subgraph Q["Qualify"]
-    GATE["Gate Pnn<br/>one fact each"] --> PROBE["Probe + positive control"]
+    GATE["Gate Pnn<br/>one claim each"] --> PROBE["Probe + positive control"]
     PROBE --> LEDGER[("Ledger<br/>machine-written")]
     PROBE --> NOTE["Evidence note"]
   end
@@ -70,7 +70,7 @@ flowchart TB
   GUIDE -. "why" .-> ADR
   GUIDE -. "lessons cite" .-> NOTE
   GUIDE -. "samples embed" .-> EX
-  EX -. "metadata.guide" .-> GUIDE
+  EX -. "metadata.guides" .-> GUIDE
   GUIDE --> CHECKS
   XT --> CHECKS
   GUIDE ==> ACC{"Human accepts<br/>the guide"}
@@ -85,9 +85,10 @@ stateDiagram-v2
   Proposed --> Qualified: gate passes, evidence linked
   Qualified --> Qualified: inputs change, gate re-runs
   Qualified --> Accepted: human accepts the pattern's guide
-  Accepted --> Delivered: exemplar passes verify + two-way links
-  Delivered --> [*]
-  note right of Proposed: "Proposed, unverified"
+  Proposed --> Accepted: intent record, accepted directly (D65')
+  Accepted --> [*]
+  note right of Proposed: Proposed, unverified
+  note right of Accepted: its pattern is Delivered once the exemplar passes verify and links both ways
 ```
 
 Before a guide is recorded as accepted, its gates run and pass on that
@@ -103,7 +104,7 @@ baseline (D63, D65). Each ADR's status is shown next to it under
 | Decision | An answer from a grilling | `docs/plan/bootstrap/02-decision-log.md` | - |
 | ADR | The why of a decision, its claims and its qualifying gate | [ADRs](/reference/adr/) | status moves only with evidence or acceptance |
 | Pattern | A reusable way of building; one or more ADRs | a guide and an exemplar | the delivery definition |
-| Gate and probe | One fact, a rerunnable probe, a positive control | `tools/qualification` | `pnpm qualify` |
+| Gate and probe | One claim, a rerunnable probe, a positive control | `tools/qualification` | `pnpm qualify` |
 | Ledger | Append-only record of gate runs | `tools/qualification/gate-ledger.json` | fingerprints; stale when an input changes |
 | Evidence note | Dated, sanitized record of a run | [Evidence](/reference/evidence/) | from P09 on, the committed diagram equals the run |
 | Exemplar | The evidence-collection stack, which uses every pattern | `libs/`, `features/`, `apps/` | `pnpm verify` |

@@ -9,20 +9,27 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
 describe('qualification harness safety', () => {
   it('never presents an unimplemented gate as a passing check', async () => {
-    for (const unimplemented of ['P00', 'P18', 'Q01', 'P99']) {
-      const result = await command(
-        process.execPath,
-        [
-          '--experimental-strip-types',
-          'tools/qualification/src/cli.ts',
-          'qualify',
-          '--gate',
-          unimplemented,
-        ],
-        { cwd: ROOT },
-      )
-      expect(result.code).toBe(1)
-      expect(result.stderr).toContain('not implemented')
+    // Independent runs, started together: one after another, four CLI starts
+    // under a loaded verify came within the test timeout and sometimes past it.
+    const gates = ['P00', 'P18', 'Q01', 'P99']
+    const results = await Promise.all(
+      gates.map((unimplemented) =>
+        command(
+          process.execPath,
+          [
+            '--experimental-strip-types',
+            'tools/qualification/src/cli.ts',
+            'qualify',
+            '--gate',
+            unimplemented,
+          ],
+          { cwd: ROOT },
+        ),
+      ),
+    )
+    for (const [index, result] of results.entries()) {
+      expect(result.code, gates[index]).toBe(1)
+      expect(result.stderr, gates[index]).toContain('not implemented')
     }
   })
 

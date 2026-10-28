@@ -13,6 +13,7 @@ import type { PlatformReport } from './bundle-size.ts'
 import { coverageProvider, loadRuns } from './evidence-artifacts.ts'
 import { REGISTRY } from './evidence-registry.ts'
 import { judgeEvidence } from './evidence.ts'
+import { reportedNote } from './glossary-report.ts'
 import { owningProducer } from './file-treatments.ts'
 import { LOCKFILE, registryDigest, stableJson, type Lockfile } from './lockfile.ts'
 import { DOCS_ONLY_STEPS, changedPaths, isDocsOnly } from './docs-only.ts'
@@ -182,7 +183,7 @@ const runStep = Effect.fnUntraced(function* (step: Step) {
     ? 'no projects declare this target'
     : results.some((result) => result.offline)
       ? 'offline; last lockfile answer still holds'
-      : undefined
+      : results.map((result) => reportedNote(result.output)).find((reported) => reported !== undefined)
   const endedAt = yield* Clock.currentTimeMillis
   return {
     name: step.name,

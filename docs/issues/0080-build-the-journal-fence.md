@@ -21,14 +21,14 @@ From [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-a
 3. **Outside inputs stay outside.** A deferred completed by a person, the server or a notification action is write-once on its own entity and does not move the head.
 4. **The lease goes.** `viviefs/lease/holder` and the envelope's `leaseEpoch` are no longer written; old values still decode, nothing is renamed ([D44 Never rename, never migrate][D44]). The engine's `Leases` service and its handoff go; a takeover is a replay plus a write. The holder is derived from the head.
 5. **Policy.** Only the holder resumes on its own; another device continues when a person asks; a server runner takes over a run whose head has not moved within its running step's timeout; an online writer may claim a step before acting.
-6. **Gates.** [P06 Workflow engine crash matrix][P06] keeps its crash matrix, with "during lease handoff" becoming "during a takeover". [P09 Sync][P09]'s `staleLease` check becomes: a second writer on one step refused, a spliced history refused (an offline phone's later steps on top of another device's step), and an outside input not moving the head. Both qualified again in phase 3's closing sequential run.
+6. **Gates.** [P06 Workflow engine crash matrix][P06] keeps its crash matrix, with "during lease handoff" becoming "during a takeover". [P09 Sync][P09]'s `staleLease` check becomes: a second writer on one step refused, a spliced history refused (an offline device's later steps on top of another device's step), and an outside input not moving the head. Both qualified again in phase 3's closing sequential run.
 
 ### To design first
 
 - Where "follows" lives: an envelope field (journal writes are one-fact changesets already) or a journal attribute.
 - An await that races two outside inputs (a deferred against a durable clock) records which one it took as an engine fact, so every replay takes the same one.
-- Claim before acting: always for server runners; for an online phone or not.
-- Where a step's timeout comes from (the activity's own declaration), and what "Continue on this phone?" looks like.
+- Claim before acting: always for server runners; for an online device or not.
+- Where a step's timeout comes from (the activity's own declaration), and what "Continue on this device?" looks like.
 
 ## Comments
 

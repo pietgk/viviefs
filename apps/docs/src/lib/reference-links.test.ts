@@ -23,7 +23,7 @@ const files: Record<string, string> = {
     "| # | Name | Decision | Why |\n|---|---|---|---|\n| D37 | Log store tables | One datom table. | Speed. |\n| D38 | Reader's view | A screen. | Clarity. |\n",
   'libs/datom/src/index.ts': 'export {}\n',
   'GLOSSARY.md':
-    '# Glossary\n\n**Note** the order.\n\n**Pattern**:\nA proven way to build one part of an app, with a guide.\n_Avoid_: guide template\n\n**Guide**:\nEverything about one pattern.\n',
+    '# Glossary\n\n**Note** the order.\n\n**Pattern**:\nA proven way to build one part of an app, with a guide.\nOne contract, several implementations.\n_Like_: a library, except that every way of keeping it passes one suite.\n_Not_: a design pattern from a guide book.\n_Avoid_: guide template\n\n**Guide**:\nEverything about one pattern.\n\n**Lesson**:\nOne page that teaches one idea.\n_Not_: a page about a pattern.\n',
 }
 for (const [file, content] of Object.entries(files)) {
   mkdirSync(dirname(join(root, file)), { recursive: true })
@@ -120,6 +120,18 @@ describe('references resolved when rendered', () => {
     expect(html).toContain('with a <a href="/reference/glossary/#guide"')
     expect(html).toContain('<em>Avoid</em>: guide template')
     expect(html).toContain('Everything about one <a href="/reference/glossary/#pattern"')
+  })
+
+  it("puts the hover line, the precise part and each label line on lines of their own (D94', D174)", () => {
+    const html = render(files['GLOSSARY.md'] ?? '', 'GLOSSARY.md')
+    expect(html).toContain('with a <a href="/reference/glossary/#guide"')
+    expect(html).toMatch(/guide<\/a>\.<br>\s*One contract, several implementations\.\s*<br>\s*<em>Like<\/em>: a library/)
+    expect(html).toMatch(/one suite\.\s*<br>\s*<em>Not<\/em>: a design pattern from a guide book\.\s*<br>\s*<em>Avoid<\/em>: guide template/)
+  })
+
+  it('links nothing in a Not line, which names another sense of the word', () => {
+    const html = render(files['GLOSSARY.md'] ?? '', 'GLOSSARY.md')
+    expect(html).toContain('<em>Not</em>: a page about a pattern.')
   })
 
   it('anchors each decision row of the decision log, without linking its id', () => {

@@ -33,7 +33,7 @@ Read on 2026-10-03 from the [docs](https://alchemy.run/llms.txt), the [repositor
 - **Concepts match.** A `Layer` is a contract with swappable implementations, in the same sense as our Layer and Implementation. A `Binding` gives code a typed client for a resource and generates the IAM policy and environment it needs, which is the requirement-as-Layer idea applied to the cloud. Resources have a lifecycle (plan, apply, replace, destroy), close to Effect's scoped resources.
 - **AWS local development.** `alchemy dev` does what LocalStack, SAM and SST do for AWS, from the same program that deploys. Our lab already runs services locally: Apple Container images pinned by digest in [`lab-images.json`](../../tools/qualification/lab-images.json) (Jaeger, otel-lgtm, Keycloak), and a probe refuses an image that is not pinned. Alchemy needs Docker and starts its own containers.
 - **Hosting is open.** [I7 Production hosting, deployment and telemetry backend][I7] has not decided where the server runs, which telemetry backend replaces the lab sinks, or how TLS is done. Alchemy is a candidate answer for the first two, and for how a `Stage` per developer or per gate run is made.
-- **Our Engine overlaps.** It is a datom-backed Effect `WorkflowEngine` that runs on the phone and the server; Alchemy offers AWS durable functions and Cloudflare `Workflows`. [Research 04](../plan/bootstrap/research/04-effect-tracing-and-durability.md) already looked at the AWS Durable Execution SDK. [I8 Engine scale-out and a multi-runner server][I8] keeps Effect Cluster as our scale-out path.
+- **Our Engine overlaps.** It is a datom-backed Effect `WorkflowEngine` that runs on every device and on the server; Alchemy offers AWS durable functions and Cloudflare `Workflows`. [Research 04](../plan/bootstrap/research/04-effect-tracing-and-durability.md) already looked at the AWS Durable Execution SDK. [I8 Engine scale-out and a multi-runner server][I8] keeps Effect Cluster as our scale-out path.
 - **Names clash.** See the next section.
 
 ## Names
@@ -59,7 +59,7 @@ Names pinned by gates ([D44 Never rename, never migrate][D44]) are not renamed f
 
 ## Questions
 
-- **If.** Does ViViEfs need infrastructure as code at all before [I7 Production hosting, deployment and telemetry backend][I7], and is Alchemy the tool, or SST, Pulumi, CDK, or plain scripts? It covers the server side only; the phone app is unaffected.
+- **If.** Does ViViEfs need infrastructure as code at all before [I7 Production hosting, deployment and telemetry backend][I7], and is Alchemy the tool, or SST, Pulumi, CDK, or plain scripts? It covers the server side only; the Expo app is unaffected.
 - **Why.** What does one Effect program for infrastructure and server code buy us over a separate deploy tool: typed bindings, generated IAM, the same Layers and OTel exporter, one `Stage` per developer or per gate run?
 - **When.** Alchemy 2 is beta and alpha in its own words. Wait for 2.0 stable, or adopt early behind a gate? How does its `effect ^4.0.0` peer range move when we move our exact Effect pin (the gate that closed Effect 4.0.0 shows what a bump costs)?
 - **How.** As a pattern with a contract, suites and a gate (deployment as a pattern), or as tooling? Read through a `repos/alchemy` reference subtree as [ADR-0029 Effect reference subtree and language service][ADR-0029] does for Effect? Which runtime fits our server, which keeps leases and a sync connection open: a container (ECS, Fly.io, Hetzner) rather than Lambda?

@@ -2,7 +2,7 @@
 
 ## Why ViViEfs exists (D1)
 
-A reference stack for building apps, today an Expo app for phone and web and a Node.js server that holds authority
+A reference stack for building apps, today an Expo app for iOS, Android and the web and a Node.js server that holds authority
 for every organization ([D103 Nodes and authority][D103]), in a development environment that is **AI-robust**: typesafe end to
 end, built from composable patterns, and documented so that humans and LLMs learn the same way. The goal is architecture that avoids slop by making the right pattern the easy one and the wrong one
 a compile or lint error. What ViViEfs is about, app creation, is [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]'s; this page says what it

@@ -20,7 +20,17 @@ Done when the cases in [I26 Glossary links on words that are not our terms][I26]
 
 ## Comments
 
+2026-10-28: built by [I88 Effect and the effect handler][I88] because its entries needed it ([D164 Effect and effect, told apart by case][D164]): `termFinder` in `apps/docs/src/lib/references.ts` matches a term as written before any case, a name in `PROPER_NOUNS` keeps its capitals in its anchor (`#Effect`), and `parseGlossary` rejects two entries that share an anchor. This ticket builds the rest on it.
+
+2026-10-28: from [I89 How a word is chosen and written][I89]'s review ([D180 Diagram labels are prose][D180]). Also build here: a word retired under [D175 A retired word names its decision][D175] (its new entry's `_Avoid_` line names the decision that retired it) fails `verify` wherever a living document uses it outside a passage [I94 Words in another project's sense][I94]'s mark sets apart, with a test per case. The linker already reads `_Not_` lines ([D174 Like, Not and Avoid lines][D174]); the retired words come from the `_Avoid_` lines the same parser reads.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D164]: ../plan/bootstrap/02-decision-log.md#d164
+[D174]: ../plan/bootstrap/02-decision-log.md#d174
+[D175]: ../plan/bootstrap/02-decision-log.md#d175
+[D180]: ../plan/bootstrap/02-decision-log.md#d180
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
+[I88]: 0088-effect-and-the-effect-handler.md
+[I89]: 0089-how-a-word-is-chosen-and-written.md
 [I94]: 0094-words-in-another-projects-sense.md

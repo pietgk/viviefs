@@ -114,8 +114,8 @@ stay paragraphs. Code maps to the concepts through the owning pattern: a lib
 is one pattern's core or one of its implementations, and names its pattern in
 `metadata.guides` once the guide exists ([D161 Libs stay one per pattern and implementation][D161], [D84 Exemplar of several guides][D84]). The newcomer's question,
 "what is this like where I come from", is answered in the glossary, not here
-([D162 Portability, two halves][D162]). The words `Contract`, `effectHandler`, surface, `node` and foundation
-concept itself wait for map 3.
+([D162 Portability, two halves][D162]). The words `Contract`, surface, `node` and foundation concept itself
+wait for map 3; `effectHandler` is the effect handler ([D165 The effect handler][D165]).
 
 **Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
 one installation of an app that keeps all or part of an organization's data
@@ -176,7 +176,7 @@ activity is the only place the world comes in, its result kept. Failure is
 data. The changeset is the step; the log after accept is the new state, and
 read models are its views. Reads and pure helpers make no new state, so they
 are outside the shape. Shown by [P05 Changesets and projections][P05], [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09]. vivief's `effectHandler` is
-adopted in this form; its name is map 3's. Above the code the shape is a lens,
+adopted in this form, named the effect handler ([D165 The effect handler][D165]). Above the code the shape is a lens,
 not a concept: people and agents compose intent, and apps and tools,
 themselves built from intent, carry it out to reach a goal. At every level
 (data, decisions, code, claims, patterns) a thing is hot while it is open,
@@ -205,7 +205,7 @@ device and server, and Effect Cluster is not needed. Shown by [P06 Workflow engi
 [P09 Sync][P09]; the fence is to be shown by [P06][P06] and [P09][P09] again.
 
 **Sync and conflict ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [I53 Sync and conflict][I53]).** Sync is in the foundation on
-purpose: the first app is phones offline for days with a server and people who
+purpose: the first app runs on devices offline for days with a server and people who
 switch devices, and the engine, domain data and sync share one log; vivief made
 sync possible from its first phase too and deferred only the build. vivief's
 Sync Contract is three parts ViViEfs has: the conflict policy, the organization
@@ -343,6 +343,7 @@ creation entries match it.
 [D160]: ../plan/bootstrap/02-decision-log.md#d160
 [D161]: ../plan/bootstrap/02-decision-log.md#d161
 [D162]: ../plan/bootstrap/02-decision-log.md#d162
+[D165]: ../plan/bootstrap/02-decision-log.md#d165
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36

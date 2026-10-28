@@ -98,8 +98,8 @@ a screen a frame does not fit.
   lets a replica hold data its reader may not see ([I54 Trust, encryption and who may sign in][I54]).
 - **vivief's meaning of "projection"** would give the word two meanings, since
   the projector does not make Projections.
-- **One engine everywhere** (DuckDB or Polars as the frame): DuckDB on the
-  phone is a one-maintainer module and Polars has nothing for it ([I31 Ideas batch: DataFrames as a universal data format][I31]). A
+- **One engine everywhere** (DuckDB or Polars as the frame): DuckDB in a React
+  Native app is a one-maintainer module and Polars has nothing for it ([I31 Ideas batch: DataFrames as a universal data format][I31]). A
   contract with implementations is the log store's move again.
 - **Raw SQL per screen**, as today, cannot be passed past one store.
 - **Writing outside content or model output only into a read model** breaks

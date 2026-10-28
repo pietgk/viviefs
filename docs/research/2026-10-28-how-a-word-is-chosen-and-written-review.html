@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I89: How a word is chosen and written (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-quote { border-left: 3px solid var(--color-base-content); border-left-color: color-mix(in oklab, var(--color-base-content) 30%, transparent); padding-left: 0.9rem; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 3, Vocabulary - I89</span>
+    <span class="badge badge-outline">2026-10-28, rounds 1-3 answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">How a word is chosen and written</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0089-how-a-word-is-chosen-and-written.md">I89 How a word is chosen and written</a> is the second ticket of <a class="cr-link" href="../plan/vocabulary/map.md">map 3</a>. It turns the rules in the map's Notes into decisions every later ticket (I90-I96) applies: when a single word may be a term and when it must be a compound, what a glossary entry carries, how the glossary opens and is grouped, and whether its growth is a risk to watch. It starts from <a class="cr-link" href="../issues/0088-effect-and-the-effect-handler.md">I88</a>'s entries, the first written under the rule. Round 1 decides the rule itself and what it applies to. Rounds 2 and 3 (sections 5-6) decide the entry's shape, the opening and groups, and growth, which depend on round 1.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 1, Q1-Q4 as recommended (2026-10-28): a single word only where it matches, with the libraries named and D137's shared-core test (D170); every term passes the rule, and Origin, Manifest, Intent, Cursor, Engine and actor join I91 (D171); the compound every time in prose (D172); the map's rewrite and record rules, plus code comments (D173). Round 2 (section 5): Q5 labelled lines, with the note that the hover line should be formally the short, easy part, which led to the cut-off preview being found and Q5b; Q6-Q8 as recommended (D174-D177, D94'). Round 3: growth watched, not capped (D178). See <a class="cr-link" href="../issues/0089-how-a-word-is-chosen-and-written.md">I89's Answer</a>.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li><b>vivief already did most of this</b>, in one place: its quick reference opens with a one-line thesis, groups terms by context, names terms by their context (<i>Code Diagnostics</i>, <i>UI Effect</i>), keeps a table of replaced words with a reason each, and its reviews named "surface area growth" the biggest risk (section 1).</li>
+      <li><b>The rule needs a test you can run</b>: "matches the libraries we use" is open-ended until it names which libraries and what "matches" means. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d137">D137 One meaning of entity</a> already gives the test for "matches": the two senses share their core, and the entry says the difference (section 2).</li>
+      <li><b>Run on today's glossary</b>, the rule passes most of its 67 single-word terms, finds the clashes I90-I92 already hold, and <b>finds six no ticket holds</b>: Origin, Manifest, Intent, Cursor, Engine and actor (section 2).</li>
+      <li><b>A compound helps only if prose uses it too.</b> The docs linker today keeps 15 words on an "everyday terms" list so a capitalised word links and a lower-case one does not; a compound written everywhere needs no such workaround (section 3).</li>
+      <li><b>The map's other two rules</b> (what a word change rewrites, where a word decision is written) worked as written in I88; one gap: code comments are prose too (section 4).</li>
+      <li><b>The glossary grew from 81 to 123 terms (384 to 826 lines) in four weeks</b>; 21 terms appear in two or fewer living documents. That is round 3's evidence for whether growth is a risk and how to measure it (section 6).</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. The five rows: vivief's original beside ours</h2>
+  <p>Each row of <a class="cr-link" href="2026-10-06-vivief-inventory.md">the vivief inventory</a> this ticket settles, with vivief's own text. Sources: vivief <code class="cr-inline">docs/contract/concepts-quick-ref.md</code> (qr) and <code class="cr-inline">vivief-concepts-v6.md</code> §11 (v6), the archived reviews <code class="cr-inline">docs/archive/vivief-concepts/vivief-concepts-v4-review.md</code> and <code class="cr-inline">-v6-review.md</code>.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>vivief</th><th>ViViEfs today</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:glossary-shape</code></td><td>The quick reference opens with a thesis: <i>"DevAC makes development queryable and deterministic"</i>, then the formula <code class="cr-inline">effectHandler = (state, intent) =&gt; (state', [intent'])</code>. Its glossary has groups by context (Core, Architecture, Workflow, Status, Actor, UI Effect, Deprecated); v6's is grouped by concept (Datom, Projection, Surface, Contract, effectHandler, Cross-cutting terms).</td><td><code class="cr-inline">GLOSSARY.md</code> opens with "Vision - View - Effects. A reference stack for building a modern Expo app together with its backend...", which predates <a class="cr-link" href="../adr/0032-what-viviefs-is-about.md">ADR-0032</a>'s "about app creation". Seven groups by context: Architecture 21, Data 43, Identity 17, Durable execution 10, Tracing 6, Decisions and evidence 11, Validation 15.</td></tr>
+      <tr><td><code class="cr-inline">vivief:deprecated-terms</code></td><td>A table: old term, use instead, reason. <i>"Analyser" - Extractor - "Clearer - it extracts data into seeds"; "Feedback" - Diagnostics - "Feedback implied only issues; diagnostics includes 'all clear'"; "Three Pillars" - Four Pillars - "Workflow is now the 4th pillar".</i></td><td><code class="cr-inline">_Avoid_</code> lines name words not to use, sometimes with a short scope in brackets ("handler (alone, for this meaning)", "adapter (reserved for the <code class="cr-inline">layer:adapter</code> tag)"), never a history. The map's Notes add: a retired word stays on the new entry's Avoid line so an old record can be read.</td></tr>
+      <tr><td><code class="cr-inline">vivief:names-that-carry-context</code></td><td>Terms that name their context and leave the bare word free: <i>Code Diagnostics</i>, <i>DevAC Health</i>, <i>Effect Telemetry</i>, <i>UI Effect</i>, <i>Analytics Layer</i> (replacing "Analytics (as concept)": "a layer on top of pillars, not a separate thing").</td><td>Compounds where they arose (Log store, Read model, Frame subscription, Sign-in session, Verify step, Gate step), bare words elsewhere (Worker, Journal, Engine, Cursor). The charting made it a rule; this ticket decides it.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:plain-glossary</code></td><td>Nearest: the quick reference's one-line definitions in tables, written for developers.</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d94">D94 A glossary a newcomer can read</a>: one plain sentence first, shown on hover; the precise part after. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d162">D162 Portability, two halves</a> adds a "like X, except Y" line per term where it helps; I88 wrote the first (Effect handler: "Like Elm's <code class="cr-inline">update</code>, except...").</td></tr>
+      <tr><td><code class="cr-inline">vivief:surface-area-as-risk</code></td><td>v4's review: <i>"v4 has expanded the conceptual surface area significantly ... A senior developer must now hold: 5 concepts + 6 Contract sub-types + 3 Contract modes + ..."</i>. v5 trimmed 857 to 605 lines, Surface modes 8 to 6, profiles 8 to 3. v6 review: <i>"Total cognitive surface area across both documents is substantial. 696 + 555 = 1,251 lines."</i> v6 closed the Contract sub-types: a new one "signals a missing concept".</td><td>Held by rules, not by size: use the glossary's terms (AGENTS.md); a candidate is a pattern only with a contract, a suite and a gate (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d82">D82</a>). Nothing counts terms. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d160">D160</a> keeps the foundation concepts at twelve and the set open.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Worth keeping from vivief</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>The reason beside a replaced word.</b> "Feedback implied only issues" teaches the new word better than the new word's definition does.</li>
+      <li><b>Names that carry their context</b>, which is the charting's rule already.</li>
+      <li><b>Counting what a newcomer must hold</b>, not the whole glossary: v4's review counted the named things a developer needs at once, not the lines of reference.</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. The rule, run on today's glossary</h2>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">The charting's rule (the human, 2026-10-27)</h3>
+    <p class="cr-quote">A single-word term only where its meaning matches our own use and the libraries we use, inside and outside, as entity did (D137); otherwise a compound that names its context (a workflow runner, an OPFS worker, a test runner). Compounds are welcome where they make communication clearer. Effect's names come first (D135).</p>
+  </div></div>
+  <p>Two words in it need a fixed meaning before a ticket can apply it:</p>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>"The libraries we use."</b> Proposed: Effect, checked fully (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135 Effect's names first</a>); then the platforms and libraries our code imports or runs on, the ones a reader of our code meets: the web platform, Node.js, React Native and Expo, SQLite and Postgres, OpenTelemetry, TypeScript; and the vocabularies a decision borrows on purpose (Temporal's, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d2">D2</a>; event sourcing's decide and evolve, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d130">D130</a>). Not every meaning in software: "server" and "app" have dozens.</li>
+    <li><b>"Matches."</b> Proposed, D137's test: the two senses share their core, and our entry says what differs. Entity passed it (Effect's <code class="cr-inline">Entity</code> is an entity type that acts). If the cores differ, the word is a clash: a compound, or, where the other sense is far from anything our reader does, the bare word with a "not X's" mark.</li>
+  </ul>
+  <p>Run with those two, on the 67 single-word terms of the 123 in <code class="cr-inline">GLOSSARY.md</code> (the other 56 are compounds already). Clash readings for Effect are I78's and a check of its module names at 4.0.5; for the platforms they are mine, from general knowledge, to be confirmed in the ticket that takes the word.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Reading</th><th>Terms</th><th>Where it is decided</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-success badge-sm">same as Effect</span></td><td>Service, Layer, Workflow, Activity, effect and Effect (I88)</td><td>Stand (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135</a>)</td></tr>
+      <tr><td><span class="badge badge-success badge-sm">no clash found</span></td><td>ViViEfs, Implementation, Attribute, Datom, Changeset, Basis, Projector, Presenter, Enrichment, Organization, Outbox, Quarantine, Lease, Execution, Person, Membership, Caller, HLC, Crypto-shredding, Tamper-evidence, Guide, Exemplar, Lib, App, Server, Device, Claim, Gate, Probe, Ledger, Verdict, Lesson, Exercise, ADR, IntentComposer, Accepted, Qualified, Delivered, Verify, Qualify</td><td>Stand. The everyday ones (Accepted, Verify...) keep the linker's case rule.</td></tr>
+      <tr><td><span class="badge badge-info badge-sm">same core, marked</span></td><td>Entity (Effect's Cluster <code class="cr-inline">Entity</code>), Identity (<code class="cr-inline">EventLog.Identity</code>), Blob (the web's <code class="cr-inline">Blob</code>: bytes; ours: bytes stored by hash), Suite (a test runner's suite)</td><td>Entity and Identity already marked (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d137">D137</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d152">D152</a>); Blob and Suite need a mark only</td></tr>
+      <tr><td><span class="badge badge-warning badge-sm">clash, in a ticket</span></td><td>Worker (Effect's <code class="cr-inline">Worker</code>, the OPFS worker), Journal (<code class="cr-inline">EventJournal</code>), Envelope, Deferred (<code class="cr-inline">Deferred</code>, <code class="cr-inline">DurableDeferred</code>), Registry, Command (<code class="cr-inline">effect/cli</code>), Decision (marked by I88); Pattern, Contract, Feature; Frame</td><td><a class="cr-link" href="../issues/0091-effects-names-against-ours.md">I91</a>; <a class="cr-link" href="../issues/0090-pattern-concept-contract-abstraction.md">I90</a>; <a class="cr-link" href="../issues/0092-map-2s-new-words.md">I92</a></td></tr>
+      <tr><td><span class="badge badge-error badge-sm">clash, no ticket</span></td><td><b>Origin</b>: the web's origin, the browser's security boundary (scheme, host, port); the linker already special-cases "an HTTP origin". <b>Manifest</b>: Expo's app manifest and the web app manifest. <b>Intent</b>: Android's <code class="cr-inline">Intent</code>, which an Expo developer meets in linking and config plugins. <b>Cursor</b>: a database cursor, and Cursor, the editor this repository configures. <b>Engine</b>: a JavaScript engine, Hermes (<a class="cr-link" href="../adr/0004-expo-sdk-58-platform-baseline.md">ADR-0004</a>). <b>actor</b>: the actor model, which <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d136">D136</a> mapped to the workflow, while our actor is the accountable identity.</td><td>None. Q2 asks where they go.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">What the sweep shows</h3>
+    <p>The rule is cheap where it passes: 46 of 67 single words pass as they are, and 4 more need only a mark. It is not cheap where it fails: Origin and Intent are central words (<a class="cr-link" href="../adr/0034-origin-trust.md">ADR-0034 Origin trust</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d167">D167</a>), and Intent is pinned nowhere but used in hundreds of places. Failing the test does not have to mean a rename: for each, the ticket that takes it weighs a compound ("content origin", "requested intent"?) against keeping the bare word with a mark ("Not the web's origin"). The rule only says the question must be asked and answered for every term, not what the answer is.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. A compound in prose, three ways</h2>
+  <p>If I91 decides "workflow runner" for our Worker (the charting's lean), here is one passage of a plan page written each way.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">A. The compound always</h3>
+      <p class="text-sm">"On web, the workflow runner resumes the run after a reload. The workflow runner reads its journal from the OPFS worker, which owns the database file."</p>
+      <p class="text-sm opacity-80">Every use says which. "Worker" alone is only another project's sense (Effect's, the web's) and never links to our glossary.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">B. Compound first, bare after</h3>
+      <p class="text-sm">"On web, the workflow runner resumes the run after a reload. The runner reads its journal from the OPFS worker, which owns the database file."</p>
+      <p class="text-sm opacity-80">Shorter. But "the runner" is also Effect's Cluster <code class="cr-inline">Runner</code>, and an agent reading one paragraph from the middle, or a search hit, meets the bare word with no context.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">C. Compound in the glossary only</h3>
+      <p class="text-sm">"On web, the worker resumes the run after a reload. The worker reads its journal from the OPFS worker, which owns the database file."</p>
+      <p class="text-sm opacity-80">Today's text. Two meanings of one word in one sentence.</p>
+    </div></div>
+  </div>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">What the linker does today</h3>
+    <p>The docs site links the first use of a term on a page. For 15 terms that are also everyday words (<code class="cr-inline">EVERYDAY_TERMS</code> in <code class="cr-inline">apps/docs/src/lib/references.ts</code>: Accepted, Command, Deferred, Delivered, Effect, Execution, Feature, Frame, Layer, Origin, Qualified, Qualify, Service, Verify, Worker) it links only the capitalised form, not at a sentence start. That is a workaround for bare words: "the worker" in prose is not linked, "Worker" mid-sentence is, and a reader cannot tell which was meant. Under A, a term whose bare word clashes leaves that list, because the compound is never an everyday phrase. Under B and C the list stays and grows.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. The map's other two rules, as I88 used them</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Rule (map 3's Notes)</th><th>How I88 applied it</th><th>Gap found</th></tr></thead>
+    <tbody>
+      <tr><td><b>What a word change rewrites.</b> The prose of the glossary, AGENTS.md, guides, ADR bodies, plan pages and open issues. Kept as written: decision-log rows, resolved issues' Answers, research records; the new entry's Avoid line names the old word. Three checks before a word is retired: no persisted name or code identifier uses it (or an issue is opened); no planned concept needs the bare word; a word given a new meaning later says what old records meant.</td><td>Rewrote GLOSSARY.md (six entries), ADR-0032's two sentences, I25's line. Answer records the three checks: "no word is retired".</td><td>Code comments and JSDoc are prose in code: today they are neither in the rewrite list nor identifiers. Proposed: rewritten with the prose, in the same commit; identifiers become issues as now. Lessons and exercises are inside guides, so already covered.</td></tr>
+      <tr><td><b>Where a word decision is written.</b> A decision-log row for each rule and each word where alternatives were weighed; a mark that only says another project's sense goes in the glossary alone; no ADR unless a word changes what an architectural record means.</td><td>Seven rows, D163-D169. The Decision entry's mark is in a row (D169) because alternatives were weighed.</td><td>None.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. Round 2: what an entry carries, the opening, the groups</h2>
+  <p>With round 1 settled, every term passes the rule, and a term that keeps its bare word next to another project's sense needs a mark. Round 2 decides where those marks go in an entry, whether a replaced word says why, and how the glossary is read from the top.</p>
+
+  <h3 class="text-xl font-semibold">5a. The entry, two ways</h3>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">Effect handler, as I88 wrote it (inline)</h3>
+      <pre class="cr-code">**Effect handler**:
+A step that takes what is known and an effect asked
+for, and decides which effects follow, without making
+them happen. A command is one (...), authority's accept
+another (...), and a workflow body a third ... Like
+Elm's `update`, except that what it returns is proposed
+and counts only once accepted. vivief's `effectHandler`,
+in this form. Not an effect handler of algebraic effects
+(OCaml 5, Koka), which resumes a paused computation;
+Effect has no effect handler, and a handler alone keeps
+Effect's meaning ...
+_Avoid_: handler (alone, for this meaning)</pre>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">The same, with labelled lines</h3>
+      <pre class="cr-code">**Effect handler**:
+A step that takes what is known and an effect asked
+for, and decides which effects follow, without making
+them happen. A command is one (...), authority's accept
+another (...), and a workflow body a third ...
+vivief's `effectHandler`, in this form.
+_Like_: Elm's `update`, except that what it returns is
+proposed and counts only once accepted.
+_Not_: an effect handler of algebraic effects (OCaml 5,
+Koka), which resumes a paused computation; nor Effect's
+handler, the code behind a declared operation.
+_Avoid_: handler (alone, for this meaning)</pre>
+    </div></div>
+  </div>
+  <p>What labelled lines buy: <code class="cr-inline">verify</code> can check D162's "the except is required" (a <code class="cr-inline">_Like_</code> line without "except" fails), the docs site can show them apart from the definition, and <a class="cr-link" href="../issues/0094-words-in-another-projects-sense.md">I94</a>'s linker gets every other project's sense as a list it can read. The cost is a small change to the glossary parser (<code class="cr-inline">parseGlossary</code> stops a definition at <code class="cr-inline">_Avoid_</code> today; it would stop at any label) and moving the marks already written inline (Effect handler, Command, Decision, Identity, Vision - View - Effects, Verified commit) into lines. A one-sentence mark ("Not GitHub's Verified badge") reads fine either way.</p>
+
+  <h3 class="text-xl font-semibold">5b. A replaced word and its reason</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Kind of Avoid word</th><th>Today</th><th>Proposed</th></tr></thead>
+    <tbody>
+      <tr><td><b>A synonym we never used</b> (framework, template; tenant; job, saga)</td><td><code class="cr-inline">_Avoid_: tenant, org account</code></td><td>Unchanged. Why not "tenant" is what the definition already says; a reason per synonym would double the line.</td></tr>
+      <tr><td><b>A word we used and retired</b> (none yet; Worker if I91 renames it)</td><td>The map's Notes: the Avoid line names it</td><td>Named with the decision that retired it, whose row holds the reason: <code class="cr-inline">_Avoid_: worker (our word until [D17x Workflow runner][D17x])</code>. The reference link's name says the replacement; the row says why, as vivief's Reason column did.</td></tr>
+      <tr><td><b>A word reserved for something else</b> (adapter, subject, step)</td><td><code class="cr-inline">adapter (reserved for the layer:adapter tag)</code></td><td>Unchanged: the bracket already is the reason.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-xl font-semibold">5c. How the glossary opens</h3>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">Today</h3>
+      <p class="text-sm cr-quote">Vision - View - Effects. A reference stack for building a modern Expo app together with its backend, in a development environment that is AI-robust. This glossary fixes the vocabulary the stack uses. It defines terms only; ... Every definition starts with one plain sentence ...</p>
+      <p class="text-sm opacity-80">Predates ADR-0032: says what ViViEfs builds, not what it is about. No path through 123 terms.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">Proposed</h3>
+      <p class="text-sm cr-quote"><b>Thesis</b> (ADR-0032's summary): ViViEfs is about app creation: people and AI agents building apps and their proven parts in one shared language, checked by gates for what we built and by learning for the language.<br><b>How to read an entry</b>: the plain sentence, the precise part, then <code class="cr-inline">_Like_</code>, <code class="cr-inline">_Not_</code>, <code class="cr-inline">_Avoid_</code> (whatever 5a decides).<br><b>Start here</b>: the twelve foundation concepts, one line each in ADR-0032's order (a command decides a changeset of datoms naming its origin, authority accepts it ...), each linking its entries.</p>
+    </div></div>
+  </div>
+  <p>Not vivief's formula as the thesis: <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d166">D166</a> decided there is no formula with names of its own.</p>
+
+  <h3 class="text-xl font-semibold">5d. The groups</h3>
+  <p>Today: seven groups by context. Architecture (21) mixes the project, patterns, code structure and Effect; Data (43) holds facts, changes, accept, conflict, origin, trust, reading, sync and encryption. Proposed: the groups follow the one turn the foundation concepts are read in (ADR-0032), so "Start here" and the body run in the same order. Anchors are per term, so no link breaks. Every one of the 123 terms is placed (checked by script):</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Group</th><th>Terms</th><th>From</th></tr></thead>
+    <tbody>
+      <tr><td><b>The project</b> (3)</td><td>ViViEfs, Vision - View - Effects, App creation</td><td>Architecture</td></tr>
+      <tr><td><b>Patterns</b> (8)</td><td>Pattern, Contract, Implementation, Reference implementation, Builds on, Guide, Guide template, Exemplar</td><td>Architecture</td></tr>
+      <tr><td><b>Apps and code</b> (8)</td><td>App, Server, Feature, Lib, Effect, Service, Layer, Drain before close</td><td>Architecture</td></tr>
+      <tr><td><b>Facts and the log</b> (10)</td><td>Datom, Entity, Derived id, Attribute, Defining attribute, External identifier, HLC, Log store, Organization, Blob</td><td>Data</td></tr>
+      <tr><td><b>Changes and accept</b> (16)</td><td>effect, Effect handler, Intent, IntentComposer, Command, Changeset, Commit datom, Manifest, Basis, Changeset abort, Envelope, actor, Acceptance time, Acceptance rule, Conflict policy, Conflict datom</td><td>Data; effect and Effect handler from Architecture</td></tr>
+      <tr><td><b>Origin and trust</b> (4)</td><td>Origin, Origin trust, Trust level, Enrichment</td><td>Data</td></tr>
+      <tr><td><b>Identity and access</b> (15)</td><td>Identity ... Server-only attribute (today's Identity group, unchanged)</td><td>Identity</td></tr>
+      <tr><td><b>Encryption and tamper-evidence</b> (4)</td><td>Personal attribute, Encryption level, Crypto-shredding, Tamper-evidence</td><td>Data</td></tr>
+      <tr><td><b>Sync</b> (6)</td><td>Device, Local replica, Outbox, Cursor, Acknowledged cursor, Quarantine</td><td>Data; Device and Local replica from Identity</td></tr>
+      <tr><td><b>Reading</b> (7)</td><td>Read model, Projector, Query atom, Presenter, Frame, Frame subscription, Screen-view selector</td><td>Data</td></tr>
+      <tr><td><b>Durable execution</b> (10), <b>Tracing</b> (6), <b>Decisions and evidence</b> (11), <b>Validation</b> (15)</td><td>Unchanged</td><td>-</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">Questions, round 2 (answered: all A, Q5 with a note)</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 What an entry carries')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. Where do the "like" and "not" marks go in an entry?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="A: labelled lines _Like_, _Not_, _Avoid_ in that order after the definition; verify checks a _Like_ line says except; existing inline marks move into lines"> <span><b>A. Labelled lines</b> (recommended). After the definition, each optional, in this order: <code class="cr-inline">_Like_: X, except Y</code> (D162), <code class="cr-inline">_Not_: another project's sense</code>, <code class="cr-inline">_Avoid_</code>. <code class="cr-inline">verify</code> fails a <code class="cr-inline">_Like_</code> line without "except"; the parser stops a definition at any label; this ticket moves the inline marks already written into lines.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="B: inline prose, as I88 wrote it"> <span><b>B. Inline prose</b>, as I88 wrote it. Nothing to build. Cost: D162's "except" stays a review rule, and I94's linker has no list of other senses to read.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="C: _Like_ as a line, Not marks inline"> <span><b>C. Only <code class="cr-inline">_Like_</code> as a line</b>, the "not" marks stay inline.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q6', 'Q6 A replaced word and its reason')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. Does an Avoid word say why?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="A: a retired word names the decision that retired it, whose row holds the reason; synonyms and reserved words unchanged; no separate deprecated section"> <span><b>A. A retired word names its decision</b> (recommended), as in 5b: <code class="cr-inline">worker (our word until [D17x ...])</code>; the decision row holds the reason. Synonyms we never used and reserved words stay as they are. No separate "deprecated terms" section: the Avoid line on the new entry is where a reader of an old record looks. <code class="cr-inline">vivief:deprecated-terms</code>: adopt the reason, in the decision row.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="B: every Avoid word gets a short reason"> <span><b>B. Every Avoid word gets a reason</b>, as vivief's table. Cost: about 135 Avoid words on 64 lines, most with a reason the definition already gives.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="C: a deprecated-terms section at the end, as vivief"> <span><b>C. A "Replaced words" section</b> at the end: old word, use instead, reason, decision. One place to scan; a second place to keep in step.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q7', 'Q7 How the glossary opens')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q7. How does the glossary open?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="A: ADR-0032's thesis, how to read an entry, and Start here with the twelve foundation concepts in turn order"> <span><b>A. Thesis, how to read, Start here</b> (recommended), as 5c. The thesis is ADR-0032's summary, kept in step with it; Start here lists the twelve foundation concepts in ADR-0032's order, each linking its entries. <code class="cr-inline">vivief:glossary-shape</code>: adopt the thesis-first opening.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="B: thesis and how to read, no Start here"> <span><b>B. Thesis and how to read</b>, without Start here: ADR-0032's table already is that path.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="C: keep the opening, fix only the outdated sentence"> <span><b>C. Fix the outdated sentence only.</b></span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q8', 'Q8 The groups')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q8. Do the groups change?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="A: groups follow the one turn, fourteen groups as in 5d"> <span><b>A. Follow the one turn</b> (recommended): the fourteen groups of 5d, in ADR-0032's order, so the body reads like Start here. A new term goes in the group of the foundation concept it serves.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="B: split Architecture only"> <span><b>B. Split Architecture only</b> into the project, patterns, and apps and code; Data stays at 43.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="C: one group per owning pattern, as v6 grouped by concept"> <span><b>C. One group per owning pattern</b> (log store, changesets, Presenter, ...), as vivief's v6 grouped by concept. Cost: the process words (gate, claim, verify) and the project words have no pattern.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="D: keep the seven groups"> <span><b>D. Keep the seven.</b></span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">Round 2 answered; the hover line, and round 3 (answered: Q5b A, Q9 A)</h2>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <p>Q5 A, with a note: the hover popup was designed to show a short, easy line, and that seems to have fallen through the cracks; formally define the first line as the short, easy part. Q6-Q8 as recommended.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Found: the popup shows the first source line, cut mid-sentence, for 67 of 123 terms</h3>
+    <p>Reproduced on the docs site (<code class="cr-inline">pnpm docs:dev</code>, the log-store guide): hovering <i>workflow</i> shows "A multi-step process that survives the app being closed or the phone". Cause: <code class="cr-inline">parseGlossary</code> (<code class="cr-inline">apps/docs/src/lib/references.ts:293</code>) matches a definition with the <code class="cr-inline">m</code> flag, so <code class="cr-inline">$</code> ends it at the first line break; the first sentence is then taken from that one line. Since 2026-10-02 (<code class="cr-inline">82164c37b</code>). Not a character limit: the popup's longest text is 80 characters because the glossary wraps at 80.</p>
+    <p>The full first sentences today: median 83 characters, p75 100, p90 118, longest 249 (ViViEfs); 11 over 120, 5 over 150; 4 carry code font or a reference (Frame subscription, Decision, ADR, Verify step).</p>
+  </div></div>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5b', 'Q5b The hover line')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5b. The hover line, formally</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5b" value="A: the first source line is the hover line: one plain sentence alone on it, ending in a period, at most 120 characters, no code font, no reference; the build fails otherwise; D94 amended"> <span><b>A. The first line is the hover line</b> (recommended). Each entry's first source line is one plain sentence, alone on that line (not wrapped), ending in a period, at most 120 characters, with no code font and no reference; the precise part starts on the next line. The parser takes that line, and the docs build fails an entry that breaks a rule, as it already fails one with no definition. Whether it is plain stays the human's review and <a class="cr-link" href="../issues/0021-test-the-glossary-with-a-reader.md">I21</a>'s reader test. Recorded as an amendment of D94 (D94'). This ticket fixes the parser test-first and rewrites the 11 long and 4 code-or-reference lines.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5b" value="B: keep first sentence, fix the parser, add the length and no-code rules"> <span><b>B. Keep "first sentence"</b>, fix the parser, add the same rules. The source stays wrapped. Cost: a sentence is found by a regex that stops at "e.g." or a version number.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5b" value="C: as A with a limit of 100 characters"> <span><b>C. As A, at most 100 characters.</b> A shorter popup; about 30 lines rewritten instead of 11.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q9', 'Q9 Growth as a risk')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q9. Is the glossary's growth a risk, and by what measure? (section 6)</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q9" value="A: a risk to watch, not to cap: verify reports the counts; what a newcomer must hold is Start here, the twelve foundation concepts; each map's acceptance reviews terms added and unused"> <span><b>A. Watch, not cap</b> (recommended). What a newcomer must hold is "Start here", the twelve foundation concepts (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d160">D160</a>); the rest is reference and may grow with the patterns. <code class="cr-inline">verify</code> reports, without failing, the number of terms and any term no living document uses; each map's acceptance reviews the terms it added and removes or justifies an unused one (<a class="cr-link" href="../issues/0096-accept-the-vocabulary.md">I96</a> first). <code class="cr-inline">vivief:surface-area-as-risk</code>: adopt the measure of what a newcomer holds, not vivief's trims.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q9" value="B: a cap on the number of terms"> <span><b>B. A cap</b> (say 150 terms). Forces trimming. Cost: the number is arbitrary, and a cap pushes needed words out of the glossary rather than out of the stack.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q9" value="C: not a risk; the rules suffice"> <span><b>C. Not a risk</b>: D82 and the rules of D170-D173 hold the vocabulary.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">6. Round 3, for later: growth as a risk</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Date</th><th>2026-09-30</th><th>10-02</th><th>10-08</th><th>10-26</th><th>10-28</th></tr></thead>
+    <tbody>
+      <tr><td>Terms</td><td>81</td><td>101</td><td>113</td><td>116</td><td>123</td></tr>
+      <tr><td>Lines</td><td>384</td><td>570</td><td>687</td><td>730</td><td>826</td></tr>
+    </tbody>
+  </table></div>
+  <p>Measured from <code class="cr-inline">git log -- GLOSSARY.md</code>. Lines grew faster than terms: entries got longer (D94's two parts, marks, references). 21 terms are named in two or fewer living documents outside the glossary (ADRs, plan pages, guides, READMEs), among them Sign-in session, Token verifier, Trust level, Live span and Encryption level. Candidate measures for round 3: the number a newcomer must hold (the twelve foundation concepts and the words their sentences use), terms no living document uses, and entry length, each reported rather than capped.</p>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">7. Questions, round 1 (answered: all A)</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 The single-word rule')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. The single-word rule: which libraries count, and what "matches" means</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: Effect fully, then the platforms and libraries our code imports or runs on, and vocabularies a decision borrows; matches means D137's shared core with the difference stated"> <span><b>A. Named scope, D137's test</b> (recommended). A bare word is a term only if Effect uses it in the same sense or not at all (checked fully, D135), and no platform or library our code imports or runs on (web, Node.js, React Native and Expo, SQLite, Postgres, OpenTelemetry, TypeScript) or vocabulary a decision borrows (Temporal, event sourcing) uses it with a different core. Same core: the entry says the difference. Different core: a compound naming its context, or, where the ticket weighs it and records why, the bare word with a "not X's" mark.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: Effect only"> <span><b>B. Effect only.</b> D135 as it stands. Simple and fully checkable against <code class="cr-inline">repos/effect</code>. Cost: Origin, Intent, Manifest, Cursor and Engine pass, though a web or Expo developer reads them otherwise.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: any well-known meaning in software"> <span><b>C. Any well-known software meaning.</b> Strictest. Cost: App, Server, Device, Pattern, Gate and most of the glossary fail, and the check has no end.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="D: A, but a clash is always a compound, never a mark"> <span><b>D. As A, with no mark option</b>: a different core always means a compound. Cost: Origin and Intent would be renamed across the stack's prose without weighing.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 Today\'s terms')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. Does the rule apply to today's terms, and who takes the six no ticket holds?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: every term; section 2 is the first sweep; Origin, Manifest, Intent, Cursor, Engine, actor go to I91; Blob and Suite get marks here; I96 checks none is left"> <span><b>A. Every term, the sweep assigned</b> (recommended). Section 2's table is the first sweep, recorded in this ticket's Answer. The six unassigned clashes join <a class="cr-link" href="../issues/0091-effects-names-against-ours.md">I91</a>, which becomes "names against ours" for Effect and the platforms; Blob and Suite get their marks in this ticket's commit (marks only, glossary alone); <a class="cr-link" href="../issues/0096-accept-the-vocabulary.md">I96</a> checks that every term has passed the rule.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: every term, the six in a new ticket"> <span><b>B. Every term, a new ticket</b> for the six platform clashes, so I91 stays Effect's. Cost: one more grilling session; Intent overlaps <a class="cr-link" href="../issues/0092-map-2s-new-words.md">I92</a>'s kinds of intent anyway.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="C: new and touched words only"> <span><b>C. New and touched words only.</b> Cost: the glossary keeps two standards, and map 3's destination ("every term has one meaning") is not checked.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Compounds in prose')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. When a term is a compound, does prose write the compound every time?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: the compound every time in living documents; the bare word means only the other sense or plain English and never links; a term that becomes a compound leaves EVERYDAY_TERMS"> <span><b>A. Every time</b> (recommended). In living documents our sense is always written as the compound; the bare word is left to the other project or to plain English and never links. A term that becomes a compound leaves the linker's everyday list. Code identifiers follow only through issues, as now.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: compound at first use on a page, bare after"> <span><b>B. First use, then bare.</b> Shorter prose, as many style guides do for abbreviations. Cost: section 3's B; agents and search read passages, not pages.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="C: compound in the glossary only"> <span><b>C. Glossary only.</b> Cost: the compound changes nothing a reader meets.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Rewrite and record rules')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. The map's rewrite and record rules, as decisions</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: as written in the map's Notes, plus code comments and JSDoc rewritten with the prose"> <span><b>A. As written, plus code comments</b> (recommended). The rewrite list, what is kept, the three checks before retiring a word, and where a word decision is written, all as the map's Notes say (section 4); code comments and JSDoc are rewritten with the prose in the same commit, and identifiers become issues.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: as written, code comments wait for the identifier issue"> <span><b>B. As written</b>, code comments changed with their identifiers in the build phase. Cost: for a while a comment says "worker" above a function a guide calls a workflow runner.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <p class="cr-src">Sources: vivief <code class="cr-inline">docs/contract/concepts-quick-ref.md</code> §1 and §8, <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> §11, <code class="cr-inline">docs/archive/vivief-concepts/vivief-concepts-v4-review.md</code> and <code class="cr-inline">vivief-concepts-v6-review.md</code>; <a class="cr-link" href="2026-10-06-vivief-inventory.md">the vivief inventory</a>, map-3 rows; <a class="cr-link" href="2026-10-27-effect-vocabulary-against-ours.md">I78's record</a>; <code class="cr-inline">repos/effect</code> module names at 4.0.5; <code class="cr-inline">GLOSSARY.md</code> and its git history; <code class="cr-inline">apps/docs/src/lib/references.ts</code>; the decision log (D2, D82, D94, D130, D135-D137, D152, D160-D169); <a class="cr-link" href="../plan/vocabulary/map.md">map 3</a>. Platform senses (web origin, manifests, Android Intent, database cursor, JavaScript engine, actor model) from general knowledge, not checked against their docs today. Term use counted with a whole-word grep over <code class="cr-inline">apps/docs/src/content</code>, <code class="cr-inline">docs/adr</code>, <code class="cr-inline">docs/plan</code>, AGENTS.md and READMEs.</p>
+</section>
+
+</div>
+</body>
+</html>

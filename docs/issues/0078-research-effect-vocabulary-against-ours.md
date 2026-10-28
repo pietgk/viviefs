@@ -36,6 +36,8 @@ Researched on 2026-10-27 in [2026-10-27 Effect's vocabulary against ours](../res
 
 2026-10-27: Resolved by [the record](../research/2026-10-27-effect-vocabulary-against-ours.md); map 3, the words, is charted next with [I26 Glossary links on words that are not our terms][I26].
 
+2026-10-28: [I88 Effect and the effect handler][I88] answered questions 2, 3 and 5. Effects in Vision - View - Effects is an effect in its last phase, one glossary entry for the phrase, and Effect and effect are told apart by case ([D163 One meaning of effect, named by phase][D163], [D164 Effect and effect, told apart by case][D164], [D168 Vision - View - Effects, one entry][D168]); the formula takes no names of its own ([D166 No formula with names of its own][D166]); a command decides, marked against `DecisionModel.decide`, and Decision is marked against Effect's `Decision` ([D169 A command decides][D169]). The record's inference that Effects "reads the other way round" was read as phase: Effect's `Effect` and `Exit` are one effect before and after it runs.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0006]: ../adr/0006-one-datom-log.md
@@ -47,7 +49,13 @@ Researched on 2026-10-27 in [2026-10-27 Effect's vocabulary against ours](../res
 [D134]: ../plan/bootstrap/02-decision-log.md#d134
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
 [D137]: ../plan/bootstrap/02-decision-log.md#d137
+[D163]: ../plan/bootstrap/02-decision-log.md#d163
+[D164]: ../plan/bootstrap/02-decision-log.md#d164
+[D166]: ../plan/bootstrap/02-decision-log.md#d166
+[D168]: ../plan/bootstrap/02-decision-log.md#d168
+[D169]: ../plan/bootstrap/02-decision-log.md#d169
 [D39']: ../plan/bootstrap/02-decision-log.md#d39p
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I29]: 0029-ideas-batch-agents-that-record-a-replayable-run.md
 [I64]: 0064-build-origin-trust.md
+[I88]: 0088-effect-and-the-effect-handler.md

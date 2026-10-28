@@ -12,7 +12,7 @@ Every device run so far used simulators and emulators, and [P07 Device resume E2
 
 ## Direction
 
-One real-phone run on iOS and Android covering both.
+One run on a physical iOS device and a physical Android device, covering both.
 
 ## Comments
 

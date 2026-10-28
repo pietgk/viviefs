@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I88: Effect and the effect handler (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-quote { border-left: 3px solid var(--color-base-content); border-left-color: color-mix(in oklab, var(--color-base-content) 30%, transparent); padding-left: 0.9rem; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  pre.mermaid { background: transparent; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 3, Vocabulary - I88</span>
+    <span class="badge badge-outline">2026-10-27, rounds 1-3 answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Effect and the effect handler</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0088-effect-and-the-effect-handler.md">I88 Effect and the effect handler</a> is the first ticket of <a class="cr-link" href="../plan/vocabulary/map.md">map 3</a>. It tests the charting's draft of <i>effect</i> and <i>effect handler</i> on a command, a workflow step, an activity that calls a model, and Vision - View - Effects, the way <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d137">D137 One meaning of entity</a> settled entity. Round 1 decides what <i>effect</i> means, the shape of the Vision - View - Effects entry, and the verb <i>decide</i>. Later rounds take <i>effect handler</i>, intent and the formula's names, which depend on round 1.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Q1-Q3 as recommended (2026-10-28): effect has one meaning, named by phase; Vision - View - Effects is one entry for the phrase; a command decides, marked against <code class="cr-inline">DecisionModel.decide</code>. Already in <code class="cr-inline">GLOSSARY.md</code>: the Vision - View - Effects entry and the marks on Command and Decision. Round 2 (Q4-Q6) as recommended too: effect handler is a term, the compound; an intent is what someone asks to happen; Effect and effect are two entries, told apart by case (the docs linker now matches case). Round 3 (Q7-Q8) as recommended: no formula with names of its own; I30 narrowed to its fourth form. Recorded as D163-D169; see <a class="cr-link" href="../issues/0088-effect-and-the-effect-handler.md">I88's Answer</a>.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li><b>Your framing holds, with one addition.</b> Effect the library does not use the word in a second meaning: its own docs say "creating an effect does not perform the work", so for Effect, too, an effect is the work that makes a difference; an <code class="cr-inline">Effect</code> value is that effect <i>not yet run</i>, and an <code class="cr-inline">Exit</code> is how it ended (section 1).</li>
+      <li><b>The addition is phase.</b> The draft already uses the word in two phases: the handler's input and outputs are effects <i>asked for</i>, and Vision - View - Effects' Effects is what <i>happened</i>. vivief said the same of the datom: "the distinction is PHASE, not TYPE" (section 2).</li>
+      <li><b>Our words already name the phases:</b> asked for (an intent), proposed (a changeset), happened (a fact in the log, an activity's journaled <code class="cr-inline">Exit</code>, a span). They line up with <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132 Four states at every level</a>: hot, the frontier, warm (section 3).</li>
+      <li><b>The four worked examples all fit</b> the reading "one meaning, named by phase", and each strains the draft as written in one place (section 4).</li>
+      <li><b>"View" cannot be a term alone</b>: React Native's <code class="cr-inline">View</code> is its basic component, and the glossary's Read model already avoids "view". One entry for the whole name is proposed (section 5).</li>
+      <li><b>"Effect handler" is a known compound elsewhere</b>: OCaml 5 and Koka call an interpreter that catches a performed effect and resumes the computation an effect handler. That is round 2's question, after round 1 settles <i>effect</i> (section 6).</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. Four places the word comes from</h2>
+  <p>What a reader brings to "effect" depends on where they learned it. A glossary entry has to hold for all four, or say where it differs.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Source</th><th>Effect is</th><th>What happened is</th><th>Handler is</th></tr></thead>
+    <tbody>
+      <tr><td><b>Plain English</b></td><td>A change that something causes: "the effect of the rain". Also "to have an effect", "to take effect".</td><td>The effect itself</td><td>-</td></tr>
+      <tr><td><b>Effect, the library</b> (4.0.5)</td><td><code class="cr-inline">Effect&lt;A, E, R&gt;</code>: "Creating an effect does not perform the work; it builds a value that can be composed, provided with services, retried, interrupted, run concurrently" (<code class="cr-inline">Effect.ts:1-8</code>). Its docs use "side effect" for the plain sense (<code class="cr-inline">Effect.ts:2212</code>: "Runs a side effect with the result of an effect").</td><td><code class="cr-inline">Exit&lt;A, E&gt;</code>: "the result of an Effect computation as a plain value" (<code class="cr-inline">Exit.ts</code>). Our journal already keeps it: <code class="cr-inline">viviefs/activity/exit</code>, <code class="cr-inline">viviefs/deferred/exit</code>.</td><td>The code behind a declared operation: an <code class="cr-inline">Rpc</code>'s, an <code class="cr-inline">EventLog</code> <code class="cr-inline">Event</code>'s, a <code class="cr-inline">Tool</code>'s, a workflow's (<code class="cr-inline">Workflow.toLayer</code>). Never "effect handler".</td></tr>
+      <tr><td><b>vivief</b></td><td>"Immutable data describing something that happened or should happen" (foundation glossary). Intent is "the effect that enters the creation loop" (v6 §11).</td><td>Datoms in the log</td><td><code class="cr-inline">effectHandler = (state, intent) =&gt; (state', [intent'])</code>, "the entire pattern" (foundation §5.1)</td></tr>
+      <tr><td><b>What a newcomer may bring</b></td><td>Algebraic effects (OCaml 5, Koka): an operation a computation <i>performs</i> and someone else interprets. React's <code class="cr-inline">useEffect</code>: syncing with something outside after a render. Elm: a <code class="cr-inline">Cmd</code> is an effect as data, run by the runtime.</td><td>-</td><td>OCaml 5's "effect handlers": catch a performed effect, decide what it means, resume the computation. Elm's <code class="cr-inline">update : Msg -&gt; Model -&gt; (Model, Cmd Msg)</code> is vivief's formula almost exactly. Event sourcing's Decider: <code class="cr-inline">decide</code> and <code class="cr-inline">evolve</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">What the table shows</h3>
+    <p>Every source agrees on the core: an effect is something that changes something. They differ only on <i>when</i> they point at it: Effect and vivief mostly at the effect before it happens (a description, a request), plain English and <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98 Vision - View - Effects</a> at the effect after. <a class="cr-link" href="../issues/0078-research-effect-vocabulary-against-ours.md">I78 Research: Effect's vocabulary against ours</a> read this as "D98's Effects reads the other way round". Read as phase, it is the same effect seen at two moments, which is your framing.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. vivief's effect and effectHandler in one page</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief term</th><th>What it is (vivief's words)</th><th>Where it landed here</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">effectHandler</code>, the function</td><td><code class="cr-inline">handler(state, intent): { datoms, intents }</code>. "Pure, testable, composable. State via Projection. Most handlers." (v6 §2.5)</td><td>A command: <code class="cr-inline">(readModel, intent, mint) -&gt; changeset or DomainError</code> (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d130">D130 One shape at the data level</a>)</td></tr>
+      <tr><td><code class="cr-inline">effectHandler</code>, the actor</td><td>"Function + identity + Projection + message queue + lifecycle + typed protocol"</td><td>A durable workflow, each execution one actor (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d136">D136 The actor level is the durable workflow</a>)</td></tr>
+      <tr><td>Intent</td><td>"Intent is the parameter": the effect that enters the loop (a click, <code class="cr-inline">devac sync</code>, a schedule), with past-tense names and no <code class="cr-inline">:intent/*</code> namespace</td><td>Intent: "What the user asked for, before it is checked. The input to a command; not a datom." Narrower: a schedule or a sync is not an intent here.</td></tr>
+      <tr><td>Datom in motion</td><td>"The distinction is PHASE, not TYPE": at rest a datom is a fact, in motion it is an intent entering a handler</td><td>Not adopted as a type; a changeset is the step and can be rejected (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d131">D131 The changeset is the step</a>). The phase idea is what this page proposes for the word.</td></tr>
+      <tr><td>Effects as data</td><td>"Every meaningful action produces effect datoms"; an Effect "a description of something to do", a Handler "processes effects and produces new effects"</td><td>Facts kept: the log, the journal, spans. Effects of the stack's own code as queryable data is map 5's (<a class="cr-link" href="../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md">I25 Ideas batch: understanding and maintaining code bases</a>).</td></tr>
+      <tr><td>Creation boundary</td><td>"Creation = produces datoms. Pure transformations ... are utilities"</td><td>"Reads and pure helpers are not handlers: they make no new state" (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d130">D130</a>)</td></tr>
+      <tr><td>Graceful failure, crash</td><td>Error datoms and <code class="cr-inline">:handler/failed</code>; <code class="cr-inline">:handler/crashed</code></td><td>Failure is data: a typed <code class="cr-inline">DomainError</code>, a typed <code class="cr-inline">Rejection</code>, a journaled activity exit (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d130">D130</a>)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Ideas worth keeping from vivief</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>Phase, not type.</b> vivief used it for the datom; it fits the word effect better than anything else on this page.</li>
+      <li><b>One formula a newcomer holds.</b> Kept as the shape at the data level (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d130">D130</a>); what its names are is round 3.</li>
+      <li><b>The creation boundary</b> as the line between a handler and a helper: already D130's. The draft's "makes a difference" says it in plain words: a read makes no difference, so it is not an effect.</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. The draft, read as one meaning in phases</h2>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">The charting's draft (to test, not to adopt)</h3>
+    <p class="cr-quote"><b>Effect</b>: Something that happens and makes a difference: a fact written, a message sent, a screen redrawn, a model asked. Effect, the TypeScript library, writes an effect down as a value of its type <code class="cr-inline">Effect</code> and runs it later; that describing and running are two steps is how the library works, not another meaning.</p>
+    <p class="cr-quote"><b>Effect handler</b>: A step that takes what is known and an effect that comes in, and decides which effects follow.</p>
+  </div></div>
+  <p>The handler line uses "effect" for things that have not happened: the effect that comes in has been asked for, the effects that follow are proposed and can be rejected. The plain sentence uses it for what happens. Both hold if the entry says an effect passes through phases, and names each phase with the word we already have:</p>
+  <pre class="mermaid">
+flowchart LR
+  A["asked for<br/>an intent"] --> D["described<br/>an Effect value"]
+  D --> P["proposed<br/>a changeset"]
+  P --> H["happened<br/>a fact in the log"]
+  D -. "in a workflow" .-> X["happened<br/>an activity's Exit, journaled"]
+  H --> S["shown<br/>a frame, a span, evidence"]
+  </pre>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Phase</th><th>Our word</th><th>Effect's word</th><th><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a> state</th></tr></thead>
+    <tbody>
+      <tr><td>Asked for</td><td>intent</td><td>(none; <code class="cr-inline">Request</code> is "a description of one logical piece of work")</td><td>hot</td></tr>
+      <tr><td>Described, not yet run</td><td>(in prose: "an <code class="cr-inline">Effect</code>", "an Effect program")</td><td><code class="cr-inline">Effect&lt;A, E, R&gt;</code>, "an effect"</td><td>hot</td></tr>
+      <tr><td>Proposed</td><td>changeset</td><td>(none)</td><td>hot, then the frontier (accept)</td></tr>
+      <tr><td>Happened</td><td>fact (datom in the log), journaled exit, span</td><td><code class="cr-inline">Exit&lt;A, E&gt;</code></td><td>warm</td></tr>
+    </tbody>
+  </table></div>
+  <p>The rule this gives a writer: <b>write "effect" alone only where the phase does not matter</b> ("a command has no effect until authority accepts it"); where it matters, write the phase's word.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. Worked examples</h2>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">4a. A command: <code class="cr-inline">renameList</code> (real code)</h3>
+    <pre class="cr-code">// features/evidence/model/src/command.ts:81-89
+export const renameList = (
+  read: { readonly title: string | null },               // what is known: the read model
+  intent: { readonly org: string; readonly list: string; readonly title: string },
+  mint: CommandMint,                                      // ids and time, passed in
+): Effect.Effect&lt;CommandChangeset, DomainError&gt; =&gt; {
+  if (intent.title.trim().length === 0) return Effect.fail(new DomainError({ message: 'blank title' }))
+  ...
+  return finish(intent.org, mint, 'evidence.renameList', members)
+}</pre>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <tbody>
+        <tr><th>What is known</th><td>The read model (<code class="cr-inline">read.title</code>)</td></tr>
+        <tr><th>The effect that comes in</th><td>The intent: rename this list to this title. Asked for.</td></tr>
+        <tr><th>What it returns</th><td>An <code class="cr-inline">Effect</code> value: described, not yet run. Run, it ends in an <code class="cr-inline">Exit</code>: a changeset or a <code class="cr-inline">DomainError</code>.</td></tr>
+        <tr><th>The effects that follow</th><td>The changeset: two datoms and a commit. Proposed: authority may still reject it (<a class="cr-link" href="../adr/0035-accepting-a-change.md">ADR-0035 Accepting a change</a>).</td></tr>
+        <tr><th>What happened</th><td>After accept: the facts in the log; the projector evolves the read model; the screen shows the new title.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cr-gap pl-3"><p><b>Where the draft strains:</b> "decides which effects follow" is right if the changeset is an effect <i>proposed</i>. Read with the plain sentence alone ("something that happens"), the changeset has not happened, and the rejected blank-title changeset of <a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a> never does. The phase line fixes it.</p></div>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">4b. A workflow step: an activity and a deferred (real code, the <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p06">P06 Workflow engine crash matrix</a> suite)</h3>
+    <pre class="cr-code">// libs/workflow-engine/src/suites/exit-replay.ts:54-66
+Exits.toLayer(() =&gt; Effect.gen(function* () {
+  const checked = yield* Activity.make({
+    name: 'check', success: Schema.String, error: CheckFailed,
+    execute: Effect.fail(new CheckFailed({ reason: 'not signed' })),
+  }).pipe(Effect.catchTag('CheckFailed', (e) =&gt; Effect.succeed(`caught ${e.reason}`)))
+  const gated = yield* DurableDeferred.await(Gate).pipe(...)
+  return yield* new Finished({ summary: `${checked}; ${gated}` })
+}))</pre>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <tbody>
+        <tr><th>What is known</th><td>The journal: the exits recorded so far</td></tr>
+        <tr><th>The effect that comes in</th><td>The workflow's payload at the start; then an activity's exit, or a deferred completed from outside</td></tr>
+        <tr><th>The effects that follow</th><td>The next activity to run, the next wait, or the result</td></tr>
+        <tr><th>What happened</th><td>The activity's <code class="cr-inline">Exit</code>, journaled under <code class="cr-inline">viviefs/activity/exit</code>; on replay the body reads it instead of running the activity again</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cr-rec pl-3"><p><b>Fits well.</b> Here Effect's own words carry the phases: <code class="cr-inline">Activity.make</code>'s <code class="cr-inline">execute</code> is the effect described, its <code class="cr-inline">Exit</code> is the effect that happened, and the pinned attribute already says exit. <b>Strains:</b> "decides" is a lot to say of a workflow body; the engine runs it, and the body mostly sequences.</p></div>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">4c. An activity that calls a model (sketch: the stack makes no model calls yet)</h3>
+    <pre class="cr-code">// sketch, not code: an enriching activity, D111
+const label = yield* Activity.make({
+  name: 'classify-photo',
+  success: ClassifyAnswer,
+  execute: DecisionModel.decide(PhotoKind, { photo }),   // Effect's decide: a model answers
+})
+// then an ordinary command writes the label as enrichment, the model as its origin</pre>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <tbody>
+        <tr><th>The effect</th><td>"A model asked", from the draft's list: the call makes a difference (cost, an answer that did not exist)</td></tr>
+        <tr><th>What happened</th><td>The answer, journaled as the activity's exit; then an enrichment changeset with the model as origin (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d111">D111 Faster and enriching implementations</a>)</td></tr>
+        <tr><th>Words that meet</th><td>Effect's <code class="cr-inline">DecisionModel.decide</code> (a model classifies, rates or estimates one input) beside D130's "a command <b>decides</b>" and our Decision (<code class="cr-inline">D&lt;n&gt;</code>). Its <code class="cr-inline">confidence</code> is not a trust level (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d116">D116</a>).</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cr-gap pl-3"><p><b>Strains on "decide", not on "effect":</b> one line of code where a model decides and the very next where a command decides. Q3.</p></div>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">4d. Vision - View - Effects: a gate as one turn</h3>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Part</th><th>For <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p06">P06</a></th><th>Phase of the effect</th></tr></thead>
+      <tbody>
+        <tr><td>Vision</td><td>The claim: a crashed run resumes and every external effect runs at most once</td><td>Asked for (an intent at the claims level)</td></tr>
+        <tr><td>(the run)</td><td><code class="cr-inline">pnpm qualify</code> runs the suite</td><td>Described, then run</td></tr>
+        <tr><td>Effects</td><td>The ledger entry, the journal's exits, the traces</td><td>Happened</td></tr>
+        <tr><td>View</td><td>The claims page: a person sees the gate passed and checks it against the claim</td><td>Shown</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cr-rec pl-3"><p><b>Fits.</b> D98's Effects is the effect in its last phase, "what actually happens". The glossary's Validation already writes "every external effect done at most once" in this sense. No clash with Effect's <code class="cr-inline">Effect</code> once the entry says Effects means what happened, and that an <code class="cr-inline">Exit</code> is Effect's name for it.</p></div>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">I78's finding, checked against the reading</h3>
+    <p class="cr-quote">"In Effect's own vocabulary an <code class="cr-inline">Effect</code> is closer to an intent (what may happen when run) and an <code class="cr-inline">Exit</code> is what happened. D98's Effects is the plain English word."</p>
+    <p>Correct, and it is the phase line: Effect writes the early phase as <code class="cr-inline">Effect</code> and the last as <code class="cr-inline">Exit</code>. It argues against two meanings, not for them: neither the library nor D98 uses "effect" for something other than a change something causes.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. Vision, View and Effects as glossary words</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word alone</th><th>Clashes with</th><th>Passes the map's rule alone?</th></tr></thead>
+    <tbody>
+      <tr><td>Vision</td><td>Nothing in Effect; "vision" for image models (<code class="cr-inline">ai</code> has none named so); everyday "a vision statement"</td><td>Barely: no library clash, but a linker would link every "vision" in prose</td></tr>
+      <tr><td>View</td><td>React Native's <code class="cr-inline">View</code>, the base of every screen; the glossary's Read model and Presenter avoid "view"; SQL views</td><td>No</td></tr>
+      <tr><td>Effects</td><td>Would duplicate effect (Q1)</td><td>Only as effect's plural</td></tr>
+    </tbody>
+  </table></div>
+  <p>The glossary today has the phrase only inside ViViEfs's entry ("what we intend, what we show, and what actually happens"). <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a> and <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98p">D98'</a> promise "the three words get glossary entries in map 3"; one entry for the phrase, explaining all three, keeps that promise without making "view" a linked term.</p>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Sketch of the one entry (wording settled after round 1)</h3>
+    <p class="cr-quote"><b>Vision - View - Effects</b>: The loop this project runs at every level: what we intend, what we show, and what actually happens. Vision is what we intend and decide (decisions, ADRs, claims); Effects is what actually happened (the log, evidence, traces), the last phase of an effect; View is what a person or agent sees and learns from (guides, diagrams, the app's screens). A gate is one turn, a guide another, a grilling a third (D98, D98'). The three words are not terms alone: View is not React Native's <code class="cr-inline">View</code>, and Effects is not the library.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">6. What waits for round 2 and 3</h2>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>Effect handler, round 2.</b> Options to come: keep it as the compound (vivief's word, and it reads well once effect is settled); drop it as a term and say "command" (the function) and "workflow" (the actor) with the shape as D130's lens; or "handler" alone in Effect's sense, the code behind a declared operation. Facts for it: Effect never says "effect handler"; OCaml 5 and Koka do, for an interpreter that resumes a computation; the closest "like X, except Y" is Elm's <code class="cr-inline">update</code> or the Decider, both of which return what should follow without doing it.</li>
+      <li><b>Intent, round 2.</b> Whether its entry says "an effect asked for", and whether "the user" widens to "a person or an agent" (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a> says people and agents compose intent).</li>
+      <li><b>The formula's names, round 3</b> (<a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30 Ideas batch: glossary entries written as effects</a>): after the handler is named. Constraint known now: <code class="cr-inline">Context</code>, <code class="cr-inline">Effect</code> and <code class="cr-inline">Command</code> are taken in a codebase written in Effect, and D131 says the changeset, not <code class="cr-inline">State'</code>, is the step.</li>
+      <li><b>The Effect (library) entry</b>, written beside effect once Q1 is settled.</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">7. Questions, round 1</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 What effect means')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. What does "effect" mean in the glossary?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: one meaning, named by phase"> <span><b>A. One meaning, named by phase</b> (recommended). The draft's plain sentence, plus: an effect passes through phases and our words name them, asked for (intent), proposed (changeset), happened (a fact, a journaled exit); Effect writes the effect down as an <code class="cr-inline">Effect</code> before it runs and calls how it ended an <code class="cr-inline">Exit</code>. Write "effect" alone only where the phase does not matter.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: only what happened"> <span><b>B. Only what happened.</b> Effect means the done phase (D98's Effects, <code class="cr-inline">Exit</code>'s sense); intents and changesets are never called effects, and the handler line says "decides what should follow". Cost: Effect's docs call the not-yet-run value "an effect", so this is the clash the map's rule forbids.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: no glossary term effect"> <span><b>C. No term.</b> The word stays the library's; D98's Effects is explained inside the Vision - View - Effects entry only. Cost: vivief's effect and I30's question get no home.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 Vision - View - Effects entry')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. Vision - View - Effects: one entry or three?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: one entry for the phrase, the three words explained inside, not terms alone"> <span><b>A. One entry for the phrase</b> (recommended), as sketched in section 5; the linker links the phrase, never "view" alone. D98 and D98' are satisfied as written ("glossary entries" read as the entry that defines all three).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: three entries, Vision, View, Effects"> <span><b>B. Three entries</b>, as D98's wording reads literally. Cost: View clashes with React Native's <code class="cr-inline">View</code>, so it needs a compound or a long Avoid line.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="C: one entry for the phrase, plus Vision as a term alone"> <span><b>C. The phrase, plus Vision alone</b> as a term (it has no library clash).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 The verb decide')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. A command "decides": keep the verb beside Effect's <code class="cr-inline">DecisionModel.decide</code>?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: keep decide as prose verb, marked in Command and Decision entries"> <span><b>A. Keep, marked</b> (recommended). "Decide" stays D130's verb in prose, not a term. Command's entry says it decides in event sourcing's sense (decide, beside evolve), not Effect's <code class="cr-inline">DecisionModel.decide</code>, where a model answers a question about one input; Decision's entry gains "Not Effect's <code class="cr-inline">Decision</code>". A model's answer is enrichment, never a decision.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: change the verb to propose"> <span><b>B. "Propose"</b>: a command proposes a changeset, authority accepts it. No clash, and it says the changeset can be rejected. Cost: loses the bridge to event sourcing's decide and evolve that D130 relies on; D130 and the ADR-0032 table get reworded.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="C: keep decide unmarked"> <span><b>C. Keep, unmarked.</b> Cost: the 4c line, where a model decides and then a command decides, stays unexplained.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <p class="cr-src">Sources: <code class="cr-inline">repos/effect</code> at 4.0.5 (<code class="cr-inline">Effect.ts</code>, <code class="cr-inline">Exit.ts</code>, <code class="cr-inline">ai/DecisionModel.ts</code>); <a class="cr-link" href="2026-10-27-effect-vocabulary-against-ours.md">I78's record</a>; vivief <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> §1, §2.5, §3, §11 and <code class="cr-inline">docs/contract/foundation.md</code> §5, §12; <a class="cr-link" href="2026-10-06-vivief-inventory.md">the vivief inventory</a>, map-3 rows; <code class="cr-inline">GLOSSARY.md</code>; the decision log (D98, D98', D111, D130-D137); <code class="cr-inline">features/evidence/model/src/command.ts</code>; <code class="cr-inline">libs/workflow-engine/src/suites/exit-replay.ts</code>. OCaml 5, Koka, Elm and the Decider from general knowledge, not checked against their docs today.</p>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">8. Round 2: effect handler, intent, and the two Effects</h2>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">8a. Who plays the effect handler's part, and who does not</h3>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th class="w-[16%]">Part</th><th class="w-[13%]">What is known</th><th class="w-[20%]">Comes in (asked for)</th><th class="w-[22%]">The effects that follow</th><th class="w-[29%]">Handler?</th></tr></thead>
+      <tbody>
+        <tr><td>A command (<code class="cr-inline">renameList</code>)</td><td>A read model</td><td>An intent</td><td>A changeset, proposed; or a <code class="cr-inline">DomainError</code></td><td>Yes: the function (vivief's level 1)</td></tr>
+        <tr><td>Authority's accept</td><td>The log</td><td>A changeset</td><td>The facts, accepted and ordered; or a <code class="cr-inline">Rejection</code></td><td>Yes: the step across the frontier (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>)</td></tr>
+        <tr><td>A workflow body</td><td>Its journal</td><td>The payload, an activity's exit, a completed deferred</td><td>The next activity, the next wait, or the result</td><td>Yes: the actor (vivief's level 2, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d136">D136</a>)</td></tr>
+        <tr><td>The projector</td><td>A read model</td><td>Accepted facts</td><td>The next read model, which can be thrown away</td><td>Evolves, does not decide: D130 names it apart</td></tr>
+        <tr><td>A query atom, a Presenter, a pure helper</td><td>Read models</td><td>A question</td><td>A frame, a value</td><td>No: a read makes no difference (D130, vivief's creation boundary)</td></tr>
+      </tbody>
+    </table></div>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">8b. Effect handler elsewhere</h3>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Where</th><th>What it means</th><th>Like ours?</th></tr></thead>
+      <tbody>
+        <tr><td>Effect 4.0.5</td><td>Never "effect handler". "Handler" is the code behind a declared operation (an <code class="cr-inline">Rpc</code>, an <code class="cr-inline">Event</code>, a <code class="cr-inline">Tool</code>, a workflow).</td><td>A command is the handler of its registered intent in that sense; but Effect's handlers perform, ours return what should follow.</td></tr>
+        <tr><td>OCaml 5, Koka (algebraic effects)</td><td>Code that catches an effect a computation performs, decides what it means, and resumes the paused computation.</td><td>Same core (an effect asked for comes in, the handler decides what it means); differs in that ours resumes nothing and is pure. Not a library we use, so the map's rule allows the compound with a mark.</td></tr>
+        <tr><td>Elm</td><td><code class="cr-inline">update : Msg -&gt; Model -&gt; (Model, Cmd Msg)</code>, effects returned as data</td><td>The closest "like X, except Y": like Elm's <code class="cr-inline">update</code>, except what it returns is proposed and counts only once authority accepts it.</td></tr>
+      </tbody>
+    </table></div>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">8c. Sketches of the entries (if Q4-Q6 go as recommended)</h3>
+    <p class="cr-quote"><b>effect</b>: Something that happens and makes a difference: a fact written, a message sent, a screen redrawn, a model asked. An effect passes through phases, and the stack names each: asked for (an intent), proposed (a changeset), happened (a fact in the log, an activity's journaled exit). Effect, the library, writes an effect down as a value of its type <code class="cr-inline">Effect</code> before it runs and calls how it ended an <code class="cr-inline">Exit</code>; that is how the library carries one effect through its phases, not another meaning. Write effect alone only where the phase does not matter. A read makes no difference, so it is not an effect.</p>
+    <p class="cr-quote"><b>Effect handler</b>: A step that takes what is known and an effect asked for, and decides which effects follow, without making them happen. A command is one (a read model and an intent in, a changeset or a <code class="cr-inline">DomainError</code> out), authority's accept another, and a workflow body a third, over its journal. Reads and pure helpers are not. Like Elm's <code class="cr-inline">update</code>, except what it returns is proposed and counts only once accepted. vivief's <code class="cr-inline">effectHandler</code>, in this form (D130, D136). Not an effect handler of algebraic effects (OCaml 5, Koka), which resumes a paused computation; Effect has no effect handler, and a handler alone is Effect's: the code behind a declared operation.</p>
+    <p class="cr-quote"><b>Intent</b>: What someone asks to happen, before it is checked: a person, an agent or an outside source. An effect in its first phase; the input to a command; not a datom. A clock firing, a sync arriving or an activity's exit is not an intent.</p>
+    <p class="cr-quote"><b>Effect</b> (the library): The TypeScript library this whole stack is written with ... (as today), plus: An <code class="cr-inline">Effect</code> value is an effect described, not yet run; see effect.</p>
+  </div></div>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Effect handler')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. Is "effect handler" a glossary term?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: a term, the compound, as sketched in 8c"> <span><b>A. A term, the compound</b> (recommended), as sketched: the role a command, accept and a workflow body play; marked against algebraic effects and Effect's "handler". It is the one name that lets a newcomer see those three as one idea, which is D130's reason for naming the shape.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: no term, the shape stays D130's lens, vivief's word noted under Command and Workflow"> <span><b>B. No term.</b> The shape stays D130's lens (decide, accept, evolve); Command and Workflow each say they are vivief's <code class="cr-inline">effectHandler</code> at their level. Cost: the formula (round 3) has no name to hang on.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="C: handler alone, in Effect's sense"> <span><b>C. "Handler" alone</b>, Effect's word. Cost: Effect's handlers perform; a command returns what should follow, so the meaning differs from the library's, which the map's rule forbids for a single word.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 Intent')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. What is an intent?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="A: what someone asks to happen, a person, an agent or an outside source, an effect in its first phase"> <span><b>A. What someone asks to happen</b> (recommended), as sketched: a person, an agent or an outside source (Command already says these three write data); an effect in its first phase; a clock, a sync or an activity's exit is not one. Matches D132 (people and agents compose intent).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="B: vivief's, any effect that enters a handler"> <span><b>B. vivief's: any effect entering a handler</b>, so a workflow's exit, a deferred completion and a changeset arriving at accept are intents too. Cost: the word stops saying someone asked.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="C: as today, what the user asked for, only the effect-phase line added"> <span><b>C. As today</b> ("what the user asked for"), with only the phase line added.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q6', 'Q6 Effect and effect')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. How do Effect (the library) and effect (the word) sit side by side?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="A: two entries, told apart by case and code font"> <span><b>A. Two entries, told apart by case</b> (recommended): Effect, capitalised, is the library; <code class="cr-inline">Effect</code> in code font is its type; effect, lower case, is the word. The library's entry gains one line pointing to effect. The linker (<a class="cr-link" href="../issues/0095-build-the-glossary-linker-as-decided.md">I95 Build the glossary linker as decided</a>) matches case; at the start of a sentence a writer rephrases.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="B: one entry Effect covering both"> <span><b>B. One entry</b> that covers the library and the word. Cost: the hover sentence can only explain one of them.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="C: two entries, the library always written Effect-TS in prose"> <span><b>C. Two entries, the library written "Effect-TS"</b> in prose. Cost: the library calls itself Effect; Effect-TS is its GitHub organisation, not its name.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <p class="cr-src">Round 3, after these: the formula's names (<a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30</a>), and what is left of I30 afterwards. Then the record: decision rows from D163, the glossary, the living documents the words touch, I88's Answer and the map.</p>
+</section>
+
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">9. Round 3: the formula's names, and what is left of I30</h2>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">9a. The formula, as it has been written</h3>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Where</th><th>Written as</th><th>Against the words now settled</th></tr></thead>
+      <tbody>
+        <tr><td>vivief's foundation</td><td><code class="cr-inline">(state, intent) =&gt; (state', [intent'])</code></td><td><code class="cr-inline">state'</code> is not what a handler returns: the changeset is the step (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d131">D131</a>); what follows is not an intent (Q5)</td></tr>
+        <tr><td><a class="cr-link" href="../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md">I25</a></td><td><code class="cr-inline">(Context, Intent) =&gt; (Context', [Effects])</code></td><td><code class="cr-inline">Context</code> is Effect's service map</td></tr>
+        <tr><td><a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30</a></td><td><code class="cr-inline">(State, Effect) =&gt; (State', [Effects'])</code></td><td><code class="cr-inline">Effect</code> is the library's type</td></tr>
+        <tr><td>The glossary, Command</td><td><code class="cr-inline">(readModel, intent) -&gt; changeset or DomainError</code></td><td>Holds: the code's own names</td></tr>
+      </tbody>
+    </table></div>
+    <p>Option A writes each handler in its own terms, the names the code uses, under the one sentence of the Effect handler entry:</p>
+    <pre class="cr-code">effect handler  (what is known, an effect asked for) -&gt; the effects that follow
+command         (readModel, intent)                  -&gt; changeset or DomainError
+accept          (log, changeset)                     -&gt; accepted facts or Rejection
+workflow body   (journal, payload or an exit)        -&gt; next activity, wait or result
+
+in Effect's type, a command returns Effect&lt;CommandChangeset, DomainError&gt;:
+success is the effects that follow, failure is typed, requirements are services</pre>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">9b. What I30 asked, and where each part goes</h3>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>I30's part</th><th>Where it goes</th></tr></thead>
+      <tbody>
+        <tr><td>The formula's names (<code class="cr-inline">State</code>, <code class="cr-inline">Context</code>, <code class="cr-inline">Effect</code>, <code class="cr-inline">Intent</code>, <code class="cr-inline">Command</code>)</td><td>Answered here (Q7)</td></tr>
+        <tr><td>Which effect sense the word takes</td><td>Answered: one meaning, by phase (Q1)</td></tr>
+        <tr><td>A fourth form per glossary entry: in, out, which effects, deterministic or reasoning</td><td>Open: no reader has asked for it yet; <a class="cr-link" href="../issues/0021-test-the-glossary-with-a-reader.md">I21</a>'s reader test in map 4 is where that shows</td></tr>
+        <tr><td>vivief's deprecated terms with a reason (<code class="cr-inline">Analyser</code> became <code class="cr-inline">Extractor</code>, "clearer")</td><td><a class="cr-link" href="../issues/0089-how-a-word-is-chosen-and-written.md">I89 How a word is chosen and written</a>: whether an Avoid line says why</td></tr>
+        <tr><td>Glossary groups read as context (vivief's <code class="cr-inline">Core</code>, <code class="cr-inline">Workflow</code>, ...)</td><td>Already the map's "Not yet specified" for I89</td></tr>
+        <tr><td>"Super high" level</td><td>Taken up by <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a>'s levels (data, decisions, code, claims, patterns)</td></tr>
+      </tbody>
+    </table></div>
+  </div></div>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q7', 'Q7 The formula')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q7. The formula's names</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="A: no abstract formula, each handler in its own terms under the entry's sentence"> <span><b>A. No abstract formula</b> (recommended): the Effect handler sentence is the formula; each handler's signature stays in its own terms (9a). Any abstract name either collides (<code class="cr-inline">Context</code>, <code class="cr-inline">Effect</code>, <code class="cr-inline">Command</code>), misleads (<code class="cr-inline">State'</code>, D131) or is one more word to learn.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="B: a short formula with new names, (known, asked) -> proposed"> <span><b>B. A short formula with new names</b>, <code class="cr-inline">(known, asked) -&gt; proposed</code>, in the entry, as vivief's one line a newcomer holds.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="C: Effect's type as the formula, Effect<A, E, R>"> <span><b>C. Effect's type as the formula</b>: <code class="cr-inline">Effect&lt;A, E, R&gt;</code>. Cost: it says nothing of what is known or asked for, which are arguments.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q8', 'Q8 What is left of I30')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q8. What is left of I30</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="A: narrow, the fourth form waits for I21, the Avoid reason goes to I89"> <span><b>A. Narrow it</b> (recommended), as 9b: names answered; the fourth form waits, <code class="cr-inline">Decide when:</code> I21's reader test shows a newcomer needs what a term takes in and gives out, or a guide needs a term's deterministic and reasoning parts; the Avoid reason goes to I89 as a comment.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="B: close I30, the fourth form rejected"> <span><b>B. Close it</b>: the fourth form rejected, the plain sentence and paragraph are enough.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="C: make the fourth form a map-3 ticket now"> <span><b>C. A map-3 ticket now</b> for the fourth form.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <p class="cr-src">After these: decision rows from D163, I88's Answer, comments on I30, I78 and I89, the living documents the words touch, the map's Decisions so far, and the handover; then one commit.</p>
+</section>
+
+</div>
+</body>
+</html>

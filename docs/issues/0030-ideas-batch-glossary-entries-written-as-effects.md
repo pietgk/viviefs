@@ -4,7 +4,7 @@ Status: ready-for-human
 
 Category: enhancement
 
-Decide when: map 3, the formula's names
+Decide when: [I21 Test the glossary with a reader outside software][I21]'s reader test shows a newcomer needs what a term takes in and gives out, or a guide needs a term's deterministic and reasoning parts
 
 Found: 2026-10-04
 
@@ -110,12 +110,21 @@ What this could give:
 
 2026-10-27: map 3 started. The formula's names are decided in [I88 Effect and the effect handler][I88] Effect and the effect handler, which comments here on what is left.
 
+2026-10-28: narrowed by [I88 Effect and the effect handler][I88]. The formula's names are answered: there is no formula with names of its own; the effect handler's sentence is the formula and each handler keeps its signature in its own terms ([D166 No formula with names of its own][D166]). Which sense the word effect takes is answered: one meaning, named by phase ([D163 One meaning of effect, named by phase][D163]). What is left is this issue's own idea, a fourth form per glossary entry (what it takes in and gives out, which parts are deterministic and which need reasoning); it waits for evidence that a reader needs it. vivief's deprecated terms with a reason went to [I89 How a word is chosen and written][I89]; the glossary's groups are already that ticket's, and the "super high" level is [D132 Four states at every level][D132]'s levels.
+
+2026-10-28: from [I89 How a word is chosen and written][I89]. Its "Avoid with a reason" is answered: a word we used and retired names, on its Avoid line, the decision that retired it, and that row holds the reason ([D175 A retired word names its decision][D175]). The glossary's groups now follow the one turn ([D177 Groups follow the one turn][D177]). An entry now ends with labelled `_Like_`, `_Not_` and `_Avoid_` lines ([D174 Like, Not and Avoid lines][D174]); a fourth form, if a reader needs it, would be one more label. What is left is unchanged: the fourth form waits for evidence from [I21 Test the glossary with a reader outside software][I21].
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D130]: ../plan/bootstrap/02-decision-log.md#d130
 [D131]: ../plan/bootstrap/02-decision-log.md#d131
 [D132]: ../plan/bootstrap/02-decision-log.md#d132
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
+[D163]: ../plan/bootstrap/02-decision-log.md#d163
+[D166]: ../plan/bootstrap/02-decision-log.md#d166
+[D174]: ../plan/bootstrap/02-decision-log.md#d174
+[D175]: ../plan/bootstrap/02-decision-log.md#d175
+[D177]: ../plan/bootstrap/02-decision-log.md#d177
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
@@ -127,3 +136,4 @@ What this could give:
 [I56]: 0056-one-shape-at-every-level.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
 [I88]: 0088-effect-and-the-effect-handler.md
+[I89]: 0089-how-a-word-is-chosen-and-written.md

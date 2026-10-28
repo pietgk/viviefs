@@ -8,7 +8,7 @@ unverified until its gate in [06-qualification-gates.md](06-qualification-gates.
 ```mermaid
 flowchart TD
   subgraph Device["Device (Expo: iOS, Android, web)"]
-    UI["Screens: pure views over screen-view selectors"]
+    UI["Screens rendered from screen-view selectors"]
     ATOMS["Query atoms (Effect Atom), Reactivity keys"]
     CMD["Commands (feature model, shared)"]
     ENG["WorkflowEngine (datom-backed)"]
@@ -19,7 +19,7 @@ flowchart TD
   end
   subgraph Server["Server (Node + Effect)"]
     API["HttpApi / RPC: sync, lease, commands"]
-    VAL["Validation: Schema, membership, invariants, fencing, basis"]
+    VAL["Accept: access, well formed, acceptance rules, lease fencing, basis"]
     SENG["WorkflowEngine (same code)"]
     SLOG[("Datom log + read models (Postgres or SQLite)")]
     BLOB[("Object storage (content hash)")]

@@ -124,7 +124,7 @@ module (`guides.ts`) and a thin entry (`check-guides.ts`), as `diagrams` is.
 | Every guide has the template's pages, `##` headings in order and frontmatter keys; every lesson has the lesson shape | [D62 The shape of a guide][D62] |
 | `adrs` exist; `gates` are in the gate table; `exercises` names an existing track; each lesson's `evidence` exists under `docs/evidence/` | [D62 The shape of a guide][D62], [D63 Acceptance on the guide][D63] |
 | An ADR is `Accepted` only if an accepted guide names it; an accepted guide's ADRs are all `Accepted`; an `Accepted` ADR names a qualifying gate and has an Observed entry | [D63 Acceptance on the guide][D63] |
-| A guide's exemplar projects point back (`metadata.guide`), and their README and entry-module TSDoc link the guide page; a project's `metadata.guide` names an existing guide | [D67 Exemplar links to its guide][D67] |
+| A guide's exemplar projects point back (`metadata.guides`), and their README and entry-module TSDoc link the guide page; each name in a project's `metadata.guides` is an existing guide | [D67 Exemplar links to its guide][D67] |
 | Exercise layout: `NN.MM-name/{problem,solution}/` plus `exercise.test.ts`, numbers contiguous, sections paired with lessons | [D66 Exercise tracks][D66] |
 | A guide's prose names gates and ADRs through `<Gate>` and `<Adr>`, never as a bare id; every ADR is named by at most one guide | [D82 Patterns build on each other][D82], [D86 Named, linked references][D86] |
 
@@ -209,7 +209,7 @@ and the exercise loop was not explained. Decided as [D87-D91 References, names a
 
 ## 11. Review round 3 (2026-10-02): issues, claims, the glossary
 
-Decided as [D92-D94 Claims, issues and the glossary][D92-D94] (review page
+Decided as [D92 Issues as records][D92]-[D94 A glossary a newcomer can read][D94] (review page
 [2026-10-02 Claims, issues and glossary review](../../research/2026-10-02-claims-issues-glossary-review.html)); built
 the same day, in the agreed order:
 
@@ -261,7 +261,6 @@ the same day, in the agreed order:
 [D90]: ../bootstrap/02-decision-log.md#d90
 [D91]: ../bootstrap/02-decision-log.md#d91
 [D92]: ../bootstrap/02-decision-log.md#d92
-[D92-D94]: ../bootstrap/02-decision-log.md#d92-d94
 [D93]: ../bootstrap/02-decision-log.md#d93
 [D94]: ../bootstrap/02-decision-log.md#d94
 [I20]: ../../issues/0020-trace-projector-on-devices.md
