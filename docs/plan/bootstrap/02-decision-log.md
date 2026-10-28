@@ -399,7 +399,7 @@ step, an activity that calls a model, and Vision - View - Effects.
 | <a id="d168"></a>D168 | Vision - View - Effects, one entry | The glossary has one entry for the phrase, which explains all three words; none is a term on its own, and the linker links the phrase, never "view" alone. Effects is what actually happened, an effect in its last phase ([D163 One meaning of effect, named by phase][D163]). This is the entry [D98 Vision - View - Effects][D98] and [D98' Vision - View - Effects, at every level][D98'] asked for. Not chosen: three entries, and the phrase with Vision alone. | View clashes with React Native's `View` and with the glossary's own Avoid lines for read model and Presenter; Effects alone would repeat effect. |
 | <a id="d169"></a>D169 | A command decides | "Decide" stays [D130 One shape at the data level][D130]'s verb for a command, in prose, not a glossary term: event sourcing's decide, beside evolve. The Command entry says it is not Effect's `DecisionModel.decide`, where a model answers a question about one input, nor a command-line command (`effect/cli`); the Decision entry says it is not Effect's `Decision`, whose answer is an enrichment with the model as origin ([D111 Faster and enriching implementations][D111]). Not chosen: "propose" (it loses the bridge to event sourcing) and the verb unmarked. | An activity can call `DecisionModel.decide` one line before a command decides; the marks keep the two apart without giving up the name event sourcing readers know. |
 
-<a id="d170-d179"></a>
+<a id="d170-d180"></a>
 ## How a word is chosen and written (2026-10-28)
 
 From [I89](../../issues/0089-how-a-word-is-chosen-and-written.md), the second ticket of map 3, decided with the human on
@@ -418,6 +418,7 @@ and ran the charting's rule on every single-word term.
 | <a id="d177"></a>D177 | Groups follow the one turn | The glossary's groups follow the order of the one turn: the project, patterns, apps and code, facts and the log, changes and accept, origin and trust, identity and access, encryption and tamper-evidence, sync, reading, durable execution, then tracing, decisions and evidence, and validation. A new term goes in the group of the foundation concept it serves. Anchors are per term, so no link moves. Not chosen: splitting only Architecture (Data stays at 43 terms), one group per owning pattern (the process and project words have none), and the seven groups as they were. | Start here and the body then read in the same order, and the two largest groups, which each mixed several concerns, are gone. |
 | <a id="d178"></a>D178 | Growth watched, not capped | What a newcomer must hold is Start here, the twelve foundation concepts ([D160 The foundation concepts][D160]); the rest of the glossary is reference and grows with the patterns. `verify` reports, without failing, the number of terms and any term no living document outside the glossary uses; each map's acceptance reviews the terms it added and removes or justifies an unused one, [I96 Accept the vocabulary][I96] first. `vivief:surface-area-as-risk`: adopt the measure of what a newcomer holds, not vivief's trims. Not chosen: a cap on the number of terms (arbitrary, and it pushes needed words out of the glossary rather than out of the stack), and no measure. | The glossary went from 81 to 123 terms in four weeks; vivief's reviews counted what a developer must hold at once, which is the number that hurts. |
 | <a id="d179"></a>D179 | A definition names the general thing | A glossary definition, and any general statement in a living document ([D173 What a word change rewrites, and where it is written][D173]), names the general thing it means: a device, not a phone; the server, not a Node.js process. A particular platform appears only as an example ("such as a phone or a browser on a laptop") or where the fact is about that platform (today's Expo app runs on iOS, Android and the web; device gates run on an iOS simulator and an Android emulator). From the human's review of [I89 How a word is chosen and written][I89]: eight entries said phone where any device was meant (HLC, Device, Outbox, Cursor, Quarantine, Workflow, Engine, Worker), and Log store named one phone and one browser. The human asked for the living documents to be swept too, since a reference implementation is copied: [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032], [ADR-0033 The Presenter pattern][ADR-0033] and [ADR-0036 The journal is the fence][ADR-0036], a log-store lesson and seven open issues said phone where any device was meant. A test fixture's device id (`alice-phone`), the Expo app's platforms, and what only the native platform does (a mobile OS killing an app, the Hermes bundle budget) stay. Not chosen: leaving the examples as definitions, and fixing the glossary only. | ViViEfs supports phones, browsers and laptops, and a newcomer takes a definition literally: "kept on their phone" tells a browser user their work is not kept. |
+| <a id="d180"></a>D180 | Diagram labels are prose | A Mermaid label in a living document is prose: the checks that read prose read it too, and a name the stack owns (a repository path, a `project.json` `metadata` key, a `pnpm` script, a `verify` step, a pinned attribute name) fails `verify` where a document names one that does not exist. A word retired by [D175 A retired word names its decision][D175] fails `verify` outside a passage marked as another project's sense, once [I94 Words in another project's sense][I94] decides the mark. A wrong meaning stays with the second verification ([D96 Two verifications][D96]): a reader or a review catches it, not `verify`. From the human's review of [I89 How a word is chosen and written][I89]: five errors on How a pattern is delivered, four in its diagrams, all drift from later decisions. Built in [I98 Diagram labels and named identifiers get the checks prose gets][I98] and [I95 Build the glossary linker as decided][I95]. Not chosen: failing on `_Avoid_` words (they are everyday words, wrong only in one sense), and relying on the sweep of [D173 What a word change rewrites, and where it is written][D173] alone. | A mechanical rule becomes a `verify` check (AGENTS.md); drift is mechanical where a name or a retired word is, and only meaning needs a reader. |
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
@@ -503,6 +504,7 @@ and ran the charting's rule on every single-word term.
 [D170]: #d170
 [D173]: #d173
 [D174]: #d174
+[D175]: #d175
 [D18]: #d18
 [D2]: #d2
 [D22]: #d22
@@ -622,8 +624,10 @@ and ran the charting's rule on every single-word term.
 [I91]: ../../issues/0091-effects-names-against-ours.md
 [I92]: ../../issues/0092-map-2s-new-words.md
 [I94]: ../../issues/0094-words-in-another-projects-sense.md
+[I95]: ../../issues/0095-build-the-glossary-linker-as-decided.md
 [I96]: ../../issues/0096-accept-the-vocabulary.md
 [I97]: ../../issues/0097-a-preview-on-every-link-in-a-pages-text.md
+[I98]: ../../issues/0098-diagram-labels-and-named-identifiers-get-the-checks-prose-gets.md
 [P01]: 06-qualification-gates.md#p01
 [P03]: 06-qualification-gates.md#p03
 [P04]: 06-qualification-gates.md#p04
