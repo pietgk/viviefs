@@ -66,6 +66,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 
 - [I88 Effect and the effect handler][I88] (2026-10-28): effect has one meaning, named by phase (asked for, proposed, happened); Effect and effect are told apart by case, and the docs linker matches case; the effect handler is a compound term (a command, accept, a workflow body), with no formula of its own; an intent is what someone asks to happen; Vision - View - Effects is one entry; a command decides, marked against `DecisionModel.decide` ([D163 One meaning of effect, named by phase][D163]-[D169 A command decides][D169]).
 - [I89 How a word is chosen and written][I89] (2026-10-28): a single word only where it matches, the libraries and the test named; every term passes the rule, and six clashes no ticket held joined [I91 Effect's names against ours][I91]; the compound every time; the rewrite rules with code comments; `_Like_`, `_Not_` and `_Avoid_` lines; a retired word names its decision; the glossary opens with its thesis and Start here, and its groups follow the one turn; the first line is the hover line, after the preview was found cut mid-sentence; growth watched, not capped, reported by `verify`; a definition names the general thing, a device and not a phone ([D170 One word only where it matches][D170]-[D180 Diagram labels are prose][D180], [D94' The hover line][D94']).
+- [I90 Pattern, concept, contract, abstraction][I90] (2026-10-28): concept is the wider word, a pattern the kind with a contract, a suite and a gate, and a foundation concept one of the twelve; "abstraction" stays plain English; Pattern, Contract and Feature keep their words with `_Like_` and `_Not_` lines; `.agents/patterns/` became `.agents/extracts/`; "no feature code" became "no production code"; [I33 Ideas batch: abstractions that constrain agents][I33] narrowed to map 4 ([D181 Concept is the wider word][D181]-[D185 Feature keeps its word][D185]).
 
 ## Not yet specified
 
@@ -92,6 +93,8 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D175]: ../bootstrap/02-decision-log.md#d175
 [D177]: ../bootstrap/02-decision-log.md#d177
 [D180]: ../bootstrap/02-decision-log.md#d180
+[D181]: ../bootstrap/02-decision-log.md#d181
+[D185]: ../bootstrap/02-decision-log.md#d185
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D94']: ../bootstrap/02-decision-log.md#d94p
@@ -107,6 +110,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I88]: ../../issues/0088-effect-and-the-effect-handler.md
 [I89]: ../../issues/0089-how-a-word-is-chosen-and-written.md
+[I90]: ../../issues/0090-pattern-concept-contract-abstraction.md
 [I91]: ../../issues/0091-effects-names-against-ours.md
 [I94]: ../../issues/0094-words-in-another-projects-sense.md
 [I95]: ../../issues/0095-build-the-glossary-linker-as-decided.md

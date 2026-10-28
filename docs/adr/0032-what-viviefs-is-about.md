@@ -87,8 +87,10 @@ product choices are not on it, because they stay with that app for good ([D159 P
 command decides a changeset of datoms naming its origin, authority accepts it
 having asked access and chains it, sync carries it, the projector builds read
 models, and a Presenter answers a surface with a frame; long work runs as a
-workflow whose journal is in the same log; each is a pattern, so each can be
-done another way that passes the same suite. All five of vivief's `concepts`
+workflow whose journal is in the same log; each is a pattern or a concept one
+pattern owns, so each can be done another way that passes the same suite
+(amendment 2026-10-28, [D181 Concept is the wider word][D181]: a pattern is the kind of concept with a contract, a
+suite and a gate). All five of vivief's `concepts`
 are adopted, each in the form below; the set is not closed, because patterns
 build on each other and new ones join ([D82 Patterns build on each other][D82], as [D125 Acceptance rules][D125] did for the six contract
 sub-types). The paragraphs after the table are the detail.
@@ -109,13 +111,14 @@ sub-types). The paragraphs after the table are the detail.
 | 12 | Tamper-evident history | Each organization's history is a chain in which any change to the past shows. | Verified segments | [D155 A hash chain per organization][D155], [D156 Levels of proof of authorship][D156], [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] | log store | [P09 Sync][P09] again ([I85 Build the hash chain][I85]) |
 
 The shape above the code and its four states ([D132 Four states at every level][D132]) are a lens, not a
-concept, and Vision - View - Effects names the loop the table reads as; both
+foundation concept, and Vision - View - Effects names the loop the table reads as; both
 stay paragraphs. Code maps to the concepts through the owning pattern: a lib
 is one pattern's core or one of its implementations, and names its pattern in
 `metadata.guides` once the guide exists ([D161 Libs stay one per pattern and implementation][D161], [D84 Exemplar of several guides][D84]). The newcomer's question,
 "what is this like where I come from", is answered in the glossary, not here
-([D162 Portability, two halves][D162]). The words `Contract`, surface, `node` and foundation concept itself
-wait for map 3; `effectHandler` is the effect handler ([D165 The effect handler][D165]).
+([D162 Portability, two halves][D162]). Foundation concept and Contract keep their words: concept is the wider word,
+and vivief's `Contract` is accepting a change ([D181 Concept is the wider word][D181], [D184 Contract keeps its word][D184]); surface and `node` wait
+for map 3; `effectHandler` is the effect handler ([D165 The effect handler][D165]).
 
 **Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
 one installation of an app that keeps all or part of an organization's data
@@ -177,7 +180,7 @@ data. The changeset is the step; the log after accept is the new state, and
 read models are its views. Reads and pure helpers make no new state, so they
 are outside the shape. Shown by [P05 Changesets and projections][P05], [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09]. vivief's `effectHandler` is
 adopted in this form, named the effect handler ([D165 The effect handler][D165]). Above the code the shape is a lens,
-not a concept: people and agents compose intent, and apps and tools,
+not a foundation concept: people and agents compose intent, and apps and tools,
 themselves built from intent, carry it out to reach a goal. At every level
 (data, decisions, code, claims, patterns) a thing is hot while it is open,
 crosses a frontier where a checkpoint decides, is kept warm with its history,
@@ -289,6 +292,10 @@ Accepted by the human on 2026-10-27 in [I55 Accept the foundation concepts][I55]
 rows disposed of in an Answer of I47-[I59 Bring ADR-0002 and the vision page in line with I47][I59]. The glossary's ViViEfs and App
 creation entries match it.
 
+Amended on 2026-10-28 by [I90 Pattern, concept, contract, abstraction][I90] ([D181 Concept is the wider word][D181]): the foundation concepts are
+patterns or concepts one pattern owns, as the table's Owning pattern column
+already said; the text had called each a pattern.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: 0002-purpose-scope-and-exemplar.md
@@ -344,6 +351,8 @@ creation entries match it.
 [D161]: ../plan/bootstrap/02-decision-log.md#d161
 [D162]: ../plan/bootstrap/02-decision-log.md#d162
 [D165]: ../plan/bootstrap/02-decision-log.md#d165
+[D181]: ../plan/bootstrap/02-decision-log.md#d181
+[D184]: ../plan/bootstrap/02-decision-log.md#d184
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
@@ -390,6 +399,7 @@ creation entries match it.
 [I81]: ../issues/0081-build-conflicts-decided-at-accept.md
 [I84]: ../issues/0084-build-the-access-pattern.md
 [I85]: ../issues/0085-build-the-hash-chain.md
+[I90]: ../issues/0090-pattern-concept-contract-abstraction.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P04]: ../plan/bootstrap/06-qualification-gates.md#p04
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05

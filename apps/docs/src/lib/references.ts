@@ -352,11 +352,13 @@ const hoverLine = (line: string, fail: (problem: string) => never): string => {
  * as the glossary writes them, capitalised, and not where any word would be
  * capitalised, at the start of a sentence or a cell (D94): "the CLI command"
  * is not a Command, "a side effect" is not Effect, "the server accepted" is
- * not Accepted, "an HTTP origin" is not Origin. Acronyms are matched as written too.
+ * not Accepted, "an HTTP origin" is not Origin, "a k-plex concept" is not
+ * Concept (D181). Acronyms are matched as written too.
  */
 export const EVERYDAY_TERMS = [
   'Accepted',
   'Command',
+  'Concept',
   'Deferred',
   'Delivered',
   'Effect',

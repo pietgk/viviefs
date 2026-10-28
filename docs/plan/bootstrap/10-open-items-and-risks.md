@@ -13,7 +13,7 @@ the named gate.
 - iOS, Android and web first-class; [P01 Platform on SDK 58][P01], [P02 SQLite drivers][P02] and [P07 Device resume E2E][P07] fail if the Android emulator fails.
 - Full-store sync per organization, one cursor, Effect RPC.
 - Apache-2.0 and licence checks on new dependencies.
-- No feature code before its gate passes.
+- No production code before its gate passes.
 
 **Named slot, empty** (create the project, ADR or gate id; do not invent the mechanism):
 

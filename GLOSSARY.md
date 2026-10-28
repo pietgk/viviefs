@@ -35,7 +35,7 @@ reference ([D178 Growth watched, not capped][D178]).
 
 | Foundation concept | In one plain sentence | Entries |
 | --- | --- | --- |
-| **Pattern** | A part built once with one promise, several ways to keep it, and a check every way must pass. | [Pattern](#pattern), [Contract](#contract), [Implementation](#implementation), [Suite](#suite) |
+| **Pattern** | A part built once with one promise, several ways to keep it, and a check every way must pass. | [Concept](#concept), [Pattern](#pattern), [Contract](#contract), [Implementation](#implementation), [Suite](#suite) |
 | **Datom and the one log** | Every fact is one small record, kept forever in one log per organization. | [Datom](#datom), [Log store](#log-store), [Organization](#organization) |
 | **Command and changeset** | A command decides what should change and returns it as one batch, without writing it. | [Intent](#intent), [Command](#command), [Changeset](#changeset), [Effect handler](#effect-handler) |
 | **Authority and accepting a change** | One place decides whether a batch counts: may this writer do it, is it well formed, does the data stay valid. | [Server](#server), [Acceptance rule](#acceptance-rule), [Conflict policy](#conflict-policy) |
@@ -91,17 +91,38 @@ _Avoid_: creation (alone, for this meaning)
 
 ## Patterns
 
+**Concept**:
+A named idea people and agents use to think about the stack, such as a datom, a lease or a pattern.
+A pattern is the kind of concept that has a contract, a suite and a gate; every
+other concept is owned by one pattern and taught once, on the Concepts page of
+that pattern's guide ([D82 Patterns build on each other][D82], [D181 Concept is the wider word][D181]).
+_Avoid_: abstraction (for this meaning)
+
+**Foundation concept**:
+One of the twelve ideas the whole stack is built on, which a newcomer learns first.
+Listed in one table read as one turn, each with its owning pattern and the gate
+that shows it ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032], [D160 The foundation concepts][D160]). Some are patterns,
+such as sync; others are concepts a pattern owns, such as the datom. The set is
+open.
+
 **Pattern**:
 A proven way to build one part of an app, written down once so every app here builds that part the same way.
-It has one contract and may have several implementations (log store, telemetry
-sink, identity, encrypted store). It is delivered when gates have proven its
-claims, its exemplar passes verify, and a person has accepted its guide.
-_Avoid_: framework, template
+A concept with one contract and one or more implementations (log store,
+telemetry sink, identity, encrypted store), suites every implementation passes
+and a gate that proves its claims ([D82 Patterns build on each other][D82]). It is delivered when gates
+have proven its claims, its exemplar passes verify, and a person has accepted
+its guide.
+_Like_: a design pattern, except that it is built once as working code, with checks that prove every implementation.
+_Not_: a pattern something is matched against, as in Effect's `Match`, the web's `URLPattern` or a file glob.
+_Avoid_: framework, template, abstraction (for this meaning)
 
 **Contract**:
 What a part of the system promises to the code that uses it, written down so a check can catch a broken promise.
 In code it is an Effect service and its types; its suites check that every
-implementation keeps it.
+implementation keeps it. Effect's own prose uses the word the same way ("the
+procedure contract").
+_Like_: an interface, except that it also promises behaviour, which suites check on every implementation.
+_Not_: vivief's `Contract`, a rule checked whenever data is written: here that is an acceptance rule, checked at accept.
 _Avoid_: interface (alone), API (for the promise)
 
 **Implementation**:
@@ -118,8 +139,8 @@ default an app gets can differ.
 
 **Builds on**:
 How one pattern uses another: it relies on the other's promises instead of explaining them again.
-Patterns do not nest. A concept lives in the guide of the pattern whose contract
-defines it and whose suite checks it.
+Patterns do not nest. A concept that is not a pattern lives in the guide of the
+pattern whose contract defines it and whose suite checks it.
 _Avoid_: sub-pattern, nested pattern
 
 **Guide**:
@@ -164,6 +185,8 @@ they could later be split across `node`s or shared by all
 One piece of what the app does for its users, such as collecting evidence, kept together from screen to server.
 In code it is a vertical slice split into `model`, `client` and `server`
 projects.
+_Like_: an Nx feature library, except that it is three projects that reach from the screen to the server.
+_Not_: vivief's Feature slice, data and logic with no screen, a step in adopting its concepts.
 _Avoid_: module, domain package
 
 **Lib**:
@@ -908,11 +931,13 @@ A stub, a failing test and a reference solution that passes in verify.
 [D175]: docs/plan/bootstrap/02-decision-log.md#d175
 [D177]: docs/plan/bootstrap/02-decision-log.md#d177
 [D178]: docs/plan/bootstrap/02-decision-log.md#d178
+[D181]: docs/plan/bootstrap/02-decision-log.md#d181
 [D2]: docs/plan/bootstrap/02-decision-log.md#d2
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
 [D58']: docs/plan/bootstrap/02-decision-log.md#d58p
 [D65']: docs/plan/bootstrap/02-decision-log.md#d65p
+[D82]: docs/plan/bootstrap/02-decision-log.md#d82
 [D94']: docs/plan/bootstrap/02-decision-log.md#d94p
 [D95]: docs/plan/bootstrap/02-decision-log.md#d95
 [D96]: docs/plan/bootstrap/02-decision-log.md#d96

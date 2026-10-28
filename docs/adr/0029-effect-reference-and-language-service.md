@@ -38,7 +38,7 @@ TypeScript 7, which this repo dual-pinned in [ADR-0028 TypeScript 7 CLI with Typ
   TypeScript 6 API package.
 - `tsconfig.base.json` loads the plugin named `@effect/language-service`
   (the tsgo package still uses that plugin name).
-- Agent extracts live in `.agents/patterns/` and cite `repos/effect`. They
+- Agent extracts live in `.agents/extracts/` and cite `repos/effect`. They
   are not a second copy of docs concept pages ([D30 One source for humans and agents][D30]).
 - Pin `effect-solutions` as a root exact devDependency. Invoke with
   `pnpm exec effect-solutions`. No global install, no home clone.
