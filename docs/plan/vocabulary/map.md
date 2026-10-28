@@ -65,7 +65,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 ## Decisions so far
 
 - [I88 Effect and the effect handler][I88] (2026-10-28): effect has one meaning, named by phase (asked for, proposed, happened); Effect and effect are told apart by case, and the docs linker matches case; the effect handler is a compound term (a command, accept, a workflow body), with no formula of its own; an intent is what someone asks to happen; Vision - View - Effects is one entry; a command decides, marked against `DecisionModel.decide` ([D163 One meaning of effect, named by phase][D163]-[D169 A command decides][D169]).
-- [I89 How a word is chosen and written][I89] (2026-10-28): a single word only where it matches, the libraries and the test named; every term passes the rule, and six clashes no ticket held joined [I91 Effect's names against ours][I91]; the compound every time; the rewrite rules with code comments; `_Like_`, `_Not_` and `_Avoid_` lines; a retired word names its decision; the glossary opens with its thesis and Start here, and its groups follow the one turn; the first line is the hover line, after the preview was found cut mid-sentence; growth watched, not capped, reported by `verify` ([D170 One word only where it matches][D170]-[D178 Growth watched, not capped][D178], [D94' The hover line][D94']).
+- [I89 How a word is chosen and written][I89] (2026-10-28): a single word only where it matches, the libraries and the test named; every term passes the rule, and six clashes no ticket held joined [I91 Effect's names against ours][I91]; the compound every time; the rewrite rules with code comments; `_Like_`, `_Not_` and `_Avoid_` lines; a retired word names its decision; the glossary opens with its thesis and Start here, and its groups follow the one turn; the first line is the hover line, after the preview was found cut mid-sentence; growth watched, not capped, reported by `verify`; a definition names the general thing, a device and not a phone ([D170 One word only where it matches][D170]-[D179 A definition names the general thing][D179], [D94' The hover line][D94']).
 
 ## Not yet specified
 
@@ -91,7 +91,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D174]: ../bootstrap/02-decision-log.md#d174
 [D175]: ../bootstrap/02-decision-log.md#d175
 [D177]: ../bootstrap/02-decision-log.md#d177
-[D178]: ../bootstrap/02-decision-log.md#d178
+[D179]: ../bootstrap/02-decision-log.md#d179
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D94']: ../bootstrap/02-decision-log.md#d94p

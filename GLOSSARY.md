@@ -143,7 +143,7 @@ _Avoid_: example, sample
 ## Apps and code
 
 **App**:
-A program people run, such as the phone app or the server, put together from features and libraries.
+A program people run, such as an app on a phone or the server, put together from features and libraries.
 In code it is a composition root that selects features and provides every
 requirement as Layers, and it stays thin by rule.
 _Avoid_: application package, shell
@@ -240,14 +240,14 @@ attribute may declare `unique: 'per-organization'`, checked when a changeset is
 accepted ([D122 External identifiers][D122]).
 
 **HLC**:
-The clock that puts every fact in order, even on phones that are offline or have the wrong time.
+The clock that puts every fact in order, even on devices that are offline or have the wrong time.
 A hybrid logical clock `(pt, c)` that mints every `tx`: physical time corrected
 against the `node` holding authority (today the server,
 [D119 Time corrected by authority][D119]) plus a tie-break counter.
 _Avoid_: timestamp, version
 
 **Log store**:
-Where the facts are kept, on the phone, in the browser and on the server.
+Where the facts are kept, on every device and on the server.
 The pattern storing datoms and read models (SQLite native, SQLite wasm, SQLite
 Node, Postgres).
 
@@ -542,7 +542,7 @@ _Avoid_: tamper-proof, immutable storage
 ## Sync
 
 **Device**:
-One installation of an app, on one phone or in one browser.
+One installation of an app that a person uses, such as on a phone or in a browser on a laptop.
 It is the `node` a person uses ([D103 Nodes and authority][D103]), and it keeps
 one local replica per provider account that signed in on it; its id is chosen by
 the device and not authenticated.
@@ -555,11 +555,11 @@ device deletes it.
 _Avoid_: cache, local store
 
 **Outbox**:
-The phone's queue of changes waiting until the server has confirmed it got them.
+A device's queue of changes waiting until the server has confirmed it got them.
 The device queue of changesets waiting to be acknowledged by the server.
 
 **Cursor**:
-A bookmark: how far a phone has caught up with the server's list of changes.
+A bookmark: how far a device has caught up with the server's list of changes.
 The server sequence position a replica has confirmed; first sync keeps one
 cursor per organization. Not the trace cursor.
 
@@ -569,7 +569,7 @@ Redelivery is safe because ids are stable; used by sync pull, trace export and
 the compaction horizon.
 
 **Quarantine**:
-A person's work in a change the server refused, kept on their phone until they keep it as new or throw it away.
+A person's work in a change the server refused, kept on their device until they keep it as new or throw it away.
 For example, a photo sent with a seal someone else set first. The user content
 of a rejected changeset, kept on the device with its blobs until a person
 resolves it ([D148 Quarantine is rejected user content][D148]).
@@ -608,7 +608,9 @@ _Avoid_: data frame, result set
 
 **Frame subscription**:
 A screen's live hold on a frame, updated as new facts are committed and ending when the screen closes.
-Decided with the frame ([D109 Frame and frame subscription][D109]).
+Work that gathers data for the frame is a durable activity and goes on committing
+after the screen closes; a one-off read is a snapshot, not a subscription
+([D109 Frame and frame subscription][D109]).
 _Avoid_: subscription (alone), live query
 
 **Screen-view selector**:
@@ -619,7 +621,7 @@ screen renders.
 ## Durable execution
 
 **Workflow**:
-A multi-step process that survives the app being closed or the phone restarting, and carries on where it stopped.
+A multi-step process that survives the app closing or its device or server restarting, and carries on where it stopped.
 Versioned by name; its body re-runs on resume and replays stored activity
 results.
 _Avoid_: job, saga, flow
@@ -659,11 +661,11 @@ The counter that tells an old lease from a newer one.
 The fencing counter on a lease; journal writes under a stale epoch are rejected.
 
 **Engine**:
-The part that runs workflows and keeps their journals, the same on the phone and on the server.
+The part that runs workflows and keeps their journals, the same on every device and on the server.
 Our datom-backed implementation of Effect's `WorkflowEngine`.
 
 **Worker**:
-The phone or server program that runs workflows.
+The program on a device or on the server that runs workflows.
 The device or server process that runs workflow executions; Temporal vocabulary
 in [D2 Temporal model][D2], not a separate product.
 

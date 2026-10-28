@@ -37,6 +37,8 @@ Decided with the human on 2026-10-28 in three rounds, on [the review page](../re
 
 **Round 3.** Growth is watched, not capped: what a newcomer must hold is Start here; `verify`'s new `glossary` step reports the number of terms and any term no living document uses, and each map's acceptance reviews the terms it added ([D178 Growth watched, not capped][D178]).
 
+**Review after the rounds.** The human found "kept on their phone" in Quarantine sloppy where browsers and laptops are devices too: a definition names the general thing, and a platform appears only as an example ([D179 A definition names the general thing][D179]). Eight entries were corrected, and Frame subscription, which had only a hover line, got a precise part from [D109 Frame and frame subscription][D109].
+
 | Row | Disposition |
 | --- | --- |
 | `vivief:glossary-shape` | adopt the thesis-first opening ([D176 The glossary opens with its thesis][D176]); groups follow the one turn, not vivief's concepts ([D177 Groups follow the one turn][D177]) |
@@ -56,6 +58,7 @@ Checks before a word is retired ([D173 What a word change rewrites, and where it
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0032]: ../adr/0032-what-viviefs-is-about.md
+[D109]: ../plan/bootstrap/02-decision-log.md#d109
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
 [D137]: ../plan/bootstrap/02-decision-log.md#d137
 [D162]: ../plan/bootstrap/02-decision-log.md#d162
@@ -70,6 +73,7 @@ Checks before a word is retired ([D173 What a word change rewrites, and where it
 [D176]: ../plan/bootstrap/02-decision-log.md#d176
 [D177]: ../plan/bootstrap/02-decision-log.md#d177
 [D178]: ../plan/bootstrap/02-decision-log.md#d178
+[D179]: ../plan/bootstrap/02-decision-log.md#d179
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [D94']: ../plan/bootstrap/02-decision-log.md#d94p
 [I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md

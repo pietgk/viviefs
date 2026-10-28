@@ -28,6 +28,9 @@ The glossary has its own entry shape; it overrides the vendored
   libraries the code uses; otherwise a compound, written whole every time
   ([D170 One word only where it matches](../plan/bootstrap/02-decision-log.md#d170), [D172 The compound, every time](../plan/bootstrap/02-decision-log.md#d172)). A word change rewrites the living documents
   in the same commit ([D173 What a word change rewrites, and where it is written](../plan/bootstrap/02-decision-log.md#d173)).
+- A definition names the general thing: a device, not a phone. A platform
+  appears only as an example, "such as a phone or a browser"
+  ([D179 A definition names the general thing](../plan/bootstrap/02-decision-log.md#d179)).
 - A new term goes in the group of the foundation concept it serves ([D177 Groups follow the one turn](../plan/bootstrap/02-decision-log.md#d177)).
 
 ## Where decisions go
