@@ -137,7 +137,8 @@ _Avoid_: pattern template
 
 **Exemplar**:
 The real, working code that shows a pattern from start to finish, which new code copies and the guides point to.
-It is the smallest code that does so, and never pseudo-code.
+It is built to the design of its pattern's ADRs, is the smallest code that does
+so, and is never pseudo-code.
 _Avoid_: example, sample
 
 ## Apps and code
