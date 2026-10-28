@@ -13,7 +13,7 @@ Related: [D107 The Presenter pattern][D107], [D108 The query is data][D108], [D1
 atoms, now the reference implementation), [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] and [D37 Log store tables][D37] (the log store and
 the analytics projection, now one implementation), [ADR-0034 Origin trust][ADR-0034] (origin trust),
 [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] (foundation concepts). Opened by [I49 Projection: one concept or several patterns][I49]; [I62 The Presenter conformance gate][I62] (the gate), [I63 The columnar copy as a Presenter implementation][I63] (the
-columnar copy), [I12 Partial sync, history consolidation and client data access][I12] and [I53 Sync and conflict][I53] (partial sync on demand), [I31 Ideas batch: DataFrames as a universal data format][I31] (workflow engines).
+columnar copy), [I12 Partial sync, history consolidation and client data access][I12] and [I53 Sync and conflict][I53] (partial sync on demand), [I31 Ideas batch: DataFrames as a universal data format][I31] (engines).
 
 ## Problem
 
@@ -98,7 +98,7 @@ a screen a frame does not fit.
   lets a replica hold data its reader may not see ([I54 Trust, encryption and who may sign in][I54]).
 - **vivief's meaning of "projection"** would give the word two meanings, since
   the projector does not make Projections.
-- **One workflow engine everywhere** (DuckDB or Polars as the frame): DuckDB in a React
+- **One engine everywhere** (DuckDB or Polars as the frame): DuckDB in a React
   Native app is a one-maintainer module and Polars has nothing for it ([I31 Ideas batch: DataFrames as a universal data format][I31]). A
   contract with implementations is the log store's move again.
 - **Raw SQL per screen**, as today, cannot be passed past one store.

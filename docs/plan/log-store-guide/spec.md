@@ -213,7 +213,7 @@ Decided as [D92 Issues as records][D92]-[D94 A glossary a newcomer can read][D94
 [2026-10-02 Claims, issues and glossary review](../../research/2026-10-02-claims-issues-glossary-review.html)); built
 the same day, in the agreed order:
 
-- **Issues as records** ([D92 Issues as records][D92]): `docs/issues/`, 21 issues (I1-[I6 Post the two upstream issue drafts][I6] open questions for the human, I7-[I20 The trace projector on iOS, Android and web][I20] the durable deferred
+- **Issues as records** ([D92 Issues as records][D92]): `docs/issues/`, 21 issues (I1-[I6 Post the two upstream issue drafts][I6] open questions for the human, I7-[I20 The trace projector on iOS, Android and web][I20] the deferred
   decisions moved from the open-items table, [I21 Test the glossary with a reader outside software][I21] the glossary reader test), Reference > Issues with a status badge per
   issue, `I<n>` references resolved by the same plugin; a malformed title, status or What section fails the build.
   `docs/agents/issue-tracker.md` and `AGENTS.md` adapted; the vendored skills unchanged.

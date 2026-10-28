@@ -30,7 +30,7 @@ From [I49](0049-projection-one-concept-or-several-patterns.md) ([D110 The refere
 
 2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): re-running a command on accept is deferred until an app needs proof that a changeset is exactly what its command makes, and needs a read as of a log position so authority can re-run it on the data the device saw ([D127 Registered commands][D127]).
 
-2026-10-09: [I31 Ideas batch: DataFrames as a universal data format][I31] Ideas batch: DataFrames as a universal data format is merged here. Its remaining questions are this issue's: which DataFrame workflow engines (DuckDB, Polars, Arrow) run on which `node` (native app, browser, server), and whether Arrow works on Hermes; its sources (Pinot, DuckDB, Polars, Arrow) stay in [I31][I31].
+2026-10-09: [I31 Ideas batch: DataFrames as a universal data format][I31] Ideas batch: DataFrames as a universal data format is merged here. Its remaining questions are this issue's: which DataFrame engines (DuckDB, Polars, Arrow) run on which `node` (native app, browser, server), and whether Arrow works on Hermes; its sources (Pinot, DuckDB, Polars, Arrow) stay in [I31][I31].
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
