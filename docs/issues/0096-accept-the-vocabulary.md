@@ -27,7 +27,7 @@ The human accepts the glossary in this session. [I21 Test the glossary with a re
 
 ## Comments
 
-2026-10-28: from [I89 How a word is chosen and written][I89]. Two more checks for the Answer: every glossary term has passed the single-word rule ([D171 Every term passes the rule][D171]; [I89][I89]'s Answer holds the first sweep), and the terms map 3 added are reviewed against `verify`'s `glossary` report, an unused term removed or justified ([D178 Growth watched, not capped][D178]). The first report (2026-10-28): 123 terms; Token verifier and Bearer authentication are used in no living document, only in READMEs and code.
+2026-10-28: from [I89 How a word is chosen and written][I89]. Two more checks for the Answer: every glossary term has passed the single-word rule ([D171 Every term passes the rule][D171]; [I89][I89]'s Answer holds the first sweep), and the terms map 3 added are reviewed against `verify`'s `glossary` report, an unused term removed or justified ([D178 Growth watched, not capped][D178]). The first report (2026-10-28) found 123 terms and two that no living document uses; [I89][I89]'s Answer names them. Record what this review finds in this ticket's Answer, not in a comment: the report reads open issues, so naming an unused term here would count as using it.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

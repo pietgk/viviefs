@@ -659,10 +659,10 @@
         "statements": "27/28"
       },
       "tools/verify/src/glossary-report.ts": {
-        "branches": "9/11",
-        "functions": "9/9",
-        "lines": "20/20",
-        "statements": "24/24"
+        "branches": "11/13",
+        "functions": "11/11",
+        "lines": "22/22",
+        "statements": "27/27"
       },
       "tools/verify/src/guides.ts": {
         "branches": "164/203",

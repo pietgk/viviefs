@@ -24,6 +24,15 @@ export const isLivingDocument = (path: string, content: string): boolean => {
   return !/^docs\/issues\/\d{4}-/.test(path) || !/^Status: (?:resolved|closed|wontfix)/m.test(content)
 }
 
+/**
+ * The text the report reads: the living documents among a repository's files.
+ * The report's own record, which names unused terms, belongs in the Answer of
+ * the ticket that reviewed it; a resolved issue is not read, so the record
+ * never counts as a use of the terms it reports (D178).
+ */
+export const livingDocuments = (files: ReadonlyArray<{ readonly path: string; readonly content: string }>): ReadonlyArray<string> =>
+  files.flatMap(({ path, content }) => (isLivingDocument(path, content) ? [content] : []))
+
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** A term as prose may write it: any case, and its plural. */

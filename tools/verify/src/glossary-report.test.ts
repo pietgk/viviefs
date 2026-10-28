@@ -1,5 +1,5 @@
 import { expect, it } from '@effect/vitest'
-import { GLOSSARY_FILE, glossaryReport, glossaryTerms, isLivingDocument, reportedNote } from './glossary-report.ts'
+import { GLOSSARY_FILE, glossaryReport, glossaryTerms, isLivingDocument, livingDocuments, reportedNote } from './glossary-report.ts'
 
 const glossary = [
   '# ViViEfs',
@@ -38,6 +38,21 @@ it('reads living documents only: not research records, evidence notes, resolved 
   expect(isLivingDocument(GLOSSARY_FILE, '')).toBe(false)
   expect(isLivingDocument('libs/example/src/index.ts', '')).toBe(false)
   expect(isLivingDocument('libs/example/README.md', '')).toBe(false)
+})
+
+it("keeps the report's own record out of what it reads, so an unused term stays unused (D178)", () => {
+  const repository = [
+    { path: 'docs/adr/0999-example.md', content: 'Every read model is disposable; an activity is retried.' },
+    // The open ticket that reviews the report points at the record; it does not name the terms.
+    { path: 'docs/issues/0999-accept.md', content: "Status: ready-for-human\n\nThe glossary report lists one unused term; I998's Answer names it.\n" },
+    // The record itself is in a resolved ticket's Answer, kept as written and not read.
+    { path: 'docs/issues/0998-done.md', content: 'Status: resolved\n\n## Answer\n\nUnused in the first report: Token verifier.\n' },
+  ]
+  expect(livingDocuments(repository)).toHaveLength(2)
+  expect(glossaryReport(glossary, livingDocuments(repository)).unused).toEqual(['Token verifier'])
+  // Named in an open ticket instead, the record would hide the very term it reports.
+  const named = [...repository.slice(0, 1), { path: 'docs/issues/0999-accept.md', content: 'Status: ready-for-human\n\nUnused: Token verifier.\n' }]
+  expect(glossaryReport(glossary, livingDocuments(named)).unused).toEqual([])
 })
 
 it('turns a report into the note on the verify row, and reads a note back from a step', () => {

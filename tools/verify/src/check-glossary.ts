@@ -6,20 +6,18 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { GLOSSARY_FILE, glossaryReport, isLivingDocument } from './glossary-report.ts'
+import { GLOSSARY_FILE, glossaryReport, livingDocuments } from './glossary-report.ts'
 import { ROOT } from './stages.ts'
 
-const documents = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
+const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
   encoding: 'utf8',
   cwd: ROOT,
 })
   .split('\n')
   .filter((path) => /\.mdx?$/.test(path) && !/^(?:repos|vendor|\.agents)\//.test(path))
   .filter((path) => existsSync(join(ROOT, path)) && statSync(join(ROOT, path)).isFile())
-  .flatMap((path) => {
-    const content = readFileSync(join(ROOT, path), 'utf8')
-    return isLivingDocument(path, content) ? [content] : []
-  })
+  .map((path) => ({ path, content: readFileSync(join(ROOT, path), 'utf8') }))
+const documents = livingDocuments(files)
 
 const { terms, unused } = glossaryReport(readFileSync(join(ROOT, GLOSSARY_FILE), 'utf8'), documents)
 console.log(`Glossary: ${terms} terms, read against ${documents.length} living documents.`)
