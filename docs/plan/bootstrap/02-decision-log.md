@@ -457,6 +457,15 @@ between Effect's names and ours and on the six platform clashes [I89 How a word 
 | <a id="d196"></a>D196 | Entity type and entity id | Prose says entity type and entity id in the sense of Effect Cluster's `EntityType` and `EntityId`, with no entries of their own; Entity's precise part names them. There is no word for an entity type that acts until a second kind acts; "a workflow run" says it. Not chosen: a term such as "acting entity" now. | The parts match Effect's ([D137 One meaning of entity][D137]); a word for one kind would be a second name for the workflow run. |
 | <a id="d197"></a>D197 | Evidence registry, and the code names follow in one issue | `verify`'s list of every source file and its file treatment is the evidence registry, as its file `evidence-registry.ts` and its neighbour the evidence lockfile say; bare "registry" is left to Effect's `AtomRegistry`, which the code uses, and `EventLog`'s `Registry`. Smaller marks go in the glossary alone: Service says key, Sign-in session is not a `Chat` session, a datom's `tx` is not `Effect.tx`, Causing span is not Effect's `Cause`; model, compaction, drain and scope stay plain English. The identifiers this ticket's words touch, outside pinned names, and [P17 Browser engine leader][P17]'s name are renamed in one issue in phase 3's qualification batch ([I99 Code names for map 3's retired words][I99]), since they change gate inputs. Not chosen: Registry kept with a `_Not_` line, and identifiers left where their module's name carries the context. | Registry already had two senses in our code; one issue keeps code and prose in step without a second rule for which identifiers follow ([D173 What a word change rewrites, and where it is written][D173]). |
 
+<a id="d198-d198"></a>
+## Map 3 finishes lean (2026-10-28)
+
+From the human's check on whether map 3 still converges, after [I91](../../issues/0091-effects-names-against-ours.md).
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d198"></a>D198 | Map 3 finishes lean | From the human's check of 2026-10-28, after [I91 Effect's names against ours][I91]: in 23 days since [I34 vivief as the source of ViViEfs's concepts][I34] paused the Schedule, 103 decisions and no product code; map 3's four tickets opened three issues, all build work, but each word ticket now sweeps the repository. Map 3 finishes in three sessions, then phase 3 starts. [I92 Map 2's new words][I92] names only the words the app shell meets and defers the rest with a `Decide when:`. [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] are one session: the human confirms defaults in one round (a block quote, and one explicit mark around a passage or table in another project's words, switch off glossary links and ids inside it; a word retired under [D175 A retired word names its decision][D175] fails `verify` outside such a passage; a test per case of [I26 Glossary links on words that are not our terms][I26]'s table), then it is built. [I96 Accept the vocabulary][I96] accepts the vocabulary as it stands. [I93 Naming facts][I93] is deferred: `Decide when:` a consumer app is about to pin its first attribute names. [I97 A preview on every link in a page's text][I97] joins phase 3's first batch with [I98 Diagram labels and named identifiers get the checks prose gets][I98] and [I99 Code names for map 3's retired words][I99]. From here on a grilling opens a new issue only for build work its own decisions force; any other question it finds is parked with a `Decide when:`. Not chosen: parking [I94][I94] and [I95][I95] too (wrong hovers on pages about other projects stay, and nothing keeps a retired word from coming back), and map 3 as charted. | Decisions are tested only when a gate runs on what they decided; the reader's benefits of the linker are kept at the size of one session. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -668,6 +677,7 @@ between Effect's names and ours and on the six platform clashes [I89 How a word 
 [I90]: ../../issues/0090-pattern-concept-contract-abstraction.md
 [I91]: ../../issues/0091-effects-names-against-ours.md
 [I92]: ../../issues/0092-map-2s-new-words.md
+[I93]: ../../issues/0093-naming-facts.md
 [I94]: ../../issues/0094-words-in-another-projects-sense.md
 [I95]: ../../issues/0095-build-the-glossary-linker-as-decided.md
 [I96]: ../../issues/0096-accept-the-vocabulary.md

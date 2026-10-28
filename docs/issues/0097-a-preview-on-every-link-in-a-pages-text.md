@@ -21,9 +21,14 @@ Builds alongside [I95 Build the glossary linker as decided][I95], which changes 
 
 ## Comments
 
+2026-10-28: [D198 Map 3 finishes lean][D198]: moved to phase 3's first batch, with [I98 Diagram labels and named identifiers get the checks prose gets][I98] and [I99 Code names for map 3's retired words][I99]; it no longer waits for [I95 Build the glossary linker as decided][I95].
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D198]: ../plan/bootstrap/02-decision-log.md#d198
 [D90']: ../plan/bootstrap/02-decision-log.md#d90p
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I89]: 0089-how-a-word-is-chosen-and-written.md
 [I95]: 0095-build-the-glossary-linker-as-decided.md
+[I98]: 0098-diagram-labels-and-named-identifiers-get-the-checks-prose-gets.md
+[I99]: 0099-code-names-for-map-3s-retired-words.md

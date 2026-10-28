@@ -69,11 +69,15 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 - [I90 Pattern, concept, contract, abstraction][I90] (2026-10-28): concept is the wider word, a pattern the kind with a contract, a suite and a gate, and a foundation concept one of the twelve; "abstraction" stays plain English; Pattern, Contract and Feature keep their words with `_Like_` and `_Not_` lines; `.agents/patterns/` became `.agents/extracts/`; "no feature code" became "no production code"; [I33 Ideas batch: abstractions that constrain agents][I33] narrowed to map 4 ([D181 Concept is the wider word][D181]-[D185 Feature keeps its word][D185]).
 - [I91 Effect's names against ours][I91] (2026-10-28): Workflow engine and Workflow runner, Worker retired; Durable deferred; Changeset manifest; Sync cursor; Evidence registry; Journal and Envelope keep their words with `_Not_` lines; Origin, Intent and actor with `_Like_` lines; Tool is [D102 Tools are apps][D102]'s app; "prompt" is not a term; entity type and entity id in Effect's sense; code names and [P17 Browser engine leader][P17]'s name in [I99 Code names for map 3's retired words][I99] ([D186 Workflow engine and workflow runner][D186]-[D197 Evidence registry, and the code names follow in one issue][D197]).
 
+- [D198 Map 3 finishes lean][D198] (2026-10-28): map 3 finishes lean: [I92 Map 2's new words][I92] only the app shell's words, [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] in one session, [I96 Accept the vocabulary][I96]; [I93 Naming facts][I93] deferred; [I97 A preview on every link in a page's text][I97] to phase 3; a grilling opens a new issue only for build work its decisions force.
+
 ## Not yet specified
 
 - Code identifiers a word decision touches, each an issue once found.
 
 ## Out of scope
+
+- [I93 Naming facts][I93]: deferred until a consumer app is about to pin its first attribute names ([D198 Map 3 finishes lean][D198]).
 
 - Alchemy's names ([I28 Alchemy: infrastructure as Effects][I28]): with [I7 Production hosting, deployment and telemetry backend][I7].
 - The reader test ([I21 Test the glossary with a reader outside software][I21]): map 4, which judges this map's result.
@@ -99,6 +103,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D185]: ../bootstrap/02-decision-log.md#d185
 [D186]: ../bootstrap/02-decision-log.md#d186
 [D197]: ../bootstrap/02-decision-log.md#d197
+[D198]: ../bootstrap/02-decision-log.md#d198
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D94']: ../bootstrap/02-decision-log.md#d94p
@@ -116,8 +121,11 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [I89]: ../../issues/0089-how-a-word-is-chosen-and-written.md
 [I90]: ../../issues/0090-pattern-concept-contract-abstraction.md
 [I91]: ../../issues/0091-effects-names-against-ours.md
+[I92]: ../../issues/0092-map-2s-new-words.md
+[I93]: ../../issues/0093-naming-facts.md
 [I94]: ../../issues/0094-words-in-another-projects-sense.md
 [I95]: ../../issues/0095-build-the-glossary-linker-as-decided.md
 [I96]: ../../issues/0096-accept-the-vocabulary.md
+[I97]: ../../issues/0097-a-preview-on-every-link-in-a-pages-text.md
 [I99]: ../../issues/0099-code-names-for-map-3s-retired-words.md
 [P17]: ../bootstrap/06-qualification-gates.md#p17

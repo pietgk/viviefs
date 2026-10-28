@@ -8,6 +8,8 @@ Effort: docs/plan/vocabulary/
 
 Type: grilling
 
+Decide when: a consumer app is about to pin its first attribute names
+
 Blocked by: [I88 Effect and the effect handler][I88], [I89 How a word is chosen and written][I89]
 
 Found: 2026-10-27
@@ -27,8 +29,11 @@ Rows settled here, from [the vivief inventory](../research/2026-10-06-vivief-inv
 
 ## Comments
 
+2026-10-28: Deferred by [D198 Map 3 finishes lean][D198]: no consumer app pins names yet, and pinned names never change, so the rule is needed before the first one, not now.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D198]: ../plan/bootstrap/02-decision-log.md#d198
 [D36']: ../plan/bootstrap/02-decision-log.md#d36p
 [D38]: ../plan/bootstrap/02-decision-log.md#d38
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
