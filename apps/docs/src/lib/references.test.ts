@@ -296,6 +296,12 @@ describe('glossary terms in prose (D94)', () => {
       '',
       '**HLC**:',
       'The clock that orders every fact.',
+      '',
+      '**Concept**:',
+      'A named idea people and agents use to think about the stack.',
+      '',
+      '**Foundation concept**:',
+      'One of the twelve ideas the whole stack is built on.',
     ].join('\n'),
   )
   const found = (text: string) => termFinder(terms)(text).map(({ start, end }) => text.slice(start, end))
@@ -366,6 +372,11 @@ describe('glossary terms in prose (D94)', () => {
     expect(found('Vision - View - Effects, built with Effect')).toEqual(['Vision - View - Effects', 'Effect'])
     expect(termForms('Effect')).toEqual(['Effect'])
     expect(termForms('Activity')).toEqual(['Activity', 'Activities'])
+  })
+
+  it('links concept only as the glossary writes it, and foundation concept in any case', () => {
+    expect(found('a k-plex concept and two concepts. Concept at the start; a Concept mid-sentence')).toEqual(['Concept'])
+    expect(found('the twelve foundation concepts; a Foundation concept')).toEqual(['foundation concepts', 'Foundation concept'])
   })
 
   it('tells a name from the word with the same letters by case', () => {
