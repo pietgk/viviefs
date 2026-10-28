@@ -6,7 +6,7 @@ export class EngineConfig extends Context.Service<
   {
     readonly org: string
     /**
-     * The person on whose behalf this engine writes its journal: the
+     * The person on whose behalf this workflow engine writes its journal: the
      * signed-in person on a device (P11). The server refuses a pushed
      * journal write that names anyone else.
      */

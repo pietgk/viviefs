@@ -93,7 +93,7 @@ Moved to [tools/qualification/README.md](../../tools/qualification/README.md#lab
   long-term home (they moved to `docs/research/`, [D68 Research records][D68]).
 - Deferred and recorded: identity, keys and trust step (Q15 merged, Q23, Q24);
   trace projector on devices with the first consumer app (Q13);
-  `EngineConfig.actor` from the statement when a consumer app runs the engine
+  `EngineConfig.actor` from the statement when a consumer app runs the workflow engine
   and sync together (design review section 9).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->

@@ -4,7 +4,7 @@ Summary: Effect v4 is the backbone everywhere, one exactly pinned version for ef
 
 Status: Qualified
 
-Date: 2026-09-20. Amended 2026-10-22 (Effect 4.0.5, the pin moved; the engine ignores a repeated deferred completion). Amended 2026-10-09 (Effect 4.0.2, the pin moved). Amended 2026-10-02 (Effect 4.0.0): pin the stable release, the
+Date: 2026-09-20. Amended 2026-10-22 (Effect 4.0.5, the pin moved; the workflow engine ignores a repeated durable deferred completion). Amended 2026-10-09 (Effect 4.0.2, the pin moved). Amended 2026-10-02 (Effect 4.0.0): pin the stable release, the
 `unstable` segment left the import paths, and the language service's
 `unstableApiUsage` rule is off.
 
@@ -47,7 +47,7 @@ the cost of a migration the grilling already refused.
 ## Failure-handling
 
 [P01 Platform on SDK 58][P01] must show Effect v4 running on Expo SDK 58 / RN 0.88 / Hermes with
-Workflow + Activity on the memory engine, on iOS and Android, with real
+Workflow + Activity on the memory workflow engine, on iOS and Android, with real
 polyfills. A bundle without the crypto polyfill is the positive control (the
 workflow check fails).
 
@@ -91,15 +91,15 @@ grew by about 7 KB of Effect code. `mise exec -- pnpm verify` was green.
 2026-10-22: Effect 4.0.5, every `effect` and `@effect/*` pin moved in one
 change, with `repos/effect` pulled from the `effect@4.0.5` tag. The trade-off
 above held in a patch release: 4.0.3-4.0.5 changed the `effect/workflow`
-internals the datom engine mirrors (deferred waits counted per run, a wake that
-preempts a run), and on PGlite the engine then replayed for ever: on each replay
+internals the datom workflow engine mirrors (durable deferred waits counted per run, a wake that
+preempts a run), and on PGlite the workflow engine then replayed for ever: on each replay
 `scheduleClock` re-fired the clock that was already due, `completeDeferred` woke
-the run although the deferred was already recorded, and the wake preempted the
+the run although the durable deferred was already recorded, and the wake preempted the
 replay that had just read the stored exit. The crash matrix and both tracing
 suites timed out. A repeated completion now writes nothing and wakes nothing,
-as in Effect's own engine; a run whose wake was lost to a crash is still
+as in Effect's own workflow engine; a run whose wake was lost to a crash is still
 resumed by the launch sweep. 4.0.5 also takes `WorkflowInstance.initial`'s
-scope as an options object. The engine's integration coverage then depended on
+scope as an options object. The workflow engine's integration coverage then depended on
 scheduling again ([I74 The engine's integration coverage depends on scheduling][I74]); a test now reaches `resume` of a finished run on purpose.
 The bundles grew by about 33 KB of Effect code. [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed
 in one sequential run on `2a56b18c0`, run `2026-10-22T15-07-32.252Z-5378fb60`, with Expo SDK 58 stable

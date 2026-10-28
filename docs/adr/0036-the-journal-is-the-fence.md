@@ -1,6 +1,6 @@
 # ADR-0036: The journal is the fence
 
-Summary: A run's journal fences its own writers: every engine fact names the fact it follows and is accepted only on the run's head, so a takeover is always allowed and no lease is needed.
+Summary: A run's journal fences its own writers: every workflow engine fact names the fact it follows and is accepted only on the run's head, so a takeover is always allowed and no lease is needed.
 
 Status: Proposed, unverified
 
@@ -8,12 +8,12 @@ Date: 2026-10-26
 
 Qualifying gate: [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09], qualified again on the journal fence.
 
-Related: [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D11 Human steps as deferreds][D11], [D13 Server holds workflow state][D13], [D15 Server authority after a lost lease][D15], [D40 Server-side human steps][D40], [D103 Nodes and authority][D103], [D147 User content outside the journal][D147], [D148 Quarantine is rejected user content][D148]. [ADR-0012 Durable execution over one datom-backed engine][ADR-0012], [ADR-0014 Leases, fencing and server authority][ADR-0014] (its lease design is superseded once this ADR qualifies). [I71 An append can land after a revocation][I71], [I80 Build the journal fence][I80]. Decided in [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-actors-or-the-engine-review.html), sections 8 and 13-15).
+Related: [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D2 Temporal model][D2], [D10 Effect Workflow over our engine][D10], [D11 Human steps as deferreds][D11], [D13 Server holds workflow state][D13], [D15 Server authority after a lost lease][D15], [D40 Server-side human steps][D40], [D103 Nodes and authority][D103], [D147 User content outside the journal][D147], [D148 Quarantine is rejected user content][D148]. [ADR-0012 Durable execution over one datom-backed workflow engine][ADR-0012], [ADR-0014 Leases, fencing and server authority][ADR-0014] (its lease design is superseded once this ADR qualifies). [I71 An append can land after a revocation][I71], [I80 Build the journal fence][I80]. Decided in [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-actors-or-the-engine-review.html), sections 8 and 13-15).
 
 ## Problem
 
 One workflow run must have one history, written by one writer at a time,
-across devices that go offline for days and server runners that can pause.
+across devices that go offline for days and workflow runners on the server that can pause.
 Today a lease per run with an epoch does it ([ADR-0014 Leases, fencing and server authority][ADR-0014], [D14 Leases with fencing][D14]), and the fence
 holds: a write under an older epoch is refused. But the lease never expires
 (`expiresAtMs` is always null), any member device may write a higher epoch
@@ -24,7 +24,7 @@ move without its holder's help.
 
 Effect Cluster, the scale-out path [D39 One engine everywhere][D39] named, owns a shard of runs by a lock
 that is fenced by time only, keeps its own journal in `MessageStorage`, and
-assumes runners that are always reachable. A device cannot be a runner, so
+assumes Cluster runners that are always reachable. A device cannot be a Cluster runner, so
 Cluster would add a second journal and a second fence beside the lease.
 
 Write-once journal facts already make a second write of the same fact fail,
@@ -34,27 +34,27 @@ it, and the journal would hold a history no run produced.
 
 ## Design
 
-The engine facts of a run (its start, an activity's start and exit, a durable
-clock, its result) form one chain. Each names the engine fact of its run it
-follows. Authority accepts an engine fact only if:
+The workflow engine facts of a run (its start, an activity's start and exit, a durable
+clock, its result) form one chain. Each names the workflow engine fact of its run it
+follows. Authority accepts a workflow engine fact only if:
 
 - the run has no head yet and the fact is its start (write-once: of two starts
   with one idempotency key, the second is refused), or
 - the fact it follows is the run's head, which it then becomes.
 
 Anything else is refused, and so is anything built on a refused fact. The
-check and the append are one step. Outside inputs (a deferred completed by a
+check and the append are one step. Outside inputs (a durable deferred completed by a
 person, the server or a notification action, [D11 Human steps as deferreds][D11], [D40 Server-side human steps][D40]) are write-once on their
-own entity, outside the chain: they never refuse the runner's next write.
+own entity, outside the chain: they never refuse the workflow runner's next write.
 
 A takeover is always allowed: whoever is up to date writes on the head. The
 holder of a run is derived, not stored: whoever wrote its head. Who runs a run
 is policy, not safety:
 
-- The holder resumes on its own (launch, wake-up, a completed deferred).
+- The holder resumes on its own (launch, wake-up, a completed durable deferred).
 - Another device continues only when a person asks; a device offline for days
   may be doing legitimate work.
-- A server runner takes over a run whose head has not moved within its
+- A workflow runner on the server takes over a run whose head has not moved within its
   running step's timeout, read from the journal's acceptance times.
 - An online writer may claim a step (its start fact accepted) before acting,
   so a race duplicates no side effect.
@@ -62,7 +62,7 @@ is policy, not safety:
 `viviefs/lease/holder` and the envelope's `leaseEpoch` are no longer written;
 old values still decode, and nothing is renamed ([D44 Never rename, never migrate][D44]). Where "follows" lives
 (an envelope field or a journal attribute) is [I80 Build the journal fence][I80]'s to design, with the other
-details its review page lists (section 15h). Server scale-out is more runners
+details its review page lists (section 15h). Server scale-out is more workflow runners
 on the same fence ([D39' One engine, one journal, one fence][D39']). Revisit if a measured server load needs Cluster's
 routing in memory.
 
@@ -90,7 +90,7 @@ routing in memory.
   its domain changesets are judged on their own. User content never lives only
   in a journal value ([D147 User content outside the journal][D147]), and user content in a changeset that is rejected
   goes to quarantine ([D148 Quarantine is rejected user content][D148], [P14 Quarantine after a lost lease][P14]).
-- A paused runner: its late write follows a fact that is no longer the head and
+- A paused workflow runner: its late write follows a fact that is no longer the head and
   is refused.
 - Two starts with one idempotency key: the second is refused.
 

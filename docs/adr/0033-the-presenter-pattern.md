@@ -20,7 +20,7 @@ columnar copy), [I12 Partial sync, history consolidation and client data access]
 vivief names one concept, `Projection`, for query, access, encryption,
 delivery, freshness and trust scope. ViViEfs has each of those it has as a
 separate part with its own gate: SQL over read models and the projector ([P05 Changesets and projections][P05]),
-query atoms with invalidation keys ([P05][P05], [P08 UI three-way prototype][P08]), cursors ([P04 Log store conformance][P04], [P09 Sync][P09], [P10 Trace projection][P10]), the
+query atoms with invalidation keys ([P05][P05], [P08 UI three-way prototype][P08]), acknowledged cursors ([P04 Log store conformance][P04], [P09 Sync][P09], [P10 Trace projection][P10]), the
 server's membership check on every pull, push, lease and command ([P11 Identity][P11]), and
 encryption for data at rest and erasure ([ADR-0023 Data at rest and crypto-shredding][ADR-0023]). It had no name for the
 whole a screen asks of, and no answer for data a log store cannot hold
@@ -59,7 +59,7 @@ afterwards, so it runs only where that input is held.
 entity is a one-row frame. Freshness is committed, or committed plus my open
 changesets ([D42 Live reads with query atoms][D42]). Gathering commits in batches; each batch invalidates the
 frame's keys and the frame grows. The frame subscription ends with its screen;
-the gathering activity is durable. Cursor consumers stay their own pattern.
+the gathering activity is durable. Consumers of an acknowledged cursor stay their own pattern.
 
 **The reference implementation ([D110 The reference implementation][D110]).** Every implementation returns the
 reference's frame for the same query at the same `tx`. SQLite read models with

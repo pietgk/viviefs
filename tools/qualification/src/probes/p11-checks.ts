@@ -94,7 +94,7 @@ const titled = (device: Device, org: string, list: string, title: string) =>
     )
   })
 
-/** Completes the `approval` deferred of execution `one` over the raw RPC. */
+/** Completes the `approval` durable deferred of execution `one` over the raw RPC. */
 const approve = (device: Device, org: string) =>
   device.raw
     .CompleteDeferred({
@@ -116,7 +116,7 @@ const outboxStates = (device: Device) =>
 
 /**
  * p11-check crossOrganization
- * The positive control. A pushes a list title to `acme`, its own organization, and the server acks. The same token asking for `other` gets `MembershipMissing` on `Append`, `Pull`, `PutBlob` and `CompleteDeferred`. B, a member of `other`, completes a deferred there.
+ * The positive control. A pushes a list title to `acme`, its own organization, and the server acks. The same token asking for `other` gets `MembershipMissing` on `Append`, `Pull`, `PutBlob` and `CompleteDeferred`. B, a member of `other`, completes a durable deferred there.
  */
 const crossOrganization = (directory: string, clock: MutableClock) =>
   world(directory, clock, 'cross', members, (w) =>

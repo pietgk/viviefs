@@ -14,7 +14,7 @@ Related: [D37 Log store tables][D37], [D44 Never rename, never migrate][D44], [D
 ## Problem
 
 Device SQLite, Node SQLite and server Postgres must obey one contract, or every
-projector and the engine forks. Read-model migrations on an append-only log
+projector and the workflow engine forks. Read-model migrations on an append-only log
 fight [D44 Never rename, never migrate][D44]. Analytics on the durable log would couple query shape to durability.
 
 ## Design
@@ -102,7 +102,7 @@ the same five stores. Evidence:
 must see facts before they go: a device, or a trace sink registered as
 `trace/<sink>` in `device_cursors` (name unchanged). `compact()` reports
 `heldBy`, the consumer that sets the horizon, so a sink that stays down is
-named instead of losing spans. `acknowledged(consumer)` reads a cursor back,
+named instead of losing spans. `acknowledged(consumer)` reads an acknowledged cursor back,
 and `streamFrom(cursor, limit)` bounds a read. The [P04 Log store conformance][P04] checks "cursor
 streaming" and "compaction horizon" assert both; [P04][P04] re-runs at foundation
 closure.

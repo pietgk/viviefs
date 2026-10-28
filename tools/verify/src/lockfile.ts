@@ -1,6 +1,6 @@
 /**
  * The evidence lockfile (D77): each owning producer's exact per-file coverage,
- * the coverage provider's identity, the registry digest, and the bundle-size
+ * the coverage provider's identity, the evidence registry digest, and the bundle-size
  * references. Only `pnpm verify baseline` writes it.
  */
 import { createHash } from 'node:crypto'
@@ -76,7 +76,7 @@ export const uncovered = (value: Count) => Number(value.split('/')[1]) - covered
 export const formatTuple = (tuple: Tuple) =>
   METRICS.map((metric) => `${metric} ${tuple[metric]}`).join(', ')
 
-/** A digest of the registry: changing a file treatment is a reviewed change. */
+/** A digest of the evidence registry: changing a file treatment is a reviewed change. */
 export const registryDigest = (registry: ReadonlyArray<RegistryEntry>) =>
   createHash('sha256')
     .update(JSON.stringify([...registry].sort((left, right) => left.path.localeCompare(right.path))))

@@ -33,10 +33,10 @@ export type ActivityStartedValue = typeof ActivityStartedValue.Type
 
 /**
  * Exit values in the journal (`activity/exit`, `deferred/exit`,
- * `workflow/result`). The exit is already encoded by the activity, deferred
+ * `workflow/result`). The exit is already encoded by the activity, durable deferred
  * or workflow schema; the journal keeps its whole cause (typed failure,
  * defect, interruption) as JSON through Effect's exit codec, the same codec
- * Effect's cluster engine persists. Replay hands the workflow back exactly
+ * Effect's cluster workflow engine persists. Replay hands the workflow back exactly
  * the exit its first run saw.
  *
  * Legacy shape, read only: journals written before commit a067a0d6f stored a
@@ -97,9 +97,9 @@ export const decodeExit = (
 }
 
 /**
- * `workflow/result` holds the workflow's own exit. Effect's engine contract
+ * `workflow/result` holds the workflow's own exit. Effect's workflow engine contract
  * hands workflow results over typed, so the journal encodes and decodes them
- * with the workflow's success and error schemas (as Effect's cluster engine
+ * with the workflow's success and error schemas (as Effect's cluster workflow engine
  * does for its run results). The stored JSON is still plain encoded values,
  * so `decodeExit` reads it for status. A value that does not decode with the
  * schemas (a legacy entry) falls back to `decodeExit`.

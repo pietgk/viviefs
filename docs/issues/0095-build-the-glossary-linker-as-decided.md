@@ -24,12 +24,15 @@ Done when the cases in [I26 Glossary links on words that are not our terms][I26]
 
 2026-10-28: from [I89 How a word is chosen and written][I89]'s review ([D180 Diagram labels are prose][D180]). Also build here: a word retired under [D175 A retired word names its decision][D175] (its new entry's `_Avoid_` line names the decision that retired it) fails `verify` wherever a living document uses it outside a passage [I94 Words in another project's sense][I94]'s mark sets apart, with a test per case. The linker already reads `_Not_` lines ([D174 Like, Not and Avoid lines][D174]); the retired words come from the `_Avoid_` lines the same parser reads.
 
+2026-10-28: [D198 Map 3 finishes lean][D198]: built in the same session as [I94 Words in another project's sense][I94]'s decision, right after it.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D164]: ../plan/bootstrap/02-decision-log.md#d164
 [D174]: ../plan/bootstrap/02-decision-log.md#d174
 [D175]: ../plan/bootstrap/02-decision-log.md#d175
 [D180]: ../plan/bootstrap/02-decision-log.md#d180
+[D198]: ../plan/bootstrap/02-decision-log.md#d198
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I88]: 0088-effect-and-the-effect-handler.md
 [I89]: 0089-how-a-word-is-chosen-and-written.md

@@ -8,7 +8,7 @@ import * as Effect from 'effect/Effect'
 export const exportThenCompact = (consumer: string) =>
   Effect.gen(function* () {
     const store = yield* LogStore
-    // Read from the consumer's own cursor, and acknowledge only what it saw.
+    // Read from the consumer's own acknowledged cursor, and acknowledge only what it saw.
     const cursor = (yield* store.acknowledged(consumer)) ?? 0
     const exported = yield* store.streamFrom(cursor)
     const seen = exported.at(-1)

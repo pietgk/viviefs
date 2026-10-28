@@ -1,4 +1,4 @@
-# I8: Engine scale-out and a multi-runner server
+# I8: Workflow engine scale-out and more workflow runners on the server
 
 Status: ready-for-human
 
@@ -8,11 +8,11 @@ Decide when: a real server-side workflow load or an availability need, or the hu
 
 ## What
 
-Server-side workflows run on one runner; scale-out is more runners writing on the journal fence ([D39' One engine, one journal, one fence][D39'], [D14' The journal is the fence][D14']), and Effect Cluster is no longer the path.
+Server-side workflows run on one workflow runner; scale-out is more workflow runners writing on the journal fence ([D39' One engine, one journal, one fence][D39'], [D14' The journal is the fence][D14']), and Effect Cluster is no longer the path.
 
 ## Direction
 
-Scale-out is more server runners writing on the journal head ([D14' The journal is the fence][D14'], [ADR-0036 The journal is the fence][ADR-0036]). A runner's sweep takes runs whose head has not moved within their running step's timeout, and runners claim a step before acting. A recurring job (compaction, a sweep of due clocks) is a server workflow on a durable clock, so it needs no Singleton ([D138 A workflow, or a cursor][D138]). The server never runs device workflows ([D13 Server holds workflow state][D13]).
+Scale-out is more workflow runners on the server writing on the journal head ([D14' The journal is the fence][D14'], [ADR-0036 The journal is the fence][ADR-0036]). A workflow runner's sweep takes runs whose head has not moved within their running step's timeout, and workflow runners claim a step before acting. A recurring job (compaction, a sweep of due clocks) is a server workflow on a durable clock, so it needs no Singleton ([D138 A workflow, or a cursor][D138]). The server never runs device workflows ([D13 Server holds workflow state][D13]).
 
 ## Comments
 

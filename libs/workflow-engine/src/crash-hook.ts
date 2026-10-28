@@ -30,11 +30,11 @@ export const noopCrashHook = Layer.succeed(
 
 /**
  * Simulate a process kill at `boundary`. `Workflow.intoResult` is
- * uninterruptible, so an external `Fiber.interrupt` of the engine session
+ * uninterruptible, so an external `Fiber.interrupt` of the workflow engine session
  * cannot stop a parked `Effect.never` inside the run. Mark the instance
  * suspended and self-interrupt the interruptible child instead: nothing is
  * journaled past the boundary, and tearing down the layer drops in-memory
- * engine state.
+ * workflow engine state.
  */
 export const armedCrashHook = (
   boundary: CrashBoundary,

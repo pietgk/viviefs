@@ -27,13 +27,23 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 
 2026-10-28: [I88 Effect and the effect handler][I88] settled one of the two: the linker tells Effects in Vision - View - Effects from Effect by the phrase's own entry (the longest term wins), and Effect from effect by case ([D164 Effect and effect, told apart by case][D164]).
 
+2026-10-28: [I91 Effect's names against ours][I91] left these bare words to other projects, so a passage that uses one in their sense is the case to mark: engine (a JavaScript or database engine), worker (a worker thread, Effect's `workers/Worker`), runner (an Effect Cluster or test runner), deferred (Effect's `Deferred`), manifest (Expo's and the web app manifest), cursor (a database cursor, Cursor the editor), registry (Effect's `AtomRegistry`), tool in a model's sense (Effect's `Tool`), prompt, session (Effect's `Chat`) and scope ([D186 Workflow engine and workflow runner][D186]-[D197 Evidence registry, and the code names follow in one issue][D197]). The case [I26 Glossary links on words that are not our terms][I26] observed, Cursor the editor linked to our entry, is gone: the term is Sync cursor ([D193 Sync cursor][D193]). Tool joined the linker's everyday terms, so "a model's tool" does not link ([D194 Tool is an app for those who build apps][D194]); Deferred and Worker left them.
+
+2026-10-28: [D198 Map 3 finishes lean][D198]: decided and built with [I95 Build the glossary linker as decided][I95] in one session. The human confirms defaults in one round: a block quote, and one explicit mark around a passage or table in another project's words, switch off glossary links and ids inside it; a retired word fails `verify` outside such a passage; a test per case of [I26 Glossary links on words that are not our terms][I26]'s table.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D164]: ../plan/bootstrap/02-decision-log.md#d164
+[D186]: ../plan/bootstrap/02-decision-log.md#d186
+[D193]: ../plan/bootstrap/02-decision-log.md#d193
+[D194]: ../plan/bootstrap/02-decision-log.md#d194
+[D197]: ../plan/bootstrap/02-decision-log.md#d197
+[D198]: ../plan/bootstrap/02-decision-log.md#d198
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I32]: 0032-ideas-batch-explain-any-word-on-demand.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
 [I88]: 0088-effect-and-the-effect-handler.md
 [I89]: 0089-how-a-word-is-chosen-and-written.md
+[I91]: 0091-effects-names-against-ours.md
 [I92]: 0092-map-2s-new-words.md
 [I95]: 0095-build-the-glossary-linker-as-decided.md

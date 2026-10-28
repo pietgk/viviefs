@@ -86,7 +86,7 @@ describe('datom-backed engine', () => {
               const runsWhenDone = bodyRuns.count
 
               // A finished run replays for nothing: not for a repeated
-              // completion of its deferred, not for an explicit resume.
+              // completion of its durable deferred, not for an explicit resume.
               // (A repeat that preempts a run still in flight is covered by
               // tracing/engine-trace on PGlite, which then never finished.)
               yield* complete(undefined)

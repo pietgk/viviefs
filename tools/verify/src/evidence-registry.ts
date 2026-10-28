@@ -1,10 +1,10 @@
 /**
- * The registry (D76): every production file, its file treatment and why.
+ * The evidence registry (D76): every production file, its file treatment and why.
  * Filesystem rules only discover files; this list assigns treatments, and a
  * human reviews every change to it. `ownership` fails on a production file
  * without an entry, an entry without a file, a duplicate, an empty rationale,
  * or a shape its treatment does not allow. Changing an entry changes the
- * registry digest the evidence lockfile records.
+ * evidence registry digest the evidence lockfile records.
  */
 import type { SuiteId } from '@viviefs/testing'
 import type { CoverageProducer } from '@viviefs/testing/vitest'

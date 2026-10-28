@@ -51,7 +51,7 @@ what, or a `node` accepts from a peer. A person's identity, a device's signing
 key, a transport key and the provider-account mapping stay distinct, and a key
 never authorizes. Every device signs in through OIDC on its own.
 
-**Peers.** A device applies the cursor stream unchecked ([D146 One checkpoint enforces trust][D146]); a `node`
+**Peers.** A device applies the sync cursor stream unchecked ([D146 One checkpoint enforces trust][D146]); a `node`
 that accepts from a peer runs the same checkpoint and, once changesets are
 signed, checks the signature ([I60 Server-independent mode][I60]).
 

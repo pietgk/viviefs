@@ -1,6 +1,6 @@
-# ADR-0017: Sync: outbox and cursor stream over Effect RPC
+# ADR-0017: Sync: outbox and sync cursor stream over Effect RPC
 
-Summary: Sync replicates datoms: an outbox up, one cursor stream per organization down, over Effect RPC.
+Summary: Sync replicates datoms: an outbox up, one sync cursor stream per organization down, over Effect RPC.
 
 Status: Qualified
 
@@ -21,7 +21,7 @@ path. PowerSync service is FSL; it is not in this plan.
 ## Design
 
 Sync is datom replication. **Up:** outbox of datoms (self-committed and
-changeset members + commits), idempotent by `tx`. **Down:** one cursor stream
+changeset members + commits), idempotent by `tx`. **Down:** one sync cursor stream
 (server sequence) of accepted datoms for the whole organization the identity
 is a member of. Transport: Effect RPC, append-and-acknowledge. [P09 Sync][P09] confirms
 this; do not list HttpApi/SSE/WebSocket as alternatives in the protocol.
@@ -38,7 +38,7 @@ handler that fails on the server turns the whole batch into an
 `InternalServerError` the client retries, entries order by the device's
 clock, and an entry is one event with no changeset. The reasons above hold.
 Like [D34' Per-attribute conflict policies, decided at accept][D34'], it finds conflicts where entries are accepted. The basis a
-changeset carries is its writer's cursor ([D34'][D34']). Sync is in the foundation on
+changeset carries is its writer's sync cursor ([D34'][D34']). Sync is in the foundation on
 purpose ([D142 Sync from the start][D142]).
 
 ## Trade-offs
@@ -49,10 +49,10 @@ history and over-broad local reads; those are explicit later work, not silent
 
 ## Failure-handling
 
-[P09 Sync][P09]: outbox up, full-organization cursor down, Effect RPC
+[P09 Sync][P09]: outbox up, full-organization sync cursor down, Effect RPC
 append-and-acknowledge, server validation, typed rejection, unknown attribute
-upgrade error, lease fencing, deferred completion from the server, file
-manifest wait.
+upgrade error, lease fencing, durable deferred completion from the server, file
+changeset manifest wait.
 
 ## Outcome
 
@@ -64,7 +64,7 @@ not dependencies.
 ### Observed
 
 2026-09-22. Ledger pass `2026-09-22T13-18-45.675Z-a314ca28` on sqlite-node.
-Outbox up, one cursor per organization down, Effect RPC `Append` / `Pull` /
+Outbox up, one sync cursor per organization down, Effect RPC `Append` / `Pull` /
 `PutBlob`. `Pull` returns one finite page. A second append of the same `tx`
 acks. An acme pull does not include another organization's datoms. EventLog,
 Zero and PowerSync are not dependencies. Not Accepted. Evidence:

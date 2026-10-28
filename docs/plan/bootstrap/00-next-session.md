@@ -41,7 +41,7 @@ grilling decision).
      aliases), Nx sync generators, inferred tasks.
    - Empty tagged projects matching [04-repo-structure.md](04-repo-structure.md), with `@nx/enforce-module-boundaries`
      rules for `kind:`, `layer:`, `platform:`. A lint-scope meta check that fails when a file escapes lint.
-   - Ownership registry: every `project.json` declares tags and its evidence owner ([D48' Verify - Qualify - Teach][D48']).
+   - Evidence registry: every `project.json` declares tags and its evidence owner ([D48' Verify - Qualify - Teach][D48']).
 4. **Verify gate** ([D48' Verify - Qualify - Teach][D48'])
    - `tools/verify`: staged `static -> unit -> integration -> ui -> quality` (elaboration of [D48' Verify - Qualify - Teach][D48'], not a grilling
      decision), fail fast between stages, help text generated from the executed table. Adapt from web-interview
@@ -53,7 +53,7 @@ grilling decision).
      positive controls, sequential full run. Register gates [P01 Platform on SDK 58][P01]-[P14 Quarantine after a lost lease][P14] from
      [06-qualification-gates.md](06-qualification-gates.md) as "not run". [P01][P01]-[P10 Trace projection][P10] are the foundation stage ([D46 Spikes are gates][D46]'s
      six themes split into independently failable probes). [P11 Identity][P11]-[P14][P14] are follow-on, not foundation closure.
-6. **Gates in order** ([D46 Spikes are gates][D46]): [P01 Platform on SDK 58][P01]-[P03 OTLP and motel][P03] platform, then [P04 Log store conformance][P04]-[P05 Changesets and projections][P05] log store, then [P06 Workflow engine crash matrix][P06]-[P07 Device resume E2E][P07] engine, then [P08 UI three-way prototype][P08] UI prototype, then
+6. **Gates in order** ([D46 Spikes are gates][D46]): [P01 Platform on SDK 58][P01]-[P03 OTLP and motel][P03] platform, then [P04 Log store conformance][P04]-[P05 Changesets and projections][P05] log store, then [P06 Workflow engine crash matrix][P06]-[P07 Device resume E2E][P07] workflow engine, then [P08 UI three-way prototype][P08] UI prototype, then
    [P09 Sync][P09] sync, then [P10 Trace projection][P10] trace projection (then [P11 Identity][P11]-[P14 Quarantine after a lost lease][P14]). iOS, Android and web are first-class: [P01][P01], [P02 SQLite drivers][P02] and [P07][P07] fail
    if the Android emulator fails. Each gate's probe becomes the first exemplar of its pattern.
    Order after foundation closure (agreed 2026-09-27): [P11][P11], then step 7, then the quarantine grilling and its gate

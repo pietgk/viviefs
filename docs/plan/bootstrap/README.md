@@ -25,7 +25,7 @@ concepts used here.
 | 0 | [00-next-session.md](00-next-session.md) | The prompt and work order for the scaffolding session |
 | 1 | [01-vision-and-scope.md](01-vision-and-scope.md) | Why this repo exists, what is in and out of scope |
 | 2 | [02-decision-log.md](02-decision-log.md) | All decisions ([D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94]) with rationale, grouped by theme |
-| 3 | [03-architecture.md](03-architecture.md) | The technical design: datom log, HLC, changesets, engine, sync, tracing, UI |
+| 3 | [03-architecture.md](03-architecture.md) | The technical design: datom log, HLC, changesets, workflow engine, sync, tracing, UI |
 | 4 | [04-repo-structure.md](04-repo-structure.md) | apps / features / libs / tools, Nx tags and rules, generators |
 | 5 | [05-verify-qualify-teach.md](05-verify-qualify-teach.md) | The validation, qualification and teaching pattern |
 | 6 | [06-qualification-gates.md](06-qualification-gates.md) | The ordered gates (spikes) with pass conditions |

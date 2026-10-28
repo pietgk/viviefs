@@ -19,7 +19,7 @@ terms in `GLOSSARY.md`. The review page is the research record
 | `log-store/conformance` (`runLogStoreChecks`, 12 checks) lives in `@viviefs/datom/suites`; `verify` runs it on sqlite-node and PGlite (`integration`); [P04 Log store conformance][P04] runs it on every store, devices included | The `testing` page maps each check to its gate and its verify step from code, not prose |
 | `libs/datom` also holds the changesets and projections code (`projector.ts`, `manifest.ts`, `visibility.ts`, `catalog.ts`), which is a later guide ([D65 Guide inventory and order][D65]) | `libs/datom` is the exemplar of two guides; `metadata.guide` as one string cannot say that (question 2) |
 | No exemplar project has a README; no project has `metadata.guide` | [D67 Exemplar links to its guide][D67]'s links are new for `libs/datom` and the four stores |
-| Exercise files would sit under `exercises/`, outside `isProductionFile` (`apps/`, `features/`, `libs/`, `tools/`) | Exercises need no registry entry; their own test is the positive control ([D66 Exercise tracks][D66]). A `test` target puts the track in the `unit` producer as it is |
+| Exercise files would sit under `exercises/`, outside `isProductionFile` (`apps/`, `features/`, `libs/`, `tools/`) | Exercises need no evidence registry entry; their own test is the positive control ([D66 Exercise tracks][D66]). A `test` target puts the track in the `unit` producer as it is |
 | `starlight-typedoc` 0.23.1 (MIT) peers on Starlight >= 0.39, Astro >= 6, `typedoc` >= 0.28; `typedoc` 0.28.20 (Apache-2.0) supports `typescript` 6.0.x, which is what the `typescript` name resolves to here ([ADR-0028 TypeScript 7 CLI with TypeScript 6 API][ADR-0028]) | The API reference looks possible on the pinned stack; build time and output are measured in the build, not assumed |
 | `teach` defines a lesson as one self-contained HTML page in its own workspace, with retrieval practice, one tangible win, a primary source and a reminder to ask the agent | Its pedagogy is input; its workspace layout is not (handover). Section 4 adapts it |
 
@@ -32,7 +32,7 @@ and the `metadata.guides` value.
 
 | Log-store guide ([ADR-0006 One datom log as the substrate][ADR-0006], [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]; [P04 Log store conformance][P04], [P05 Changesets and projections][P05]) | Changesets guide ([ADR-0008 Single-datom transactions with changesets][ADR-0008] to [ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010]; [P05 Changesets and projections][P05], later) |
 | --- | --- |
-| Datom (the six fields; append-only; dedup by `tx`) | Changeset, commit datom, manifest, abort, expiry, basis |
+| Datom (the six fields; append-only; dedup by `tx`) | Changeset, commit datom, changeset manifest, abort, expiry, basis |
 | HLC and `tx` (mint, receive, future skew, reboot) | Conflict policy, conflict datom |
 | Envelope and acceptance time (`LogStore.append` stores them; [P04 Log store conformance][P04] checks them) | Entity ids, defining attribute, prefix composition |
 | Log position, acknowledged cursor, compaction horizon, `heldBy`, prefix scans | Read model, projector, Reactivity keys, draft view |
@@ -54,7 +54,7 @@ them from it, so changing the template changes the rule.
 | --- | --- |
 | `index.mdx` | What it is; When to use it; When not to; Status (the generated block); Reading paths (discuss, design, implement, review) |
 | `concepts.mdx` | one per concept, free; each names the ADR that is its why |
-| `how-to.mdx` | one per task, free ("Add a store implementation", "Read the log from a cursor", "Register a consumer that holds compaction") |
+| `how-to.mdx` | one per task, free ("Add a store implementation", "Read the log from a position", "Register a consumer that holds compaction") |
 | `testing.mdx` | Claims and their gates; Behaviours and their verify steps; When you extend it |
 | `review.mdx` | Enforced by a tool; Needs judgment; Common mistakes |
 | `lessons/NN-name.mdx` | the lesson shape (section 4) |
@@ -109,7 +109,7 @@ Proposed lessons and track (`exercises/log-store/`):
   check function run against both: the solution must pass, the problem must fail with the expected assertion.
 - Learners run `pnpm exercise log-store 02.01`: the same check against `problem/` only, reported as pass or the
   failing assertion. A thin process entry over a tested module, as `check-*.ts` are.
-- Exercise files are not production files, so they have no registry entry; they are typechecked and linted like
+- Exercise files are not production files, so they have no evidence registry entry; they are typechecked and linted like
   any other project (`lint-scope` must see them).
 - [D66 Exercise tracks][D66] says the log-store track is written by hand; `scaffold-exercises` gets its layout step replaced by the
   `guides` check.

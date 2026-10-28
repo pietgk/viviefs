@@ -14,7 +14,7 @@ From [I53 Sync and conflict][I53] ([the review page](../research/2026-10-26-sync
 
 ### What to build
 
-1. **The basis is the cursor.** The sync client gives a command the server cursor it had pulled for the organization; the commit's manifest carries it.
+1. **The basis is the sync cursor.** The sync client gives a command the sync cursor it had pulled for the organization; the commit datom carries it beside the changeset manifest.
 2. **Conflicts at accept.** Accept finds a fact for the same entity and attribute accepted after the basis from another device (the writer's own earlier outbox is not a conflict) and appends a server-authored `viviefs/conflict` fact in the same step as the changeset, which needs [I71 An append can land after a revocation][I71]'s fix for one step.
 3. **Projectors read conflicts from the log.** `projection_conflicts` becomes a read model of `viviefs/conflict` facts; a device may show a preview before accept.
 4. **Per value, the later wins.** For a human-conflict attribute, the later of a value's assert and retract decides whether it is shown; a replace command writes "retract old, assert new".

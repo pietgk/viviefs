@@ -67,7 +67,7 @@ code stays under the rule. In tests, `Date.now()` and `Math.random()` are
 refused and `async` is allowed.
 
 Not verified: "every workflow ships with a crash-matrix test" has no
-mechanical check (the one engine has [P06 Workflow engine crash matrix][P06]'s matrix); Schema at every boundary
+mechanical check (the one workflow engine has [P06 Workflow engine crash matrix][P06]'s matrix); Schema at every boundary
 is a convention, not a rule.
 
 2026-10-01, Evidence ownership ([D78 Engine suites in the engine][D78], [D79 Schema at every boundary, linted][D79]). Schema at every boundary is a lint
@@ -78,12 +78,12 @@ Schema form passing in [`guardrails.test.ts`](../../tools/verify/src/guardrails.
 The 38 `sql<T>` sites decode through row Schemas (`rowsOf` in `libs/datom`);
 a row that does not decode fails as the store's `SqlError`. Three double casts
 remain as reasoned exceptions (platform globals and op-sqlite's unresolvable
-typings); the engine's became `satisfies`.
+typings); the workflow engine's became `satisfies`.
 
-Correction to the line above: the engine's crash matrix has run in `verify`
+Correction to the line above: the workflow engine's crash matrix has run in `verify`
 since 2026-09-20, through the store projects' integration tests. It now runs
 in `libs/workflow-engine` itself, on sqlite-node and PGlite, with the
-memory-engine positive control that only [P06 Workflow engine crash matrix][P06] ran before, and `verify`'s
+in-memory workflow engine positive control that only [P06 Workflow engine crash matrix][P06] ran before, and `verify`'s
 evidence step fails when it did not pass. What stays unverified is the
 per-workflow harness ([D26 AI-robust guardrails][D26]), designed with the durable workflow guide.
 
