@@ -205,7 +205,7 @@ device and server, and Effect Cluster is not needed. Shown by [P06 Workflow engi
 [P09 Sync][P09]; the fence is to be shown by [P06][P06] and [P09][P09] again.
 
 **Sync and conflict ([D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [I53 Sync and conflict][I53]).** Sync is in the foundation on
-purpose: the first app is phones offline for days with a server and people who
+purpose: the first app runs on devices offline for days with a server and people who
 switch devices, and the engine, domain data and sync share one log; vivief made
 sync possible from its first phase too and deferred only the build. vivief's
 Sync Contract is three parts ViViEfs has: the conflict policy, the organization

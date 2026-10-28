@@ -62,7 +62,7 @@ and the consumer apps built on it live there too
 ([D55' Consumer apps live here][D55']). What it is about is app creation, in one
 language people and agents read the same way: gates verify what we built,
 learning verifies the language ([D96 Two verifications][D96]). Today its apps
-are an Expo app (phone and web) and a Node.js server, which holds authority for
+are an Expo app (iOS, Android and the web) and a Node.js server, which holds authority for
 every organization ([D103 Nodes and authority][D103]). Successor in spirit to
 vivief.
 
@@ -781,9 +781,9 @@ _Not_: GitHub's "Verified" badge, which means a signed commit.
 _Avoid_: passing tree, code changeset, merged commit
 
 **Qualify**:
-Proving claims about the stack by running gates, on phones and emulators too, and recording each run in the ledger.
-Device and lab runs happen only here; separated from verify by what a check
-needs and produces, not by speed.
+Proving claims about the stack by running gates, on simulated phones too, and recording each run in the ledger.
+Device runs (an iOS simulator, an Android emulator) and lab runs happen only
+here; separated from verify by what a check needs and produces, not by speed.
 _Avoid_: slow tests, the heavy suite
 
 **Crash matrix**:

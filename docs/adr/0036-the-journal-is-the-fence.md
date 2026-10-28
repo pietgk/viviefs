@@ -13,7 +13,7 @@ Related: [D14' The journal is the fence][D14'], [D39' One engine, one journal, o
 ## Problem
 
 One workflow run must have one history, written by one writer at a time,
-across phones that go offline for days and server runners that can pause.
+across devices that go offline for days and server runners that can pause.
 Today a lease per run with an epoch does it ([ADR-0014 Leases, fencing and server authority][ADR-0014], [D14 Leases with fencing][D14]), and the fence
 holds: a write under an older epoch is refused. But the lease never expires
 (`expiresAtMs` is always null), any member device may write a higher epoch
@@ -28,7 +28,7 @@ assumes runners that are always reachable. A device cannot be a runner, so
 Cluster would add a second journal and a second fence beside the lease.
 
 Write-once journal facts already make a second write of the same fact fail,
-but that is not enough: an offline phone's later steps, computed from a step
+but that is not enough: an offline device's later steps, computed from a step
 another device has since written differently, would be accepted on top of
 it, and the journal would hold a history no run produced.
 
@@ -52,7 +52,7 @@ holder of a run is derived, not stored: whoever wrote its head. Who runs a run
 is policy, not safety:
 
 - The holder resumes on its own (launch, wake-up, a completed deferred).
-- Another device continues only when a person asks; a phone offline for days
+- Another device continues only when a person asks; a device offline for days
   may be doing legitimate work.
 - A server runner takes over a run whose head has not moved within its
   running step's timeout, read from the journal's acceptance times.
@@ -86,7 +86,7 @@ routing in memory.
 - Two writers on one step: the second is refused and stops; at most one side
   effect is duplicated, made harmless by its idempotency key, and none when the
   step was claimed before acting.
-- An offline phone overtaken: its history from the divergence is refused whole;
+- An offline device overtaken: its history from the divergence is refused whole;
   its domain changesets are judged on their own. User content never lives only
   in a journal value ([D147 User content outside the journal][D147]), and user content in a changeset that is rejected
   goes to quarantine ([D148 Quarantine is rejected user content][D148], [P14 Quarantine after a lost lease][P14]).

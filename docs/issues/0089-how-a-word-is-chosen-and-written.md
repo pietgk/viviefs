@@ -37,7 +37,7 @@ Decided with the human on 2026-10-28 in three rounds, on [the review page](../re
 
 **Round 3.** Growth is watched, not capped: what a newcomer must hold is Start here; `verify`'s new `glossary` step reports the number of terms and any term no living document uses, and each map's acceptance reviews the terms it added ([D178 Growth watched, not capped][D178]).
 
-**Review after the rounds.** The human found "kept on their phone" in Quarantine sloppy where browsers and laptops are devices too: a definition names the general thing, and a platform appears only as an example ([D179 A definition names the general thing][D179]). Eight entries were corrected, and Frame subscription, which had only a hover line, got a precise part from [D109 Frame and frame subscription][D109].
+**Review after the rounds.** The human found "kept on their phone" in Quarantine sloppy where browsers and laptops are devices too: a definition names the general thing, and a platform appears only as an example ([D179 A definition names the general thing][D179]). Eight entries were corrected, and at the human's request the living documents were swept the same way ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032], [ADR-0033 The Presenter pattern][ADR-0033], [ADR-0036 The journal is the fence][ADR-0036], the log-store lesson on time, [I11 Quarantine of user content after a lost lease][I11], [I14 Physical devices, and a notification tap that completes a deferred][I14], [I28 Alchemy: infrastructure as Effects][I28], [I32 Ideas batch: explain any word on demand][I32], [I61 Rename evidence-mobile to evidence-client][I61], [I63 The columnar copy as a Presenter implementation][I63], [I67 Minting entity id segments][I67], [I80 Build the journal fence][I80]); Frame subscription, which had only a hover line, got a precise part from [D109 Frame and frame subscription][D109].
 
 | Row | Disposition |
 | --- | --- |
@@ -58,6 +58,8 @@ Checks before a word is retired ([D173 What a word change rewrites, and where it
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0032]: ../adr/0032-what-viviefs-is-about.md
+[ADR-0033]: ../adr/0033-the-presenter-pattern.md
+[ADR-0036]: ../adr/0036-the-journal-is-the-fence.md
 [D109]: ../plan/bootstrap/02-decision-log.md#d109
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
 [D137]: ../plan/bootstrap/02-decision-log.md#d137
@@ -76,8 +78,16 @@ Checks before a word is retired ([D173 What a word change rewrites, and where it
 [D179]: ../plan/bootstrap/02-decision-log.md#d179
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [D94']: ../plan/bootstrap/02-decision-log.md#d94p
+[I11]: 0011-quarantine-after-a-lost-lease.md
+[I14]: 0014-physical-devices-and-notification-tap.md
+[I28]: 0028-alchemy-infrastructure-as-effects.md
 [I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md
+[I32]: 0032-ideas-batch-explain-any-word-on-demand.md
+[I61]: 0061-rename-evidence-mobile-to-evidence-client.md
+[I63]: 0063-the-columnar-copy.md
+[I67]: 0067-minting-entity-id-segments.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
+[I80]: 0080-build-the-journal-fence.md
 [I88]: 0088-effect-and-the-effect-handler.md
 [I90]: 0090-pattern-concept-contract-abstraction.md
 [I91]: 0091-effects-names-against-ours.md

@@ -39,7 +39,7 @@ Let a reader point at any word on a docs page and get an explanation when one ex
 ## Questions for the brainstorm
 
 - **What is the thing called?** A word that has an explanation: a term, a name, a reference, an entry? It needs a glossary name of its own ([I30 Ideas batch: glossary entries written as effects][I30]).
-- **How is it asked for?** Hover alone fires on every word the pointer passes. A short delay, a modifier key, a selection, a long press on a phone, keyboard focus: which ones, so it works for touch and for keyboard and screen-reader users, not only for a mouse?
+- **How is it asked for?** Hover alone fires on every word the pointer passes. A short delay, a modifier key, a selection, a long press on a touch screen, keyboard focus: which ones, so it works for touch and for keyboard and screen-reader users, not only for a mouse?
 - **How does a reader know a word has an explanation** without a link: no sign at all, a quiet underline that appears on hover, or a mode the reader turns on?
 - **What is looked up, and from where?** One published index of terms, ids and names, built with the site; the explanation fetched per word, or shipped with the page because it is small?
 - **Which sense?** When a word is a term here and means something else nearby ([I26 Glossary links on words that are not our terms][I26]), does the card pick by context, show both, or ask?
