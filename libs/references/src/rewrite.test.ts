@@ -231,6 +231,17 @@ describe('pnpm refs fix', () => {
     expect(rewritten(shown).text).toContain('[D107 The Presenter pattern][D107].')
   })
 
+  it('reads a diagram label as prose: an unknown id fails, and the diagram stays as written (D180)', () => {
+    const diagram = (label: string) => `Before.\n\n\`\`\`mermaid\nstateDiagram-v2\n  Proposed --> Accepted: ${label}\n\`\`\`\n`
+    const known = diagram('accepted directly (D107)')
+    expect(rewritten(known)).toEqual({ text: known, problems: [] })
+    expect(rewritten(diagram('accepted directly (D65)')).problems).toEqual([
+      `${FILE}:5: "D65" in a diagram label is not a known gate, ADR, decision or issue (D180)`,
+    ])
+    const theirs = `<!-- their words: vivief -->\n\n${diagram('their D65')}\n<!-- /their words -->\n`
+    expect(rewritten(theirs).problems).toEqual([])
+  })
+
   it('keeps dated records and inventory rows out of scope', () => {
     expect(inReferenceScope('docs/adr/0099-the-presenter-pattern.md')).toBe(true)
     expect(inReferenceScope('docs/plan/bootstrap/99-not-a-page.md')).toBe(true)

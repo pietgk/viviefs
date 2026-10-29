@@ -8,12 +8,14 @@ import { posix } from 'node:path'
 import {
   DECISION_LOG,
   decisionAnchor,
+  findReferences,
   findReferenceTokens,
   GATE_TABLE_DOC,
   resolveKey,
   type Catalog,
   type Token,
 } from './catalog.ts'
+import { mermaidLabels } from './diagram-labels.ts'
 import { quotedLines, theirWords, type TheirWords } from './their-words.ts'
 
 export const REFERENCES_MARKER = '<!-- References: written by pnpm refs fix; do not edit by hand. -->'
@@ -117,7 +119,8 @@ const splitFrontmatter = (source: string): { readonly frontmatter: string; reado
   return { frontmatter: match[0], body: source.slice(match[0].length) }
 }
 
-type Note = (problem: string) => void
+/** Records a problem once; a line, when given, is the source line. */
+type Note = (problem: string, line?: number) => void
 
 type Scope = {
   readonly namedIds: Set<string>
@@ -398,7 +401,22 @@ const rewriteProse = (
   return out
 }
 
-const rewriteBody = (body: string, file: string, shared: Shared): string => {
+/**
+ * A diagram label is prose (D180), but a label cannot hold a link: it keeps its
+ * text, and an id in it must be known. A diagram in another's words is theirs.
+ */
+const checkDiagram = (code: string, firstLine: number, shared: Shared): void => {
+  if (shared.marks.inside()) return
+  for (const label of mermaidLabels(code, firstLine)) {
+    for (const { id } of findReferences(label.text)) {
+      if (!shared.catalog.references.has(id)) {
+        shared.note(`"${id}" in a diagram label is not a known gate, ADR, decision or issue (D180)`, label.line)
+      }
+    }
+  }
+}
+
+const rewriteBody = (body: string, file: string, shared: Shared, firstLine: number): string => {
   const endsWithNewline = body.endsWith('\n')
   const lines = body.split('\n')
   if (endsWithNewline) lines.pop()
@@ -412,6 +430,9 @@ const rewriteBody = (body: string, file: string, shared: Shared): string => {
       let next = index + 1
       const close = new RegExp(`^ {0,3}${mark}{${width},}\\s*$`)
       while (next < lines.length && !close.test(lines[next] ?? '')) next += 1
+      if (/^\s*mermaid\b/.test(line.slice(fence[0].length))) {
+        checkDiagram(lines.slice(index + 1, next).join('\n'), firstLine + index + 1, shared)
+      }
       if (next < lines.length) next += 1
       blocks.push(lines.slice(index, next).join('\n'))
       index = next
@@ -465,16 +486,18 @@ const definitionsBlock = (file: string, used: ReadonlySet<string>, catalog: Cata
 export const rewriteDocument = (source: string, file: string, catalog: Catalog): Rewrite => {
   const problems: string[] = []
   const seen = new Set<string>()
-  const note: Note = (problem) => {
-    if (seen.has(problem)) return
-    seen.add(problem)
-    problems.push(`${file}: ${problem}`)
+  const note: Note = (problem, line) => {
+    const located = `${file}${line === undefined ? '' : `:${line}`}: ${problem}`
+    if (seen.has(located)) return
+    seen.add(located)
+    problems.push(located)
   }
   const used = new Set<string>()
   const marks = theirWords()
   const stripped = stripBlock(source)
   const { frontmatter, body } = splitFrontmatter(stripped)
-  const rewritten = `${frontmatter}${rewriteBody(body, file, { used, note, catalog, marks })}`
+  const firstLine = frontmatter === '' ? 1 : frontmatter.split('\n').length
+  const rewritten = `${frontmatter}${rewriteBody(body, file, { used, note, catalog, marks }, firstLine)}`
   const unclosed = marks.end()
   if (unclosed !== undefined) note(unclosed)
   const block = definitionsBlock(file, used, catalog)

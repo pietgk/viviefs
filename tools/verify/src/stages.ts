@@ -262,6 +262,16 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'identifiers',
+        blurb: 'a metadata key, pnpm script, verify step or viviefs/ name a document or diagram names exists',
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-named-identifiers.ts'],
+          },
+        ],
+      },
+      {
         name: 'research-index',
         blurb: 'every research record is named by its date and listed in the research index',
         invocations: [

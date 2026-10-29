@@ -14,6 +14,9 @@
  * id fails the build, and so does a missing path under a checked root,
  * except in evidence notes and research records, which are kept as written.
  *
+ * A Mermaid label is prose (D180) but cannot hold a link: the diagram stays
+ * as written, and an unknown id or a missing path in a label fails the build.
+ *
  * A block quote, or a passage between `<!-- their words: whose -->` and
  * `<!-- /their words -->`, is in another project's words (D204): no glossary
  * term, bare id or path in it is resolved, and a link keeps its target. A
@@ -22,7 +25,7 @@
  */
 import { relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { findReferenceTokens, theirWords, type Catalog } from '@viviefs/references'
+import { findReferenceTokens, mermaidLabels, theirWords, type Catalog } from '@viviefs/references'
 import type { HastPluginEntry, MdastPluginEntry } from 'satteri'
 import {
   codePath,
@@ -260,6 +263,23 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
         const reference = linkedReference(textOf(node), catalog, repositoryPath, true)
         if (reference === undefined) return
         context.replaceNode(node, referenceLink(reference, reference.label))
+      },
+      code(node, context) {
+        if (node.lang !== 'mermaid' || inTheirWords(node, context)) return
+        for (const { text } of mermaidLabels(node.value)) {
+          for (const { id } of findReferences(text)) {
+            if (!index.has(id)) {
+              throw new Error(`${repositoryPath}: "${id}" in a diagram label is not a known gate, ADR, decision or issue (D180).`)
+            }
+          }
+          if (KEPT_AS_WRITTEN.test(repositoryPath)) continue
+          for (const word of text.split(/[\s,;:()"'`]+/)) {
+            const path = codePath(repositoryRoot, word.replace(/[.?!]+$/, ''))
+            if (path._tag === 'Missing') {
+              throw new Error(`${repositoryPath}: "${path.path}" in a diagram label names a repository path that does not exist (D180).`)
+            }
+          }
+        }
       },
       inlineCode(node, context) {
         if (inTheirWords(node, context)) return

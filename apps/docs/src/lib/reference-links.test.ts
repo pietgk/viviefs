@@ -100,6 +100,14 @@ describe('references resolved when rendered', () => {
     expect(() => render('In `libs/gone/x.ts`.')).toThrow(/libs\/gone\/x\.ts` names a repository path that does not exist/)
   })
 
+  it('reads a diagram label as prose: an unknown id or a stale path fails, and the diagram stays as written (D180)', () => {
+    const diagram = (label: string) => `\`\`\`mermaid\nflowchart TB\n  EX -. "${label}" .-> GUIDE\n\`\`\`\n`
+    expect(render(diagram('libs/datom (D37)'))).toContain('libs/datom (D37)')
+    expect(() => render(diagram("accepted directly (D65')"))).toThrow(/"D65'" in a diagram label is not a known gate, ADR, decision or issue/)
+    expect(() => render(diagram('libs/gone/x.ts'))).toThrow(/libs\/gone\/x\.ts" in a diagram label names a repository path that does not exist/)
+    expect(render(diagram('libs/gone/x.ts'), 'docs/evidence/2026-09-20-p04.md')).toContain('libs/gone/x.ts')
+  })
+
   it('keeps a stale path in an evidence note as written', () => {
     expect(render('Was in `libs/gone/x.ts`.', 'docs/evidence/2026-09-20-p04.md')).toContain('<code>libs/gone/x.ts</code>')
   })

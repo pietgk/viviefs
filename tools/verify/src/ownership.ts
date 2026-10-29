@@ -29,6 +29,9 @@ export type ProjectFile = {
   readonly parsed: { readonly tags?: ReadonlyArray<string>; readonly metadata?: Record<string, unknown> } | undefined
 }
 
+/** `metadata` keys a project may no longer declare: evidence is owned per file (D76). */
+export const REFUSED_METADATA_KEYS: ReadonlyArray<string> = ['evidenceOwner']
+
 export const projectProblems = (
   projects: ReadonlyArray<ProjectFile>,
   workspacePackages: ReadonlyArray<string>,
@@ -51,8 +54,10 @@ export const projectProblems = (
     else if (!tags.some((tag) => (KIND_TAGS as ReadonlyArray<string>).includes(tag))) {
       problems.push(`${path} has no kind: tag (need one of ${KIND_TAGS.join(', ')}).`)
     }
-    if (parsed.metadata && 'evidenceOwner' in parsed.metadata) {
-      problems.push(`${path} declares metadata.evidenceOwner; evidence is owned per file in the evidence registry (D76).`)
+    for (const key of REFUSED_METADATA_KEYS) {
+      if (parsed.metadata && key in parsed.metadata) {
+        problems.push(`${path} declares metadata.${key}; evidence is owned per file in the evidence registry (D76).`)
+      }
     }
   }
   return problems
