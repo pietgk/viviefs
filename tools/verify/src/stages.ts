@@ -262,6 +262,16 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'research-index',
+        blurb: 'every research record is named by its date and listed in the research index',
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-research-index.ts'],
+          },
+        ],
+      },
+      {
         name: 'evidence',
         blurb: 'coverage, suites and stories of this run hold against the registry and the lockfile',
         invocations: [
