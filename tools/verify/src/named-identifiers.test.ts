@@ -86,6 +86,8 @@ describe('names the stack owns', () => {
       '',
     ].join('\n')
     expect(problems(text)).toEqual([])
+    const shown = ['````md', '```mermaid', 'flowchart TB', '  EX -. "metadata.guide" .-> GUIDE', '```', '````', ''].join('\n')
+    expect(problems(shown)).toEqual([])
   })
 
   it('reads living documents, the glossary and the site pages, not the decision log, a resolved issue or a dated record', () => {

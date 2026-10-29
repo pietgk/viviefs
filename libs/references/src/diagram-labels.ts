@@ -13,7 +13,6 @@ export type DiagramLabel = {
   readonly text: string
 }
 
-const FENCE = /^( {0,3})(`{3,}|~{3,})\s*mermaid\b/
 
 /** Lines that are only structure. */
 const STRUCTURE = /^\s*(?:%%|classDef\b|class\b|style\b|linkStyle\b|click\b|direction\b|end\b|autonumber\b|activate\b|deactivate\b|rect\b)/
@@ -144,20 +143,35 @@ export const mermaidLabels = (code: string, first = 1): ReadonlyArray<DiagramLab
   return labels
 }
 
+/** A fenced code block: its opening and closing lines (0-based), and whether it is a diagram. */
+type Fence = { readonly open: number; readonly close: number; readonly mermaid: boolean }
+
+/**
+ * Every fenced code block, outermost only: a fence inside another, such as a
+ * diagram shown in a Markdown example, is that block's text. A fence may be
+ * indented, as in a list item.
+ */
+const fencesOf = (lines: ReadonlyArray<string>): ReadonlyArray<Fence> => {
+  const fences: Fence[] = []
+  for (let index = 0; index < lines.length; index++) {
+    const opener = /^(\s*)(`{3,}|~{3,})(.*)$/.exec(lines[index] ?? '')
+    if (opener?.[2] === undefined) continue
+    const close = new RegExp(`^\\s*${opener[2][0]}{${opener[2].length},}\\s*$`)
+    let end = index + 1
+    while (end < lines.length && !close.test(lines[end] ?? '')) end += 1
+    fences.push({ open: index, close: end, mermaid: /^\s*mermaid\b/.test(opener[3] ?? '') })
+    index = end
+  }
+  return fences
+}
+
+const labelsOf = (lines: ReadonlyArray<string>, fence: Fence): ReadonlyArray<DiagramLabel> =>
+  mermaidLabels(lines.slice(fence.open + 1, fence.close).join('\n'), fence.open + 2)
+
 /** Every label of every Mermaid diagram in a Markdown or MDX source. */
 export const diagramLabels = (markdown: string): ReadonlyArray<DiagramLabel> => {
   const lines = markdown.split('\n')
-  const labels: DiagramLabel[] = []
-  for (let index = 0; index < lines.length; index++) {
-    const fence = FENCE.exec(lines[index] ?? '')
-    if (fence?.[2] === undefined) continue
-    const close = new RegExp(`^ {0,3}${fence[2][0]}{${fence[2].length},}\\s*$`)
-    let end = index + 1
-    while (end < lines.length && !close.test(lines[end] ?? '')) end += 1
-    labels.push(...mermaidLabels(lines.slice(index + 1, end).join('\n'), index + 2))
-    index = end
-  }
-  return labels
+  return fencesOf(lines).flatMap((fence) => (fence.mermaid ? labelsOf(lines, fence) : []))
 }
 
 /**
@@ -167,21 +181,13 @@ export const diagramLabels = (markdown: string): ReadonlyArray<DiagramLabel> => 
 export const proseLines = (markdown: string): ReadonlyArray<string> => {
   const lines = markdown.split('\n')
   const prose = [...lines]
-  for (let index = 0; index < lines.length; index++) {
-    // A fence may be indented, as in a list item.
-    const fence = /^(\s*)(`{3,}|~{3,})/.exec(lines[index] ?? '')
-    if (fence?.[2] === undefined) continue
-    const close = new RegExp(`^\\s*${fence[2][0]}{${fence[2].length},}\\s*$`)
-    let end = index + 1
-    while (end < lines.length && !close.test(lines[end] ?? '')) end += 1
-    for (let blank = index; blank <= end && blank < lines.length; blank++) prose[blank] = ''
-    if (/^\s*mermaid\b/.test((lines[index] ?? '').slice(fence[0].length))) {
-      for (const label of mermaidLabels(lines.slice(index + 1, end).join('\n'), index + 2)) {
-        const at = label.line - 1
-        prose[at] = prose[at] === '' ? label.text : `${prose[at]} ${label.text}`
-      }
+  for (const fence of fencesOf(lines)) {
+    for (let blank = fence.open; blank <= fence.close && blank < lines.length; blank++) prose[blank] = ''
+    if (!fence.mermaid) continue
+    for (const label of labelsOf(lines, fence)) {
+      const at = label.line - 1
+      prose[at] = prose[at] === '' ? label.text : `${prose[at]} ${label.text}`
     }
-    index = end
   }
   return prose
 }

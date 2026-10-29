@@ -77,6 +77,12 @@ describe('diagram labels', () => {
     ).toEqual(['Confirm button', 'server', 'send(Confirm)', 'send is async enqueue', 'Every minute'])
   })
 
+  it('reads no diagram shown inside another code block, as an example of Markdown', () => {
+    const example = ['````md', '```mermaid', 'flowchart TB', '  EX -. "metadata.guide" .-> GUIDE', '```', '````', ''].join('\n')
+    expect(diagramLabels(example)).toEqual([])
+    expect(diagramLabels(`${example}\n${fenced(['flowchart TB', '  A -- "after" --> B'])}`)).toEqual([{ line: 12, text: 'after' }])
+  })
+
   it('reads no other fenced code, and no prose', () => {
     expect(diagramLabels('A `metadata.guide` in prose.\n\n```ts\nconst a = ["metadata.guide"]\n```\n')).toEqual([])
   })
