@@ -25,6 +25,10 @@ describe('parseRepositoryPage', () => {
     )
   })
 
+  it('titles the glossary Glossary on the site, while its source keeps the context name', () => {
+    expect(parseRepositoryPage('GLOSSARY.md', '# ViViEfs\n\nViViEfs is about app creation.\n').title).toBe('Glossary')
+  })
+
   it('fails on a file without a heading', () => {
     expect(() => parseRepositoryPage('docs/evidence/x.md', 'No heading.\n')).toThrow(
       'docs/evidence/x.md does not start with a "# " heading.',

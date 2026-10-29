@@ -29,8 +29,11 @@ export const RENDERED_DIRECTORIES: ReadonlyArray<RenderedDirectory> = [
 export const RENDERED_FILES: ReadonlyArray<{
   readonly file: string
   readonly route: string
+  /** The page's title on the site, where the file's heading names something else. */
+  readonly title?: string
 }> = [
-  { file: 'GLOSSARY.md', route: 'reference/glossary' },
+  // The glossary's heading is its context's name, ViViEfs, as the domain-modeling format writes it.
+  { file: 'GLOSSARY.md', route: 'reference/glossary', title: 'Glossary' },
   // Decisions are reference (D89); the rest of docs/plan stays on GitHub.
   { file: 'docs/plan/bootstrap/02-decision-log.md', route: 'reference/decisions' },
 ]

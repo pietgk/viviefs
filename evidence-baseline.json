@@ -239,10 +239,10 @@
         "statements": "11/25"
       },
       "apps/docs/src/lib/repo-pages.ts": {
-        "branches": "32/36",
-        "functions": "10/13",
-        "lines": "36/38",
-        "statements": "37/43"
+        "branches": "34/38",
+        "functions": "11/14",
+        "lines": "37/39",
+        "statements": "39/45"
       },
       "apps/docs/src/lib/repo.ts": {
         "branches": "34/39",

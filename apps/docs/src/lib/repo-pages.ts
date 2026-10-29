@@ -1,7 +1,8 @@
 /**
  * Repository Markdown rendered in place (D61): each file's title, ADR status,
  * and its place in the sidebar. Repository files have no frontmatter; the
- * `# ` heading is the title and an ADR's `Status:` line is its badge.
+ * `# ` heading is the title, unless the site gives the file another, and an
+ * ADR's `Status:` line is its badge.
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -30,8 +31,9 @@ export const parseRepositoryPage = (
   }
   const body = source.slice(heading.length)
   const status = /^Status: (.+)$/m.exec(body)?.[1] ?? null
+  const site = RENDERED_FILES.find((entry) => entry.file === path)?.title
   // Page titles are plain text; code marks in a heading would show as backticks.
-  return { title: title.replaceAll('`', '').trim(), body, status }
+  return { title: site ?? title.replaceAll('`', '').trim(), body, status }
 }
 
 export type Badge = {
