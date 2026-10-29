@@ -24,6 +24,7 @@ import { relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { findReferenceTokens, theirWords, type Catalog } from '@viviefs/references'
 import type { HastPluginEntry, MdastPluginEntry } from 'satteri'
+import { withBase } from './repo.ts'
 import {
   codePath,
   DECISION_LOG,
@@ -75,7 +76,7 @@ export const termReference = (term: GlossaryTerm): Reference => ({
   id: term.term,
   kind: 'Glossary',
   label: term.term,
-  href: `${GLOSSARY_PAGE}#${term.anchor}`,
+  href: `${withBase(GLOSSARY_PAGE)}#${term.anchor}`,
   summary: term.summary,
   meta: '',
 })

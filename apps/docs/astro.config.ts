@@ -1,7 +1,8 @@
 /**
  * The ViViEfs docs site (D59-D61): Starlight on Astro 7.
  *
- * Not deployed until that is decided after the first accepted guide (D61).
+ * GitHub Pages publishes it on every green push to main (D61'').
+ * Locally it stays at http://localhost:4321 with no base path.
  *
  * This file and `src/content.config.ts` are Astro's entry files, which the
  * site build loads and validates. `tsc` does not check them: the Starlight
@@ -20,14 +21,15 @@ import { guideGroups, guideItems, TEMPLATE_DIRECTORY, TEMPLATE_ROUTE } from './s
 import { decisionAnchors, glossaryAnchors, referenceLinks } from './src/lib/reference-links.ts'
 import { repoLinks } from './src/lib/repo-links.ts'
 import { sidebarItems } from './src/lib/repo-pages.ts'
-import { findRepositoryRoot } from './src/lib/repo.ts'
+import { docsBase, findRepositoryRoot } from './src/lib/repo.ts'
 
 const repositoryRoot = findRepositoryRoot()
+const site = process.env['DOCS_SITE'] ?? 'http://localhost:4321'
 
 export default defineConfig({
-  // The site runs only locally (`nx run docs:preview`) until deployment is decided;
-  // `llms.txt` needs an absolute URL.
-  site: 'http://localhost:4321',
+  // llms.txt needs an absolute URL. Pages sets DOCS_SITE and DOCS_BASE (D61'').
+  site,
+  base: docsBase(),
   markdown: {
     processor: satteri({
       mdastPlugins: [repoLinks(repositoryRoot), referenceLinks(repositoryRoot)],

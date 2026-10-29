@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterAll, describe, expect, it } from '@effect/vitest'
 import { rewriteHtmlLinks, rewriteLink } from './repo-links.ts'
-import { RENDERED_FILES, resolveLink, siteUrlFor } from './repo.ts'
+import { docsBase, RENDERED_FILES, resolveLink, routeFor, siteUrlFor, withBase } from './repo.ts'
 
 const root = mkdtempSync(join(tmpdir(), 'viviefs-docs-'))
 afterAll(() => rmSync(root, { recursive: true, force: true }))
@@ -80,6 +80,54 @@ describe('resolveLink', () => {
 
   it('reports a link that leaves the repository', () => {
     expect(resolveLink(root, adr, '../../../outside.md')._tag).toBe('OutsideRepository')
+  })
+
+  it('prefixes a site path once when GitHub Pages sets the base', () => {
+    expect(withBase('/guides/', '/viviefs')).toBe('/viviefs/guides/')
+    expect(withBase('/viviefs/guides/', '/viviefs')).toBe('/viviefs/guides/')
+    expect(withBase('https://github.com/pietgk/viviefs/blob/main/README.md', '/viviefs')).toBe(
+      'https://github.com/pietgk/viviefs/blob/main/README.md',
+    )
+    expect(withBase('#design', '/viviefs')).toBe('#design')
+    expect(withBase('//example.com/a', '/viviefs')).toBe('//example.com/a')
+    const previous = process.env['DOCS_BASE']
+    process.env['DOCS_BASE'] = '/viviefs'
+    try {
+      expect(siteUrlFor('docs/adr/0002-second.md')).toBe('/reference/adr/0002-second/')
+      expect(routeFor('docs/adr/0002-second.md')).toBe('reference/adr/0002-second')
+      expect(resolveLink(root, adr, '0002-second.md#design')).toEqual({
+        _tag: 'Rewritten',
+        href: '/viviefs/reference/adr/0002-second/#design',
+      })
+      expect(resolveLink(root, adr, '/guides/')).toEqual({ _tag: 'Rewritten', href: '/viviefs/guides/' })
+      expect(resolveLink(root, adr, 'https://effect.website')).toEqual({ _tag: 'Untouched' })
+      expect(resolveLink(root, adr, '#design')).toEqual({ _tag: 'Untouched' })
+      expect(resolveLink(root, adr, '../plan/plan.md')).toEqual({
+        _tag: 'Rewritten',
+        href: 'https://github.com/pietgk/viviefs/blob/main/docs/plan/plan.md',
+      })
+    } finally {
+      if (previous === undefined) delete process.env['DOCS_BASE']
+      else process.env['DOCS_BASE'] = previous
+    }
+  })
+
+  it('rejects a base that is not a site path, and strips one trailing slash', () => {
+    expect(withBase('/viviefs', '/viviefs')).toBe('/viviefs')
+    expect(withBase('/guides/', '/')).toBe('/guides/')
+    const previous = process.env['DOCS_BASE']
+    process.env['DOCS_BASE'] = 'viviefs'
+    try {
+      expect(() => docsBase()).toThrow('DOCS_BASE must start with /')
+    } finally {
+      process.env['DOCS_BASE'] = '/viviefs/'
+      try {
+        expect(docsBase()).toBe('/viviefs')
+      } finally {
+        if (previous === undefined) delete process.env['DOCS_BASE']
+        else process.env['DOCS_BASE'] = previous
+      }
+    }
   })
 })
 

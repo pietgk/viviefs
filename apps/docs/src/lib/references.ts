@@ -25,7 +25,7 @@ import {
   type Reference as CatalogReference,
 } from '@viviefs/references'
 import { claimHref } from './claims.ts'
-import { GITHUB_REPOSITORY, siteUrlFor } from './repo.ts'
+import { GITHUB_REPOSITORY, siteUrlFor, withBase } from './repo.ts'
 
 export {
   DECISION_LOG,
@@ -58,8 +58,9 @@ export type Reference = {
 
 const siteHref = (reference: CatalogReference): string => {
   if (reference.kind === 'Gate') return claimHref({ id: reference.id, name: reference.label.slice(reference.id.length + 1) })
-  const page = siteUrlFor(reference.path) ?? `${GITHUB_REPOSITORY}/blob/main/${reference.path}`
-  return reference.anchor === '' ? page : `${page}#${reference.anchor}`
+  const page = siteUrlFor(reference.path)
+  const href = page === null ? `${GITHUB_REPOSITORY}/blob/main/${reference.path}` : withBase(page)
+  return reference.anchor === '' ? href : `${href}#${reference.anchor}`
 }
 
 const toSite = (reference: CatalogReference): Reference => ({
@@ -249,7 +250,7 @@ export const codePath = (root: string, value: string): CodePath => {
   }
   if (isIgnored(root, bare)) return { _tag: 'NotAPath' }
   const site = siteUrlFor(bare)
-  if (site) return { _tag: 'Link', href: site }
+  if (site) return { _tag: 'Link', href: withBase(site) }
   const kind = statSync(absolute).isDirectory() ? 'tree' : 'blob'
   return { _tag: 'Link', href: `${GITHUB_REPOSITORY}/${kind}/main/${bare}` }
 }
