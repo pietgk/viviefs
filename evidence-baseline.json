@@ -217,8 +217,8 @@
       "apps/docs/src/lib/reference-links.ts": {
         "branches": "176/188",
         "functions": "44/44",
-        "lines": "184/184",
-        "statements": "236/241"
+        "lines": "185/185",
+        "statements": "237/242"
       },
       "apps/docs/src/lib/references.ts": {
         "branches": "112/116",
@@ -251,10 +251,10 @@
         "statements": "66/70"
       },
       "apps/docs/src/lib/site-pages.ts": {
-        "branches": "33/43",
-        "functions": "21/21",
-        "lines": "68/68",
-        "statements": "77/80"
+        "branches": "37/47",
+        "functions": "24/24",
+        "lines": "69/69",
+        "statements": "81/84"
       },
       "features/evidence/client/src/index.ts": {
         "branches": "0/0",

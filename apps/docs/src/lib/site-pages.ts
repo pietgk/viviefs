@@ -4,8 +4,8 @@
  * page's frontmatter `description`, an ADR's `Summary:` line, a repository
  * page's first paragraph, or a research record's first `<p>` is that sentence.
  */
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import { firstSentence, plainText } from '@viviefs/references'
 import { CLAIMS_ROUTE, claimsMarkdown } from './claims.ts'
 import { TEMPLATE_ROUTE } from './guides.ts'
@@ -76,52 +76,65 @@ const htmlText = (html: string): string =>
     .replace(/\s+/g, ' ')
     .trim()
 
-const cache = new Map<string, ReadonlyMap<string, SitePage>>()
+const GATES = 'tools/qualification/src/gates.ts'
 
-/** Every page of the site by URL, read once per repository root. */
-export const sitePages = (root: string): ReadonlyMap<string, SitePage> => {
-  const cached = cache.get(root)
-  if (cached) return cached
+/** Every file the index is read from, so an edit to any of them is seen. */
+const sourceFiles = (root: string): ReadonlyArray<string> => [
+  ...contentFiles(root, CONTENT),
+  ...contentFiles(root, TEMPLATE),
+  ...RENDERED_FILES.map(({ file }) => file),
+  ...[...RENDERED_DIRECTORIES.map(({ directory }) => directory), RAW_HTML_DIRECTORY].flatMap((directory) =>
+    existsSync(join(root, directory)) ? readdirSync(join(root, directory)).map((name) => `${directory}/${name}`) : [],
+  ),
+  GATES,
+]
+
+const read = (root: string, files: ReadonlyArray<string>): ReadonlyMap<string, SitePage> => {
   const pages = new Map<string, SitePage>()
-  const content = (directory: string, base: string) => {
-    for (const file of contentFiles(root, directory)) {
+  for (const [directory, base] of [[CONTENT, ''], [TEMPLATE, TEMPLATE_ROUTE]] as const) {
+    for (const file of files.filter((path) => path.startsWith(`${directory}/`))) {
       const source = readFileSync(join(root, file), 'utf8')
       const title = frontmatterField(source, 'title')
       if (title === undefined) continue
       const body = source.replace(/^---\n[\s\S]*?\n---\n/, '')
       const summary = frontmatterField(source, 'description') ?? firstProseSentence(body.replace(/^import .*$/gm, ''))
-      pages.set(contentUrl(base, relative(join(root, directory), join(root, file)).split('\\').join('/')), { title, summary })
+      pages.set(contentUrl(base, file.slice(directory.length + 1)), { title, summary })
     }
   }
-  content(CONTENT, '')
-  content(TEMPLATE, TEMPLATE_ROUTE)
-  const repositoryFiles = [
-    ...RENDERED_FILES.map(({ file }) => file),
-    ...RENDERED_DIRECTORIES.flatMap(({ directory }) =>
-      existsSync(join(root, directory)) ? readdirSync(join(root, directory)).filter((name) => name.endsWith('.md')).map((name) => `${directory}/${name}`) : [],
-    ),
-  ].filter((path) => existsSync(join(root, path)))
-  for (const path of repositoryFiles) {
+  for (const path of files.filter((file) => file.endsWith('.md') && !file.startsWith('apps/'))) {
     const url = siteUrlFor(path)
-    if (url === null) continue
+    if (url === null || !existsSync(join(root, path))) continue
     const page = parseRepositoryPage(path, readFileSync(join(root, path), 'utf8'))
     pages.set(url, { title: page.title, summary: firstProseSentence(page.body) })
   }
-  if (existsSync(join(root, RAW_HTML_DIRECTORY))) {
-    for (const name of readdirSync(join(root, RAW_HTML_DIRECTORY)).filter((file) => file.endsWith('.html'))) {
-      const path = `${RAW_HTML_DIRECTORY}/${name}`
-      const url = siteUrlFor(path)
-      const html = readFileSync(join(root, path), 'utf8')
-      const title = /<title>([^<]+)<\/title>/.exec(html)?.[1]
-      if (url === null || title === undefined) continue
-      const paragraph = /<p\b[^>]*>([\s\S]*?)<\/p>/.exec(html)?.[1] ?? ''
-      pages.set(url, { title: htmlText(title), summary: firstSentence(htmlText(paragraph)) })
-    }
+  for (const path of files.filter((file) => file.endsWith('.html'))) {
+    const url = siteUrlFor(path)
+    const html = readFileSync(join(root, path), 'utf8')
+    const title = /<title>([^<]+)<\/title>/.exec(html)?.[1]
+    if (url === null || title === undefined) continue
+    const paragraph = /<p\b[^>]*>([\s\S]*?)<\/p>/.exec(html)?.[1] ?? ''
+    pages.set(url, { title: htmlText(title), summary: firstSentence(htmlText(paragraph)) })
   }
-  if (existsSync(join(root, 'tools/qualification/src/gates.ts'))) {
+  if (existsSync(join(root, GATES))) {
     pages.set(`/${CLAIMS_ROUTE}/`, { title: 'Claims', summary: firstProseSentence(claimsMarkdown(root)) })
   }
-  cache.set(root, pages)
+  return pages
+}
+
+const cache = new Map<string, { readonly version: string; readonly pages: ReadonlyMap<string, SitePage> }>()
+
+/**
+ * Every page of the site by URL. It is read again when a source file changes,
+ * so the development server shows an edited title; the reference plugin asks
+ * once per rendered page.
+ */
+export const sitePages = (root: string): ReadonlyMap<string, SitePage> => {
+  const files = sourceFiles(root)
+  const version = files.map((path) => (existsSync(join(root, path)) ? statSync(join(root, path)).mtimeMs : 0)).join()
+  const cached = cache.get(root)
+  if (cached?.version === version) return cached.pages
+  const pages = read(root, files)
+  cache.set(root, { version, pages })
   return pages
 }
 
@@ -129,9 +142,8 @@ export const sitePages = (root: string): ReadonlyMap<string, SitePage> => {
  * The page a site link opens, ignoring its section and query; undefined for
  * anything else. On the published site a link carries the base (D61'').
  */
-export const pageAt = (root: string, url: string): SitePage | undefined => {
+export const pageAt = (pages: ReadonlyMap<string, SitePage>, url: string): SitePage | undefined => {
   if (!url.startsWith('/') || url.startsWith('//')) return undefined
   const path = withoutBase(url.replace(/[?#].*$/, ''))
-  const pages = sitePages(root)
   return pages.get(path) ?? pages.get(path.endsWith('/') || path.endsWith('.html') ? path : `${path}/`)
 }

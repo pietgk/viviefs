@@ -2,7 +2,7 @@
 // Sätteri pipeline the site uses, in a fixture repository: ids become named
 // links with preview data, paths become links, headings and code stay as
 // written, and an unknown id or a stale path fails.
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -135,6 +135,19 @@ describe('references resolved when rendered', () => {
     } finally {
       if (previous === undefined) delete process.env['DOCS_BASE']
       else process.env['DOCS_BASE'] = previous
+    }
+  })
+
+  it('shows a page\'s edited title on the next render, as the development server needs', () => {
+    expect(render('See [guides](/guides/).')).toContain('data-ref-label="Guides"')
+    const page = join(root, 'apps/docs/src/content/docs/guides/index.mdx')
+    writeFileSync(page, '---\ntitle: All guides\ndescription: One guide per pattern, for people and agents.\n---\n\nBody.\n')
+    utimesSync(page, 2_000_000_000, 2_000_000_000)
+    try {
+      expect(render('See [guides](/guides/).')).toContain('data-ref-label="All guides"')
+    } finally {
+      writeFileSync(page, files['apps/docs/src/content/docs/guides/index.mdx'] ?? '')
+      utimesSync(page, 2_000_000_100, 2_000_000_100)
     }
   })
 
