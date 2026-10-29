@@ -2,7 +2,7 @@
 // source line it is on, and nothing that is only the diagram's structure.
 // The diagrams are those of How a pattern is delivered, as the human reviewed it.
 import { describe, expect, it } from '@effect/vitest'
-import { diagramLabels } from './diagram-labels.ts'
+import { diagramLabels, proseLines } from './diagram-labels.ts'
 
 const fenced = (lines: ReadonlyArray<string>): string => ['Before.', '', '```mermaid', ...lines, '```', '', 'After.', ''].join('\n')
 
@@ -75,6 +75,24 @@ describe('diagram labels', () => {
         ]),
       ),
     ).toEqual(['Confirm button', 'server', 'send(Confirm)', 'send is async enqueue', 'Every minute'])
+  })
+
+  it('reads a plain subgraph title, skips an empty label and reads an unclosed shape to the end of its line', () => {
+    expect(texts(fenced(['flowchart LR', '  subgraph Device storage', '  A[""] --> B[Half open', '  end']))).toEqual(['Device storage', 'Half open'])
+  })
+
+  it('reads quoted names of any other diagram kind, and a note across lines past a blank one', () => {
+    expect(texts(fenced(['%% the model', 'erDiagram', '  CHANGESET ||--o{ DATOM : "holds"']))).toEqual(['holds'])
+    expect(texts(fenced(['stateDiagram-v2', '  note right of Open', '    first', '', '    second', '  end note']))).toEqual(['first', 'second'])
+  })
+
+  it('reads a diagram whose fence is never closed to the end of the source', () => {
+    expect(diagramLabels('```mermaid\nflowchart TB\n  A["open"] --> B\n')).toEqual([{ line: 3, text: 'open' }])
+  })
+
+  it('gives the prose checks each diagram line as its labels, and fenced code as blank lines', () => {
+    expect(proseLines(fenced(['flowchart TB', '  A["one"] --> B["two"]']))).toEqual(['Before.', '', '', '', 'one two', '', '', 'After.', ''])
+    expect(proseLines('Text.\n```ts\nconst a = 1\n```\n')).toEqual(['Text.', '', '', '', ''])
   })
 
   it('reads no diagram shown inside another code block, as an example of Markdown', () => {

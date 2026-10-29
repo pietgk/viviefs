@@ -215,10 +215,10 @@
         "statements": "34/38"
       },
       "apps/docs/src/lib/reference-links.ts": {
-        "branches": "165/178",
-        "functions": "40/40",
-        "lines": "173/173",
-        "statements": "221/227"
+        "branches": "176/188",
+        "functions": "44/44",
+        "lines": "184/184",
+        "statements": "236/241"
       },
       "apps/docs/src/lib/references.ts": {
         "branches": "112/116",
@@ -467,10 +467,10 @@
         "statements": "147/156"
       },
       "libs/references/src/diagram-labels.ts": {
-        "branches": "78/94",
-        "functions": "13/13",
-        "lines": "105/106",
-        "statements": "129/130"
+        "branches": "81/88",
+        "functions": "16/16",
+        "lines": "103/103",
+        "statements": "126/126"
       },
       "libs/references/src/rewrite.ts": {
         "branches": "230/302",

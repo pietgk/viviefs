@@ -125,6 +125,13 @@ describe('references resolved when rendered', () => {
     )
   })
 
+  it('gives a reference-style link to a site page the same preview', () => {
+    expect(render('Read the [guides][all guides].\n\n[all guides]: /guides/\n')).toContain(
+      '<a href="/guides/" class="ref-link" data-ref-kind="Page" data-ref-label="Guides" data-ref-summary="One guide per pattern, for people and agents." data-ref-meta="">guides</a>',
+    )
+    expect(render('See [Effect][effect].\n\n[effect]: https://effect.website/\n')).not.toContain('ref-link')
+  })
+
   it('gives a repository path that is a site page the same preview', () => {
     expect(render('Listed in `docs/adr/README.md`.')).toContain(
       '<a href="/reference/adr/" class="ref-link" data-ref-kind="Page" data-ref-label="Architectural decision records"',

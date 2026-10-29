@@ -187,6 +187,21 @@ const linkedReference = (label: string, catalog: Catalog, where: string, owned: 
   return reference
 }
 
+type Definition = { readonly type: string; readonly identifier?: string; readonly url?: string; readonly children?: ReadonlyArray<Definition> }
+
+/** The URL of the definition `identifier` names in a tree, or '' where it has none. */
+const definitionUrl = (identifier: string, at: Definition): string =>
+  at.type === 'definition' && at.identifier === identifier
+    ? String(at.url)
+    : ((at.children ?? []).map((child) => definitionUrl(identifier, child)).find((url) => url !== '') ?? '')
+
+/** The root of the tree a node is in: definitions usually close the document, after the link. */
+const rootOf = (node: unknown, tree: Tree): Definition => {
+  let root = node
+  for (let parent = tree.parent(root as never); parent !== undefined; parent = tree.parent(parent as never)) root = parent
+  return root as Definition
+}
+
 /** Whether a text node follows a `_Not_` or `_Avoid_` label in its paragraph (D174). */
 const afterOtherSense = (node: unknown, tree: Tree): boolean => {
   const parent = tree.parent(node as never) as Phrasing | undefined
@@ -277,8 +292,14 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
       },
       linkReference(node, context) {
         const reference = linkedReference(textOf(node), catalog, repositoryPath, true)
-        if (reference === undefined) return
-        context.replaceNode(node, referenceLink(reference, reference.label))
+        if (reference !== undefined) {
+          context.replaceNode(node, referenceLink(reference, reference.label))
+          return
+        }
+        // The converter resolves the link's target and title; the preview needs only the page.
+        const preview = pagePreview(repositoryRoot, definitionUrl(node.identifier, rootOf(node, context)))
+        if (preview === undefined) return
+        context.replaceNode(node, { ...node, data: { hProperties: preview } })
       },
       code(node, context) {
         if (node.lang !== 'mermaid' || inTheirWords(node, context)) return
