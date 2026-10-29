@@ -59,3 +59,45 @@ it('fails a link in the index to a record that does not exist', () => {
     `${RESEARCH_INDEX}: links 2026-10-02-k-plex.md, which is not a record here`,
   ])
 })
+
+it('reads every form of a Markdown link to a record, and only links that render', () => {
+  const forms = [
+    '| [Relative](./2026-10-01-relative.html) | with ./ |',
+    '| [Angled](<2026-10-02-angled.md> "a title") | angle brackets and a title |',
+    '| [Full][record] | a full reference |',
+    '| [2026-10-04 collapsed][] | a collapsed reference |',
+    '| [shortcut] | a shortcut reference |',
+    '| [Encoded](2026-10-06-encoded%2Dname.md?raw#top) | percent-encoded, a query and an anchor |',
+    '| `[In code](2026-10-07-in-code.md)` | a code span renders no link |',
+    '| [Unused definition] is not used | - |',
+    '',
+    '[record]: 2026-10-03-full.html',
+    '[2026-10-04 collapsed]: ./2026-10-04-collapsed.md',
+    '[Shortcut]: <2026-10-05-shortcut.html>',
+    '[never used]: 2026-10-08-never-used.md',
+    '[adr]: ../adr/0026-verify-qualify-teach.md',
+  ].join('\n')
+  const records = [
+    '2026-10-01-relative.html',
+    '2026-10-02-angled.md',
+    '2026-10-03-full.html',
+    '2026-10-04-collapsed.md',
+    '2026-10-05-shortcut.html',
+    '2026-10-06-encoded-name.md',
+  ]
+  expect(researchIndexProblems(records, forms)).toEqual([])
+  expect(researchIndexProblems([...records, '2026-10-07-in-code.md', '2026-10-08-never-used.md'], forms)).toEqual([
+    `docs/research/2026-10-07-in-code.md: not in the index; add its row to ${RESEARCH_INDEX}`,
+    `docs/research/2026-10-08-never-used.md: not in the index; add its row to ${RESEARCH_INDEX}`,
+  ])
+  expect(researchIndexProblems(records.slice(1), forms)).toEqual([`${RESEARCH_INDEX}: links 2026-10-01-relative.html, which is not a record here`])
+})
+
+it('keeps a malformed escape as written, so it names no record', () => {
+  expect(researchIndexProblems([], '| [Bad](2026-10-09-bad%E0.md) | - |')).toEqual([`${RESEARCH_INDEX}: links 2026-10-09-bad%E0.md, which is not a record here`])
+})
+
+it('takes the first definition of a label, as Markdown does', () => {
+  const twice = ['| [Record][r] | - |', '', '[r]: 2026-10-10-first.md', '[R]: 2026-10-11-second.md'].join('\n')
+  expect(researchIndexProblems(['2026-10-10-first.md'], twice)).toEqual([])
+})

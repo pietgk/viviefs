@@ -707,10 +707,10 @@
         "statements": "20/20"
       },
       "tools/verify/src/research-index.ts": {
-        "branches": "10/11",
-        "functions": "9/9",
-        "lines": "15/15",
-        "statements": "17/17"
+        "branches": "21/22",
+        "functions": "12/12",
+        "lines": "31/31",
+        "statements": "37/37"
       },
       "tools/verify/src/retired-words.ts": {
         "branches": "21/25",

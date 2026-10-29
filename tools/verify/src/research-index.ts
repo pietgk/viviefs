@@ -15,13 +15,45 @@ const RECORD_NAME = /^\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*\.(?:md|html)$/
 export const researchRecords = (paths: ReadonlyArray<string>): ReadonlyArray<string> =>
   paths.flatMap((path) => (path.startsWith(`${RESEARCH_DIR}/`) && path !== RESEARCH_INDEX ? [path.slice(RESEARCH_DIR.length + 1)] : []))
 
-/** The records the index links: a link target in this folder, without its anchor. */
-const linkedRecords = (index: string): ReadonlySet<string> =>
-  new Set(
-    [...index.matchAll(/\]\(([^)\s#]+)(?:#[^)]*)?\)/g)]
-      .map(([, target = '']) => target)
-      .filter((target) => !target.includes('/') && !target.includes(':')),
-  )
+const label = (text: string) => text.trim().replace(/\s+/g, ' ').toLowerCase()
+
+/** A link destination as a path in this folder: no brackets, query or anchor, decoded, without `./`. */
+const localTarget = (destination: string): string => {
+  const path = destination.replace(/^<(.*)>$/, '$1').replace(/[?#].*$/, '')
+  let decoded = path
+  try {
+    decoded = decodeURIComponent(path)
+  } catch {
+    // A malformed escape is kept as written, and then names no record.
+  }
+  return decoded.replace(/^(?:\.\/)+/, '')
+}
+
+const DEFINITION = /^ {0,3}\[([^\]]+)\]:[ \t]*(<[^>\n]*>|\S+)(?:[ \t]+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?[ \t]*$/gm
+// One scan, left to right, so the label of a full reference is never read again as a shortcut.
+const LINK =
+  /\[((?:[^[\]\n]|\[[^[\]\n]*\])*)\](?:\(\s*(<[^>\n]*>|[^\s)]+)(?:\s+(?:"[^"\n]*"|'[^'\n]*'))?\s*\)|\[([^[\]\n]*)\])?/g
+
+/**
+ * The records the index links, in every form of a Markdown link that renders:
+ * inline (`./`, angle brackets, a title, a query or an anchor allowed) and
+ * full, collapsed and shortcut references with their definition. A code span
+ * and a definition no link uses render no link.
+ */
+const linkedRecords = (index: string): ReadonlySet<string> => {
+  const prose = index.replace(/(`+)[^`][\s\S]*?\1/g, '')
+  const definitions = new Map<string, string>()
+  const body = prose.replace(DEFINITION, (_, name: string, destination: string) => {
+    if (!definitions.has(label(name))) definitions.set(label(name), destination)
+    return ''
+  })
+  const destinations = [...body.matchAll(LINK)].flatMap(([, text = '', inline, reference]) => {
+    if (inline !== undefined) return [inline]
+    const destination = definitions.get(label(reference === undefined || reference === '' ? text : reference))
+    return destination === undefined ? [] : [destination]
+  })
+  return new Set(destinations.map(localTarget).filter((target) => target !== '' && !target.includes('/') && !target.includes(':')))
+}
 
 /** Each record not named by its date or not in the index, and each link in the index to no record. */
 export const researchIndexProblems = (records: ReadonlyArray<string>, index: string): ReadonlyArray<string> => {
