@@ -85,6 +85,13 @@ describe('How a pattern is delivered', () => {
     expect(missing).toEqual([])
   })
 
+  it('has the tab icon it links, which a headless browser does not ask for by itself', async () => {
+    const href = await page.locator('link[rel~="icon"]').first().getAttribute('href')
+    const response = await page.request.get(new URL(href ?? '', page.url()).href)
+    expect([href, response.status()]).toEqual([withBase('/favicon.svg'), 200])
+    expect(response.headers()['content-type']).toBe('image/svg+xml')
+  })
+
   it('shows the second "ADRs" as a page when it is hovered', async () => {
     const links = page.locator('.sl-markdown-content a', { hasText: /^ADRs$/ })
     await expect.poll(() => links.count()).toBeGreaterThan(1)
