@@ -1,12 +1,17 @@
-# Publishes the docs site (D61''). Runs after CI succeeds on a push to main,
-# so a failed verify is not deployed and the next CI run does not cancel a
-# deploy that has already started.
+# Publishes the docs site (D61'').
+#
+# After merge, a green push to main deploys it. Until then, the open pull
+# request from docs-github-pages deploys the same URL so the site can be read
+# before merge. GitHub Pages has one site, so that preview is the site.
+# Another pull request does not match and does not replace it.
 name: Docs
 
 on:
   workflow_run:
     workflows: [CI]
     types: [completed]
+    branches: [main]
+  pull_request:
     branches: [main]
 
 permissions:
@@ -21,15 +26,30 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    if: |
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') ||
+      (github.event_name == 'pull_request' && github.head_ref == 'docs-github-pages')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Select commit
+        id: commit
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_SHA: ${{ github.event.workflow_run.head_sha }}
+          PULL_REQUEST_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            echo "sha=$WORKFLOW_SHA" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=$PULL_REQUEST_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ steps.commit.outputs.sha }}
 
       - uses: jdx/mise-action@v2
 
