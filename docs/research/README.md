@@ -6,15 +6,18 @@ guide's claim: what a guide needs from a record is rewritten into a guide
 page that cites gate evidence. Claims come from gates
 ([ADR-0026](../adr/0026-verify-qualify-teach.md)).
 
-Name a record `YYYY-MM-DD-<topic>` with `.md` or `.html`. The `research`
-skill writes its Markdown findings here. The docs site renders Markdown
-records as pages, including a subfolder, and serves HTML records as they are.
+Name a record `YYYY-MM-DD-<topic>` with `.md` or `.html`, and give it a row
+below in the same change; `verify`'s `research-index` step fails a record
+without one. The `research` skill writes its Markdown findings here. The docs
+site renders Markdown records as pages, including a subfolder, and serves HTML
+records as they are.
 
 [XDevl](XDevl/README.md) is the first living area. Its pages change as the
 account is maintained. It keeps no glossary and no grill log of its own
-([D136 Issue and Area defined](../plan/bootstrap/02-decision-log.md#d136)). Every dated file in the table below,
-and every file in `XDevl/snapshots/`, stays as written. The living pages are
-research records too: a guide's claim still comes from a gate.
+([D215 Issue and Area defined](../plan/bootstrap/02-decision-log.md#d215)).
+Every dated file in the table below, and every file in `XDevl/snapshots/`,
+stays as written. The living pages are research records too: a guide's claim
+still comes from a gate.
 
 | Record | What it is |
 | --- | --- |
@@ -46,4 +49,23 @@ research records too: a guide's claim still comes from a gate.
 | [2026-10-09 Phase 0: six questions and I71 drawn](2026-10-09-phase-0-review.html) | Phase 0's six questions written out with their proposals, and I71 (an append that lands after a revocation) drawn as sequence diagrams of the reproduced race and its control |
 | [2026-10-08 Agent write-time hooks](2026-10-08-agent-write-hooks.md) | How Claude Code, Codex, and Cursor run a command after an agent writes or edits a file |
 | [2026-10-09 Access from membership to enterprise](2026-10-09-access-from-membership-to-enterprise.md) | I70's research for I54: the AuthZEN request against accept and sync's filter, what IAM, Config, Cedar, Zanzibar, OpenFGA, SpiceDB and OPA separate, Cedar's analysis, what runs offline and what replaces the consistency token, the ladder from code to policies with a conformance decision table, and the smallest contract Cedar fits |
+| [2026-10-10 One shape at every level?](2026-10-10-one-shape-review.html) | I56's design review: vivief's shape on ViViEfs's real code level by level, the data level as decide, accept and evolve, the changeset traced, three ways to draw the loop, verified commit, and round 4's challenges (surface, kinds of intent, an app as a pattern, Effect's names); settled in conversation (D130-D135, D98'). |
 | [2026-10-16 React stack for mobile and web](2026-10-16-react-mobile-and-web-stack.html) | Expo SDK 58 against One 2.7 for the app, the UI layer (Unistyles 3, Tamagui 3 and others) and the backend (Effect HTTP and RPC, Hono, Alchemy): scorecard, pros and cons, and the triggers to look at One again; [the record with sources](2026-10-16-react-mobile-and-web-stack.md) |
+| [2026-10-20 Smarter chunking for RAG](2026-10-20-chunking-landscape.md) | POMA AI's PrimeCut and index4.ai against its competitors and the open-source chunking field, with GitHub star counts of that day |
+| [2026-10-20 Generative and agentic UI](2026-10-20-genui-comparison.md) | OpenUI against lavish and show-me and the rest: generative UI runtimes that ship in a product, against agent visualization skills for developers |
+| [2026-10-24 Actors or the engine?](2026-10-24-actors-or-the-engine-review.html) | I51's design review: vivief's actor against Effect's Cluster and our engine, worked examples, the lease explained, Cluster against a lease against the journal as the fence, MessageStorage on the log, entity and actor; settled in conversation (D136-D141, D14', D39'; ADR-0036). |
+| [2026-10-26 Sync and conflict](2026-10-26-sync-and-conflict-review.html) | I53's design review: vivief's sync and Effect's EventLog against ours, worked examples, human conflict as built (not as decided), cardinality and quarantine explained; settled over two rounds (D142-D148, D34'). |
+| [2026-10-26 Trust, encryption and who may sign in](2026-10-26-trust-encryption-and-sign-in-review.html) | I54's design review: vivief's Trust Contract and Effect's `eventlog` identity, encryption and authorization against ours, worked examples, I70's access contract answered, encryption levels, the hash chain, proof of authorship and one meaning of identity; settled over two rounds (D149-D157). |
+| [2026-10-27 ADR-0002 and the vision page](2026-10-27-adr-0002-and-vision-review.html) | I59's design review: six places out of date in ADR-0002 and the vision page, the out-of-scope list item by item (not yet at all, learnable in the lab, or a rule), and drafts of the amendment and the vision edits; settled in one round (D158-D159). |
+| [2026-10-27 Effect's vocabulary against ours](2026-10-27-effect-vocabulary-against-ours.md) | I78's research before map 3: Effect 4.0.5's main names in the core, `ai`, `cluster`, `eventlog`, `persistence`, `reactivity`, `rpc`, `sql` and `workflow` against the glossary and the words waiting for map 3, sorted as same meaning, clash or an idea we lack; the six known clashes checked, eight more found (Effects, Worker, Deferred among them), and the questions for map 3 |
+| [2026-10-27 Charting map 3: the words](2026-10-27-the-words-charting.html) | The third wayfinder map's charting review: what map 3 inherits in seven clusters, three words worked to their end, and two rounds settling the destination, the single-word rule, what a word change rewrites, the name (Vocabulary) and the tickets (I34, I88-I96) |
+| [2026-10-27 Accept the foundation concepts](2026-10-27-accept-the-foundation-concepts-review.html) | I55's design review: map 2's rows disposed of, the twelve foundation concepts in one table read as one turn, libs one per pattern, and portability's two halves (D160-D162, D65') |
+| [2026-10-27 Effect and the effect handler](2026-10-27-effect-and-the-effect-handler-review.html) | I88's design review: the word effect from four sources, vivief's effectHandler, four worked examples, and three rounds settling effect by phase, Effect and effect by case, the effect handler, intent and decide (D163-D169) |
+| [2026-10-28 How a word is chosen and written](2026-10-28-how-a-word-is-chosen-and-written-review.html) | I89's design review: vivief's quick reference beside the glossary, the single-word rule run on all 67 single-word terms, compounds in prose, entry lines, the opening and groups, the hover line found cut mid-sentence, and growth (D170-D178, D94') |
+| [2026-10-28 Pattern, concept, contract, abstraction](2026-10-28-pattern-concept-contract-abstraction-review.html) | I90's design review: concept as the wider word, a pattern as the kind with a contract, a suite and a gate, vivief's `Contract` against ours, "abstraction" as plain English, and Feature (D181-D185) |
+| [2026-10-28 Effect's names against ours](2026-10-28-effects-names-against-ours-review.html) | I91's design review: the single-word rule run on each clash with its uses counted, the compounds (Workflow engine, Workflow runner, Durable deferred, Changeset manifest, Sync cursor, Evidence registry), the words kept with their lines, and the code names left to I99 (D186-D197) |
+| [2026-10-28 Map 2's new words](2026-10-28-map-2s-new-words-review.html) | I92's design review: the words the app shell meets, Sync node, Presentation surface and Screen, Frame, change, and what waits (D199-D203) |
+| [2026-10-29 Words in another project's sense](2026-10-29-words-in-another-projects-sense-review.html) | I94's design review: I26's cases run through the real linker, the their-words mark and what it switches off, the retired words counted in the living documents, and I26's other questions (D204, D180') |
+| [2026-10-29 Accept the vocabulary](2026-10-29-accept-the-vocabulary-review.html) | I96's design review: map 3's destination checked row by row, words used as terms with no entry counted (authority, sync, the log, accept), the lease ADR-0036 removes, and the glossary report's two unused terms (D205-D208) |
+| [2026-10-29 Repo-wide review](2026-10-29-repo-wide-review.md) | Code, docs, consistency and goal alignment at the pinned updated main; fresh verification and qualification, public-contract reproductions, coverage and a fresh-agent exercise walkthrough. |
+| [2026-10-29 Repo-wide review board](2026-10-29-repo-wide-review.html) | Interactive view of the dated review, with filters, sources, evidence limits and recommendations. |

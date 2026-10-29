@@ -4,7 +4,7 @@ Summary: Effect's source is vendored read-only under repos/effect as the referen
 
 Status: Qualified
 
-Date: 2026-09-21. Amended 2026-10-09 (Effect 4.0.2, the subtree moved with the pin). Amended 2026-10-02 (Effect 4.0.0): the subtree follows the
+Date: 2026-09-21. Amended 2026-10-22 (Effect 4.0.5, the subtree moved with the pin). Amended 2026-10-09 (Effect 4.0.2, the subtree moved with the pin). Amended 2026-10-02 (Effect 4.0.0): the subtree follows the
 release tag of the pinned version, not `main`.
 
 Qualifying gate: verify
@@ -25,17 +25,20 @@ TypeScript 7, which this repo dual-pinned in [ADR-0028 TypeScript 7 CLI with Typ
 ## Design
 
 - Vendor Effect v4 source at `repos/effect` with `git subtree`, squashed, at
-  the `Effect-TS/effect` tag of the version pnpm pins (`effect@4.0.2` since 2026-10-09), so the
+  the `Effect-TS/effect` tag of the version pnpm pins (`effect@4.0.5` since 2026-10-22), so the
   reference is the code the apps run. Read-only reference. Application code
   still imports `effect` and `@effect/*` from pnpm. Move both in one change:
   `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git effect@<version> --squash`.
+  The subtree is the whole tag, nothing filtered, nested `.github` included
+  (inert: GitHub reads only the root one); the root `.gitattributes` marks
+  `repos/**` vendored and generated, so pull requests collapse its diff.
 - Pin `@effect/tsgo` exactly. `prepare` runs
   `effect-tsgo patch --typescript --typescript-package @typescript/native`
   so CLI `tsc` (TypeScript 7) emits Effect diagnostics. Do not patch the
   TypeScript 6 API package.
 - `tsconfig.base.json` loads the plugin named `@effect/language-service`
   (the tsgo package still uses that plugin name).
-- Agent extracts live in `.agents/patterns/` and cite `repos/effect`. They
+- Agent extracts live in `.agents/extracts/` and cite `repos/effect`. They
   are not a second copy of docs concept pages ([D30 One source for humans and agents][D30]).
 - Pin `effect-solutions` as a root exact devDependency. Invoke with
   `pnpm exec effect-solutions`. No global install, no home clone.
@@ -93,6 +96,10 @@ rpc, http and cli use and failed typecheck; it is off in `tsconfig.base.json`
 2026-10-09: Effect 4.0.2. `repos/effect` was pulled from the `effect@4.0.2`
 tag in the change after the pins moved; its tree equals the tag's tree
 (`700d799f2`). `@effect/tsgo` stays at 0.47.2 for now (0.51.1 is out).
+
+2026-10-22: Effect 4.0.5. `repos/effect` was pulled from the `effect@4.0.5`
+tag in the change after the pins moved; its tree equals the tag's tree
+(`208c4ac5b`). `@effect/tsgo` stays at 0.47.2 (0.56.0 is out).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

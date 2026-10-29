@@ -20,7 +20,7 @@ backend as a journal (lossy, sampled, non-transactional).
 
 ## Design
 
-One datom log is the single substrate. The engine journal, domain data and sync
+One datom log is the single substrate. The workflow engine journal, domain data and sync
 all use it; tracing is derived from it. Datom = `[e, a, v, tx, op, cs]`. Each
 datom is its own transaction.
 
@@ -34,7 +34,7 @@ Every other SQL table is one of three kinds:
 | --- | --- | --- |
 | The log itself | `datoms`, `changesets` (envelopes) | It is the source |
 | Read models | `projected_facts`, `projection_conflicts`, `changeset_status` | Yes: disposable, never migrated |
-| Operational state of one replica | `hlc_state`, cursors, `outbox`, `sync_cursor` | No, and it holds no domain facts |
+| Operational state of one replica | `hlc_state`, acknowledged cursors, `outbox`, `sync_cursor` | No, and it holds no domain facts |
 
 A fact that fits none of these goes into the log. [P11 Identity][P11] applied this to the
 mapping from identity-provider accounts to people: a separate `people` table
@@ -61,7 +61,7 @@ no-op while a new `tx` is appended.
 ### Expected
 
 One storage format, one sync protocol, one audit trail. Tracing backends are
-viewers, never the store the engine reads from.
+viewers, never the store the workflow engine reads from.
 
 ### Observed
 

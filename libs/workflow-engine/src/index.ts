@@ -6,7 +6,7 @@
  * `src/suites/trace-scenario.ts`, run on each store by the
  * `*.integration.test.ts` files here.
  */
-export { EngineConfig, engineConfigLayer } from './config.ts'
+export { WorkflowEngineConfig, workflowEngineConfigLayer } from './config.ts'
 export {
   armedCrashHook,
   CrashHook,
@@ -14,7 +14,7 @@ export {
   type CrashBoundary,
 } from './crash-hook.ts'
 export { engineLayer, Leases, StaleLease } from './engine.ts'
-export { EngineSweep } from './sweep.ts'
+export { WorkflowEngineSweep } from './sweep.ts'
 export { noopWakeScheduler, WakeScheduler } from './wake.ts'
 export {
   callerContext,

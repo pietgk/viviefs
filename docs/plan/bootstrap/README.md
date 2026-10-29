@@ -10,7 +10,7 @@ concepts used here.
 
 ## Status
 
-- Grilling decisions [D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94] ([D59-D74 Docs and teaching][D59-D74] from the Docs and teaching grilling, 2026-09-29; [D75-D80 Evidence ownership design review][D75-D80] from the Evidence ownership design review, 2026-09-30; [D81 What a lesson is][D81]-[D86 Named, linked references][D86] from the Log-store guide design review and [D87-D91 References, names and the exercise loop][D87-D91] from its second review round, 2026-10-01; [D92-D94 Claims, issues and the glossary][D92-D94] from the third, 2026-10-02) are **accepted as design
+- Grilling decisions [D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94] ([D59-D74 Docs and teaching][D59-D74] from the Docs and teaching grilling, 2026-09-29; [D75-D80 Evidence ownership design review][D75-D80] from the Evidence ownership design review, 2026-09-30; [D81 What a lesson is][D81]-[D86 Named, linked references][D86] from the Log-store guide design review and [D87-D91 References, names and the exercise loop][D87-D91] from its second review round, 2026-10-01; [D92 Issues as records][D92]-[D94][D94] from the third, 2026-10-02) are **accepted as design
   intent** and **unverified** until the named qualification gate passes (see
   [06-qualification-gates.md](06-qualification-gates.md)). Treat each as "proposed, unverified" in ADR terms.
 - Elaborations added while writing these files (gate splits, verify stage names, indicative schema and attribute
@@ -25,7 +25,7 @@ concepts used here.
 | 0 | [00-next-session.md](00-next-session.md) | The prompt and work order for the scaffolding session |
 | 1 | [01-vision-and-scope.md](01-vision-and-scope.md) | Why this repo exists, what is in and out of scope |
 | 2 | [02-decision-log.md](02-decision-log.md) | All decisions ([D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94]) with rationale, grouped by theme |
-| 3 | [03-architecture.md](03-architecture.md) | The technical design: datom log, HLC, changesets, engine, sync, tracing, UI |
+| 3 | [03-architecture.md](03-architecture.md) | The technical design: datom log, HLC, changesets, workflow engine, sync, tracing, UI |
 | 4 | [04-repo-structure.md](04-repo-structure.md) | apps / features / libs / tools, Nx tags and rules, generators |
 | 5 | [05-verify-qualify-teach.md](05-verify-qualify-teach.md) | The validation, qualification and teaching pattern |
 | 6 | [06-qualification-gates.md](06-qualification-gates.md) | The ordered gates (spikes) with pass conditions |
@@ -54,5 +54,5 @@ These are inherited working agreements, not grilling decisions. A reader should 
 [D81]: 02-decision-log.md#d81
 [D86]: 02-decision-log.md#d86
 [D87-D91]: 02-decision-log.md#d87-d91
-[D92-D94]: 02-decision-log.md#d92-d94
+[D92]: 02-decision-log.md#d92
 [D94]: 02-decision-log.md#d94

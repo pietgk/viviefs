@@ -8,22 +8,35 @@
  *   id but is not the catalog name fails the build (D86');
  * - a link whose label is only an id keeps its target and gets the name;
  * - an inline-code repository path becomes a link to its site page or to
- *   GitHub.
+ *   GitHub;
+ * - any other link to a site page carries that page's preview: the kind Page,
+ *   its title and its first sentence (D90').
  *
  * Headings, code and text already inside a link are left alone. An unknown
  * id fails the build, and so does a missing path under a checked root,
  * except in evidence notes and research records, which are kept as written.
+ *
+ * A Mermaid label is prose (D180) but cannot hold a link: the diagram stays
+ * as written, and an unknown id or a missing path in a label fails the build.
+ *
+ * A block quote, or a passage between `<!-- their words: whose -->` and
+ * `<!-- /their words -->`, is in another project's words (D204): no glossary
+ * term, bare id or path in it is resolved, and a link keeps its target. A
+ * reference-style link still resolves. A mark without a name, one inside
+ * another, a stray close and a mark left open fail the build.
  */
 import { relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { findReferenceTokens, type Catalog } from '@viviefs/references'
+import { findReferenceTokens, mermaidLabels, theirWords, type Catalog } from '@viviefs/references'
 import type { HastPluginEntry, MdastPluginEntry } from 'satteri'
+import { withBase } from './repo.ts'
 import {
   codePath,
   DECISION_LOG,
   decisionAnchor,
   findReferences,
   GLOSSARY,
+  GLOSSARY_LABELS,
   glossaryAnchor,
   glossaryTerms,
   lookupReference,
@@ -34,6 +47,7 @@ import {
   type GlossaryTerm,
   type Reference,
 } from './references.ts'
+import { pageAt, sitePages, type SitePage } from './site-pages.ts'
 
 /** Where a glossary term links: its entry on the glossary page. */
 export const GLOSSARY_PAGE = '/reference/glossary/'
@@ -63,12 +77,20 @@ export const previewProperties = (reference: Reference) => ({
   'data-ref-meta': reference.meta,
 })
 
+/** The preview data of a link to a site page (D90'), or undefined for any other link. */
+const pagePreview = (pages: ReadonlyMap<string, SitePage>, url: string) => {
+  const page = pageAt(pages, url)
+  return page === undefined
+    ? undefined
+    : previewProperties({ id: url, kind: 'Page', label: page.title, href: url, summary: page.summary, meta: '' })
+}
+
 /** A glossary term as a reference: its entry, its plain first sentence (D94). */
 export const termReference = (term: GlossaryTerm): Reference => ({
   id: term.term,
   kind: 'Glossary',
   label: term.term,
-  href: `${GLOSSARY_PAGE}#${term.anchor}`,
+  href: `${withBase(GLOSSARY_PAGE)}#${term.anchor}`,
   summary: term.summary,
   meta: '',
 })
@@ -166,12 +188,27 @@ const linkedReference = (label: string, catalog: Catalog, where: string, owned: 
   return reference
 }
 
-/** Whether a text node follows an `_Avoid_` marker in its paragraph. */
-const afterAvoid = (node: unknown, tree: Tree): boolean => {
+type Definition = { readonly type: string; readonly identifier?: string; readonly url?: string; readonly children?: ReadonlyArray<Definition> }
+
+/** The URL of the definition `identifier` names in a tree, or '' where it has none. */
+const definitionUrl = (identifier: string, at: Definition): string =>
+  at.type === 'definition' && at.identifier === identifier
+    ? String(at.url)
+    : ((at.children ?? []).map((child) => definitionUrl(identifier, child)).find((url) => url !== '') ?? '')
+
+/** The root of the tree a node is in: definitions usually close the document, after the link. */
+const rootOf = (node: unknown, tree: Tree): Definition => {
+  let root = node
+  for (let parent = tree.parent(root as never); parent !== undefined; parent = tree.parent(parent as never)) root = parent
+  return root as Definition
+}
+
+/** Whether a text node follows a `_Not_` or `_Avoid_` label in its paragraph (D174). */
+const afterOtherSense = (node: unknown, tree: Tree): boolean => {
   const parent = tree.parent(node as never) as Phrasing | undefined
   const index = tree.indexOf(node as never)
   if (parent?.children === undefined || index === undefined) return false
-  return parent.children.slice(0, index).some((child) => child.type === 'emphasis' && textOf(child) === 'Avoid')
+  return parent.children.slice(0, index).some((child) => child.type === 'emphasis' && ['Not', 'Avoid'].includes(textOf(child)))
 }
 
 /** The term a glossary entry paragraph defines (`**Term**:`), or null for other text. */
@@ -190,15 +227,38 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
     const repositoryPath = relative(repositoryRoot, sourceFile).split('\\').join('/')
     const index = referenceIndex(repositoryRoot)
     const catalog = referenceCatalog(repositoryRoot)
+    const pages = sitePages(repositoryRoot)
     const isDecisionLog = repositoryPath === DECISION_LOG
     const isGlossary = repositoryPath === GLOSSARY
     const find = termFinder(glossaryTerms(repositoryRoot))
     // One set per page; on the glossary page, one per entry (D94).
     const pageTerms: TermLinking = { find, linked: new Set() }
     const entryTerms = new Map<string, TermLinking>()
+    // Visitors run in document order, so the marks read so far say whether a node is inside one.
+    const marks = theirWords()
+    const readMarker = (comment: string) => {
+      const problem = marks.read(comment)
+      if (problem !== undefined) throw new Error(`${repositoryPath}: ${problem}`)
+    }
+    const inTheirWords = (node: unknown, tree: Tree): boolean =>
+      marks.inside() || ancestorsOf(node, tree).some(({ type }) => type === 'blockquote')
     return {
       name: 'viviefs-reference-links',
+      html(node) {
+        readMarker(node.value)
+      },
+      mdxFlowExpression(node) {
+        readMarker(node.value)
+      },
+      mdxTextExpression(node) {
+        readMarker(node.value)
+      },
+      after() {
+        const problem = marks.end()
+        if (problem !== undefined) throw new Error(`${repositoryPath}: ${problem}`)
+      },
       text(node, context) {
+        if (inTheirWords(node, context)) return
         for (const { type, index } of ancestorsOf(node, context)) {
           if (['heading', 'link', 'linkReference', 'definition'].includes(type)) return
           // The id column of the decision log is the anchor, not a reference.
@@ -206,8 +266,8 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           // A glossary entry's own term, in bold, is what is being defined.
           if (isGlossary && type === 'strong') return
         }
-        // A glossary entry's Avoid list names words that are not the term.
-        if (isGlossary && afterAvoid(node, context)) return
+        // A glossary entry's Not and Avoid lines name other senses and other words.
+        if (isGlossary && afterOtherSense(node, context)) return
         let terms = pageTerms
         if (isGlossary) {
           let paragraph: { readonly type: string } | undefined = context.parent(node)
@@ -222,16 +282,46 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
         if (parts !== null) context.replaceNode(node, [...parts])
       },
       link(node, context) {
+        if (inTheirWords(node, context)) return
         const reference = linkedReference(textOf(node), catalog, repositoryPath, false)
-        if (reference === undefined) return
-        context.replaceNode(node, referenceLink(reference, reference.label))
+        if (reference !== undefined) {
+          context.replaceNode(node, referenceLink(reference, reference.label))
+          return
+        }
+        const preview = pagePreview(pages, node.url)
+        if (preview === undefined) return
+        context.replaceNode(node, { ...node, data: { hProperties: preview } })
       },
       linkReference(node, context) {
         const reference = linkedReference(textOf(node), catalog, repositoryPath, true)
-        if (reference === undefined) return
-        context.replaceNode(node, referenceLink(reference, reference.label))
+        if (reference !== undefined) {
+          context.replaceNode(node, referenceLink(reference, reference.label))
+          return
+        }
+        // The converter resolves the link's target and title; the preview needs only the page.
+        const preview = pagePreview(pages, definitionUrl(node.identifier, rootOf(node, context)))
+        if (preview === undefined) return
+        context.replaceNode(node, { ...node, data: { hProperties: preview } })
+      },
+      code(node, context) {
+        if (node.lang !== 'mermaid' || inTheirWords(node, context)) return
+        for (const { text } of mermaidLabels(node.value)) {
+          for (const { id } of findReferences(text)) {
+            if (!index.has(id)) {
+              throw new Error(`${repositoryPath}: "${id}" in a diagram label is not a known gate, ADR, decision or issue (D180).`)
+            }
+          }
+          if (KEPT_AS_WRITTEN.test(repositoryPath)) continue
+          for (const word of text.split(/[\s,;:()"'`]+/)) {
+            const path = codePath(repositoryRoot, word.replace(/[.?!]+$/, ''))
+            if (path._tag === 'Missing') {
+              throw new Error(`${repositoryPath}: "${path.path}" in a diagram label names a repository path that does not exist (D180).`)
+            }
+          }
+        }
       },
       inlineCode(node, context) {
+        if (inTheirWords(node, context)) return
         if (ancestorsOf(node, context).some(({ type }) => ['heading', 'link', 'linkReference'].includes(type))) return
         const path = codePath(repositoryRoot, node.value)
         if (path._tag === 'NotAPath') return
@@ -239,20 +329,27 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           if (KEPT_AS_WRITTEN.test(repositoryPath)) return
           throw new Error(`${repositoryPath}: \`${path.path}\` names a repository path that does not exist (D87).`)
         }
+        const preview = pagePreview(pages, path.href)
         context.replaceNode(node, {
           type: 'link',
           url: path.href,
           title: null,
           children: [{ type: 'inlineCode', value: node.value }],
+          ...(preview === undefined ? {} : { data: { hProperties: preview } }),
         })
       },
     }
   }
 }
 
-/** Gives each glossary entry its anchor (`#guide-template`, D94). */
+/**
+ * Gives each glossary entry its anchor (`#guide-template`, D94), and puts its
+ * hover line, its precise part and each `_Like_`, `_Not_` and `_Avoid_` line
+ * on lines of their own (D94', D174).
+ */
 export const glossaryAnchors = (): HastPluginEntry => ({ fileURL }) => {
   if (!fileURL || !fileURLToPath(fileURL).endsWith(`/${GLOSSARY}`)) return null
+  const lineBreak = () => ({ type: 'element' as const, tagName: 'br', properties: {}, children: [] })
   return {
     name: 'viviefs-glossary-anchors',
     element: {
@@ -262,6 +359,25 @@ export const glossaryAnchors = (): HastPluginEntry => ({ fileURL }) => {
         if (first?.type !== 'element' || first.tagName !== 'strong') return
         if (second?.type !== 'text' || !second.value.startsWith(':')) return
         context.setProperty(node, 'id', glossaryAnchor(context.textContent(first)))
+        const children = node.children.slice(1)
+        for (const [index, child] of children.entries()) {
+          const before = children[index - 1]
+          const startsLine = before?.type === 'text' && before.value.endsWith('\n')
+          if (startsLine && child.type === 'element' && child.tagName === 'em' && GLOSSARY_LABELS.some((label) => label === context.textContent(child))) {
+            context.insertBefore(child, lineBreak())
+          }
+        }
+        // The hover line is the entry's first line: it ends at the line break after the one that follows `:`.
+        const from = (child: (typeof children)[number]) => (child === second ? second.value.indexOf('\n') + 1 : 0)
+        const ending = children.find((child) => child.type === 'text' && child.value.indexOf('\n', from(child)) >= 0)
+        if (ending?.type !== 'text') return
+        const at = ending.value.indexOf('\n', from(ending))
+        const rest = ending.value.slice(at + 1)
+        const next = children[children.indexOf(ending) + 1]
+        const labelNext = next?.type === 'element' && next.tagName === 'em' && GLOSSARY_LABELS.some((label) => label === context.textContent(next))
+        // A label on the next line already starts a line of its own.
+        if (rest === '' && labelNext) return
+        context.replaceNode(ending, [{ type: 'text', value: ending.value.slice(0, at) }, lineBreak(), { type: 'text', value: `\n${rest}` }])
       },
     },
   }

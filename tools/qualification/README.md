@@ -29,8 +29,8 @@ and PGlite; memory-engine durability positive control; pinned
 `viviefs/workflow/*`, `viviefs/activity/exit`, `viviefs/deferred/exit`,
 `viviefs/clock/wake-at` and `viviefs/lease/holder`). P07 is implemented
 (device force-quit mid-upload and mid-wait on iOS simulator and Android
-emulator; launch `EngineSweep` resumes; without sweep the workflow stays
-parked; motel `p07.park` / `p07.resume`; `expo-notifications` 58.0.3).
+emulator; launch `WorkflowEngineSweep` resumes; without sweep the workflow stays
+parked; motel `p07.park` / `p07.resume`; `expo-notifications` 58.1.6).
 P08 is implemented (IntentComposer three ways: effect-machine is the copy
 target, XState v5 + `fromPromise` and Effect + Atom stay retained probes;
 generated mermaid checked by unit test; broken Confirm positive control).
@@ -113,6 +113,26 @@ Learned in P11 and in the sequential runs since (2026-09-28 to 2026-10-01).
 - **Chrome on the emulator**: first-run screens, and web accessibility switched
   off after a quiet spell. `prepareAndroidChrome()` in `devices.ts` sets test
   flags (debug app plus `/data/local/tmp/chrome-command-line`).
+- **"the login page did not show: " with an empty tree** (P11 on iOS, 2 of 4
+  sequential runs on 2026-10-22, agent-device 0.21.6): every snapshot of
+  Keycloak's sheet failed with "regular iOS snapshot presentation requires a
+  valid viewport". The driver drops agent-device's error; the request logs in
+  `~/.agent-device/sessions/*/requests/` keep it. Moved to agent-device
+  0.21.30, which reads the viewport after entering tree capture
+  (callstack/agent-device#2938). After moving agent-device, stop its daemon
+  (`agent-device daemon stop`) so the new version serves.
+- **agent-device replay daemons**: without `--state-dir`, `replay` runs on
+  a private daemon of its own. `open` and `close` do not reach it, so on iOS
+  the replay has no app session and fails at its first step, and a replay
+  whose script leaves its session active (every P07 flow) keeps that daemon.
+  Until 2026-10-24 each P07 run left two (the Android replays), each holding
+  a device claim, and its iOS flows never ran
+  ([I79](../../docs/issues/0079-p07-leaves-agent-device-replay-daemons-running.md)).
+  P07 now runs `open`, `replay` and `close` on one state directory of its own
+  and stops that daemon (`daemon stop --state-dir`) after it; a stop that
+  fails fails the probe and keeps the directory. Count daemons with
+  `pgrep -fl 'agent-device.*internal/daemon.js'`; besides the default daemon
+  there should be none.
 - **A new development build** greets its first launch with a sheet
   ("Continue") that opens the developer menu; the runner dismisses both.
 - **P07's notification tap** misses on iOS and Android; the relaunch fallback

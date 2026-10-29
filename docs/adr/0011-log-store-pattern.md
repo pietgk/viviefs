@@ -1,6 +1,6 @@
 # ADR-0011: Log store pattern, read models, compaction and analytics
 
-Summary: One LogStore contract over SQL, many stores, one conformance suite; read models are disposable and the log of the `node` holding authority is never compacted.
+Summary: One LogStore contract over SQL, many stores, one conformance suite; read models are disposable and the log of the sync node holding authority is never compacted.
 
 Status: Qualified
 
@@ -14,7 +14,7 @@ Related: [D37 Log store tables][D37], [D44 Never rename, never migrate][D44], [D
 ## Problem
 
 Device SQLite, Node SQLite and server Postgres must obey one contract, or every
-projector and the engine forks. Read-model migrations on an append-only log
+projector and the workflow engine forks. Read-model migrations on an append-only log
 fight [D44 Never rename, never migrate][D44]. Analytics on the durable log would couple query shape to durability.
 
 ## Design
@@ -38,8 +38,8 @@ refuses unknown attributes with a typed upgrade error.
 Snapshots and compaction only past a horizon every device has acknowledged.
 Finished workflow journals archive to the server.
 
-The log of the `node` holding authority, today the server, is never compacted
-([P11 Identity][P11] grilling, 2026-09-27; worded for any `node` by [D119 Time corrected by authority][D119], 2026-10-08). It is the
+The log of the sync node holding authority, today the server, is never compacted
+([P11 Identity][P11] grilling, 2026-09-27; worded for any sync node by [D119 Time corrected by authority][D119], 2026-10-08). It is the
 audit trail, and a future hash chain over accepted changesets must be able to
 cover all of it. This holds until tamper-evidence is decided, before the first
 consumer app that makes audit claims ([ADR-0022](0022-identity-and-organization-isolation.md)).
@@ -102,7 +102,7 @@ the same five stores. Evidence:
 must see facts before they go: a device, or a trace sink registered as
 `trace/<sink>` in `device_cursors` (name unchanged). `compact()` reports
 `heldBy`, the consumer that sets the horizon, so a sink that stays down is
-named instead of losing spans. `acknowledged(consumer)` reads a cursor back,
+named instead of losing spans. `acknowledged(consumer)` reads an acknowledged cursor back,
 and `streamFrom(cursor, limit)` bounds a read. The [P04 Log store conformance][P04] checks "cursor
 streaming" and "compaction horizon" assert both; [P04][P04] re-runs at foundation
 closure.

@@ -2,9 +2,9 @@
 
 Rules for the three actors. This area keeps living pages and dated snapshots.
 It keeps no glossary and no grill log of its own
-([D136 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d136)). Answers from a grill session are rows
+([D215 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d215)). Answers from a grill session are rows
 in the [decision log](../../plan/bootstrap/02-decision-log.md)
-([D135 Grill outcomes in the decision log](../../plan/bootstrap/02-decision-log.md#d135)). An ADR follows only when
+([D214 Grill outcomes in the decision log](../../plan/bootstrap/02-decision-log.md#d214)). An ADR follows only when
 the decision is architectural.
 
 A guide's claim comes from a gate
@@ -27,7 +27,7 @@ The Research bot adds a snapshot and appends a finding.
 - Leave every dated record outside this area unchanged.
 - Leave prices and benchmark scores in the snapshot. The area map links to
   the newest snapshot and does not copy the numbers
-  ([D134 Numbers stay in snapshots](../../plan/bootstrap/02-decision-log.md#d134)).
+  ([D213 Numbers stay in snapshots](../../plan/bootstrap/02-decision-log.md#d213)).
 
 Copy an evidence label from the snapshot. `verified` means the snapshot's
 author read the repo, the doc, or the paper. `release` means a lab or
@@ -35,7 +35,7 @@ several consistent official-looking sources. `X chatter` means posts, not
 checked further. `our experiment` means a result this area produced.
 `unlabelled` means the snapshot stated it and gave it no mark. Whether
 `release` and `unlabelled` stay is open in
-[I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md). A later session may downgrade a
+[I102 XDevl grill: open questions](../../issues/0102-xdevl-grill-open-questions.md). A later session may downgrade a
 label. It records that as a decision-log row.
 
 ## Grill session

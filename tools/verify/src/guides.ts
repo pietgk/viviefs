@@ -64,8 +64,8 @@ const gateNameProblems = (repository: GuidesRepository): string[] => {
   ])
 }
 
-/** ADRs accepted directly, without a guide (D65). */
-const ACCEPTED_DIRECTLY = ['0001', '0002']
+/** Intent records, accepted directly without a guide (D65'). */
+const ACCEPTED_DIRECTLY = ['0001', '0002', '0032']
 
 const LESSON_FILE = /^lessons\/(\d\d)-[a-z0-9-]+\.mdx$/
 const EXERCISE_FOLDER = /^(\d\d)\.(\d\d)-[a-z0-9-]+$/

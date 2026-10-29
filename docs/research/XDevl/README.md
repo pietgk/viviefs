@@ -3,13 +3,13 @@
 Area map for how Piet, XDevl and the Research bot develop software by giving
 the human, the LLM and the system each the work it is strongest at.
 
-This directory is an area ([D136 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d136)). It holds
+This directory is an area ([D215 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d215)). It holds
 living pages and dated snapshots. Decisions live in the
 [decision log](../../plan/bootstrap/02-decision-log.md). Vocabulary lives in
 the [repository glossary](../../../GLOSSARY.md). The first grill session, on
-2026-10-21, is [D130 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d130) through
-[D136 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d136). Questions still open are
-[I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md).
+2026-10-21, is [D209 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d209) through
+[D215 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d215). Questions still open are
+[I102 XDevl grill: open questions](../../issues/0102-xdevl-grill-open-questions.md).
 
 A snapshot stays as written. A guide's claim comes from a gate
 ([ADR-0026 Verify - Qualify - Teach](../../adr/0026-verify-qualify-teach.md),
@@ -20,9 +20,9 @@ System.
 ## Knowledge layers
 
 Distance from the model's working context is the main axis
-([D130 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d130)). The README opens here, and every
+([D209 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d209)). The README opens here, and every
 practice and every finding carries a layer tag
-([D131 Layers as the backbone](../../plan/bootstrap/02-decision-log.md#d131)).
+([D210 Layers as the backbone](../../plan/bootstrap/02-decision-log.md#d210)).
 
 ```mermaid
 flowchart LR
@@ -50,7 +50,7 @@ freshness, trust, and who writes it.
 A knowledge layer is where knowledge sits. A lens describes it. A practice
 improves a layer or moves knowledge between layers. A finding is evidence in
 the [inbox](insights.md) that a practice works, and it becomes a practice
-once grilled and tested ([D132 Layers, lenses, practices, findings](../../plan/bootstrap/02-decision-log.md#d132)).
+once grilled and tested ([D211 Layers, lenses, practices, findings](../../plan/bootstrap/02-decision-log.md#d211)).
 
 ```mermaid
 flowchart LR
@@ -63,10 +63,10 @@ flowchart LR
 ## Practices
 
 C1-C4 are in the core. C5-C7 are parked until this repository tries them
-([D133 First core practices](../../plan/bootstrap/02-decision-log.md#d133)). The sentences are the ones drafted
+([D212 First core practices](../../plan/bootstrap/02-decision-log.md#d212)). The sentences are the ones drafted
 before the session. The session's shorter labels named other subjects, so
 each practice is tagged from its sentence. Prices and benchmark scores stay
-in the snapshots ([D134 Numbers stay in snapshots](../../plan/bootstrap/02-decision-log.md#d134)). The newest
+in the snapshots ([D213 Numbers stay in snapshots](../../plan/bootstrap/02-decision-log.md#d213)). The newest
 snapshot is
 [2026-10-09, glossary-defined English](snapshots/2026-10-09-glossary-defined-english.md).
 
@@ -163,8 +163,8 @@ Evidence label: unlabelled candidate ([N08](insights.md#n08),
 ## Where to read next
 
 - [Repository glossary](../../../GLOSSARY.md)
-- [Decision log, D130-D136](../../plan/bootstrap/02-decision-log.md#d130-d136)
-- [I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md)
+- [Decision log, D209-D215](../../plan/bootstrap/02-decision-log.md#d209-d215)
+- [I102 XDevl grill: open questions](../../issues/0102-xdevl-grill-open-questions.md)
 - [Insights](insights.md)
 - [How to maintain](HOW-TO-MAINTAIN.md)
 - [Concept map](concept-map.html)

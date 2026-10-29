@@ -75,7 +75,10 @@ uninterruptible run, so the handling stays; only where it is tested changes.
 green on the arm64 sandbox. The first candidate above was tried and dropped:
 a self-suspending workflow never reaches the branch.
 
+2026-10-22: Back on Effect 4.0.5, in a second place. Once a repeated deferred completion stopped waking the run (the replay loop on PGlite, see [ADR-0003 Effect v4 as the backbone][ADR-0003]), `resume`'s early return for a run that already has its result (and the stored-result decode before it) was reached only when a queued wake happened to land after the run finished: 2 of 6 integration runs missed it. `engine.integration.test.ts` now reaches it on purpose: a finished run is completed again and resumed, and its body must not run again (it fails if `resume` replays a finished run). `engine.ts`'s uncovered set was identical in 8 of 8 integration runs after that.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0003]: ../adr/0003-effect-v4-as-backbone.md
 [I72]: 0072-verify-baseline-fails-in-a-fresh-worktree.md
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06

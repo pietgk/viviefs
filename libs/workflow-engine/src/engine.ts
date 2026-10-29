@@ -28,8 +28,8 @@ import {
 } from '@viviefs/datom'
 import { awaitedExit } from './awaited.ts'
 import { CrashHook } from './crash-hook.ts'
-import { EngineConfig } from './config.ts'
-import { EngineSweep } from './sweep.ts'
+import { WorkflowEngineConfig } from './config.ts'
+import { WorkflowEngineSweep } from './sweep.ts'
 import {
   callerContext,
   durableContext,
@@ -114,14 +114,14 @@ const sleepUntil = (wakeAtMs: number) =>
   )
 
 export const engineLayer: Layer.Layer<
-  WorkflowEngine.WorkflowEngine | Leases | EngineSweep,
+  WorkflowEngine.WorkflowEngine | Leases | WorkflowEngineSweep,
   never,
-  LogStore | HlcDevice | EngineConfig | CrashHook | WakeScheduler
+  LogStore | HlcDevice | WorkflowEngineConfig | CrashHook | WakeScheduler
 > = Layer.effectContext(
   Effect.gen(function* () {
     const store = yield* LogStore
     const device = yield* HlcDevice
-    const config = yield* EngineConfig
+    const config = yield* WorkflowEngineConfig
     const hook = yield* CrashHook
     const scheduler = yield* WakeScheduler
     const scope = yield* Effect.scope
@@ -157,9 +157,9 @@ export const engineLayer: Layer.Layer<
 
     /**
      * Causing span (D58): each envelope names the span that caused the
-     * write. Facts the engine writes on its own carry the durable span of
+     * write. Facts the workflow engine writes on its own carry the durable span of
      * their entity. Facts an outside caller asked for (start, lease grant
-     * and handoff, deferred completion) carry the caller's live span when
+     * and handoff, durable deferred completion) carry the caller's live span when
      * there is one; the trace projector turns it into a link.
      */
     const durable = (exec: string, entity: string) =>
@@ -288,7 +288,7 @@ export const engineLayer: Layer.Layer<
       )
     }
 
-    const completeDeferred = (
+    const completeDurableDeferred = (
       options: {
         readonly workflowName: string
         readonly executionId: string
@@ -305,20 +305,23 @@ export const engineLayer: Layer.Layer<
           options.deferredName,
         )
         const rows = yield* rowsOf(options.executionId)
-        const exists = rows.some(
-          (row) => row.e === entity && row.a === Attr.deferredExit,
-        )
-        if (!exists) {
-          yield* appendFact(
-            options.executionId,
-            entity,
-            Attr.deferredExit,
-            encodeExit(options.exit),
-            origin === 'caller'
-              ? yield* caller(options.executionId, entity)
-              : origin,
-          )
+        // A durable deferred completes once. A repeat (a clock re-fired on replay,
+        // a caller retrying) must not wake the run: the wake preempts a
+        // replay that has already read the stored exit, and it replays
+        // into the same repeat forever. A run whose wake was lost to a
+        // crash is resumed by the launch sweep.
+        if (rows.some((row) => row.e === entity && row.a === Attr.deferredExit)) {
+          return
         }
+        yield* appendFact(
+          options.executionId,
+          entity,
+          Attr.deferredExit,
+          encodeExit(options.exit),
+          origin === 'caller'
+            ? yield* caller(options.executionId, entity)
+            : origin,
+        )
         const wake = deferredState
           .deferredDone(options.executionId, options.deferredName)
           .pipe(Effect.andThen(resume(options.executionId)), Effect.orDie)
@@ -345,7 +348,7 @@ export const engineLayer: Layer.Layer<
         `${exec}/${clock.name}`,
         sleepUntil(clock.wakeAtMs).pipe(
           Effect.andThen(
-            completeDeferred(
+            completeDurableDeferred(
               {
                 workflowName: workflow._tag,
                 executionId: exec,
@@ -429,7 +432,7 @@ export const engineLayer: Layer.Layer<
       const instance = WorkflowEngine.WorkflowInstance.initial(
         entry.workflow,
         exec,
-        state?.instance.scope,
+        { scope: state?.instance.scope },
       )
       if (state?.interrupted) instance.interrupted = true
       state = {
@@ -441,7 +444,7 @@ export const engineLayer: Layer.Layer<
       runs.set(exec, state)
       // Workflow bodies emit no live spans: a replay re-runs the body, so
       // they would duplicate on every resume (Effect's own activity and
-      // deferred spans have random ids). The trace projector derives
+      // durable deferred spans have random ids). The trace projector derives
       // durable spans from the journal instead. Activity bodies turn live
       // tracing back on under their durable span (see activityExecute).
       state.fiber = yield* entry
@@ -649,7 +652,7 @@ export const engineLayer: Layer.Layer<
         readonly executionId: string
         readonly deferredName: string
         readonly exit: Exit.Exit<unknown, unknown>
-      }) => die(completeDeferred(options, 'caller')),
+      }) => die(completeDurableDeferred(options, 'caller')),
       scheduleClock: (
         workflow: Workflow.Any,
         options: {
@@ -756,8 +759,8 @@ export const engineLayer: Layer.Layer<
     return Context.make(WorkflowEngine.WorkflowEngine, engine).pipe(
       Context.add(Leases, leases),
       Context.add(
-        EngineSweep,
-        EngineSweep.of({
+        WorkflowEngineSweep,
+        WorkflowEngineSweep.of({
           pending,
           sweep,
         }),

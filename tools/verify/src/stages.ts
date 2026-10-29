@@ -206,6 +206,17 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'docs-e2e',
+        blurb: 'the built docs site in a browser: every link in a page\'s text shows its preview card',
+        invocations: [
+          {
+            command: 'pnpm',
+            args: ['exec', 'vitest', 'run', '--config', 'vitest.e2e.config.ts'],
+            cwd: resolve(ROOT, 'apps/docs'),
+          },
+        ],
+      },
+      {
         name: 'diagrams',
         blurb: 'every Mermaid edge in Markdown and MDX survives rendering',
         invocations: [
@@ -242,8 +253,48 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'glossary',
+        blurb: "the glossary's size and any term no living document uses, reported, never failing",
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-glossary.ts'],
+          },
+        ],
+      },
+      {
+        name: 'retired-words',
+        blurb: 'a word the glossary retired in code font appears only in another project\'s words',
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-retired-words.ts'],
+          },
+        ],
+      },
+      {
+        name: 'identifiers',
+        blurb: 'a metadata key, pnpm script, verify step or viviefs/ name a document or diagram names exists',
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-named-identifiers.ts'],
+          },
+        ],
+      },
+      {
+        name: 'research-index',
+        blurb: 'every research record is named by its date and listed in the research index',
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-research-index.ts'],
+          },
+        ],
+      },
+      {
         name: 'evidence',
-        blurb: 'coverage, suites and stories of this run hold against the registry and the lockfile',
+        blurb: 'coverage, suites and stories of this run hold against the evidence registry and the evidence lockfile',
         invocations: [
           {
             command: 'node',

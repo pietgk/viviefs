@@ -8,7 +8,7 @@
  * - `activity/exit` ends an activity attempt span, started by
  *   `activity/started`. Attempt n links attempt n - 1.
  * - `deferred/exit` fired by a clock ends the clock span, started by
- *   `clock/wake-at`. Any other `deferred/exit` is a zero-length deferred
+ *   `clock/wake-at`. Any other `deferred/exit` is a zero-length durable deferred
  *   span: nothing journals when the body started waiting.
  * - Lease holder facts are events on the workflow span.
  *

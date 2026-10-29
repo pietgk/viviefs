@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I54: Trust, encryption and who may sign in (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.6rem; overflow-x: auto; line-height: 1.45; white-space: pre; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-table-wrap td:first-child code.cr-inline, .cr-table-wrap td:first-child > b { white-space: nowrap; overflow-wrap: normal; }
+  .cr-table-wrap td:first-child { overflow-wrap: normal; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .cr-figure { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; }
+  .cr-svg { display: block; width: 100%; height: auto; color: var(--color-base-content); }
+  .cr-svg text { fill: currentColor; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13px; }
+  .cr-svg .lane { stroke: currentColor; stroke-opacity: 0.3; stroke-dasharray: 4 4; }
+  .cr-svg .box { fill: var(--color-base-300); stroke: currentColor; stroke-opacity: 0.45; }
+  .cr-svg .msg { stroke: currentColor; stroke-width: 1.4; fill: none; }
+  .cr-svg .reply { stroke-dasharray: 6 4; }
+  .cr-svg .msg-warn { stroke: var(--color-warning); }
+  .cr-svg .note { fill: var(--color-base-100); stroke: var(--color-info); stroke-opacity: 0.7; }
+  .cr-svg .note-warn { stroke: var(--color-warning); }
+  .cr-svg .note-ok { stroke: var(--color-success); }
+  .cr-svg .note-bad { stroke: var(--color-error); }
+  .cr-svg .region { fill: none; stroke-opacity: 0.6; stroke-dasharray: 3 3; }
+  .cr-svg .region-ok { stroke: var(--color-success); }
+  .cr-svg .region-bad { stroke: var(--color-error); }
+  .cr-svg .node { fill: var(--color-base-300); stroke: currentColor; stroke-opacity: 0.6; }
+  .cr-svg .node-ok { fill: var(--color-base-300); stroke: var(--color-success); stroke-width: 2; }
+  .cr-svg .node-bad { fill: var(--color-base-300); stroke: var(--color-error); stroke-width: 2; stroke-dasharray: 5 3; }
+  .cr-svg .node-warn { fill: var(--color-base-300); stroke: var(--color-warning); stroke-width: 2; }
+  .cr-svg .edge { stroke: currentColor; stroke-opacity: 0.7; stroke-width: 1.4; fill: none; }
+  .cr-svg .edge-ok { stroke: var(--color-success); stroke-width: 1.6; fill: none; }
+  .cr-svg .edge-bad { stroke: var(--color-error); stroke-width: 1.6; stroke-dasharray: 5 3; fill: none; }
+  .cr-svg .edge-warn { stroke: var(--color-warning); stroke-width: 1.6; fill: none; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I54</span>
+    <span class="badge badge-outline">2026-10-26 and 27, round 2</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Trust, encryption and who may sign in</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0054-trust-encryption-and-who-may-sign-in.md">I54 Trust, encryption and who may sign in</a> asks whether encryption in ViViEfs serves access and consent, as vivief's <code class="cr-inline">Trust Contract</code> does, or only erasure and data at rest; whether access is part of each read or a check around sync and commands; and, with the rows moved here from map 6, how people sign in, what an organization and its membership are, what a device is, whether a key authenticates a device apart from membership, and whether stored history can be shown untouched. It settles 11 rows of <a class="cr-link" href="2026-10-06-vivief-inventory.html">the vivief inventory</a> (10 of its own and <code class="cr-inline">vivief:peer-validation-as-contract</code>, handed over by <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d146">D146 One checkpoint enforces trust</a>), decides the access pattern <a class="cr-link" href="2026-10-09-access-from-membership-to-enterprise.md">I70's research</a> prepared, answers whether an agent may have its own identity (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d141">D141 The actor is the accountable identity</a>), and reviews <a class="cr-link" href="../issues/0010-encryption-at-rest-per-app.md">I10</a>, <a class="cr-link" href="../issues/0015-identity-keys-and-trust.md">I15</a>, <a class="cr-link" href="../issues/0016-roles-and-self-service-membership.md">I16</a>, <a class="cr-link" href="../issues/0017-local-deletion-after-revoked-membership.md">I17</a> and <a class="cr-link" href="../issues/0018-identity-provider-migration.md">I18</a>. Effect's <code class="cr-inline">eventlog</code> is read first (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135 Effect's names first</a>).</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in five lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li><b>vivief makes a key the access check</b>: who may read a value is who can derive its key, and consent is a datom whose revocation rotates a key. That works for one counselor with a passphrase. In an organization whose authority must read values to accept a change, it cannot: a rule cannot check what its checker cannot read (vivief's own "trust over structure"), and a rotated key does not recall what was already read.</li>
+      <li><b>Proposal: encryption serves erasure and data at rest only; access is a decision</b>, made on authority at two points, accept (what may be written) and sync's filter (what a replica receives), and run early on the device for feedback. Effect's <code class="cr-inline">EventLog</code> has the same two points (<code class="cr-inline">authorizeWrite</code>, <code class="cr-inline">authorizeRead</code>); its encryption is for a server that may not read one owner's log, a different problem.</li>
+      <li><b>Access becomes a pattern</b> with today's code as its reference implementation (membership, server-only attributes, a command's declared writes), I70's AuthZEN-shaped request (a changeset is a batch, one evaluation per touched entity), a position the decision read, and "an error denies". Roles, relations and Cedar are later implementations, each triggered by an app.</li>
+      <li><b>An agent may get its own identity</b>, an agent account that signs in, holds a membership and is refused what a person may do; built when an app runs an agent that writes on its own.</li>
+      <li><b>Keys wait for proof</b>: tamper-evidence first as a hash chain with device-held checkpoints, signed changesets and device keys only when an app needs proof against the operator or a <code class="cr-inline">node</code> accepts from a peer. Six findings, one of them that the lease fence trusts a device id nobody authenticates.</li>
+    </ol>
+  </div></div>
+  <nav class="flex flex-wrap gap-2 text-sm">
+    <a class="badge badge-ghost" href="#vivief">1. vivief</a>
+    <a class="badge badge-ghost" href="#effect">2. Effect</a>
+    <a class="badge badge-ghost" href="#ours">3. Ours as built</a>
+    <a class="badge badge-ghost" href="#examples">4. Worked examples</a>
+    <a class="badge badge-ghost" href="#findings">5. Findings</a>
+    <a class="badge badge-ghost" href="#access">6. The access contract</a>
+    <a class="badge badge-ghost" href="#rows">7. The 11 rows</a>
+    <a class="badge badge-ghost" href="#issues">8. The deferred issues</a>
+    <a class="badge badge-ghost" href="#round1">9. Round 1</a>
+    <a class="badge badge-ghost" href="#levels">10. Encryption levels</a>
+    <a class="badge badge-ghost" href="#chain">11. The chain</a>
+    <a class="badge badge-ghost" href="#signing">12. Signing</a>
+    <a class="badge badge-ghost" href="#identity">13. Identity</a>
+    <a class="badge badge-ghost" href="#round2">14. Round 2</a>
+    <a class="badge badge-ghost" href="#writeup">15. Write-up</a>
+  </nav>
+</header>
+
+<section id="answered1" class="space-y-4">
+  <h2 class="text-2xl font-bold">Round 1, answered (2026-10-27)</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Q</th><th>The human's answer</th><th>Where it goes</th></tr></thead>
+    <tbody>
+      <tr><td>Q1</td><td>Can encryption be defined as A, with something like an aperture: name our reference implementation and the other levels, kept open for an app that needs one, almost a pattern? Challenge the idea.</td><td>Section 10, round 2 Q10</td></tr>
+      <tr><td>Q2</td><td>Agree: access is checked around sync and commands.</td><td>settled</td></tr>
+      <tr><td>Q3</td><td>Agree: access is a pattern; possibly supports encryption as a pattern.</td><td>settled; section 10</td></tr>
+      <tr><td>Q4</td><td>A: agent accounts, deferred, assuming an audit trail shows who gave an agent its identity.</td><td>Section 13 (F7), round 2 Q14</td></tr>
+      <tr><td>Q5</td><td>B: build the hash chain now. A reference example should have it, changing later costs more, and the effort is small now. Challenge if needed.</td><td>Section 11, round 2 Q11</td></tr>
+      <tr><td>Q6</td><td>What is the real impact of B? Could an app choose A or B?</td><td>Section 12, round 2 Q12</td></tr>
+      <tr><td>Q7</td><td>Agree.</td><td>settled</td></tr>
+      <tr><td>Q8</td><td>Can identity have one description that also fits Effect's <code class="cr-inline">Identity</code>, as entity did (D137)? A more elegant, robust definition for a reference implementation.</td><td>Section 13, round 2 Q13</td></tr>
+      <tr><td>Q9</td><td>Not answered.</td><td>round 2 Q15</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+
+<section id="vivief" class="space-y-5">
+  <h2 class="text-2xl font-bold">1. vivief's trust in one page</h2>
+  <p class="cr-src">Sources (vivief at <code class="cr-inline">3071cb2</code>): <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> §2.2 Projection, §2.4 Contract ("Trust Contract", "Trust over structure"); <code class="cr-inline">docs/contract/counseling/platform-v2.md</code> §2.4 Projection Encryption, §6.4 encrypted value design, §12 (4, 5, 8); <code class="cr-inline">docs/contract/adr/0047-datom-store-sync.md</code> §9 Identity; <code class="cr-inline">docs/contract/datom/architecture.md</code> §11.4 Keypair and Device Linking; <code class="cr-inline">docs/contract/vivief-concepts-impl-kb.md</code> §2.3 P2P &amp; Replication.</p>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Access lives in the Projection</h3>
+      <p class="text-sm">A Projection carries <code class="cr-inline">capability: CapabilityToken</code>, <code class="cr-inline">scope: "own" | "consented" | "all"</code> and <code class="cr-inline">decryptionKey?: DerivedKey</code> beside its query. "A capability scope IS a Projection": "client Maria can read her own data" is a filter on <code class="cr-inline">client:42</code> plus Maria's decryption key. "The same query engine that renders Surfaces also enforces access control."</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">The Trust Contract</h3>
+<pre class="cr-code">derivation:
+  "passphrase → PBKDF2 → HKDF per-entity"
+roles: {
+  owner:      { derives: "all" }
+  scopedUser: { derives: "own-entity-only" }
+  ai:         { derives: "consented-only",
+                constraint: "read + draft-write" }
+  system:     { derives: "none",
+                sees: "metadata only" }
+}
+consent: {
+  grant:  "datom assertion with why-chain"
+  revoke: "retraction → key rotation effect"
+}</pre>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Selective value encryption</h3>
+      <p class="text-sm">"Only the Value field of sensitive datoms is encrypted. Entity, Attribute, Tx, and Op remain cleartext so the system can route, index, and query without decryption." AES-256-GCM in <code class="cr-inline">v_bytes</code>, key <code class="cr-inline">HKDF(client_key, "attr:" + attribute)</code>. "No key database, no key server. Keys exist only in memory during a session." Search over sealed values is an in-memory index decrypted at login. Consent scopes (ai-analysis, transcription, portal-access, data-sharing, supervisor-review) bind the AI's key: "revocation changes the key". GDPR is met "architecturally", with "legal review still recommended".</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Two identity layers, and peers</h3>
+      <p class="text-sm">A keypair (Noise Ed25519, later Iroh) "IS the peer identity" and authenticates a peer; Trust and Projection Contracts authorize: "these are separate concerns and must not be conflated". A new device is linked from a primary one by a QR code; the native client asserts <code class="cr-inline">identity/device</code> with the new public key, and the server matches handshake keys against those datoms. "Peers are remote actors governed by the same Contracts as local actors": "Peer validation = Contract enforcement on incoming datoms".</p>
+    </div></div>
+  </div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Who vivief was designing for</h3>
+    <p class="text-sm">One counselor, her clients, an AI and a system process. The counselor holds the master key, "she just remembers her passphrase", and the system only routes. There is no organization of many members and no authority that must read a value to accept a change. And its crypto-shredding meets a key that comes back: the counselor's passphrase derives every key again at every sign-in. That is the reading to keep in mind for section 4, examples (b) and (c).</p>
+  </div></div>
+</section>
+
+<section id="effect" class="space-y-5">
+  <h2 class="text-2xl font-bold">2. Effect's <code class="cr-inline">eventlog</code>: identity, encryption, authorization</h2>
+  <p class="cr-src">Sources: <code class="cr-inline">repos/effect/packages/effect/src/eventlog/</code> at Effect 4.0.5: <code class="cr-inline">EventLog.ts</code> (<code class="cr-inline">Identity</code>:189), <code class="cr-inline">EventLogEncryption.ts</code>, <code class="cr-inline">EventLogSessionAuth.ts</code>, <code class="cr-inline">EventLogServerEncrypted.ts</code>, <code class="cr-inline">EventLogServerUnencrypted.ts</code> (<code class="cr-inline">EventLogServerAuthorization</code>:294); <code class="cr-inline">Crypto.ts</code>.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Effect</th><th>What it is</th><th>Against ours</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">EventLog.Identity</code></td><td>A service of <code class="cr-inline">{ publicKey, privateKey: Redacted }</code>, an Ed25519 seed from which signing and encryption keys are derived. Encoded as one string (<code class="cr-inline">encodeIdentityString</code>) that a person copies to each of their devices.</td><td>A key, not a person. Ours roots identity in a provider account the server maps to a person. Same word, different thing: a clash for map 3 (Q8).</td></tr>
+      <tr><td><code class="cr-inline">EventLogSessionAuth</code></td><td>Challenge-response: a peer proves it holds a session signing key (Ed25519) bound to its identity's public key before it sends traffic.</td><td>Our front door is bearer authentication with an OIDC access token. A device key, if I15 adds one, would be this shape.</td></tr>
+      <tr><td><code class="cr-inline">EventLogEncryption</code>, <code class="cr-inline">EventLogServerEncrypted</code></td><td>Each journal entry encrypted whole (AES-GCM) with a key derived from the identity, so "a remote synchronization endpoint that never sees plaintext events" stores entries "keyed by client public key and store id".</td><td>Encryption so the server cannot read one owner's log. Our authority must read values to accept a change, and an organization has many members. Not adopted; it is the shape of an end-to-end option, deferred in Q1.</td></tr>
+      <tr><td><code class="cr-inline">EventLogServerAuthorization</code></td><td><code class="cr-inline">authorizeWrite({ publicKey, storeId, entries })</code>, <code class="cr-inline">authorizeRead({ publicKey, storeId })</code>, <code class="cr-inline">authorizeIdentity({ publicKey })</code>, failing <code class="cr-inline">Unauthorized</code> or <code class="cr-inline">Forbidden</code>.</td><td>The same two enforcement points as ours: a write is judged with its entries before it is stored, a read per store before changes stream. Ours names the action (the command) and decides per entity (section 6).</td></tr>
+      <tr><td><code class="cr-inline">Crypto</code></td><td>Random bytes, UUIDs and SHA digests, per platform.</td><td>What a hash chain (Q5) would use. No signing or symmetric encryption in it; <code class="cr-inline">EventLogEncryption</code> calls WebCrypto directly.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm">Reading: Effect separates the same things vivief does (a key authenticates, a service authorizes), and puts authorization at write and at read, as ours does. It never makes a key decide who may read inside a shared store: its encrypted server serves one identity's own entries.</p>
+</section>
+
+<section id="ours" class="space-y-5">
+  <h2 class="text-2xl font-bold">3. Ours as built</h2>
+  <p class="cr-src">Sources: <a class="cr-link" href="../../libs/sync/server/src/server.ts"><code class="cr-inline">libs/sync/server/src/server.ts</code></a> (<code class="cr-inline">accept</code>:440, actor :460, server-only :514, lease :555-600, <code class="cr-inline">requireMembership</code>:652); <a class="cr-link" href="../../libs/identity/src/oidc.ts"><code class="cr-inline">libs/identity/src/oidc.ts</code></a> (roles :29-36, :70); <a class="cr-link" href="../../libs/datom/src/catalog.ts"><code class="cr-inline">libs/datom/src/catalog.ts</code></a>; <a class="cr-link" href="../../libs/crypto-shred/src/index.ts"><code class="cr-inline">libs/crypto-shred/src/index.ts</code></a>; <a class="cr-link" href="../adr/0022-identity-and-organization-isolation.md">ADR-0022</a> (Qualified, P11), <a class="cr-link" href="../adr/0023-data-at-rest-and-crypto-shredding.md">ADR-0023</a> (Proposed, unverified, P15 and P16), <a class="cr-link" href="../adr/0035-accepting-a-change.md">ADR-0035</a>, <a class="cr-link" href="../adr/0036-the-journal-is-the-fence.md">ADR-0036</a>.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Part</th><th>As built</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td><b>Sign-in</b></td><td>OIDC with PKCE on iOS, Android and web; the server verifies the token locally against the provider's JWKS and maps <code class="cr-inline">(iss, sub)</code> to a person through the account entity <code class="cr-inline">A{sha256(iss, sub)}</code> under a server-only root. A fake issuer signs real tokens for tests.</td><td>qualified, P11</td></tr>
+      <tr><td><b>Caller</b></td><td><code class="cr-inline">{ person, account, roles }</code>. The roles are Keycloak's <code class="cr-inline">realm_access.roles</code>, the same in every organization; other providers give none. Carried, not enforced.</td><td>built, unused</td></tr>
+      <tr><td><b>Membership</b></td><td><code class="cr-inline">O{org}/M{person}</code>, <code class="cr-inline">viviefs/membership/granted</code>, written only by the operator's <code class="cr-inline">grant</code> and <code class="cr-inline">revoke</code>; read on every <code class="cr-inline">Append</code>, <code class="cr-inline">Pull</code>, <code class="cr-inline">PutBlob</code> and <code class="cr-inline">CompleteDeferred</code>, so revocation is immediate with a token still valid.</td><td>qualified, P11</td></tr>
+      <tr><td><b>Accept, in order</b></td><td>membership (<code class="cr-inline">MembershipMissing</code>); then actor is the caller (<code class="cr-inline">ActorMismatch</code>), manifest, no server-only attribute (<code class="cr-inline">ServerOnlyAttribute</code>), organization, catalog, files, lease, write-once. A command's declared writes are decided (D127) and built with I69.</td><td>qualified, P11; I69 in phase 3</td></tr>
+      <tr><td><b>Sync's filter</b></td><td><code class="cr-inline">Pull</code> checks membership, then sends every changeset with a datom under <code class="cr-inline">O{org}/</code>, whole. A replica holds the whole organization.</td><td>qualified, P09, P11</td></tr>
+      <tr><td><b>Device</b></td><td>Its id is chosen by itself, never authenticated; it is in the HLC fingerprint, the envelope and the lease. One local replica per provider account.</td><td>qualified, P11 (as a stated limitation)</td></tr>
+      <tr><td><b>Data at rest</b></td><td>OS file protection. SQLCipher is an opt-in per app (D50, I10).</td><td>proposed, P15 not run</td></tr>
+      <tr><td><b>Erasure</b></td><td>Personal attributes encrypted per subject, the subject the person, erasure destroys the key (D51). No attribute is marked personal in the catalog, and <code class="cr-inline">@viviefs/crypto-shred</code> is a named slot that exports nothing.</td><td>proposed, P16 not run</td></tr>
+      <tr><td><b>Stored history</b></td><td>Trusted, not provable, against an operator or a database administrator. Until tamper-evidence is decided the server log is never compacted.</td><td>a stated absence</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="examples" class="space-y-6">
+  <h2 class="text-2xl font-bold">4. Worked examples</h2>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">(a) Where access is checked, on today's evidence app</h3>
+    <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant C as Command on P42's phone
+  participant P as Presenter on P42's phone
+  participant R as P42's local replica
+  participant A as Authority, accept
+  participant L as Log
+  participant F as Authority, sync filter
+  Note over C: early access decision, advice only
+  C->>A: Append from the outbox
+  Note over A: 1 may this writer do this<br/>2 is it well formed<br/>3 does the data stay valid
+  A->>L: accepted
+  R->>F: Pull from its cursor
+  Note over F: may this replica receive it
+  F-->>R: only what P42 may see
+  P->>R: reads with no access rule
+    </pre></div>
+    <p class="text-sm">The two enforcement points are accept and sync's filter; both run on authority. The phone runs the same decision early so a refused rename shows at once, but authority decides again (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>). A Presenter on the phone reads its replica with no access rule, because the replica only ever received what P42 may see (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d107">D107 The Presenter pattern</a>). vivief's Projection would carry a capability token into every read instead.</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">(b) Why a key cannot be the access check here</h3>
+    <p class="text-sm">Suppose <code class="cr-inline">evidence/list/title</code> were sealed as vivief seals a session recap, and only members holding the list key could derive it. P42 renames <code class="cr-inline">O1/L1</code> to a blank title from a modified client, skipping <code class="cr-inline">renameList</code>'s check.</p>
+<pre class="cr-code">datom  { e: "O1/L1", a: "evidence/list/title", v: &lt;ciphertext&gt;, op: "assert" }
+accept: membership ok, actor ok, catalog ok
+        acceptance rule "a title is not blank" (D125, I69): cannot read v
+        → accepts, or rejects every sealed value it cannot read</pre>
+    <p class="text-sm">vivief states it itself: "When a Trust Contract restricts access to something a Schema Contract requires, the Trust Contract wins." For a counselor who is their own authority that is fine. For an organization it means authority can only check that a sealed value is present and well shaped. Revoking P42 by rotating the key also leaves every title P42 already decrypted on P42's phone: "previously disclosed plaintext cannot be recalled" (<a class="cr-link" href="2026-09-30-communication-architecture.md">communication architecture</a> §5). A decision on authority stops the next pull at once, which P11 shows.</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">(c) A derived key cannot be destroyed</h3>
+<pre class="cr-code">vivief:  client_key(42) = HKDF(PBKDF2(passphrase), "client:42")
+         erase client 42 → forget the key → next login derives it again
+ours:    subject_key(P7) = 32 random bytes, kept where P16 decides
+         erase P7 → destroy every copy → ciphertext unreadable for good</pre>
+    <p class="text-sm">Crypto-shredding needs a key that exists only as stored bytes, so destroying them is final. A key derived from a passphrase, or from any secret that outlives the subject, comes back. vivief's "no key database, no key server" and its crypto-shredding cannot both hold unless a random salt per subject is stored and destroyed, which is a key database again. So the derivation part of <code class="cr-inline">vivief:selective-value-encryption</code> is rejected, and its value-only shape is what D51 already has.</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">(d) An agent three ways</h3>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Where the agent writes</th><th><code class="cr-inline">actor</code></th><th><code class="cr-inline">origin</code></th><th>What access can refuse the agent</th></tr></thead>
+      <tbody>
+        <tr><td>In P42's session, on P42's phone (a chat that edits lists)</td><td>P42</td><td>the model</td><td>Nothing P42 may do. Trust on the origin keeps the content out of a gated commit until a person reviews it (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d117">D117 Trust strategies as commit paths</a>).</td></tr>
+        <tr><td>Inside a server workflow (an enriching activity)</td><td><code class="cr-inline">server</code></td><td>the model</td><td>Only what its command may write (declared writes, D127). The server may write server-only attributes, so a guardrail cannot tell this agent from the operator.</td></tr>
+        <tr><td>With its own agent account (a nightly triage agent that files findings)</td><td>agent <code class="cr-inline">G3</code></td><td>the model</td><td>Anything a guardrail denies agents: granting membership, committing on the gated path, writing as a reviewer. Its membership and roles are its own, revoked like a person's.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm">The first two are today's rule (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d141">D141</a>). The third is the question D141 handed here (Q4): it gives an agent that acts on its own an accountable identity that is neither a person nor the operator, so an access decision can read "this is an agent" as a fact about the identity, not from the envelope.</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">(e) An operator rewrites history</h3>
+    <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant P as Phone of P42
+  participant S as Server
+  participant D as Database administrator
+  P->>S: Pull
+  S-->>P: changesets up to seq 120, chain head h120
+  Note over P: keeps h120 as its checkpoint
+  D->>S: UPDATE a datom at seq 87
+  P->>S: Pull from seq 120
+  S-->>P: seq 121 names h120' as the head before it
+  Note over P: h120' differs from h120, history before 120 changed
+    </pre></div>
+    <p class="text-sm">Today nothing notices: the phone already holds seq 87 and never sees it again, and a new phone receives the edited value as if it were always there. A hash chain over accepted changesets, each naming the head before it, hashed over stored ciphertext (so erasure does not break it, ADR-0023), lets any device that kept a head catch a rewrite. It does not show who wrote a changeset, only that accepted history did not change after a device saw it. Showing who wrote what needs signatures (Q6).</p>
+  </div></div>
+
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">(f) A device that names another device</h3>
+<pre class="cr-code">lease of O1/W9 held by { device: "phone-A", epoch: 3 }
+phone-B (another member) appends journal facts with
+  envelope.device = "phone-A", leaseEpoch = 3
+accept :596  epoch === 3 and envelope.device === "phone-A"  → accepted</pre>
+    <p class="text-sm">The fence compares a label the device chooses. It exposes nothing new, because any member may already take a run by raising the epoch (ADR-0022 Known limitations), but it means the device id is trusted in exactly one place. Under <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d14p">D14' The journal is the fence</a> the holder is whoever wrote the run's head, so the fence needs no device id, and after <a class="cr-link" href="../issues/0080-build-the-journal-fence.md">I80</a> nothing trusts it. F1.</p>
+  </div></div>
+</section>
+
+<section id="findings" class="space-y-4">
+  <h2 class="text-2xl font-bold">5. Findings</h2>
+  <div class="space-y-3">
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-4 text-sm"><b>F1. The lease fence trusts an unauthenticated device id.</b> <code class="cr-inline">server.ts</code>:577 and :596 compare <code class="cr-inline">envelope.device</code> with the stored holder. Not a new exposure (any member can take a run), but the one place a self-chosen id decides anything. Proposed: a comment on <a class="cr-link" href="../issues/0080-build-the-journal-fence.md">I80 Build the journal fence</a> that the fence reads the chain, never <code class="cr-inline">envelope.device</code>, and that P06 and P09 include a forged device id.</div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-4 text-sm"><b>F2. The roles in <code class="cr-inline">Caller</code> are not per organization.</b> They are Keycloak's realm roles (<code class="cr-inline">oidc.ts</code>:29-36, :70), the same in every organization and absent with other providers (found by I70). They cannot be the roles of I16. Proposed: roles are per-organization facts (Q3, item 11); <code class="cr-inline">Caller.roles</code> leaves when roles are built.</div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-4 text-sm"><b>F3. No attribute is personal yet.</b> The catalog has no personal flag and <code class="cr-inline">@viviefs/crypto-shred</code> exports nothing. So nothing in the evidence app is erasable, which is right for a lab app and must not be assumed by a consumer app before P16. Where subject keys live and whether a device holds them is P16's design, not settled anywhere.</div></div>
+    <div class="card bg-base-200"><div class="card-body p-4 text-sm"><b>F4. "Who may take a lease" is answered.</b> I15 and ADR-0022 list it as unspecified. ADR-0036 (D14') answers it: a takeover is always allowed on the head, and who runs a run is policy (the holder resumes, another device continues when a person asks, a server runner after the step's timeout). Proposed: I15 drops it.</div></div>
+    <div class="card bg-base-200"><div class="card-body p-4 text-sm"><b>F5. The append and revoke race is already being closed.</b> I70's question 17: <a class="cr-link" href="../issues/0071-an-append-can-land-after-a-revocation.md">I71</a> reproduced it and is in phase 3, before I80. Zanzibar tolerates the same window; ours closes it because check and append become one step (ADR-0036). Nothing to decide but to confirm.</div></div>
+    <div class="card bg-base-200"><div class="card-body p-4 text-sm"><b>F6. Effect's <code class="cr-inline">Identity</code> is a key.</b> The glossary keeps "identity" as the name of the pattern only (P11's pass); Effect uses it for a keypair; D141 says "accountable identity" for the actor. Three uses. Proposed: record the clash for map 3 with I78's list (Q8).</div></div>
+  </div>
+</section>
+
+<section id="access" class="space-y-5">
+  <h2 class="text-2xl font-bold">6. The access contract, I70's questions answered</h2>
+  <p class="text-sm">I70's research proposed the smallest contract Cedar still fits, with today's code as its reference implementation. Its 17 questions, each with a proposed answer. Q3 asks for the whole table at once; an item you disagree with goes in its notes.</p>
+<pre class="cr-code">// One question, asked by accept (writes) and by sync's filter (what a replica receives).
+decide(
+  evaluations: NonEmptyArray&lt;{
+    subject:  { type: string; id: string }   // the actor: a person, the server, later an agent
+    action:   { name: string }                // the registered command, or sync.pull
+    resource: { type: string; id: string }   // one entity, or the organization for sync
+    context:  Record&lt;string, Json&gt;           // organization, device, origin, the writes
+  }&gt;,
+  at: Position,                              // the state the decision read: the cursor today
+): Allow | Deny&lt;{ index: number; reason: AccessReason }&gt;
+// AND over the evaluations; an evaluation error is a Deny.</pre>
+  <p class="text-sm">On example (a): P42's rename is one evaluation, <code class="cr-inline">{ person P42, evidence.renameList, list O1/L1, writes [evidence/list, evidence/list/title] }</code> at cursor 1207. The reference implementation has four rules: a non-member is denied everything; a device writer is denied a server-only attribute; a write outside the command's declared writes is denied; a member may read the whole organization.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>#</th><th>I70's question</th><th>Proposed answer</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>A pattern with a reference implementation and a conformance table? Which gate?</td><td>Yes. The pattern <b>access</b>; its reference implementation is today's code; the conformance table is a suite (<code class="cr-inline">access/decisions</code>) every implementation runs for the steps it claims. Qualified by P11 again, built in phase 3 right after I69, which builds the declared writes it checks (a new issue).</td></tr>
+      <tr><td>2</td><td>AuthZEN-shaped, a changeset a batch with AND?</td><td>Yes: subject, action, resource, context; one evaluation per touched entity, deny on first deny. No changeset-level resource: it would lose per-entity rules, which are the point of relations and Cedar.</td></tr>
+      <tr><td>3</td><td>A position <code class="cr-inline">at</code>?</td><td>Yes: the cursor today; a holder epoch with its sequence when authority moves; a frontier when it is shared (I60). In the contract now so it never has to be added.</td></tr>
+      <tr><td>4</td><td>Does an error deny?</td><td>Yes, in the contract. Every adapter enforces it (Cedar skips an erroring policy, so its adapter checks for errors).</td></tr>
+      <tr><td>5</td><td>Which state does a write check read?</td><td>The state at <code class="cr-inline">at</code>, before the changeset, with the changeset's own writes in each evaluation's context. "The approver is not the author" reads the author from the state, or from the writes when the same changeset sets it.</td></tr>
+      <tr><td>6</td><td>Membership: access or structure?</td><td>Access, the reference's first rule. D124 already says so.</td></tr>
+      <tr><td>7</td><td>Declared writes: access or structure?</td><td>Access, as guardrails no grant overrides, with server-only attributes beside them: both say what an action may never write (IAM's boundary).</td></tr>
+      <tr><td>8</td><td>The reason vocabulary?</td><td>A closed set owned by the contract: <code class="cr-inline">MembershipMissing</code>, <code class="cr-inline">ServerOnlyAttribute</code>, <code class="cr-inline">UnknownCommand</code>, <code class="cr-inline">WriteOutsideCommand</code>, <code class="cr-inline">Forbidden</code> (a rule denied, with the rule's name). An implementation maps its own reasons (a Cedar policy id) to one tag with detail; <code class="cr-inline">Rejection</code> stays typed.</td></tr>
+      <tr><td>9</td><td>Search in the contract?</td><td>An optional capability, not in the smallest contract. First needed by partial sync (I12), not by a screen.</td></tr>
+      <tr><td>10</td><td>A read scope for partial sync?</td><td>I12's, at its trigger. Direction kept: a read scope is a strict-composition subtree, and accept refuses a changeset that spans two.</td></tr>
+      <tr><td>11</td><td>Roles per organization?</td><td>Yes: role facts per person (or agent) per organization beside membership, at I16's trigger. The identity provider's realm roles are not used for access (F2).</td></tr>
+      <tr><td>12</td><td>Relations as datoms, rewrites as code?</td><td>Yes: relation facts in the organization's log; the rewrites are code beside the catalog, as acceptance rules are (D118, D125).</td></tr>
+      <tr><td>13</td><td>Cedar policies with the release?</td><td>Yes, analysable in CI with D118 intact. Policies an organization changes without a release are deferred; they would reopen D118 and D129.</td></tr>
+      <tr><td>14</td><td>Must every implementation run on the phones?</td><td>No. A higher step may run on authority only, and the device's early check then answers "unknown" (SpiceDB's conditional result). Cedar on Hermes needs a probe before Cedar is an implementation.</td></tr>
+      <tr><td>15</td><td>"Who can do X" as a proof?</td><td>SymCC in verify comes with the Cedar step. Before it, "who can approve I7 today" is a read-model query an app builds when an auditor asks.</td></tr>
+      <tr><td>16</td><td>A revocation concurrent with a write under shared authority?</td><td>I60's. The contract leaves room through <code class="cr-inline">at</code>.</td></tr>
+      <tr><td>17</td><td>Close the append and revoke race?</td><td>Yes, as I71 already does in phase 3 (F5).</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm"><b>The ladder</b>, each step triggered by an app, never by size: 1 code (today), 2 roles (a command some members may run and others may not, I16), 3 relations as datoms (permission per entity, or partial sync by permission, I12), 4 Cedar policies (conditions and guardrails hard to read in code, an auditor, or a proof). Membership and the guardrails stay at every step.</p>
+</section>
+
+<section id="rows" class="space-y-4">
+  <h2 class="text-2xl font-bold">7. The 11 rows, proposed dispositions</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>Proposed</th><th>From</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:trust-contract</code></td><td><b>keep ours</b>: encryption serves erasure and data at rest, never access. Its roles become access implementations (step 2); its AI role becomes an agent's membership and guardrails; consent is an app's facts an access decision reads; key rotation on revocation is not adopted.</td><td>Q1, Q3, Q4</td></tr>
+      <tr><td><code class="cr-inline">vivief:projection-access</code></td><td><b>keep ours</b>: access is decided at accept and at sync's filter, on authority, not in each read; a Presenter carries no access rule (D107). Reopens only if partial sync lets a replica hold what its reader may not see.</td><td>Q2</td></tr>
+      <tr><td><code class="cr-inline">vivief:selective-value-encryption</code></td><td><b>keep ours</b>: value-only encryption is D51's shape already, for erasure; personal attributes are marked in the catalog (code), not by schema datoms; passphrase-derived keys rejected (example c); search over sealed values is the blind index (D122, deferred) or a read model on a <code class="cr-inline">node</code> that holds keys (D112).</td><td>Q1</td></tr>
+      <tr><td><code class="cr-inline">viviefs:crypto-shredding</code></td><td><b>stands</b> (P16), with two inputs for P16: a subject key is random bytes, never derived; where keys live and whether a device holds them is P16's design (F3).</td><td>Q1</td></tr>
+      <tr><td><code class="cr-inline">viviefs:data-at-rest</code></td><td><b>stands</b> (P15, I10 per app).</td><td>-</td></tr>
+      <tr><td><code class="cr-inline">viviefs:identity-pattern</code></td><td><b>stands</b> (P11). Effect's <code class="cr-inline">Identity</code> clash recorded for map 3 (F6).</td><td>Q8</td></tr>
+      <tr><td><code class="cr-inline">viviefs:organization-isolation-and-membership</code></td><td><b>keep ours</b> (P11), read now as the access pattern's reference implementation: membership is its first rule, server-only attributes a guardrail.</td><td>Q3</td></tr>
+      <tr><td><code class="cr-inline">viviefs:device-and-local-replica</code></td><td><b>stands</b>: a device's id stays its own label, trusted by nothing once I80 lands (F1); every device signs in on its own.</td><td>Q6</td></tr>
+      <tr><td><code class="cr-inline">vivief:transport-identity-apart-from-authorization</code></td><td><b>adopt</b> the principle: person identity, device signing keys, transport keys and the provider-account mapping stay distinct, and a key never authorizes. Device keys and links <b>deferred</b> to I15.</td><td>Q6</td></tr>
+      <tr><td><code class="cr-inline">viviefs:tamper-evidence</code></td><td><b>keep ours</b> (a stated absence) until I15's trigger, with its direction set: a hash chain with device-held checkpoints first.</td><td>Q5</td></tr>
+      <tr><td><code class="cr-inline">vivief:peer-validation-as-contract</code></td><td><b>defer</b> to I15 with I60: a <code class="cr-inline">node</code> accepting from a peer runs the same checkpoint (D146), and checks the writer's signature once changesets are signed.</td><td>Q6</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="issues" class="space-y-4">
+  <h2 class="text-2xl font-bold">8. The deferred issues, reviewed</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Issue</th><th>Trigger today</th><th>Proposed comment</th></tr></thead>
+    <tbody>
+      <tr><td><a class="cr-link" href="../issues/0010-encryption-at-rest-per-app.md">I10</a> Encryption at rest per app</td><td>an app that holds sensitive data</td><td>Confirmed. Encryption at rest is about a lost device, not access (Q1).</td></tr>
+      <tr><td><a class="cr-link" href="../issues/0015-identity-keys-and-trust.md">I15</a> Identity, keys and trust</td><td>the first app that makes audit claims, with P16</td><td>Confirmed and narrowed: tamper-evidence first as a hash chain (Q5); signed changesets, device keys and peer validation only for proof against the operator or with I60 (Q6); "who may take a lease" is answered by D14' (F4).</td></tr>
+      <tr><td><a class="cr-link" href="../issues/0016-roles-and-self-service-membership.md">I16</a> Roles, invitations, self-service</td><td>the first app that needs a role</td><td>Confirmed: roles are step 2 of the access pattern, per-organization facts beside membership, not the provider's realm roles (F2); an agent account holds roles like a person (Q4); who may set an origin's trust level comes with the first role (D116).</td></tr>
+      <tr><td><a class="cr-link" href="../issues/0017-local-deletion-after-revoked-membership.md">I17</a> Local deletion after revocation</td><td>with P16</td><td>Confirmed, narrowed by Q7: deletion is a courtesy an app may turn on, never security; a revoked person's own quarantined content stays theirs to discard.</td></tr>
+      <tr><td><a class="cr-link" href="../issues/0018-identity-provider-migration.md">I18</a> Identity provider migration</td><td>a consumer changes provider</td><td>Confirmed. Relinking is one datom on the account entity, for an agent account too.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="round1" class="space-y-5">
+  <h2 class="text-2xl font-bold">9. Questions, round 1 (answered above; Q1, Q5, Q6 and Q8 again in sections 10-13)</h2>
+  <p class="text-sm">Each question is answerable now: none waits on another in this round. The recommended answer is checked.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 what encryption is for')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q1. What is encryption for in ViViEfs?</h3>
+      <p class="text-sm">Section 1, examples (b) and (c). Rows <code class="cr-inline">vivief:trust-contract</code>, <code class="cr-inline">vivief:selective-value-encryption</code>, <code class="cr-inline">viviefs:crypto-shredding</code>, <code class="cr-inline">viviefs:data-at-rest</code>.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: erasure and data at rest only; access is a decision, never a key; value-only encryption for personal attributes marked in the catalog; random subject keys, never derived; consent is app data an access decision reads; end-to-end encryption deferred, Decide when: an app must keep content from the operator" checked><span><b>A (recommended).</b> Erasure and data at rest only. Access is a decision, never a key. Personal attributes are encrypted value-only (D51's shape), marked in the catalog; a subject key is random, never derived from a passphrase. Consent, where an app needs it, is that app's facts an access decision reads. End-to-end encryption, where the operator may not read some content, is deferred: <code class="cr-inline">Decide when:</code> an app must keep content from the operator (it then meets example (b), and goes with I60).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: adopt vivief's model: per-role keys decide who may read sealed values, consent revocation rotates keys"><span><b>B.</b> Adopt vivief's model: per-role keys decide who may read sealed values, and revoking consent rotates a key. Authority can then check only presence and shape of a sealed value, and a revocation does not recall what was read.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 where access is checked')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q2. Is access part of each read, or a check around sync and commands?</h3>
+      <p class="text-sm">Example (a). Row <code class="cr-inline">vivief:projection-access</code>. I49 already chose the second for Presenters (D107); this confirms it as the rule.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: around sync and commands: two enforcement points on authority, accept and sync's filter; the device runs the same decision early as advice; no read carries an access rule; reopens only if a replica may hold what its reader may not see" checked><span><b>A (recommended).</b> Around sync and commands. Two enforcement points, both on authority: accept (what may be written) and sync's filter (what a replica receives). The device runs the same decision early as advice. No read carries an access rule. Reopens only if partial sync lets a replica hold data its reader may not see (I12).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: in each read, as vivief's Projection capability"><span><b>B.</b> In each read, a capability on every Presenter request, as vivief's Projection. Every read path then needs the rule, and a replica still holds the data it is not shown.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 access as a pattern')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q3. Is access a pattern, with I70's contract as answered in section 6?</h3>
+      <p class="text-sm">Section 6. Row <code class="cr-inline">viviefs:organization-isolation-and-membership</code>. Name any item of the 17 you would change in the notes.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: yes, the pattern access with today's code as reference implementation and section 6's 17 answers; an ADR; a new issue builds the reference implementation and the access/decisions suite after I69, P11 qualified again" checked><span><b>A (recommended).</b> Yes: the pattern <b>access</b>, today's code its reference implementation, with section 6's 17 answers. An ADR records it. A new issue in phase 3, right after I69, builds the contract and the <code class="cr-inline">access/decisions</code> suite; P11 is qualified again.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: yes, but without the position at until I60"><span><b>B.</b> Yes, but leave the position <code class="cr-inline">at</code> out until I60. Simpler today; adding it later changes every implementation's signature.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="C: not a pattern yet: keep the checks as code in accept and decide at I16's trigger"><span><b>C.</b> Not yet: keep the checks as code in accept and decide the pattern at I16's trigger, when roles arrive.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes (items to change)"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q4" onsubmit="crQueue(event, 'q4', 'Q4 an agent identity')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q4. May an agent have its own identity?</h3>
+      <p class="text-sm">Example (d). Handed over by D141.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q4" value="A: yes, as an agent account, built later: it signs in as a service account at the identity provider, the server maps it to an agent (not a person), it holds a membership and roles, it is the actor of what it writes on its own, and its kind is a fact access reads so guardrails can refuse an agent what a person may do; Decide when: an app runs an agent that writes on its own outside a person's session and a server workflow" checked><span><b>A (recommended).</b> Yes, as an <b>agent account</b>, built later. It signs in as a service account at the identity provider; the server maps it to an agent, not a person; it holds a membership and roles of its own and is the actor of what it writes on its own. Its kind is a fact the access decision reads, so a guardrail can refuse an agent what a person may do (grant membership, commit on the gated path). Until then D141's rule stands. <code class="cr-inline">Decide when:</code> an app runs an agent that writes on its own, outside a person's session and outside a server workflow.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="B: never: an agent always acts as a person or the server"><span><b>B.</b> Never: an agent always acts for a person or for the server, so a person or the operator is always accountable. An autonomous agent then writes as <code class="cr-inline">server</code>, and no guardrail can tell it from the operator.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="C: yes, and build it in phase 3"><span><b>C.</b> Yes, and build agent accounts in phase 3, before any app needs them.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q5" onsubmit="crQueue(event, 'q5', 'Q5 tamper-evidence')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q5. What does tamper-evidence become, and when?</h3>
+      <p class="text-sm">Example (e). Row <code class="cr-inline">viviefs:tamper-evidence</code>.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q5" value="A: a stated absence until I15's trigger, with the direction set: a hash chain over accepted changesets, each naming the head before it, over stored ciphertext; devices keep the head they pulled as a checkpoint and compare; signatures are a separate later step; the server log stays uncompacted until then" checked><span><b>A (recommended).</b> A stated absence until I15's trigger (the first app that makes audit claims), with the direction set: a hash chain over accepted changesets, each naming the head before it, over stored ciphertext; every device keeps the head it pulled as a checkpoint and compares. Signatures are a separate step (Q6). The server log stays uncompacted until then.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="B: build the hash chain now, in phase 3"><span><b>B.</b> Build the hash chain now, in phase 3. Cheap while the log is small, and it lets compaction be designed; no app asks for it yet.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="C: defer with no direction"><span><b>C.</b> Defer with no direction, leaving the design to I15.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q6" onsubmit="crQueue(event, 'q6', 'Q6 device keys and signed changesets')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q6. Device keys, signed changesets and peer validation?</h3>
+      <p class="text-sm">Example (f), F1. Rows <code class="cr-inline">vivief:transport-identity-apart-from-authorization</code>, <code class="cr-inline">viviefs:device-and-local-replica</code>, <code class="cr-inline">vivief:peer-validation-as-contract</code>.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q6" value="A: adopt vivief's principle that person identity, device signing keys, transport keys and the provider-account mapping stay distinct and a key never authorizes; every device signs in through OIDC on its own, no device vouches for another while there is an identity provider; signed changesets (a device key bound to the person, signing the authored content apart from the acceptance receipt) deferred to I15, Decide when: an app needs proof against the operator of who wrote what, or a node accepts from a peer (I60); peer validation then is the same checkpoint plus the signature check" checked><span><b>A (recommended).</b> Adopt vivief's principle: person identity, device signing keys, transport keys and the provider-account mapping stay distinct, and a key never authorizes. Every device signs in through OIDC on its own; no device vouches for another while there is an identity provider (vivief's device link stays possible for I60). Signed changesets, a device key bound to the person signing the authored content apart from the server's acceptance receipt, are deferred to I15: <code class="cr-inline">Decide when:</code> an app needs proof against the operator of who wrote what, or a <code class="cr-inline">node</code> accepts from a peer (I60). Peer validation is then the same checkpoint plus the signature check.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="B: device keys and signed changesets now, so history is signed from the first app"><span><b>B.</b> Device keys and signed changesets now, so every changeset is signed from the first app. Adds key storage, rotation and loss on every platform before anything checks a signature (D105 (5) already keeps the envelope open for it).</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q7" onsubmit="crQueue(event, 'q7', 'Q7 the device after revocation')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q7. What does a device keep after its person's membership is revoked?</h3>
+      <p class="text-sm">I17, and D148's handover: quarantined content rejected with <code class="cr-inline">MembershipMissing</code> cannot be kept as new in that organization.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q7" value="A: as today, the organization's copy read-only; deletion is a courtesy an app may turn on, never security; the revoked person's quarantined content stays until they discard it or remove the account; I17 stays with P16" checked><span><b>A (recommended).</b> As today: the organization's copy stays read-only. Deleting it is a courtesy an app may turn on, never security (a modified client keeps what it received). The revoked person's quarantined content stays until they discard it or remove the account. I17 stays deferred with P16.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="B: delete the organization's copy on revocation, after quarantined content is resolved"><span><b>B.</b> Delete the organization's copy on revocation, once the person has resolved their quarantined content. Decided now for every app.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q8" onsubmit="crQueue(event, 'q8', 'Q8 names')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q8. Which words?</h3>
+      <p class="text-sm">F6, D135. The words this ticket would add, checked against Effect.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q8" value="A: glossary entries now for Access decision (always two words; Decision clashes with the decision log and Effect ai/Decision) and Agent account; identity stays the pattern's name, Effect's Identity (a keypair) recorded as a clash for map 3 with I78's list; Access pattern named access" checked><span><b>A (recommended).</b> Glossary entries now for <b>Access decision</b> (always the two words: "decision" alone clashes with the decision log and Effect's <code class="cr-inline">ai/Decision</code>) and <b>Agent account</b> (a deferred concept, so marked not built). "Identity" stays the pattern's name; Effect's <code class="cr-inline">Identity</code>, a keypair, is recorded as a clash for map 3 with I78's list.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="B: no new entries until map 3"><span><b>B.</b> No new entries until map 3; record the meanings in the decision log only.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q9" onsubmit="crQueue(event, 'q9', 'Q9 the deferred issues')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q9. The deferred issues: comments as in section 8?</h3>
+      <p class="text-sm">Section 8, F1 and F4. I10, I15, I16, I17, I18 keep their triggers; I15 narrowed; I80 gets F1.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q9" value="A: yes, the comments in section 8, plus F1 on I80" checked><span><b>A (recommended).</b> Yes: the comments in section 8, and F1 on I80.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="other: see notes"><span>Other (name the issue and the change)</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<section id="levels" class="space-y-5">
+  <h2 class="text-2xl font-bold">10. Q1 explained: encryption as levels</h2>
+  <p class="text-sm"><b>The idea is good, with one correction and one rule.</b> Like access, encryption gets a ladder: our reference implementation is one level, the others are named and wait for an app. That is easy to explain and costs nothing to maintain while only one level is built. But the levels do not all answer the same question, so they are not all one contract.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">The correction: at rest is under every level</h3>
+      <p class="text-sm">SQLCipher protects a lost or stolen phone. It does not change who may read a value; it is an implementation of the log store pattern that passes the same suites (D50, P15). It sits under every level below, it does not replace one. So it stays where it is and is not part of this ladder.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">The rule: encryption narrows, it never grants</h3>
+      <p class="text-sm">Who may read is the access decision (Q2, Q3). A level can only make fewer holders able to open a value, as a second wall. A key held by someone the access decision denies opens nothing, because sync never sends them the value. That one rule keeps the two patterns from competing.</p>
+    </div></div>
+  </div>
+  <p class="text-sm"><b>The levels are chosen per attribute, in the catalog</b>, the way each attribute already chooses its conflict policy (D34'). The axis is <b>who holds the key that opens a value</b>:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Level</th><th>Who holds the key</th><th>What it protects against</th><th>What authority can still check</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td><b>open</b></td><td>no key</td><td>nothing beyond at rest and transport</td><td>everything</td><td>today, every attribute</td></tr>
+      <tr><td><b>subject</b> (reference)</td><td>authority, one random key per subject; whether a <code class="cr-inline">node</code> also holds it is P16's design</td><td>a subject's data outliving their erasure</td><td>everything (authority holds the key)</td><td>D51, to be built and gated by P16</td></tr>
+      <tr><td><b>group</b></td><td>the organization's members only; the operator stores ciphertext</td><td>the operator reading content</td><td>presence and shape only (example b)</td><td>named, <code class="cr-inline">Decide when:</code> an app must keep content from the operator; with I60. Effect's <code class="cr-inline">EventLogEncryption</code> is this for one owner</td></tr>
+      <tr><td><b>role</b></td><td>members with a role or a consent, a key narrower than membership</td><td>a member reading a value the access decision would otherwise send them, as a second wall</td><td>presence and shape only</td><td>named, <code class="cr-inline">Decide when:</code> an app must keep a value from some members of an organization that syncs whole; vivief's Trust Contract is this</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm"><b>Is it a pattern?</b> By D82 a pattern has one contract and implementations that can be swapped behind it. Here the contract is: <i>seal a value for a level, open it for a holder, erase a subject; an erased subject is unreadable everywhere; a non-holder cannot open; encryption never grants</i>. The levels are its implementations, chosen per attribute, and one conformance suite checks each built level. So yes, a pattern, with one difference from access: choosing <b>group</b> or <b>role</b> for an attribute weakens what acceptance rules can check on it, and the catalog must say so. That makes the choice visible in one place instead of hidden in a store.</p>
+  <p class="text-sm"><b>The word.</b> "Aperture" is vivief's dial for trust and freshness (<code class="cr-inline">vivief:aperture</code>, map 6), so using it here would give it a third meaning. In prose: <b>encryption level</b>, chosen per attribute. "Seal" is taken by the evidence app (<code class="cr-inline">evidence/item/seal</code>). The final word is map 3's.</p>
+  <p class="text-sm"><b>Maintenance.</b> One level is built and gated (P16); the others are lines in an ADR with a trigger each, like the access ladder's steps. The risk is a future app picking <b>group</b> without knowing its rules weaken; the contract and the catalog's validation (a shape-only rule allowed, a content rule refused on a sealed attribute) carry that.</p>
+</section>
+
+<section id="chain" class="space-y-5">
+  <h2 class="text-2xl font-bold">11. Q5: the hash chain now</h2>
+  <p class="text-sm"><b>Your reasoning holds.</b> The chain is small now: one hash per accepted changeset, written in the same SQL transaction as the append that already gets the next sequence number. Later it would cover only history from the day it started, and every compaction design waits for it (ADR-0011). Three things to get right, and one limit:</p>
+  <ul class="list-disc pl-6 text-sm space-y-1">
+    <li><b>The bytes are frozen forever</b> (D44'). The chain hashes a canonical encoding of a stored changeset (the envelope as the writer made it, without what the server adds at accept, the datoms in order, sealed values as ciphertext). It should be the same bytes a signature would later sign, minus the acceptance receipt, so Q12's level 1 adds no second encoding. Named with a version, like the protocol.</li>
+    <li><b>One chain per organization</b>, in server sequence, so it follows the isolation unit and a partial `node` later can still check its organization. The server-only root (account entities) gets its own chain, which no device sees: an audit tool checks it.</li>
+    <li><b>A device checks all of it, not only a head.</b> Sync sends the whole organization, so each device can recompute the chain over what it pulled and compare with the head the server names. A mismatch is a typed alarm, not a silent repair.</li>
+    <li><b>The limit:</b> a dishonest operator could show a new device a different history from the start. Devices that already hold a head catch it; comparing heads between devices would catch the rest and is deferred (I60).</li>
+  </ul>
+  <p class="text-sm">Built as a new issue in phase 3, after <a class="cr-link" href="../issues/0080-build-the-journal-fence.md">I80</a> (both change accept); <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p09">P09</a> qualified again with a positive control: a datom edited in Postgres is caught by the next pull. Tamper-evidence becomes a qualified claim instead of a stated absence; compaction stays off until a compaction design keeps the chain checkable.</p>
+</section>
+
+<section id="signing" class="space-y-5">
+  <h2 class="text-2xl font-bold">12. Q6 explained: what signing now would cost, and per app</h2>
+  <p class="text-sm">The chain (Q5) shows that accepted history did not change. A signature shows <b>who wrote</b> a changeset, in a way the operator could not have forged. What building B now means:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Part</th><th>What it takes</th></tr></thead>
+    <tbody>
+      <tr><td>A key per device</td><td>Ed25519, created at sign-in, per provider account per device. iOS and Android: kept in the Keychain or Keystore (<code class="cr-inline">expo-secure-store</code>, already used); Hermes has no WebCrypto signing, so a pure TypeScript implementation (such as <code class="cr-inline">@noble/curves</code>, MIT) or a native module, needing a probe. Web: WebCrypto Ed25519 with a key that cannot be exported, in IndexedDB.</td></tr>
+      <tr><td>Binding the key to an identity</td><td>The server writes "this key belongs to P42" as a fact. <b>This is the crux</b>: if only the server vouches for the binding, the operator can add a key for P42 and sign as P42, so the signature proves nothing against the operator. With the chain, every binding is a fact P42's own devices see, so a key added in their name is visible to them (key transparency, in small). Proof without trusting the operator at all needs the binding signed by something else: the identity provider, or P42's other device (vivief's link).</td></tr>
+      <tr><td>What is signed</td><td>The canonical authored bytes (section 11), without <code class="cr-inline">acceptedAt</code>; the server adds its acceptance apart. Every writer signs: screens, the engine's journal, agent accounts; the server signs its own changesets with a server key.</td></tr>
+      <tr><td>Life of a key</td><td>A lost phone, sign-out, a revoked membership: the key is revoked as a fact; what it signed before stays valid as of then. Rotation, and recovery when every device is lost, need a design.</td></tr>
+      <tr><td>Checking</td><td>Authority checks the signature at accept (with the access decision). Devices may check what they pull. Today nothing else reads a signature; with I60 a peer does.</td></tr>
+      <tr><td>Gates</td><td>P11 again on iOS, Android and web, P09 again.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm"><b>Per app: yes, as levels of proof of authorship</b>, the same shape as access and encryption:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Level</th><th>Who vouches for the writer</th><th>Proves against the operator</th></tr></thead>
+    <tbody>
+      <tr><td><b>server vouches</b> (reference, today)</td><td>authority, from the access token and the actor check</td><td>no</td></tr>
+      <tr><td><b>signed</b></td><td>a device key the server binds, each binding in the chain</td><td>a key added in someone's name is visible to their devices</td></tr>
+      <tr><td><b>signed and bound elsewhere</b></td><td>a key whose binding the identity provider or another of the person's devices signs</td><td>yes; what I60 needs</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm">An app chooses a level for its organizations; within an organization it holds for every changeset from a named point in the chain, or the guarantee means nothing. The envelope already has room for a signature (D105 (5)).</p>
+  <p class="text-sm"><b>Recommendation:</b> pin the encoding with the chain now, so signing never needs a migration, and build <b>signed</b> when I15's trigger fires (the first app that makes audit claims) or I60 starts. Building it now buys key custody, loss and rotation on three platforms before anything but the server checks a signature, and the server already knows who sent each request.</p>
+</section>
+
+<section id="identity" class="space-y-5">
+  <h2 class="text-2xl font-bold">13. Q8 and Q4 explained: one meaning of identity</h2>
+  <p class="text-sm"><b>Yes, the same move as entity works.</b> D137 found that Effect's <code class="cr-inline">Entity</code> and ours share their core (an identity facts are about) and differ only in whether it acts. Here:</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2 text-sm">
+    <p><b>Identity</b>: who a request or a change is accountable to. It has a kind (a person, the server, an agent account), and it proves itself with a credential: today an access token from a provider account, later a key bound to it. The envelope's <code class="cr-inline">actor</code> is an identity (D141).</p>
+    <p>An identity whose credential is its own key, with no one else vouching, is <b>self-certifying</b>: Effect's <code class="cr-inline">EventLog.Identity</code>, vivief's peer keypair, a Holochain agent. Ours are vouched for: the server maps a provider account to a person. The difference is who vouches, not what an identity is. A self-certifying identity is what I60 would need.</p>
+    <p>A device is not an identity: it is the <code class="cr-inline">node</code> a person uses, and a device key is a credential of the identity signed in on it. A provider account is a credential's issuer and subject, not the identity. The identity pattern (<code class="cr-inline">@viviefs/identity</code>) is the pattern that establishes identities.</p>
+  </div></div>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Thing</th><th>Is it an identity?</th><th>Its credential</th><th>Who vouches</th></tr></thead>
+    <tbody>
+      <tr><td>Person P42</td><td>yes, kind person</td><td>an access token from a provider account; later a device key</td><td>the server, through the account entity</td></tr>
+      <tr><td><code class="cr-inline">server</code></td><td>yes, kind server</td><td>being the process that holds authority; later a server key</td><td>the operator</td></tr>
+      <tr><td>Agent account G3 (Q4)</td><td>yes, kind agent</td><td>a service account's token</td><td>the server, through its account entity</td></tr>
+      <tr><td>Effect <code class="cr-inline">EventLog.Identity</code></td><td>yes, self-certifying</td><td>its own Ed25519 key</td><td>nobody: the key is the identity</td></tr>
+      <tr><td>Phone A</td><td>no, a <code class="cr-inline">node</code></td><td>-</td><td>-</td></tr>
+      <tr><td>Provider account <code class="cr-inline">(iss, sub)</code></td><td>no, where a credential comes from</td><td>-</td><td>the identity provider</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm">This reverses one line from P11's pass ("nothing in the code or glossary is called an identity"), on purpose: then the word meant three things at once, now it means one. A sign-in session is still not an identity (its <i>Avoid</i> stays).</p>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-4 text-sm space-y-2">
+    <p><b>F7. Today the log does not say who granted a membership.</b> <code class="cr-inline">Memberships.grant</code> and <code class="cr-inline">revoke</code> write with actor <code class="cr-inline">server</code> (<code class="cr-inline">server.ts</code>:157, :325): the person who ran the operator command is not recorded. Q4's assumption, an audit trail of who gave an agent its identity, does not hold yet.</p>
+    <p>With one meaning of identity it follows directly: <b>whoever creates an identity or grants a membership is the actor of that changeset</b>, so the log (and the chain) shows who did it. <code class="cr-inline">server</code> is the actor only for what the server decides itself (acceptance, conflict facts, its workflows). Only a person may create an agent account, a guardrail in the access pattern, so every agent traces to a person. The operator then signs in like anyone else, with an operator role.</p>
+  </div></div>
+</section>
+
+<section id="round2" class="space-y-5">
+  <h2 class="text-2xl font-bold">14. Questions, round 2</h2>
+
+  <form class="card bg-base-200" data-lavish-question="q10" onsubmit="crQueue(event, 'q10', 'Q10 encryption levels')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q10. Encryption as a pattern with levels?</h3>
+      <p class="text-sm">Section 10.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q10" value="A: yes, the pattern encryption: the level chosen per attribute in the catalog (open, subject as reference, group and role named with triggers); encryption narrows and never grants; at rest stays a log-store implementation under every level; group and role allow shape-only rules; one ADR (ADR-0023 amended)" checked><span><b>A (recommended).</b> Yes: the pattern <b>encryption</b>. The level is chosen per attribute in the catalog: <b>open</b>, <b>subject</b> (the reference, P16), <b>group</b> and <b>role</b> named with their triggers. Encryption narrows and never grants. At rest stays a log-store implementation under every level. On <b>group</b> and <b>role</b> only shape rules are allowed. ADR-0023 amended to say so.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="B: the ladder as prose in ADR-0023, no pattern until a second level is built"><span><b>B.</b> The ladder as prose in ADR-0023 only, and no pattern until a second level is built.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q11" onsubmit="crQueue(event, 'q11', 'Q11 the hash chain')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q11. The hash chain, built in phase 3 as section 11 says?</h3>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q11" value="A: yes: one chain per organization plus one for the server-only root, over a versioned canonical encoding that signing reuses, written in the append's transaction; devices recompute it over what they pull; a new issue after I80, P09 qualified again with an edited datom as positive control" checked><span><b>A (recommended).</b> Yes: one chain per organization and one for the server-only root, over a versioned canonical encoding that signing will reuse, written in the append's transaction. Devices recompute it over what they pull. A new issue after I80; P09 qualified again with an edited datom as positive control.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q11" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q12" onsubmit="crQueue(event, 'q12', 'Q12 signing per app')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q12. Signed changesets: levels per app, and when to build?</h3>
+      <p class="text-sm">Section 12.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q12" value="A: levels per app (server vouches as reference, signed, signed and bound elsewhere), holding for a whole organization from a point in the chain; the encoding pinned with the chain now; signed built at I15's trigger or with I60; vivief's principle of distinct identity, keys and transport adopted" checked><span><b>A (recommended).</b> Levels per app: <b>server vouches</b> (reference), <b>signed</b>, <b>signed and bound elsewhere</b>, each holding for a whole organization from a point in the chain. The encoding is pinned with the chain now. <b>signed</b> is built at I15's trigger or with I60. vivief's principle (identity, device keys, transport keys and the account mapping stay distinct, a key never authorizes) adopted.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q12" value="B: the same levels, and build signed in phase 3 after the chain, as part of the reference"><span><b>B.</b> The same levels, and build <b>signed</b> in phase 3 after the chain, as part of the reference.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q12" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q13" onsubmit="crQueue(event, 'q13', 'Q13 one meaning of identity')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q13. One meaning of identity, as section 13 defines it?</h3>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q13" value="A: yes: an identity is who a request or a change is accountable to, with a kind and a credential; Effect's EventLog.Identity is a self-certifying identity; a device and a provider account are not identities; glossary entry Identity now, Self-certifying identity recorded for map 3" checked><span><b>A (recommended).</b> Yes. An identity is who a request or a change is accountable to, with a kind and a credential. Effect's <code class="cr-inline">EventLog.Identity</code> is a self-certifying identity. A device and a provider account are not identities. A glossary entry <b>Identity</b> now; "self-certifying" waits for map 3.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q13" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q14" onsubmit="crQueue(event, 'q14', 'Q14 who granted')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q14. Who granted it, in the log?</h3>
+      <p class="text-sm">F7, Q4's assumption.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q14" value="A: whoever creates an identity or grants a membership is the actor; server only for what the server decides itself; only a person may create an agent account; the operator signs in with an operator role; built in the phase 3 access issue" checked><span><b>A (recommended).</b> Whoever creates an identity or grants a membership is that changeset's actor; <code class="cr-inline">server</code> only for what the server decides itself. Only a person may create an agent account. The operator signs in with an operator role. Built with the access issue in phase 3, since granting is an access rule.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q14" value="B: the same rule, built with agent accounts or I16, whichever comes first"><span><b>B.</b> The same rule, built later with agent accounts or I16, whichever comes first. Until then grants stay anonymous.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q14" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q15" onsubmit="crQueue(event, 'q15', 'Q15 the deferred issues')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q15. Round 1's Q9: comments on the deferred issues, updated by Q10-Q14?</h3>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q15" value="A: yes: section 8's comments, with I15 narrowed to signing and bindings (the chain is built), I16 taking the operator role and Q14, and F1 on I80" checked><span><b>A (recommended).</b> Yes: section 8's comments, with I15 narrowed to signing and key bindings (the chain is built now), I16 taking the operator role from Q14, and F1 on I80.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q15" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<section id="answered2" class="space-y-4">
+  <h2 class="text-2xl font-bold">Round 2, answered (2026-10-27)</h2>
+  <p class="text-sm">The human agreed with every proposed answer, Q10-Q15.</p>
+</section>
+
+<section id="writeup" class="space-y-4">
+  <h2 class="text-2xl font-bold">15. Proposed write-up (for the human's check before any file changes)</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td>Decision log, "Trust, encryption and who may sign in (2026-10-27)"</td><td><b>D149</b> Encryption levels (Q1, Q10); <b>D150</b> Access around sync and commands (Q2); <b>D151</b> The access pattern, with the 17 answers (Q3); <b>D152</b> One meaning of identity (Q8, Q13); <b>D153</b> Agent accounts (Q4); <b>D154</b> Whoever grants is the actor (Q14); <b>D155</b> A hash chain per organization (Q5, Q11); <b>D156</b> Levels of proof of authorship, with vivief's distinct keys and peer validation (Q6, Q12); <b>D157</b> The device after revocation (Q7).</td></tr>
+      <tr><td>ADRs</td><td>New <b>ADR-0037 Access</b> (D150, D151, D154; Qualifying gate P11 again). New <b>ADR-0038 Tamper-evidence and proof of authorship</b> (D155, D156; P09 again). <b>ADR-0023</b> amended with the encryption levels (D149). <b>ADR-0022</b> amended with one meaning of identity, agent accounts and who grants (D152-D154), its stated limitations updated. <b>ADR-0032</b> records D149-D157 among the foundation concepts.</td></tr>
+      <tr><td>Glossary</td><td>New: <b>Identity</b>, <b>Access decision</b>, <b>Agent account</b> (not built yet), <b>Encryption level</b> (word open for map 3). Changed: <b>Tamper-evidence</b> (being built), <b>Membership</b> and <b>Bearer authentication</b> (authorization is the access decision), <b>Personal attribute</b> (the subject level).</td></tr>
+      <tr><td>New issues</td><td><b>I84</b> Build the access pattern (phase 3 after I69, with D154's operator actor); <b>I85</b> Build the hash chain (phase 3 after I80); <b>I86</b> Agent accounts (<code class="cr-inline">Decide when:</code> an app runs an agent that writes on its own); <b>I87</b> Group and role encryption levels (two triggers).</td></tr>
+      <tr><td>Comments</td><td>I10, I15 (narrowed to signing and key bindings), I16 (roles as step 2, the operator role), I17 (D157), I18, I80 (F1), I60 (self-certifying identities, bindings elsewhere, comparing heads).</td></tr>
+      <tr><td>Status</td><td>I54 resolved with its Answer and the 11 rows; the map's Decisions so far; next-session.md (phase 3 gains I84 and I85, next step I59); the research README lists this page.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  // Mermaid measures labels while it lays a diagram out, so a diagram must stay
+  // visible until it is done. Lavish hides a .mermaid container as soon as an SVG
+  // appears in it (to put a whiteboard there), and preloads the page in a hidden
+  // frame. So each diagram is drawn apart, once the page has a size, and only the
+  // finished SVG goes into its container.
+  const diagrams = [...document.querySelectorAll(".mermaid")];
+  function source(el) {
+    const raw = document.createElement("textarea");
+    raw.innerHTML = el.innerHTML;
+    return raw.value.trim();
+  }
+  async function draw() {
+    for (const [i, el] of diagrams.entries()) {
+      try {
+        const { svg } = await mermaid.render(`diagram-${i}`, source(el));
+        el.innerHTML = svg;
+      } catch (error) {
+        console.error(`Mermaid diagram ${i} in #${el.closest("section")?.id} failed:`, error?.message ?? error);
+      }
+    }
+  }
+  const sized = new ResizeObserver(([entry]) => {
+    if (entry.contentRect.width === 0) return;
+    sized.disconnect();
+    void draw();
+  });
+  window.addEventListener("load", () => sized.observe(document.body), { once: true });
+</script>
+</body>
+</html>

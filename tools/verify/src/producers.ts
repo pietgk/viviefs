@@ -2,13 +2,13 @@
  * Coverage producers (D77): `unit`, `integration` and `storybook` are each one
  * Vitest run from the workspace root, over the projects whose `project.json`
  * declares the producer's target. Coverage is limited to the files the
- * registry gives to that producer, so a file is judged only by its owner.
+ * evidence registry gives to that producer, so a file is judged only by its owner.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { CONFIG_FILES, type CoverageProducer } from '@viviefs/testing/vitest'
-import { REGISTRY } from './evidence-registry.ts'
+import { EVIDENCE_REGISTRY } from './evidence-registry.ts'
 import { owningProducer } from './file-treatments.ts'
 import { ROOT } from './stages.ts'
 
@@ -46,6 +46,6 @@ export const producerProjects = (producer: CoverageProducer): ReadonlyArray<stri
 
 /** Files whose evidence this producer owns. */
 export const ownedFiles = (producer: CoverageProducer): ReadonlyArray<string> =>
-  REGISTRY.filter((entry) => owningProducer(entry) === producer)
+  EVIDENCE_REGISTRY.filter((entry) => owningProducer(entry) === producer)
     .map(({ path }) => path)
     .sort()

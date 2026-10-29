@@ -15,3 +15,5 @@ name 4.0.0 and the new module paths (`effect/sql/Migrator`). Effect-TS/effect#63
 is still open.
 
 2026-10-09: Rechecked against the `effect@4.0.2` tag, now in `repos/effect`. Both bugs are still there: `OpfsWorker.run` posts nothing when opening fails, and `SqliteClient`'s `onError` never completes `readyDeferred`; `effect/sql/Migrator` still has the dynamic `import(url.href)` in `fromFileSystem`, and #6347 is open. No upstream issue names the sqlite-wasm hang (searched `sqlite-wasm ready` and `OpfsWorker`). The drafts now name 4.0.2; they are posted after the human rereads them.
+
+2026-10-22: Rechecked against the `effect@4.0.5` tag, now in `repos/effect`. The sqlite-wasm hang is still there (`onError` never completes `readyDeferred`); that draft now names 4.0.5 and is still to be posted. Effect-TS/effect#6347 was closed on 2026-10-21 by Effect-TS/effect#9157, which moves `fromFileSystem` to `effect/sql/MigratorFileSystem` on `v4/next-minor`; 4.0.5 still has the dynamic `import()`, so the Babel stub stays until an Effect release with the fix is pinned. The comment draft is no longer needed.

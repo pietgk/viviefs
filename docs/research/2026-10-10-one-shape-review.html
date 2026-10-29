@@ -10,13 +10,16 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   :where(.grid, .flex) > * { min-width: 0; }
-  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
   body { font-size: 16px; line-height: 1.6; }
   code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
   pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.6rem; overflow-x: auto; line-height: 1.45; white-space: pre; }
   .cr-table-wrap { overflow-x: auto; }
   .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
-  .cr-table-wrap td:first-child code.cr-inline { white-space: nowrap; }
+  .cr-table-wrap td:first-child code.cr-inline, .cr-table-wrap td:first-child > b { white-space: nowrap; overflow-wrap: normal; }
+  .cr-table-wrap td:first-child { overflow-wrap: normal; }
+  .card-body > p { flex-grow: 0; }
   .cr-rec { border-left: 4px solid var(--color-success); }
   .cr-gap { border-left: 4px solid var(--color-warning); }
   .cr-bad { border-left: 4px solid var(--color-error); }
@@ -42,7 +45,7 @@
 <header class="space-y-4">
   <div class="flex flex-wrap gap-2">
     <span class="badge badge-primary">Map 2, the foundation concepts - I56</span>
-    <span class="badge badge-outline">2026-10-10</span>
+    <span class="badge badge-outline">2026-10-10, rounds 2-3 on 2026-10-23, round 4 on 2026-10-24</span>
     <span class="badge badge-soft badge-info">Design review, not a decision record</span>
   </div>
   <h1 class="text-4xl font-bold leading-tight">One shape at every level?</h1>
@@ -58,6 +61,60 @@
     </ol>
   </div></div>
 </header>
+
+<section class="space-y-3" id="round-1">
+  <h2 class="text-2xl font-bold">Round 1, settled in conversation (2026-10-23)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q1</b> A: the shape is foundation at the data level (decide, accept, evolve; a workflow over its journal; activities as the only door to the world; failure as data), recorded in ADR-0032 and shown by P05, P06 and P09. Above the code it is a lens, D98's loop.</li>
+    <li><b>Q2</b> C: the changeset is the step, the log after accept is <code class="cr-inline">State'</code>, and read models are its views. We keep ours.</li>
+    <li><b>Q3</b> A: adopt, narrowed, as a lens. Reopened: the human challenged how section 3 draws the levels. "Ordered by time constant" waits for round 2, <a class="cr-link" href="#drawings">section 3b</a>.</li>
+  </ul>
+  <p class="text-sm">The human's three notes on section 3:</p>
+  <ol class="list-decimal pl-6 space-y-1 text-sm">
+    <li>Hot to warm "a bug a user sees" is correct but too narrow; fine if stated as an example. It makes the human ask how hot is seen: an intent that results in a changeset that represents a bug, which becomes the input for warm (sounds right).</li>
+    <li>"A passing tree": do we have a usable definition, and how does it relate to a changeset?</li>
+    <li>Hot and warm are described by time, cold by a claim or a pattern, coldest by an app. That mixes axes. Maybe hot is intent creation (prepare for syncing) and warm is intent sync (a grilling kind of process).</li>
+  </ol>
+  <p class="text-sm">The human asked for three alternative drawings, since this is fundamental to what we are doing.</p>
+</section>
+
+<section class="space-y-3" id="round-2">
+  <h2 class="text-2xl font-bold">Round 2, settled in conversation (2026-10-23)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q4</b> B, with C's roles and A's order. Every level has the same four states, named by how settled a thing is: <b>hot</b>, created and open (decide); <b>frontier</b>, the sync, a checkpoint (accept); <b>warm</b>, kept with its history (keep); <b>cold</b>, net truth (derive). The levels are data, decisions, code, claims and patterns, ordered by how long a turn takes. Something cold that someone reads becomes a hot intent at another level. This closes Q3's "ordered by time constant".</li>
+    <li><b>Q5</b> At the frontier. Hot is intent creation, prepared for sync and still changeable. The sync (a grilling, accept, verify) is the frontier crossing. This follows <code class="cr-inline">vivief ADR 0050</code>'s tiers and ADR-0011's compaction horizon.</li>
+    <li><b>Q6</b> Recorded, with a new name: "a passing tree" becomes <b>verified commit</b>, a commit on which <code class="cr-inline">pnpm verify</code> is green. A commit is to the repository what a changeset is to the log. The verdict gap becomes an issue, <code class="cr-inline">Decide when:</code> a gate must know it ran on a verified commit. The word can be revisited in map 3.</li>
+  </ul>
+  <p class="text-sm"><b>Why "verified commit".</b> Three candidates were weighed:</p>
+  <ul class="list-disc pl-6 space-y-1 text-sm">
+    <li><b>"Code changeset"</b> clashes. "Changeset" is a data word, a pinned name (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d44">D44</a>), and the glossary uses it only for facts in the log. A second meaning would undo that. So "code changeset" goes into Changeset's <code class="cr-inline">_Avoid_</code>.</li>
+    <li><b>"Merged" or "a passing tree after merge"</b> describes a workflow this repository does not have. Commits land directly on <code class="cr-inline">main</code>, with no pull requests, and CI (<code class="cr-inline">.github/workflows/ci.yml</code>) runs verify on push.</li>
+    <li><b>"Verified commit"</b> names what is true: a commit, and verify passed on it. It clashes with GitHub's "Verified" badge, which means a signed commit. The glossary entry says so, and map 3 can revisit the word.</li>
+  </ul>
+  <p class="text-sm"><b>Found for map 3.</b> "Change" has two meanings today: a data changeset in <a class="cr-link" href="../adr/0035-accepting-a-change.md">ADR-0035 Accepting a change</a>, and a code change in the glossary's Verify entry ("every change must pass"). This becomes an issue, <code class="cr-inline">Decide when:</code> map 3.</p>
+</section>
+
+<section class="space-y-3" id="round-3">
+  <h2 class="text-2xl font-bold">Round 3, settled in conversation (2026-10-23)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q7</b> A: glossary entries now only for words that do not clash, so <b>Verified commit</b>, and "code changeset" goes into Changeset's <code class="cr-inline">_Avoid_</code>. ADR-0032 records the shape's meaning in its roles' existing words, with <code class="cr-inline">effectHandler</code> in code font. Hot, frontier, warm and cold go in ADR-0032 and the decision log only. Both sets of names wait for map 3.</li>
+    <li><b>Q8</b> A: a comment on I51. I56 settled the data level, so I51 asks only whether <code class="cr-inline">vivief:handler-levels</code>' actor level is the durable workflow.</li>
+    <li><b>Q9</b> A: the comments on I30 and I33 as written, and both <code class="cr-inline">Decide when:</code> lines narrowed to their map 3 half.</li>
+  </ul>
+  <p class="text-sm">The human's notes on the diagrams, applied: the data-level drawing now says what "invalidate keys" does (it names the data that changed, so the screens that show it read again), and drawing A runs seconds, minutes, hours, days, weeks, one level each.</p>
+  <p class="text-sm">Next was the proposed write-up. The human challenged it first: <a class="cr-link" href="#round-4-settled">round 4</a>.</p>
+</section>
+
+<section class="space-y-3" id="round-4-settled">
+  <h2 class="text-2xl font-bold">Round 4, settled in conversation (2026-10-24)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Q10</b> A: the concept now, the word in map 3. A frame reaches a person through a surface of any modality, and a screen is one kind. "Surface" is map 3's leading candidate, with its clashes. An agent reads a frame through a tool.</li>
+    <li><b>Q11</b> A: the six kinds of intent, WayFinder down to a button press, go in the lens (D132), ordered by abstraction, which is also the order by time. "Pattern" keeps its meaning, "abstraction" as a name is map 3's (I33), and aperture is a different axis.</li>
+    <li><b>Q12</b> A: an app is not a pattern. The app's shape is a candidate pattern for when phase 3 builds the app shell. The human's sentence becomes the lens in one line. D95 is unchanged.</li>
+    <li><b>Q13</b> A: D135 "Effect's names first", and a research issue comparing Effect's vocabulary with ours. It blocks map 3, and I51 reads Cluster first.</li>
+  </ul>
+  <p class="text-sm">Wording: "rung" (one step of a ladder) was a needless metaphor, and the page now says "kind of intent".</p>
+</section>
 
 <!-- ============================================================ -->
 <section class="space-y-5" id="vivief">
@@ -145,7 +202,7 @@ reduceAll(facts, catalog): ReadonlyArray&lt;StoredFact&gt;</pre>
         <dt>State</dt><dd>The cursor and the read models (<code class="cr-inline">projected_facts</code>, <code class="cr-inline">changeset_status</code>)</dd>
         <dt>Input</dt><dd>The log rows since the cursor</dd>
         <dt>State'</dt><dd>The new cursor and read models, in one SQL transaction</dd>
-        <dt>Effects</dt><dd><code class="cr-inline">reactivity.invalidate(keys)</code> (L686-689)</dd>
+        <dt>Effects</dt><dd><code class="cr-inline">reactivity.invalidate(keys)</code> (L686-689): names the data that changed, so the screens that show it read again</dd>
       </dl>
       <p class="text-sm">A fold. <code class="cr-inline">rebuild</code> runs the same fold from an empty state, which is what <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p05">P05 Changesets and projections</a> checks.</p>
     </div></div>
@@ -283,7 +340,7 @@ flowchart TB
   ACT -- "exit datom" --> L
   L -- "rows since cursor" --> P["Projector: evolve (a fold)"]
   P -- "State'" --> RM
-  P -. "invalidate keys" .-> S["Screen: a frame, a read"]
+  P -. "invalidate keys:<br/>which data changed,<br/>so its screens read again" .-> S["Screen: a frame, a read"]
 </pre></div>
   <p class="text-sm">Pure: Command, Projector's fold, the workflow body, accept's checks. Effectful: Activity, the append, the invalidation. Nothing here is new; the proposal is to name the shape so a newcomer sees the three as one idea.</p>
 </section>
@@ -314,7 +371,7 @@ flowchart TB
       <ul class="list-disc pl-5 text-sm space-y-1">
         <li>Each level has the three parts of <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a>, and each turn leaves something kept that the next turn reads: the log, the verdict and the commit, the ledger, the decision, the handover, an issue.</li>
         <li>The levels feed each other: a learner's finding and an app's gap both come back as warm-loop issues (dotted arrows).</li>
-        <li>vivief's temperature tiers order the levels by their time constants without pretending they are the same code.</li>
+        <li><s>vivief's temperature tiers order the levels by their time constants without pretending they are the same code.</s> Corrected in <a class="cr-link" href="#drawings">3b</a>: vivief's tiers measure how settled data is, not how fast a loop turns.</li>
       </ul>
     </div></div>
     <div class="card bg-base-200 cr-gap"><div class="card-body p-5">
@@ -326,6 +383,144 @@ flowchart TB
       </ul>
     </div></div>
   </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="drawings">
+  <h2 class="text-2xl font-bold">3b. Three ways to draw the loop (round 2)</h2>
+  <p>The drawing above mixes axes, as the human saw: hot and warm are named by time, cold by an artifact, coldest by an app. Before redrawing it, two things it got wrong or left open: what vivief's temperatures meant, and what "a passing tree" is (named <b>verified commit</b> in <a class="cr-link" href="#round-2">round 2</a>; the drawings below use the new name).</p>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">vivief's temperatures measure how settled data is</h3>
+      <p class="text-sm"><code class="cr-inline">vivief ADR 0050</code>, "Three temperature tiers":</p>
+      <div class="cr-table-wrap"><table class="table table-xs">
+        <thead><tr><th>Tier</th><th>vivief</th></tr></thead>
+        <tbody>
+          <tr><td>Hot</td><td>Versions above the frontier. In memory, actively receiving, no compaction possible.</td></tr>
+          <tr><td>Warm</td><td>Closed versions, consolidated and queryable. Each datom is still distinguishable.</td></tr>
+          <tr><td>Frozen</td><td>Fully compacted. Net state only: an assert and its retract cancel.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="text-sm">So temperature is not speed. It is how far something is from settled. ViViEfs has the same line under another name: "Snapshots and compaction only past a horizon every device has acknowledged" (<a class="cr-link" href="../adr/0011-log-store-pattern.md">ADR-0011 Log store pattern, read models, compaction and analytics</a>). The human's "hot is intent creation, prepare for syncing" is closer to vivief than section 3 was.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Verified commit (was "a passing tree")</h3>
+      <p class="text-sm"><b>What exists.</b> GitHub Actions runs <code class="cr-inline">pnpm verify</code> (<code class="cr-inline">.github/workflows/ci.yml</code>) on every push, and it prints <code class="cr-inline">GREEN · n checks</code> or <code class="cr-inline">RED</code>. That verdict is kept only in the CI run, not in the repository. <code class="cr-inline">pnpm qualify</code> runs "on a committed tree", and each ledger entry records <code class="cr-inline">commit</code> and <code class="cr-inline">dirty</code>, not whether verify passed.</p>
+      <p class="text-sm"><b>Definition.</b> A verified commit is a commit on which <code class="cr-inline">pnpm verify</code> is green.</p>
+      <p class="text-sm"><b>Its relation to a changeset.</b> A commit is to the repository what a changeset is to the log: one step, all or nothing. It is prepared in a worktree, as an open changeset waits in an outbox. It crosses a checkpoint: verify asks whether it is well formed and keeps the tree valid, and the human agreeing asks whether this writer may do it. It then lands on main and is kept in main's history, as a changeset is kept in the log, and CI runs verify again. The differences: it is files in git, not datoms (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d48p">D48' Verify - Qualify - Teach</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129 Boundaries and live change</a>). It can be rewritten before it lands on main, never after. And the checkpoint's verdict is not kept with the commit, while accept's verdict on a changeset is: the changeset is in the log, or there is a typed rejection.</p>
+    </div></div>
+  </div>
+
+  <p><b>One example, traced in every drawing:</b> a list saved with a blank title. This is real. While deciding <a class="cr-link" href="../issues/0050-contracts-checked-as-data-or-by-commands.md">I50 Contracts checked as data or by commands</a>, we found that the server accepts a crafted changeset with a blank title, because it never re-runs the command. The fix is <a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a>, in phase 3. Steps marked <i>to come</i> have not happened yet.</p>
+
+  <!-- A -->
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-xl font-bold">Drawing A: levels by time constant, one axis</h3>
+    <p class="text-sm">This is section 3 made consistent. Every level is named by how long one turn takes, and the temperature words are dropped. Each hand-off label is an example.</p>
+    <div class="cr-mermaid"><pre class="mermaid">
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart TB
+  S["<b>Seconds: data</b><br/>an intent, a changeset, a frame"]
+  N["<b>Minutes: decisions</b><br/>a grilling round, a decision"]
+  H["<b>Hours: code</b><br/>an issue, a change, verify's verdict"]
+  D["<b>Days: claims</b><br/>a probe, a gate run"]
+  W["<b>Weeks: patterns</b><br/>a decision taught: exemplar, exercises, a lesson"]
+  S -- "what a user sees, for example a bug" --> N
+  N -- "a decided change" --> H
+  H -- "a verified commit" --> D
+  D -- "evidence cited" --> W
+  W -- "parts an app builds on: its data starts in seconds" --> S
+  W -. "a learner's finding" .-> H
+</pre></div>
+    <p class="text-sm"><b>The example:</b> seconds: a blank title is accepted and shown. Minutes: a round of the I50 grilling finds it, the human settles it, and I69 is filed. Hours: the fix is written and lands as a verified commit (to come). Days: a gate shows a blank title is rejected (to come). Weeks: the changesets guide teaches acceptance rules (to come), and the next app's commands are checked without extra work.</p>
+    <p class="text-sm"><b>What it shows:</b> scale and the order of levels. <b>What it hides:</b> what happens inside a turn. It cannot say where the check is, or what is still open and what is settled.</p>
+  </div></div>
+
+  <!-- B -->
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-xl font-bold">Drawing B: how settled, at every level (the human's axis, vivief's meaning)</h3>
+    <p class="text-sm">Temperature means how settled something is, as vivief meant it. Every level passes the same four states. A level's row is where its things live; the columns are how settled each one is.</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Level</th><th>Hot: created, open<br/><span class="font-normal opacity-70">an intent prepared for sync</span></th><th>The frontier: sync<br/><span class="font-normal opacity-70">a checkpoint decides</span></th><th>Warm: kept<br/><span class="font-normal opacity-70">history visible</span></th><th>Cold: net truth<br/><span class="font-normal opacity-70">what others build on</span></th></tr></thead>
+      <tbody>
+        <tr><td><b>Data</b></td><td>An open changeset in the device's outbox. Open changesets are drafts.</td><td>Accept: authority's three questions (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>), and conflict (<a class="cr-link" href="../issues/0053-sync-and-conflict.md">I53 Sync and conflict</a>)</td><td>The log: every fact with its <code class="cr-inline">tx</code></td><td>The read model, the net state a screen shows. Past the acknowledged horizon, a snapshot.</td></tr>
+        <tr><td><b>Decisions</b></td><td>A review page, the rounds of a grilling</td><td>The human settles a round and checks the write-up</td><td>The decision log. Primes keep the history (D36, then D36').</td><td>The ADR's text and the glossary entry: what is true now</td></tr>
+        <tr><td><b>Code</b></td><td>A change in a worktree</td><td>Verify green, the human agrees, committed to main (CI re-runs verify): <b>a verified commit</b></td><td>Main's history</td><td>A qualified commit: the ledger pins a gate to it</td></tr>
+        <tr><td><b>Claims</b></td><td>A probe being written</td><td>Qualify, on a committed tree</td><td>The ledger: every run</td><td>Gate state (pass, stale) on the claims page</td></tr>
+        <tr><td><b>Patterns</b></td><td>A guide draft (the log-store guide today)</td><td>Accepting it (map 4, <a class="cr-link" href="../issues/0002-accept-the-log-store-guide.md">I2 Accept the log-store guide</a>)</td><td>The guide's history</td><td>An accepted guide, a part to build on</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cr-mermaid"><pre class="mermaid">
+%%{init: {"flowchart": {"wrappingWidth": 420}}}%%
+flowchart TB
+  D["<b>Data</b><br/>hot: open changeset · frontier: accept<br/>warm: the log · cold: read model"]
+  E["<b>Decisions</b><br/>hot: a grilling · frontier: the human settles<br/>warm: decision log · cold: ADR, glossary"]
+  C["<b>Code</b><br/>hot: a worktree change<br/>frontier: verify green, the human agrees<br/>warm: main's history · cold: a qualified commit"]
+  G["<b>Claims</b><br/>hot: a probe · frontier: qualify<br/>warm: the ledger · cold: gate state"]
+  P["<b>Patterns</b><br/>hot: a guide draft · frontier: acceptance<br/>warm: guide history · cold: an accepted guide"]
+  D -- "something cold someone sees becomes a hot intent,<br/>for example a bug" --> E
+  D -. "a bug fixed without a decision" .-> C
+  E -- "a decided change" --> C
+  C -- "a verified commit" --> G
+  G -- "evidence cited" --> P
+  P -- "parts an app builds on: its data starts hot" --> D
+</pre></div>
+    <p class="text-sm"><b>The example:</b></p>
+    <ul class="list-disc pl-5 text-sm space-y-1">
+      <li><b>Data:</b> a crafted changeset with title "" sits in an outbox (hot). Accept lets it through, because the server never re-runs the command. It is kept in the log (warm). The read model shows an untitled list (cold), and that is what a person sees.</li>
+      <li><b>Decisions:</b> it was found during the I50 review page (hot) and settled with the human (frontier). D36' and ADR-0035 recorded it, and I69 was filed (warm). The ADR is accepted after its gate (cold, to come).</li>
+      <li><b>Code</b> (to come): acceptance rules are written in a worktree. Verify is green, the human agrees, and the commit lands on main, so it is a verified commit; CI runs verify again. The gate pins it.</li>
+      <li><b>Claims</b> (to come): a probe checks that a blank title is rejected. It runs under qualify, the run lands in the ledger, and the claims page shows the gate passing.</li>
+    </ul>
+    <p class="text-sm"><b>What it shows:</b> one axis for every level. "Prepare for syncing" is the hot column. The sync is the frontier. Each of the human's three notes has a place: the bug is a cold read that becomes a hot intent, a verified commit is the code row's frontier, and every level has the same four columns. It also reads the cycle as a cycle: an accepted guide is a part, and an app built on it makes new hot data.</p>
+    <p class="text-sm"><b>The human's variant:</b> the note puts the sync, the grilling, in warm. vivief and ADR-0011 put it at the boundary instead: anything above the frontier can still change, and warm is closed versions with their history. On that reading, a grilling in progress is hot (its rounds can change), its settling is the frontier, and the decision log is warm. This is round 2's Q5.</p>
+  </div></div>
+
+  <!-- C -->
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-xl font-bold">Drawing C: decide, accept, keep, derive at every level</h3>
+    <p class="text-sm">This is Q1's data-level shape, laid over each level as a lens. Above the code, a person or a model sits in the decide box, and often in the accept box too.</p>
+    <div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  V["read a view"] --> DEC["decide:<br/>propose a step"]
+  DEC --> ACC{"accept:<br/>a checkpoint"}
+  ACC -- "no: a typed reason" --> DEC
+  ACC -- "yes" --> K[("keep:<br/>the store")]
+  K --> DER["derive:<br/>the view"]
+  DER --> V
+</pre></div>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Level</th><th>Decide</th><th>Accept</th><th>Keep</th><th>Derive</th></tr></thead>
+      <tbody>
+        <tr><td><b>Data</b></td><td>A command</td><td>Authority (D124)</td><td>The log</td><td>Read model, frame</td></tr>
+        <tr><td><b>Decisions</b></td><td>An agent's proposed write-up</td><td>The human</td><td>Decision log</td><td>ADR, glossary</td></tr>
+        <tr><td><b>Code</b></td><td>A person or agent writes a diff</td><td>Verify, the human, committed to main</td><td>Git, main's history</td><td>The build, the docs site</td></tr>
+        <tr><td><b>Claims</b></td><td>A probe</td><td>Qualify</td><td>The ledger</td><td>Gate state, claims page</td></tr>
+        <tr><td><b>Patterns</b></td><td>A guide draft</td><td>Acceptance (map 4)</td><td>Guides</td><td>Lessons a learner tries</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>The example:</b> decide: a crafted command writes title "". Accept: the checkpoint that is missing today (I69). Keep: the log. Derive: an untitled list. Then a person reads that view and decides a new step at the decision level.</p>
+    <p class="text-sm"><b>What it shows:</b> the structure of a turn, and where the checks are. The example's failure is visible as an empty accept box. It answers "a verified commit" as the code level's accept. <b>What it hides:</b> it has no temperature, and it says nothing about a turn still in progress. Drawn alone, it drifts toward Q1's B (calling every level a handler), which round 1 rejected.</p>
+  </div></div>
+
+  <h3 class="text-lg font-semibold">The three side by side</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th></th><th>A: time</th><th>B: how settled</th><th>C: roles in a turn</th></tr></thead>
+    <tbody>
+      <tr><td>Note 1: the bug</td><td>A labelled example</td><td>A cold read becomes a hot intent; the general rule, with the bug as one case</td><td>A view read, then a new decide</td></tr>
+      <tr><td>Note 2: a verified commit</td><td>An unexplained arrow</td><td>The code row's frontier</td><td>The code level's accept</td></tr>
+      <tr><td>Note 3: one axis</td><td>Yes (time)</td><td>Yes (settledness), the human's hot</td><td>No temperature</td></tr>
+      <tr><td>Faithful to vivief</td><td>No: borrows the words, changes the meaning</td><td>Yes: frontier, closed versions, net state</td><td>Yes, to v6's handler and the decider</td></tr>
+      <tr><td>Ties to Q1</td><td>Loosely</td><td>Through C: its columns are C's roles</td><td>Directly</td></tr>
+      <tr><td>Risk</td><td>Says little</td><td>A matrix to keep honest. The app row is thin, so it is left as the cycle's arrow.</td><td>Reads as "everything is a handler"</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">They converge (proposed)</h3>
+    <p class="text-sm">B's columns are C's roles: hot is decided but not accepted, the frontier is accept, warm is keep, and cold is derive (net state). A's time constant is a property of a row, which gives the rows their order, not a name for a tier. The proposal is <b>drawing B</b>. Its columns are named by how settled a thing is (hot, frontier, warm, cold), with C's roles as subtitles, and its rows are ordered by time constant. This is what Q3's lens would record. "Ordered by time constant (hot, warm, cold)" becomes "the same four states at every level, hot to cold by how settled, the levels ordered by how long a turn takes".</p>
+    <p class="text-sm">One gap the drawing exposes: for data, the frontier's verdict is kept (a changeset in the log, or a typed rejection). For code it is not: verify's verdict lives only in CI. This could become a consequence issue with <code class="cr-inline">Decide when:</code> a gate must know it ran on a verified commit. Round 2 made it one (Q6).</p>
+  </div></div>
 </section>
 
 <!-- ============================================================ -->
@@ -387,14 +582,14 @@ flowchart TB
     <thead><tr><th>Row</th><th>Proposed disposition</th></tr></thead>
     <tbody>
       <tr><td><code class="cr-inline">viviefs:changeset</code></td><td><b>Keep ours</b>, with its place in the shape recorded: the changeset is the step, not <code class="cr-inline">State'</code>; the log after accept is <code class="cr-inline">State'</code>; read models are its views (reading C). The formula's names are map 3's.</td></tr>
-      <tr><td><code class="cr-inline">vivief:fractal-factory</code></td><td><b>Adopt, narrowed, as a lens</b>: <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a>'s loop recurs at every level, each turn leaving kept facts or files the next reads, ordered by time constant (hot, warm, cold). Not adopted: datoms as the substrate for development artifacts (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129</a>), and "velocity compounds" as a claim; whether agents build faster from the guides is map 4's evidence question.</td></tr>
+      <tr><td><code class="cr-inline">vivief:fractal-factory</code></td><td><b>Adopt, narrowed, as a lens</b>: <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d98">D98</a>'s loop recurs at every level, each turn leaving kept facts or files the next reads. Round 2: the same four states at every level (hot, frontier, warm, cold, by how settled a thing is), the levels ordered by how long a turn takes. Not adopted: datoms as the substrate for development artifacts (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d129">D129</a>), and "velocity compounds" as a claim; whether agents build faster from the guides is map 4's evidence question.</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <!-- ============================================================ -->
 <section class="space-y-5" id="deferred">
-  <h2 class="text-2xl font-bold">6. Deferred issues: I30 and I33</h2>
+  <h2 class="text-2xl font-bold">6. Deferred issues: I30 and I33 (updated in <a class="cr-link" href="#questions-3">Q9</a>)</h2>
   <div class="cr-table-wrap"><table class="table table-sm">
     <thead><tr><th>Issue</th><th>Trigger today</th><th>Proposed comment (if the line above holds)</th></tr></thead>
     <tbody>
@@ -406,7 +601,7 @@ flowchart TB
 
 <!-- ============================================================ -->
 <section class="space-y-8" id="questions">
-  <h2 class="text-2xl font-bold">7. Questions, round 1</h2>
+  <h2 class="text-2xl font-bold">7. Questions, round 1 (settled, <a class="cr-link" href="#round-1">above</a>)</h2>
   <p>Three questions with no prerequisite. What the shape becomes in the glossary, what <a class="cr-link" href="../issues/0051-actors-or-the-engine.md">I51 Actors or the engine</a> inherits, and the I30 and I33 comments hang off Q1 and come in round 2.</p>
 
   <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 sweet spot')">
@@ -449,11 +644,349 @@ flowchart TB
   </form>
 </section>
 
+<!-- ============================================================ -->
+<section class="space-y-8" id="questions-2">
+  <h2 class="text-2xl font-bold">8. Questions, round 2: how to draw the loop (settled, <a class="cr-link" href="#round-2">above</a>)</h2>
+  <p>These questions are about <a class="cr-link" href="#drawings">section 3b</a>. Q3's "ordered by time constant" waits on Q4 and Q5. After this round come the glossary form of the shape, what <a class="cr-link" href="../issues/0051-actors-or-the-engine.md">I51 Actors or the engine</a> inherits, and the comments on I30 and I33.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q4" onsubmit="crQueue(event, 'q4', 'Q4 drawing')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q4 - Which drawing does the lens record?</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q4" value="B with C's roles and A's order: the same four states at every level (hot, frontier, warm, cold by how settled, subtitled decide, accept, keep, derive), the levels ordered by how long a turn takes; something cold someone reads becomes a hot intent at another level" checked><span><b>B, with C's roles and A's order (recommended).</b> There are the same four states at every level: hot, frontier, warm and cold, by how settled a thing is, subtitled decide, accept, keep and derive. The levels are ordered by how long a turn takes. Something cold that someone reads becomes a hot intent at another level.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="A: levels by time constant only, hand-offs as labelled examples"><span><b>A.</b> Levels by time constant only, with each hand-off as a labelled example.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="C: decide, accept, keep, derive at every level, no temperature"><span><b>C.</b> Decide, accept, keep and derive at every level, with no temperature.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q5" onsubmit="crQueue(event, 'q5', 'Q5 where sync sits')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q5 - Where does the sync (a grilling, accept, a merge) sit?</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q5" value="at the frontier: hot is intent creation, prepared for sync and still changeable; the sync is the frontier crossing; warm is what it leaves, kept with history; cold is net truth (vivief ADR 0050, ADR-0011's horizon)" checked><span><b>At the frontier (recommended).</b> Hot is intent creation, prepared for sync and still changeable. The sync is the frontier crossing. Warm is what it leaves, kept with its history. Cold is net truth. This follows vivief ADR 0050 and ADR-0011's horizon.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="in warm: hot is intent creation, warm is intent sync (the grilling as a process), cold is what is kept and true"><span><b>In warm (the human's first note).</b> Hot is intent creation, warm is intent sync (the grilling as a process), and cold is what is kept and true.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q6" onsubmit="crQueue(event, 'q6', 'Q6 a passing tree')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q6 - "A passing tree"</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q6" value="record the definition: a commit on which pnpm verify is green; a commit is the repository's changeset (proposed in a worktree, accepted by verify, review and merge, kept in main's history), files not datoms; the word waits for map 3; that verify's verdict is not kept per commit becomes an issue with Decide when: a gate must know it ran on a passing tree" checked><span><b>Record the definition (recommended).</b> A passing tree is a commit on which <code class="cr-inline">pnpm verify</code> is green. A commit is the repository's changeset: proposed in a worktree, accepted by verify, review and merge, kept in main's history. It is files, not datoms. The word waits for map 3. The fact that verify's verdict is not kept per commit becomes an issue, with <code class="cr-inline">Decide when:</code> a gate must know it ran on a passing tree.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="record the definition, no issue for the verdict gap"><span><b>Record the definition, with no issue</b> for the verdict gap.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-8" id="questions-3">
+  <h2 class="text-2xl font-bold">9. Questions, round 3: what is written where (settled, <a class="cr-link" href="#round-3">above</a>)</h2>
+  <p>Rounds 1 and 2 settled what the shape is. Round 3 settles where it is written: the glossary, <a class="cr-link" href="../issues/0051-actors-or-the-engine.md">I51 Actors or the engine</a>, and the comments on <a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30</a> and <a class="cr-link" href="../issues/0033-ideas-batch-abstractions-that-constrain-agents.md">I33</a>. After this round comes a proposed write-up, for the human's check before any other file changes.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q7" onsubmit="crQueue(event, 'q7', 'Q7 glossary form')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q7 - The glossary form</h3>
+      <p>The map's rule: a glossary entry for each concept adopted, and a word that clashes waits for map 3. Three kinds of word came out of rounds 1 and 2:</p>
+      <div class="cr-table-wrap"><table class="table table-sm">
+        <thead><tr><th>Word</th><th>Clashes with</th><th>Proposed</th></tr></thead>
+        <tbody>
+          <tr><td><b>Verified commit</b></td><td>GitHub's "Verified" badge (a signed commit), said in the entry</td><td>An entry now. "Code changeset" goes into Changeset's <code class="cr-inline">_Avoid_</code>.</td></tr>
+          <tr><td><b>The shape</b> (<code class="cr-inline">effectHandler</code>, intent, effect)</td><td>Effect, the library; Intent, the input to a command (glossary)</td><td>No entry. ADR-0032 records the meaning with its roles' existing words (Command, Authority, Projector, Activity), and vivief's word in code font. The name waits for map 3.</td></tr>
+          <tr><td><b>Hot, frontier, warm, cold</b></td><td>Hot reload, cold and warm start (React Native, Expo), cache temperature; "frontier" is vivief's word</td><td>No entries. ADR-0032 and the decision log record the four states as the lens; the words wait for map 3 with the clashes noted.</td></tr>
+        </tbody>
+      </table></div>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q7" value="A: entries now only for words that do not clash: Verified commit, and code changeset in Changeset's Avoid; the shape's meaning in ADR-0032 with its roles' existing words and effectHandler in code font, its name for map 3; hot, frontier, warm, cold recorded in ADR-0032 and the decision log only, the words for map 3 with the clashes noted" checked><span><b>A (recommended).</b> Entries now only for words that do not clash: <b>Verified commit</b>, and "code changeset" in Changeset's <code class="cr-inline">_Avoid_</code>. The shape's meaning goes in ADR-0032, in its roles' existing words, with <code class="cr-inline">effectHandler</code> in code font. Hot, frontier, warm and cold are recorded in ADR-0032 and the decision log only. Both names wait for map 3, with the clashes noted.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="B: as A, plus four glossary entries now: Hot, Frontier, Warm, Cold, each with its clashes in Avoid"><span><b>B.</b> As A, plus four glossary entries now: Hot, Frontier, Warm and Cold, each with its clashes in <code class="cr-inline">_Avoid_</code>. A newcomer meets the words on the docs site with a hover, but map 3 may rename all four.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="C: as A, plus one glossary entry for the lens as a whole, with the four states in its paragraph"><span><b>C.</b> As A, plus one glossary entry for the lens as a whole, with the four states in its paragraph. One word to choose now instead of four, but it is a new word with no use in the code.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q8" onsubmit="crQueue(event, 'q8', 'Q8 what I51 inherits')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q8 - What I51 inherits</h3>
+      <p>I51 is blocked by I56 because it asks the same question at run time (<code class="cr-inline">vivief:handler-levels</code>: a pure function for most handlers, an actor for multi-step work). After rounds 1 and 2, the function level is answered: it is the data level's decide, accept and evolve.</p>
+      <p class="text-sm"><b>Proposed comment on I51:</b> "2026-10-23: <a class="cr-link" href="../issues/0056-one-shape-at-every-level.md">I56</a> settled the data level: a command decides, authority accepts, the projector evolves, a workflow runs over its journal, and activities are the only door to the world (D130). So <code class="cr-inline">vivief:handler-levels</code> asks only whether its actor level is the durable workflow. This ticket does not ask about the shape again."</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q8" value="A: post the comment as written; I51 asks only whether vivief:handler-levels' actor level is the durable workflow, not the shape again" checked><span><b>A (recommended).</b> Post the comment as written. I51 asks only whether the actor level is the durable workflow.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="B: no comment; I51's Blocked by already points to I56, and its Answer cites the decisions"><span><b>B.</b> No comment. I51's <code class="cr-inline">Blocked by</code> already points here, and its Answer will cite the decisions. Less to write, but the next session reads I51 without knowing which half is answered.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q9" onsubmit="crQueue(event, 'q9', 'Q9 I30 and I33 comments')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q9 - The comments on I30 and I33</h3>
+      <p>Section 6's texts, updated for rounds 1 and 2. Both issues' <code class="cr-inline">Decide when:</code> is "I56, then map 3", so each also loses its I56 half.</p>
+      <div class="cr-table-wrap"><table class="table table-sm">
+        <thead><tr><th>Issue</th><th>New <code class="cr-inline">Decide when:</code></th><th>Proposed comment</th></tr></thead>
+        <tbody>
+          <tr><td><a class="cr-link" href="../issues/0030-ideas-batch-glossary-entries-written-as-effects.md">I30</a></td><td>Map 3, the formula's names</td><td>"2026-10-23: I56 settled where the shape is foundation: the data level, where a command decides, authority accepts and the projector evolves, a workflow runs over its journal, and activities are the only door to the world (D130). An effect form fits the terms that are steps over kept state (Command, Projector, Workflow, Activity, IntentComposer, and accepting), not reads or things (Datom, Read model, Gate). The changeset is the step, and <code class="cr-inline">State'</code> is the log after accept (D131). The sketch's "super high" level is the lens, the same four states at every level (D132), not a handler. What is left is the formula's names, which are map 3's."</td></tr>
+          <tr><td><a class="cr-link" href="../issues/0033-ideas-batch-abstractions-that-constrain-agents.md">I33</a></td><td>Map 3, "abstraction" or "pattern"</td><td>"2026-10-23: I56 gives the shape no role in the problem-to-conclusion statement. That statement is D98's loop at the decision level, a lens (D132, D98'): a review page is hot, the human settling a round is the frontier, the decision log is warm, and the ADR and glossary are cold. What constrains an agent at the data level is the split between decide and evolve: a command cannot write, and a projector cannot decide (D130). Whether "abstraction" or "pattern" names what ViViEfs delivers is map 3's. "Where can an agent still write bad code that passes" goes with map 4."</td></tr>
+        </tbody>
+      </table></div>
+      <p class="cr-src">D numbers are proposed: D130 the data-level shape, D131 the changeset as the step, D132 the lens, D133 verified commit, then D98'.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q9" value="A: post both comments as written, and narrow both Decide when lines to their map 3 half" checked><span><b>A (recommended).</b> Post both comments as written, and narrow both <code class="cr-inline">Decide when:</code> lines to their map 3 half.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="B: post the comments, but keep both Decide when lines unchanged until map 3 starts"><span><b>B.</b> Post the comments, but keep both <code class="cr-inline">Decide when:</code> lines unchanged until map 3 starts.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="round-4">
+  <h2 class="text-2xl font-bold">10. Round 4: four challenges, after sleeping on it (2026-10-24)</h2>
+  <p>The human came back with four challenges to where rounds 1-3 stand. Each is taken on its merits below, with what vivief and Effect already say, and with where it belongs. The <a class="cr-link" href="#write-up">proposed write-up</a> waited for this round and now includes it.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Challenge</th><th>What I56 can settle</th><th>What belongs elsewhere</th></tr></thead>
+    <tbody>
+      <tr><td><b>1. Surface, not screen</b></td><td>The concept: what a frame reaches a person through is not visual by assumption</td><td>The word: map 3 (it clashes, see below)</td></tr>
+      <tr><td><b>2. Pattern and abstraction, intent at many levels</b></td><td>The kinds of intent, ordered by abstraction, as part of the lens (D132)</td><td>"Abstraction" or "pattern" as the name: map 3, <a class="cr-link" href="../issues/0033-ideas-batch-abstractions-that-constrain-agents.md">I33</a></td></tr>
+      <tr><td><b>3. An app as a pattern</b></td><td>The lens's one-line summary</td><td>What a pattern is (D82, Builds on): only if the human wants to reopen it</td></tr>
+      <tr><td><b>4. Effect's own names</b></td><td>A rule for naming, and the I56 words checked</td><td>The full comparison: a research issue before map 3</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- 10a -->
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-xl font-bold">10a. Surface, not screen</h3>
+    <p class="text-sm"><b>The challenge.</b> A screen is one way to present: speakers give sound (speech, music), a phone gives haptics, and later there may be holograms, a robot signing, or ways nobody knows yet. "Surface" names the whole set.</p>
+    <p class="text-sm"><b>vivief's original</b> (<code class="cr-inline">vivief-concepts-v6.md</code> §2.3): "Surface. The renderer. Consumes a Projection's output. Six modes": Stream, Card, Canvas, Dialog, Board, Diagram. Every mode is visual. The human's Surface is wider: vivief's word, with the visual assumption removed.</p>
+    <div class="cr-mermaid"><pre class="mermaid">
+flowchart LR
+  P["Presenter"] -- "a frame" --> SU{"Surface:<br/>how the frame<br/>reaches a person"}
+  SU --> SC["Screen: text,<br/>diagrams, pictures"]
+  SU --> SP["Speaker: speech,<br/>music"]
+  SU --> HA["Haptics"]
+  SU --> UN["Others: holograms,<br/>a robot signing, ..."]
+  P -. "the same frame" .-> T["An agent: through a tool,<br/>not a surface"]
+</pre></div>
+    <p class="text-sm"><b>Where "screen" is today:</b> 11 times in the glossary (Presenter "what a screen asks for data", Frame "the rows a screen shows", Frame subscription, Screen-view selector, Feature "from screen to server"), in 8 ADRs (ADR-0033 among them) and in 9 decision-log entries. D73 gives "one URL per screen", which really is visual.</p>
+    <p class="text-sm"><b>The challenge back.</b> The idea holds: the Presenter's contract already names no modality, so nothing in the code assumes a screen. The word does clash, though. React Native Paper and Material both have a <code class="cr-inline">Surface</code> component (an elevated view), "API surface" and "attack surface" are common, and vivief's Surface is visual. The map's rule says a word that clashes waits for map 3. One more question: an agent reading a frame is not using a surface. It reads it through a tool, which is Effect's word (10d).</p>
+  </div></div>
+
+  <!-- 10b -->
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-xl font-bold">10b. Intent at every level of abstraction</h3>
+    <p class="text-sm"><b>The challenge.</b> Make pattern and abstraction the main metaphors. The IntentComposer has levels of abstraction: WayFinder, grill-with-docs, grill-me, prompt, decision, button press.</p>
+    <p class="text-sm"><b>What the six kinds of intent show.</b> Each one composes an intent, reviews it, and submits it across a frontier, the way the IntentComposer goes Composing, Reviewing, Submitting. Each sits on one of D132's levels, and ordering them by abstraction gives the same order as ordering them by time:</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Kind of intent</th><th>Hot: composing</th><th>Frontier: submitted</th><th>D132 level</th><th>A turn takes</th></tr></thead>
+      <tbody>
+        <tr><td><b>WayFinder</b></td><td>Charting a map of decision tickets toward a destination, the fog</td><td>Each ticket resolved</td><td>Patterns, a map</td><td>Weeks</td></tr>
+        <tr><td><b>grill-with-docs</b></td><td>Rounds on a review page, the docs written as it goes</td><td>The human settles, checks the write-up</td><td>Decisions</td><td>Days</td></tr>
+        <tr><td><b>grill-me</b></td><td>Questions with recommended answers, in conversation</td><td>The human answers a round</td><td>Decisions</td><td>An hour</td></tr>
+        <tr><td><b>Prompt</b></td><td>One request to an agent, a plan</td><td>The human approves the plan or the diff</td><td>Code</td><td>Minutes</td></tr>
+        <tr><td><b>Decision</b></td><td>One question and its options (Q7: A, B, C)</td><td>One answer</td><td>Decisions or data</td><td>Seconds to minutes</td></tr>
+        <tr><td><b>Button press</b></td><td>The IntentComposer: Composing, Reviewing</td><td>Confirm, then accept</td><td>Data</td><td>Seconds</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>So the six kinds are D132's hot column seen from the intent's side.</b> It adds something D132 lacked: the levels are ordered by how abstract an intent is, and that is also how long its turn takes. Effect's <code class="cr-inline">ai/Tool</code> has the same step at the agent level: a tool call "can require approval before execution".</p>
+    <p class="text-sm"><b>The challenge back.</b> A pattern here is a contract with suites, gates and a guide. A grilling skill has none of these, so calling all six "the IntentComposer pattern" makes the move round 1 rejected (Q1 B, every level a handler). vivief kept the two apart: level and <i>implementation strategy</i> (Code, Markdown/LLM, StateMachine) are orthogonal (v6 §2.5). A skill is the Markdown/LLM strategy, and the IntentComposer is the StateMachine one. Whether "abstraction" should name the wider idea is I33's question for map 3. These six kinds are strong input to it.</p>
+    <div class="card bg-base-300"><div class="card-body p-4 space-y-2">
+      <p class="text-sm"><b>vivief's aperture, from its source</b> (<code class="cr-inline">docs/contract/vision/creation-loop-extensions.md</code>, Aperture): "a parameter on Projection that controls how much possibility flows through the system at every stage. Borrowed from optics - how wide you open the view. It is NOT a new primitive. It unifies two existing Projection fields: <code class="cr-inline">trustThreshold</code> ... <code class="cr-inline">freshness</code>." Narrow is "ground truth only", medium is "active work including streaming LLM output", and wide is "everything the system is thinking". "The same dial governs how intents reach effectHandlers": Triage (one handler), Pool (the most trusted wins), Chorus (all produce, one merges). "Selecting datoms and selecting handlers are the same question: how much possibility do I let in?"</p>
+      <p class="text-sm"><b>So aperture is width, not height.</b> It sets how much is let in at one level (trust, freshness, how many handlers), not how big an intent is. It is not an alternative to abstraction. Its own inventory row, <code class="cr-inline">vivief:aperture</code>, is map 6's (agents' context).</p>
+    </div></div>
+  </div></div>
+
+  <!-- 10c -->
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-xl font-bold">10c. An app as a pattern</h3>
+    <p class="text-sm"><b>The challenge.</b> After reading the docs start page, "How a pattern is delivered": an app is a pattern with features (maybe a pattern in itself) built on patterns, where humans and bots compose intent, and apps and tools created from intent carry out intent to reach a goal.</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Term today</th><th>Glossary</th></tr></thead>
+      <tbody>
+        <tr><td><b>Pattern</b></td><td>"A proven way to build <i>one part of an app</i>, written down once ... one contract and may have several implementations"</td></tr>
+        <tr><td><b>Builds on</b></td><td>"How one pattern uses another ... <i>Patterns do not nest</i>" (D82)</td></tr>
+        <tr><td><b>App</b></td><td>"A program people run ... put together from features and libraries. In code it is a composition root ... thin by rule"</td></tr>
+        <tr><td><b>Feature</b></td><td>"One piece of what the app does for its users ... a vertical slice"</td></tr>
+        <tr><td><b>App creation</b> (D95)</td><td>"Building apps, and the proven parts and tools later apps are built with, by people and AI agents together"</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>The challenge back.</b> If an app is a pattern, "pattern" loses "one part", and an app pattern that contains other patterns breaks "patterns do not nest". Something does repeat across apps, though: their shape. That is <code class="cr-inline">&lt;product&gt;-client</code> plus <code class="cr-inline">&lt;product&gt;-server</code> (D106), a composition root with feature slices (D52), and the app shell (P12, P13). That shape can be a pattern of its own (call it the app shell for now) which <i>builds on</i> the others without containing them. An app is then one use of the app-shell pattern, composed of features that use patterns.</p>
+    <p class="text-sm"><b>The sentence is the lens in one line.</b> "People and agents compose intent; apps and tools, themselves built from intent, carry it out to reach a goal." Composing is hot, carrying it out crosses the frontier and is kept, and the goal reached is the cold net truth someone reads next. It says D95 in D132's terms. It does not need D95 changed.</p>
+  </div></div>
+
+  <!-- 10d -->
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="text-xl font-bold">10d. Effect's own names</h3>
+    <p class="text-sm"><b>The worry.</b> We build on the Effect repository (vendored at <code class="cr-inline">repos/effect</code>), which already names many patterns: Service, Layer, Cluster and more. vivief was written before anyone looked at them, so its concepts may rename or reinvent Effect's.</p>
+    <p class="text-sm"><b>The facts</b>, from the vendored Effect 4 source and our imports:</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Where we stand</th><th>Effect's names</th></tr></thead>
+      <tbody>
+        <tr><td><b>Used as Effect means them</b></td><td>Service, Layer, Schema; <code class="cr-inline">workflow</code>: Workflow, Activity, DurableClock, DurableDeferred, and WorkflowEngine (our datom-backed engine implements its interface, ADR-0012); <code class="cr-inline">reactivity</code>: Reactivity, Atom; Rpc; Sql. Our glossary's Workflow, Activity and Durable clock <i>are</i> Effect's.</td></tr>
+        <tr><td><b>Studied, not adopted, with reasons</b></td><td><code class="cr-inline">eventlog</code> (EventLog, EventJournal, EventLogServer): no server rejection, device-clock ids (ADR-0006, ADR-0016, ADR-0017). <code class="cr-inline">cluster</code>: the later scale-out path (ADR-0012, I8).</td></tr>
+        <tr><td><b>Not looked at yet</b></td><td><code class="cr-inline">ai</code>: Prompt, Tool, Toolkit, Chat, LanguageModel, Decision, DecisionModel, McpServer. <code class="cr-inline">cluster</code>: Entity, Envelope, Message, Reply, Singleton, Sharding. <code class="cr-inline">persistence</code>: PersistedQueue, KeyValueStore.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>Clashes that are already here or near:</b></p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Word</th><th>Ours</th><th>Effect's</th></tr></thead>
+      <tbody>
+        <tr><td><b>Envelope</b></td><td>"The label on a changeset: who made it, on which device, and why"</td><td><code class="cr-inline">cluster/Envelope</code>: "transport envelopes exchanged by cluster entities"</td></tr>
+        <tr><td><b>Journal</b></td><td>"The record of what a workflow run has done so far"</td><td><code class="cr-inline">eventlog/EventJournal</code>: "Stores event-log entries and replication state"</td></tr>
+        <tr><td><b>Entity</b></td><td>"The thing a fact is about", the <code class="cr-inline">e</code> of a datom</td><td><code class="cr-inline">cluster/Entity</code>: an addressable type with an RPC protocol, routed to a runner. This is the actor, which is <a class="cr-link" href="../issues/0051-actors-or-the-engine.md">I51</a>'s question.</td></tr>
+        <tr><td><b>Decision</b>, decide</td><td>"An answer agreed in a design discussion, numbered D&lt;n&gt;"; D130's "a command decides"</td><td><code class="cr-inline">ai/Decision</code>, <code class="cr-inline">DecisionModel.decide</code>: a model classifies, rates or estimates one input</td></tr>
+        <tr><td><b>Tool</b></td><td>D102: "Tools are apps", <code class="cr-inline">verify</code>, <code class="cr-inline">qualify</code></td><td><code class="cr-inline">ai/Tool</code>: an operation a model may request, possibly with approval</td></tr>
+        <tr><td><b>Prompt</b></td><td>One kind of intent (10b): one request to an agent</td><td><code class="cr-inline">ai/Prompt</code>: "an ordered list of messages" sent to a model</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>The challenge back.</b> The worry is right, and narrower than it looks. Where the stack runs, at data and durable execution, we did read Effect first: we use its names, and we said why where we did not. The gap is at the edges that map 2 and map 6 are only now reaching: agents (<code class="cr-inline">ai</code>), actors (<code class="cr-inline">cluster</code>), and the words vivief brought in. I51 is the next ticket and asks about actors, so Cluster's Entity is exactly what it must read first.</p>
+  </div></div>
+
+  <h3 class="text-xl font-bold">Questions, round 4 (settled, <a class="cr-link" href="#round-4-settled">above</a>)</h3>
+  <p>The four are independent. What they change in the write-up comes after this round.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q10" onsubmit="crQueue(event, 'q10', 'Q10 surface')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q10 - Surface, not screen</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q10" value="A: adopt the concept now, the word in map 3: a frame reaches a person through a surface of any modality (a screen, a speaker, haptics, others), a screen is one kind; recorded in the decision log and ADR-0032; Surface is map 3's leading candidate with its clashes (React Native Paper and Material Surface, API surface, vivief's visual Surface); an agent reads a frame through a tool, not a surface; screen stays in existing text until map 3" checked><span><b>A (recommended).</b> Adopt the concept now and leave the word to map 3. A frame reaches a person through a surface of any modality, and a screen is one kind. This is recorded in the decision log and ADR-0032. "Surface" goes to map 3 as the leading candidate, with its clashes listed. An agent reads a frame through a tool, not a surface. "Screen" stays in existing text until map 3.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="B: rename now: a Surface glossary entry; Presenter, Frame, Frame subscription and Feature say surface; ADR-0033 amended; screen stays where the meaning is visual (D73, a URL per screen)"><span><b>B.</b> Rename now: add a Surface glossary entry, and change Presenter, Frame, Frame subscription and Feature to say surface. ADR-0033 is amended. "Screen" stays where the meaning is visual (D73, a URL per screen). The vocabulary is right today, but the word is chosen before map 3 weighs its clashes.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="C: keep screen; the exemplar has only screens"><span><b>C.</b> Keep "screen": the exemplar has only screens. Least churn, but the vocabulary assumes the visual case.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q11" onsubmit="crQueue(event, 'q11', 'Q11 kinds of intent')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q11 - Intent at every level of abstraction</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q11" value="A: record the kinds of intent in the lens (D132): at every level an intent is composed (hot), reviewed and submitted (frontier); the kinds from WayFinder to a button press are the levels seen from the intent, ordered by abstraction, which matches the order by time; the IntentComposer stays the data level's machine, a skill is the Markdown/LLM implementation strategy; pattern keeps its delivered meaning; abstraction as a name is map 3's (I33) with the kinds of intent as input; aperture is not an abstraction axis (it is width: trust, freshness, handlers) and stays with its row" checked><span><b>A (recommended).</b> Record the kinds of intent in the lens (D132). At every level an intent is composed (hot), then reviewed and submitted (frontier). The kinds, WayFinder down to a button press, are the levels seen from the intent's side. They are ordered by abstraction, and that matches the order by time. The IntentComposer stays the data level's machine, and a skill is the Markdown/LLM strategy. "Pattern" keeps its delivered meaning. "Abstraction" as a name is map 3's, through I33, with the kinds of intent as input. Aperture is not an abstraction axis: it is width, not height.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q11" value="B: as A, and name abstraction now as the wider term: a pattern is the delivered kind of abstraction, and the kinds of intent are its levels (a glossary entry now)"><span><b>B.</b> As A, and name "abstraction" now as the wider term: a pattern is the delivered kind of abstraction, and the kinds of intent are its levels. A glossary entry now. This answers I33's naming question ahead of map 3.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q11" value="C: make intent composition a pattern now, with implementations from the IntentComposer machine to the grilling skills and WayFinder"><span><b>C.</b> Make intent composition a pattern now, with implementations ranging from the IntentComposer machine to the grilling skills and WayFinder. It needs a contract and suites a skill cannot have yet.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q11" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q12" onsubmit="crQueue(event, 'q12', 'Q12 app as a pattern')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q12 - An app as a pattern</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q12" value="A: an app is not a pattern (a pattern is one part, patterns do not nest); what repeats across apps, the app shape (D106, D52, the app shell P12 and P13), can become a pattern of its own that builds on the others, taken up when the app shell is built (phase 3); the human's sentence becomes the lens's one-line summary in D132: people and agents compose intent; apps and tools, themselves built from intent, carry it out to reach a goal; D95 unchanged" checked><span><b>A (recommended).</b> An app is not a pattern: a pattern is one part, and patterns do not nest. What repeats across apps is the app's shape (D106, D52, and the app shell, P12 and P13). That shape can become a pattern of its own that builds on the others, taken up when phase 3 builds the app shell. The human's sentence becomes the lens's one-line summary in D132: "people and agents compose intent; apps and tools, themselves built from intent, carry it out to reach a goal". D95 is unchanged.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q12" value="B: an app is a pattern, with features as its parts: amend Pattern, Builds on and D82 so patterns may nest"><span><b>B.</b> An app is a pattern, with features as its parts. Pattern, Builds on and D82 are amended so that patterns may nest. This reopens map 1's and the guides' definition of a pattern.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q12" value="C: as A, and amend D95 (D95') so the intent sentence is what app creation means"><span><b>C.</b> As A, and amend D95 (as D95') so the intent sentence is what app creation means. Stronger, but it reopens I47's settled answer.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q12" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q13" onsubmit="crQueue(event, 'q13', 'Q13 Effect names')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q13 - Effect's own names</h3>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q13" value="A: a rule now (D134 Effect's names first: a concept Effect already names takes Effect's name and meaning, and a new name is checked against Effect's modules before it is adopted) plus a research issue: Effect's vocabulary against ours, every module's main names against the glossary, same meaning, clash, or an idea we lack; it blocks map 3, and I51 reads cluster (Entity, Sharding, Singleton) first; the I56 write-up goes ahead, since it decides concepts, not names, with its own words checked (decide, Decision, Tool)" checked><span><b>A (recommended).</b> A rule now, plus a research issue. The rule, D134 "Effect's names first": a concept Effect already names takes Effect's name and meaning, and a new name is checked against Effect's modules before it is adopted. The issue, "Effect's vocabulary against ours", compares every module's main names with the glossary and sorts each into same meaning, clash, or an idea we lack. It blocks map 3, and I51 reads Cluster first (Entity, Sharding, Singleton). The I56 write-up goes ahead, because it decides concepts, not names, with its own words checked: decide, Decision, Tool.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q13" value="B: do the whole comparison now, inside I56, before anything is recorded"><span><b>B.</b> Do the whole comparison now, inside I56, before anything is recorded. Thorough, but it is map 3's work and holds up I51.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q13" value="C: fold it into I26 (glossary links on words that are not our terms), no rule"><span><b>C.</b> Fold it into I26 (glossary links on words that are not our terms), with no rule. Clashes would be marked, but new names would not be checked first.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q13" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="write-up">
+  <h2 class="text-2xl font-bold">Proposed write-up (for the human's check before any file changes)</h2>
+  <p>The exact text for the decision log, ADR-0032 and the glossary, then what else changes. Updated for round 4. New issues are I76-I78: I74 and I75 are taken.</p>
+
+  <h3 class="text-lg font-semibold">Decision log: a new section, "One shape at every level (2026-10-24)"</h3>
+  <p class="text-sm">Intro: "From I56, the sixth ticket of the foundation concepts map, grilled with the human on the review page and in conversation over four rounds. ADR-0032 records D130-D135 among the foundation concepts; D98' amends D98."</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>#</th><th>Name</th><th>Decision</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><b>D130</b></td><td>One shape at the data level</td><td>Every change to kept state goes from a state and an input, through a step, to the next state. A command <b>decides</b>: read model, intent and mint to a changeset or a <code class="cr-inline">DomainError</code>, pure, its ids and time passed in (D36'). Authority <b>accepts</b> the step into the log (D124). The projector <b>evolves</b> the read models from the log, a fold that a rebuild runs again from empty (D37). A workflow body is the same over its journal, and an activity is the only place the world (time, ids, IO, models) comes in, its result kept (D2). Workflow and Activity are Effect's own (<code class="cr-inline">effect/workflow</code>), and the engine implements its <code class="cr-inline">WorkflowEngine</code> (ADR-0012). Failure is data: a typed <code class="cr-inline">DomainError</code>, a typed <code class="cr-inline">Rejection</code>, a journaled activity exit. Reads (a Presenter's frame, a query atom) and pure helpers are not handlers: they make no new state, as vivief's creation boundary says. Shown by P05, P06 and P09. vivief's <code class="cr-inline">effectHandler</code> is adopted in this form; its name and the formula's terms are map 3's.</td><td>The code already works this way under other names: it is event sourcing's split into decide and evolve. Named once, a newcomer sees command, accept, projector and workflow as one idea, and an agent sees that a command cannot write and a projector cannot decide.</td></tr>
+      <tr><td><b>D131</b></td><td>The changeset is the step</td><td>The changeset is the step between two states, not <code class="cr-inline">State'</code>: it means nothing without the log it joins, and it can be rejected. <code class="cr-inline">State'</code> is the log after accept. Read models are its views: the one a command reads, and the one a person is shown (D99, D134). The device's log is the local context, and authority's log the global one. <code class="cr-inline">viviefs:changeset</code>: keep ours, with this reading.</td><td>vivief v6 moved the same way: a handler returns datoms, not a new state. Calling the read model the state would make the thing we throw away the thing we keep.</td></tr>
+      <tr><td><b>D132</b></td><td>Four states at every level</td><td>Above the code, the shape is a lens, not a concept. In one line: people and agents compose intent; apps and tools, themselves built from intent, carry it out to reach a goal. At every level a thing passes four states, named by how settled it is: <b>hot</b>, created and open, prepared for sync and still changeable (decide); <b>the frontier</b>, the sync, where a checkpoint decides (accept); <b>warm</b>, kept with its history (keep); <b>cold</b>, net truth that others build on (derive). The levels are data, decisions, code, claims and patterns. For data: an open changeset, accept, the log, the read model. For decisions: a review page, the human settling a round, the decision log, the ADR and the glossary. For code: a worktree change, verify green and the human agreeing, main's history, a qualified commit. For claims: a probe, qualify, the ledger, gate state. For patterns: a guide draft, accepting it, its history, an accepted guide. At every level an intent is composed while hot and reviewed and submitted at the frontier, as the IntentComposer does at the data level. The kinds of intent run from a WayFinder map, a grilling with docs, a grilling, a prompt and one decision, down to a button press. Ordered by how abstract the intent is, they are also ordered by how long a turn takes, and that orders the levels. A skill is vivief's Markdown/LLM implementation strategy and the IntentComposer its StateMachine one (v6 §2.5); vivief's aperture (trust, freshness, how many handlers act) is a different axis and stays with its own row. Something cold that someone reads becomes a hot intent at another level. The tiers follow <code class="cr-inline">vivief ADR 0050</code> and ADR-0011's compaction horizon. The four words are not glossary terms yet: hot, warm and cold clash with hot reload and cold and warm start, so the words wait for map 3, and so does "abstraction" (I33). <code class="cr-inline">vivief:fractal-factory</code>: adopted, narrowed, as this lens. Not adopted: datoms as the substrate for development artifacts (D129, D48'), and "velocity compounds" as a claim; whether agents build faster from the guides is map 4's evidence question. An app is not a pattern: a pattern is one part, and patterns do not nest (D82). What repeats across apps, their shape (D106, D52, the app shell of P12 and P13), is a candidate pattern when phase 3 builds the app shell.</td><td>One axis for every level, with vivief's meaning of temperature (how settled, not how fast). It puts a grilling, accept, verify and qualify at the same place, the crossing, and shows that a WayFinder map and a button press are the same move at different sizes. No gate can show that a guide or a session is a function, so it stays a lens.</td></tr>
+      <tr><td><b>D133</b></td><td>Verified commit</td><td>A verified commit is a commit on which <code class="cr-inline">pnpm verify</code> is green. A commit is to the repository what a changeset is to the log: one step, all or nothing. It is prepared in a worktree, crosses the code level's frontier (verify green, the human agrees), and lands on <code class="cr-inline">main</code>, where CI runs verify again. It is files in git, not datoms (D48', D129). Unlike accept's verdict, verify's is not kept with the commit, only in the CI run (I76). "Changeset" stays a data word (D44), so "code changeset" is avoided.</td><td>"A passing tree" was a phrase with no definition. "Merged" names a workflow this repository does not have: commits land on <code class="cr-inline">main</code> directly. GitHub's "Verified" badge means a signed commit; the glossary entry says so, and map 3 can revisit the word.</td></tr>
+      <tr><td><b>D134</b></td><td>Presenting in any modality</td><td>A frame reaches a person through a surface of any modality: a screen (text, diagrams, pictures), a speaker (speech, music), haptics, or ways not known yet. A screen is one kind. The Presenter's contract already names no modality. An agent reads a frame through a tool, not a surface. "Surface" is map 3's leading candidate for the word. It clashes with the <code class="cr-inline">Surface</code> component of React Native Paper and Material, with "API surface" and "attack surface", and with vivief's Surface, whose six modes are all visual. "Screen" stays in existing text until map 3, and where the meaning is visual (D73).</td><td>A screen is one way to present. Naming the visual case as the general one would make every other way an exception. The word clashes, so it waits, by the map's rule.</td></tr>
+      <tr><td><b>D135</b></td><td>Effect's names first</td><td>A concept Effect already names takes Effect's name and meaning. A new name is checked against Effect's modules (the core and <code class="cr-inline">ai</code>, <code class="cr-inline">cluster</code>, <code class="cr-inline">eventlog</code>, <code class="cr-inline">persistence</code>, <code class="cr-inline">reactivity</code>, <code class="cr-inline">rpc</code>, <code class="cr-inline">sql</code>, <code class="cr-inline">workflow</code>) before it is adopted. A deliberate difference says why, as ADR-0006, ADR-0016 and ADR-0017 do for EventLog. Where the stack runs this already holds: Service, Layer, Schema, Workflow, Activity, Durable clock, Reactivity, Atom, Rpc and Sql are used as Effect means them. Not compared yet: <code class="cr-inline">ai</code> and most of <code class="cr-inline">cluster</code>. I78 compares them before map 3, and I51 reads <code class="cr-inline">cluster</code> (Entity, Sharding, Singleton) first. Known clashes: Envelope, Journal (EventJournal), Entity, Decision and "decide" (<code class="cr-inline">ai/Decision</code>, <code class="cr-inline">DecisionModel.decide</code>), Tool, Prompt.</td><td>We build on Effect and keep its source in the repository. vivief's concepts were written before anyone read it, so taking them over could rename or reinvent what Effect already has. An agent that knows Effect then reads our code the way Effect's own documentation does.</td></tr>
+      <tr><td><b>D98'</b></td><td>Vision - View - Effects, at every level</td><td>As D98, and the loop recurs at every level: each turn leaves kept facts or files that the next turn reads, and a thing passes D132's four states on the way. A gate is a turn at the claims level, a guide at the patterns level, and a grilling at the decisions level. The three words still get glossary entries in map 3.</td><td>I56 found D98's loop at every level it looked at; D132 says how to draw it. Placed after D98, as D36' is after D36.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">ADR-0032: a new paragraph in the Design, after "Accepting a change"</h3>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2 text-sm">
+    <p><b>One shape at every level (D130-D135, D98', I56).</b> At the data level, every change to kept state goes from a state and an input, through a step, to the next state: a command decides (a changeset or a typed error, pure, its ids passed in), authority accepts the step into the log, and the projector evolves the read models from it. A workflow runs the same way over its journal, and an activity is the only place the world comes in, its result kept. Failure is data. The changeset is the step; the log after accept is the new state, and read models are its views. Reads and pure helpers make no new state, so they are outside the shape. Shown by P05, P06 and P09. vivief's <code class="cr-inline">effectHandler</code> is adopted in this form; its name is map 3's. Above the code the shape is a lens, not a concept: people and agents compose intent, and apps and tools, themselves built from intent, carry it out to reach a goal. At every level (data, decisions, code, claims, patterns) a thing is hot while it is open, crosses a frontier where a checkpoint decides, is kept warm with its history, and turns cold as net truth others build on. Something cold that someone reads becomes a hot intent at another level. Intent comes in kinds from a WayFinder map down to a button press, and the more abstract the intent, the longer its turn. A verified commit, a commit on which <code class="cr-inline">pnpm verify</code> is green, is the code level's crossing. A frame reaches a person through a surface of any modality, a screen being one. vivief's fractal factory is adopted as this lens; datoms for development artifacts and "velocity compounds" are not. Where Effect already names a concept, ViViEfs uses Effect's name and meaning.</p>
+  </div></div>
+  <p class="text-sm">Also in ADR-0032: D130-D135 and D98' join Related; the D98 paragraph's last sentence, "Whether one shape describes every level is I56's", becomes "One shape at every level, below, answers how far the loop is one shape (D98')." Status stays <code class="cr-inline">Proposed, unverified</code>.</p>
+
+  <h3 class="text-lg font-semibold">Glossary</h3>
+  <pre class="cr-code">**Verified commit**:
+A saved version of the code on which every check passed. A commit on which
+`pnpm verify` is green. A commit is to the repository what a changeset is to
+the log: one step, prepared in a worktree, checked by verify and agreed by the
+human, then kept on `main`, where CI runs verify again. The verdict is kept
+only in the CI run. Not GitHub's "Verified" badge, which means a signed commit.
+_Avoid_: passing tree, code changeset, merged commit
+
+**Changeset**: (unchanged, except)
+_Avoid_: transaction (a datom's own unit), batch, patch, code changeset (a commit)</pre>
+  <p class="text-sm">"Verified commit" goes in the Validation group, after Verify. No other entry: Surface, the four states, the kinds of intent and "abstraction" all wait for map 3 (Q7, Q10, Q11).</p>
+
+  <h3 class="text-lg font-semibold">Everything else</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td><b>I56 Answer</b></td><td><code class="cr-inline">viviefs:changeset</code>: keep ours, the changeset is the step and the log after accept is <code class="cr-inline">State'</code> (D131). <code class="cr-inline">vivief:fractal-factory</code>: adopt, narrowed, as the lens of four states (D132, D98'). Also decided: the shape at the data level (D130), verified commit (D133), presenting in any modality (D134), Effect's names first (D135). The four rounds in short, and links to the review page and to I76-I78. <code class="cr-inline">Status: resolved</code>.</td></tr>
+      <tr><td><b>I76 Verify's verdict is not kept per commit</b></td><td>Accept's verdict on a changeset is kept (the changeset is in the log, or there is a typed rejection), but verify's verdict on a commit is kept only in the CI run, so a gate or a reader cannot tell from the repository whether a commit is a verified commit. <code class="cr-inline">Status: ready-for-human</code>, <code class="cr-inline">Decide when:</code> a gate must know it ran on a verified commit.</td></tr>
+      <tr><td><b>I77 The word change has two meanings</b></td><td>"Change" means a data changeset in ADR-0035 ("Accepting a change", "every change") and a code change in the glossary's Verify entry ("every change must pass"). <code class="cr-inline">Status: ready-for-human</code>, <code class="cr-inline">Decide when:</code> map 3.</td></tr>
+      <tr><td><b>I78 Research: Effect's vocabulary against ours</b></td><td>Every Effect module's main names (the core and <code class="cr-inline">ai</code>, <code class="cr-inline">cluster</code>, <code class="cr-inline">eventlog</code>, <code class="cr-inline">persistence</code>, <code class="cr-inline">reactivity</code>, <code class="cr-inline">rpc</code>, <code class="cr-inline">sql</code>, <code class="cr-inline">workflow</code>) against <code class="cr-inline">GLOSSARY.md</code> and the inventory's vivief words, each sorted as same meaning, clash, or an idea we lack, with the six known clashes first. Read from the vendored source at <code class="cr-inline">repos/effect</code>. A record in <code class="cr-inline">docs/research/</code>, as I70's. <code class="cr-inline">Status: ready-for-agent</code>. Map 3 waits for it (next-session's phase 2 row).</td></tr>
+      <tr><td><b>Comments</b></td><td><b>I51</b>: per Q8, plus "read Effect's <code class="cr-inline">cluster</code> first (Entity, Sharding, Singleton, ClusterWorkflowEngine): Cluster's Entity is Effect's actor (D135, I78)". <b>I30</b> and <b>I33</b>: per Q9, each <code class="cr-inline">Decide when:</code> narrowed to map 3; I33's also names the kinds of intent (D132) as input to "abstraction" or "pattern". <b>I26</b>: I78's clashes and Surface (D134) are input to it.</td></tr>
+      <tr><td><b>Map 2</b></td><td>"Decisions so far": "I56: the shape is a foundation concept at the data level (a command decides, authority accepts, the projector evolves; a workflow over its journal) and a lens above it, four states at every level, with kinds of intent from a WayFinder map to a button press; the changeset is the step and the log after accept is <code class="cr-inline">State'</code>; a verified commit is a commit on which verify is green; a frame reaches a person through a surface of any modality; Effect's names first (D130-D135, D98'). Added I76-I78." The Notes' Names bullet gains: "and checks Effect's modules first (D135)".</td></tr>
+      <tr><td><b>Research README</b></td><td>A row for this page: "I56's design review: vivief's shape on ViViEfs's real code level by level, the data level as decide, accept and evolve, the changeset traced, three ways to draw the loop, verified commit, and round 4's challenges (surface, kinds of intent, an app as a pattern, Effect's names); settled in conversation (D130-D135, D98')."</td></tr>
+      <tr><td><b>next-session.md</b></td><td>Map 2 adds I56 to what is resolved. The next step is I51, which reads Effect's Cluster first. Phase 2's row: I78 before map 3, and the words waiting gain Surface, the four states, the kinds of intent, "abstraction" and I78's clashes.</td></tr>
+      <tr><td><b>Then</b></td><td><code class="cr-inline">mise exec -- pnpm refs fix</code>, <code class="cr-inline">mise exec -- pnpm verify</code>, one commit. <code class="cr-inline">pnpm qualify</code> is not run: no gate inputs change.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
 </div>
 <script type="module">
   import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
-  window.addEventListener("load", () => mermaid.run({ querySelector: ".mermaid" }), { once: true });
+  // Mermaid measures labels while it lays a diagram out, so a diagram must stay
+  // visible until it is done. Lavish hides a .mermaid container as soon as an SVG
+  // appears in it (to put a whiteboard there), and preloads the page in a hidden
+  // frame. So each diagram is drawn apart, once the page has a size, and only the
+  // finished SVG goes into its container.
+  const diagrams = [...document.querySelectorAll(".mermaid")];
+  function source(el) {
+    const raw = document.createElement("textarea");
+    raw.innerHTML = el.innerHTML;
+    return raw.value.trim();
+  }
+  async function draw() {
+    for (const [i, el] of diagrams.entries()) {
+      try {
+        const { svg } = await mermaid.render(`diagram-${i}`, source(el));
+        el.innerHTML = svg;
+      } catch (error) {
+        console.error(`Mermaid diagram ${i} in #${el.closest("section")?.id} failed:`, error?.message ?? error);
+      }
+    }
+  }
+  const sized = new ResizeObserver(([entry]) => {
+    if (entry.contentRect.width === 0) return;
+    sized.disconnect();
+    void draw();
+  });
+  window.addEventListener("load", () => sized.observe(document.body), { once: true });
 </script>
 </body>
 </html>

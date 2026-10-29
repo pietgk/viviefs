@@ -1,10 +1,10 @@
 /**
- * The P10 crash-and-resume run and the engine half of its checks.
+ * The P10 crash-and-resume run and the workflow engine half of its checks.
  *
  * One execution of `TraceProbe.v1`: `step-one` is killed after its body ran
  * and before its exit was journaled, a relaunch sweep resumes it, `fetch`
  * fails on attempt 1 and succeeds on attempt 2, a caller completes the
- * `approval` deferred, a durable clock fires, and `upload` finishes. The run
+ * `approval` durable deferred, a durable clock fires, and `upload` finishes. The run
  * returns the execution's journal, every envelope, and the live spans a
  * recording tracer saw. The trace projector checks (P10 step 3) read the
  * same run.
@@ -36,9 +36,9 @@ import {
 import {
   armedCrashHook,
   durableContext,
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
-  EngineSweep,
+  WorkflowEngineSweep,
   noopCrashHook,
   noopWakeScheduler,
   spanIdFor,
@@ -118,7 +118,7 @@ const session = (
   probeLayer(clock, runs).pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer({ org: P10_ORG, actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: P10_ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(hook),
     Layer.provide(noopWakeScheduler),
@@ -165,7 +165,7 @@ const contextOf = Effect.map(Effect.currentSpan, (span) => ({
  * Session 1 starts the execution under a `p10.command` span and is killed
  * after `step-one` ran and before its exit was journaled. Session 2 is a
  * relaunch: the launch sweep resumes, a `p10.approve` span completes the
- * deferred, and the execution finishes.
+ * durable deferred, and the execution finishes.
  */
 export const runTraceScenario = (
   openStore: StoreFactory,
@@ -224,7 +224,7 @@ const scenario = (
         const ctx = yield* Layer.build(second)
         const use = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
           effect.pipe(Effect.provide(ctx))
-        yield* use(EngineSweep.use((sweep) => sweep.sweep()))
+        yield* use(WorkflowEngineSweep.use((sweep) => sweep.sweep()))
         yield* use(
           pollUntil(executionId, (r) => r._tag === 'Suspended', 'approval wait'),
         )
@@ -405,7 +405,7 @@ const engineCausingSpan = (run: TraceScenario): Verdict => {
   const clock = clockId(P10_ORG, run.executionId, 'wait')
   for (const row of engineRows) {
     const envelope = run.envelopes.get(row.cs)
-    // The clock caused its deferred exit, so that exit names the clock span.
+    // The clock caused its durable deferred exit, so that exit names the clock span.
     const expected = durableContext(
       run.executionEntity,
       row.a === Attr.deferredExit ? clock : row.e,
@@ -462,7 +462,7 @@ const verdicts: ReadonlyArray<
   ['live spans only in activity bodies', liveSpansOnlyInActivityBodies],
 ]
 
-/** The engine half of P10, evaluated on one crash-and-resume run. */
+/** The workflow engine half of P10, evaluated on one crash-and-resume run. */
 export const judgeTraceJournal = (run: TraceScenario): CheckResult[] =>
   verdicts.map(([name, judge]) => {
     const verdict = judge(run)

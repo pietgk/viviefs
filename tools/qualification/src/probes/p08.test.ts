@@ -3,7 +3,7 @@ import {
   brokenDriver,
   COMPOSER_CHECK_NAMES,
   passingDrivers,
-} from '@viviefs/evidence-client'
+} from '@viviefs/evidence-client-feature'
 
 describe('P08 UI three-way prototype picks', () => {
   it('compares the three named interaction libraries', () => {

@@ -20,10 +20,10 @@ that link to guides, not a second copy of those guides ([D30 One source for huma
    `viviefs/account/person`, `viviefs/account/issuer` and `viviefs/account/subject`.
    Do not rename them ([D44 Never rename, never migrate][D44]).
 5. [`docs/plan/bootstrap/06-qualification-gates.md`](docs/plan/bootstrap/06-qualification-gates.md) -
-   ordered gates and how gates, steps and other work are named. No feature code
+   ordered gates and how gates, steps and other work are named. No production code
    before its gate passes. Probes and exemplars stay.
 6. [`repos/effect/LLMS.md`](repos/effect/LLMS.md) - before writing Effect code. Then
-   [`.agents/patterns/`](.agents/patterns/).
+   [`.agents/extracts/`](.agents/extracts/).
 
 The current handover is [`docs/plan/next-session.md`](docs/plan/next-session.md).
 
@@ -59,11 +59,11 @@ exemplar to that material. See [Verify - Qualify - Teach](docs/plan/bootstrap/05
 
 | Plane | Source of truth |
 | --- | --- |
-| Agent context | this file, `.agents/skills/`, `.agents/patterns/`, `skills-lock.json`, `docs/agents/` |
+| Agent context | this file, `.agents/skills/`, `.agents/extracts/`, `skills-lock.json`, `docs/agents/` |
 | Host toolchain | `mise.toml` (Node, pnpm, bun) |
 | TypeScript | dual pin in root `package.json` ([ADR-0028](docs/adr/0028-typescript-7-cli-with-typescript-6-api.md)): `tsc` is TypeScript 7 (`@typescript/native`); the `typescript` package name is TypeScript 6 (`@typescript/typescript6`) for Nx, ESLint and Vite. Do not install `typescript@7` under the `typescript` name. `tsc` is patched by `@effect/tsgo` ([ADR-0029](docs/adr/0029-effect-reference-and-language-service.md)). Editor tsserver stays on TypeScript 6 until Cursor Native Preview is usable. `verbatimModuleSyntax`, `exactOptionalPropertyTypes`, and `moduleDetection: "force"` are on ([ADR-0031](docs/adr/0031-typescript-strictness-flags.md)). Do not enable `rewriteRelativeImportExtensions` or `ignoreDeprecations`. |
 | Effect reference | `repos/effect` git subtree. Read-only. Prefer it over web search and over `node_modules`. |
-| Device driving | `@expo/agent-cli` in `apps/evidence-mobile`; `agent-device` in `tools/qualification` (both MIT) |
+| Device driving | `@expo/agent-cli` in `apps/evidence-client`; `agent-device` in `tools/qualification` (both MIT) |
 | Lab runtime | Apple Container image digests, admitted per measured gap: [`tools/qualification/lab-images.json`](tools/qualification/lab-images.json) (Jaeger and otel-lgtm for [P10 Trace projection][P10], Keycloak for [P11 Identity][P11]). A probe refuses an image that is not pinned by digest. |
 
 The evidence app is a development build (`expo-dev-client`), not Expo Go. [P02 SQLite drivers][P02]
@@ -121,7 +121,7 @@ Single context: `GLOSSARY.md`, `docs/adr/`, the decision log. See
 ### Coding standards
 
 For `code-review` and `retro`: the working agreements below, the ADRs and
-`.agents/patterns/`; each guide's `review` page once guides exist ([D62 The shape of a guide][D62]). A
+`.agents/extracts/`; each guide's `review` page once guides exist ([D62 The shape of a guide][D62]). A
 mechanical rule becomes a `verify` check, not prose.
 
 ### Teach
@@ -143,11 +143,11 @@ External source lives under `repos/` as git subtrees ([ADR-0029](docs/adr/0029-e
   not a reference subtree.
 
 When writing Effect code, read [`repos/effect/LLMS.md`](repos/effect/LLMS.md),
-then the matching file under [`.agents/patterns/`](.agents/patterns/). Those
-pattern files are agent extracts. They cite `repos/effect` and must not become
+then the matching agent extract under [`.agents/extracts/`](.agents/extracts/).
+They cite `repos/effect` and must not become
 a second copy of the docs concept pages ([D30 One source for humans and agents][D30]).
 
-Field-manual topics without a pattern file: `pnpm exec effect-solutions show <topic>`.
+Field-manual topics without an agent extract: `pnpm exec effect-solutions show <topic>`.
 
 ## Working agreements
 
@@ -160,7 +160,9 @@ Field-manual topics without a pattern file: `pnpm exec effect-solutions show <to
 - Keep accepted, proposed, implemented and verified distinct. Never mark a gate
   passed from prose.
 - Pin exact versions. `effect` and every `@effect/*` share one version. Expo SDK
-  58 is pinned (beta until stable).
+  58 is pinned (stable since 2026-10-15); Expo's modules, `react`, `react-dom` and
+  `react-native` at the versions its `bundledNativeModules.json` names
+  (`npx expo install --check` agrees).
 - Licence is Apache-2.0. Check licences of everything added. PowerSync service
   (FSL), Inngest server (SSPL) and Restate (BUSL) are not in the plan.
 - Never add an agent as a commit co-author.

@@ -1,0 +1,70 @@
+{
+  "name": "evidence-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/evidence-client/src",
+  "projectType": "application",
+  "tags": [
+    "kind:app",
+    "platform:client"
+  ],
+  "metadata": {
+    "rationale": "Expo composition root; device resume and notification journeys"
+  },
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.artifacts/verify/evidence-client"
+      ],
+      "options": {
+        "cwd": "apps/evidence-client",
+        "env": {
+          "CI": "1",
+          "EXPO_NO_TELEMETRY": "1"
+        },
+        "parallel": false,
+        "commands": [
+          "pnpm exec expo export --platform ios --output-dir ../../.artifacts/verify/evidence-client/ios",
+          "pnpm exec expo export --platform android --output-dir ../../.artifacts/verify/evidence-client/android"
+        ]
+      }
+    },
+    "bundle-size": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": [
+        "build"
+      ],
+      "inputs": [
+        "default",
+        "^production",
+        "{projectRoot}/bundle-budget.json",
+        "{workspaceRoot}/tools/verify/src/bundle-size.ts",
+        "{workspaceRoot}/tools/verify/src/bundle-report.ts"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.artifacts/verify/evidence-client/ios-js",
+        "{workspaceRoot}/.artifacts/verify/evidence-client/android-js",
+        "{workspaceRoot}/.artifacts/verify/evidence-client/bundle-report.json"
+      ],
+      "options": {
+        "cwd": "apps/evidence-client",
+        "env": {
+          "CI": "1",
+          "EXPO_NO_TELEMETRY": "1"
+        },
+        "parallel": false,
+        "commands": [
+          "pnpm exec expo export --platform ios --no-bytecode --source-maps --output-dir ../../.artifacts/verify/evidence-client/ios-js",
+          "pnpm exec expo export --platform android --no-bytecode --source-maps --output-dir ../../.artifacts/verify/evidence-client/android-js",
+          "node --experimental-strip-types ../../tools/verify/src/bundle-size.ts apps/evidence-client"
+        ]
+      }
+    }
+  }
+}

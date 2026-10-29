@@ -26,3 +26,7 @@ export {
   referenceProblems,
   rewriteDocument,
 } from './rewrite.ts'
+export type { DiagramLabel } from './diagram-labels.ts'
+export { diagramLabels, mermaidLabels, proseLines } from './diagram-labels.ts'
+export type { InlineItem, TheirWords, TheirWordsMarker } from './their-words.ts'
+export { inlineItems, quotedLines, theirWords, theirWordsMarker } from './their-words.ts'

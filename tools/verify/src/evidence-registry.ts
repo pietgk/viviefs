@@ -1,16 +1,16 @@
 /**
- * The registry (D76): every production file, its file treatment and why.
+ * The evidence registry (D76): every production file, its file treatment and why.
  * Filesystem rules only discover files; this list assigns treatments, and a
  * human reviews every change to it. `ownership` fails on a production file
  * without an entry, an entry without a file, a duplicate, an empty rationale,
  * or a shape its treatment does not allow. Changing an entry changes the
- * registry digest the evidence lockfile records.
+ * evidence registry digest the evidence lockfile records.
  */
 import type { SuiteId } from '@viviefs/testing'
 import type { CoverageProducer } from '@viviefs/testing/vitest'
-import type { RegistryEntry } from './file-treatments.ts'
+import type { EvidenceRegistryEntry } from './file-treatments.ts'
 
-const unit = (path: string, rationale: string, suites?: ReadonlyArray<SuiteId>): RegistryEntry => ({
+const unit = (path: string, rationale: string, suites?: ReadonlyArray<SuiteId>): EvidenceRegistryEntry => ({
   path,
   treatment: 'node-unit',
   rationale,
@@ -21,77 +21,77 @@ const integration = (
   path: string,
   rationale: string,
   suites?: ReadonlyArray<SuiteId>,
-): RegistryEntry => ({
+): EvidenceRegistryEntry => ({
   path,
   treatment: 'node-integration',
   rationale,
   ...(suites ? { suites } : {}),
 })
 
-const support = (path: string, producer: CoverageProducer, rationale: string): RegistryEntry => ({
+const support = (path: string, producer: CoverageProducer, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'test-support',
   producer,
   rationale,
 })
 
-const device = (path: string, gate: `P${number}`, rationale: string): RegistryEntry => ({
+const device = (path: string, gate: `P${number}`, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'device',
   gate,
   rationale,
 })
 
-const qualifyOnly = (path: string, gate: `P${number}`, rationale: string): RegistryEntry => ({
+const qualifyOnly = (path: string, gate: `P${number}`, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'qualify-only',
   gate,
   rationale,
 })
 
-const reExport = (path: string, rationale: string): RegistryEntry => ({
+const reExport = (path: string, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 're-export',
   rationale,
 })
 
-const byStep = (path: string, step: string, rationale: string): RegistryEntry => ({
+const byStep = (path: string, step: string, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'process-entry',
   runBy: { step },
   rationale,
 })
 
-const byTest = (path: string, test: string, rationale: string): RegistryEntry => ({
+const byTest = (path: string, test: string, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'process-entry',
   runBy: { test },
   rationale,
 })
 
-const build = (path: string, step: 'docs' | 'build' | 'bundle-size', rationale: string): RegistryEntry => ({
+const build = (path: string, step: 'docs' | 'build' | 'bundle-size', rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'build-step',
   step,
   rationale,
 })
 
-const slot = (path: string, rationale: string): RegistryEntry => ({
+const slot = (path: string, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'named-slot',
   rationale,
 })
 
-const types = (path: string, rationale: string): RegistryEntry => ({
+const types = (path: string, rationale: string): EvidenceRegistryEntry => ({
   path,
   treatment: 'type-only',
   rationale,
 })
 
-const APP = 'apps/evidence-mobile/src'
+const APP = 'apps/evidence-client/src'
 const PROBES = 'tools/qualification/src/probes'
 
-export const REGISTRY: ReadonlyArray<RegistryEntry> = [
+export const EVIDENCE_REGISTRY: ReadonlyArray<EvidenceRegistryEntry> = [
   // apps/docs: the site's pure helpers are unit-tested; Astro loads the rest.
   build('apps/docs/astro.config.ts', 'docs', 'Astro reads the site config; the docs build fails when it is wrong.'),
   build('apps/docs/src/content.config.ts', 'docs', 'Astro entry that registers the collections; checked by the site build, not by tsc.'),
@@ -103,14 +103,15 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   build('apps/docs/src/lib/repo-docs-loader.ts', 'docs', 'An Astro content loader: its contract is what the build renders, and the build fails on a missing page.'),
   unit('apps/docs/src/lib/repo-links.ts', 'Link rewriting is pure path logic with unit tests.'),
   unit('apps/docs/src/lib/repo-pages.ts', 'Sidebar groups and ADR status come from pure functions with unit tests.'),
+  unit('apps/docs/src/lib/site-pages.ts', 'Each site page\'s title and first sentence for its preview card; the reference plugin\'s tests read them from a fixture repository.'),
   unit('apps/docs/src/lib/repo.ts', 'Which repository files become which site pages is pure path logic with unit tests.'),
   build('apps/docs/src/pages/research/[...record].html.ts', 'docs', 'An Astro endpoint that serves research HTML as is, including HTML nested under docs/research; exercised by the docs build.'),
 
-  // apps/evidence-mobile: the evidence app runs only on a device or in a browser (D70).
-  device('apps/evidence-mobile/index.ts', 'P01', 'Expo entry: registers the root component with the native runtime.'),
-  build('apps/evidence-mobile/babel.config.js', 'bundle-size', 'Metro loads it to transform every module; the Hermes bundle build fails without it.'),
-  build('apps/evidence-mobile/metro.config.js', 'bundle-size', 'Metro resolver and transformer config; exercised by the Hermes bundle build.'),
-  build('apps/evidence-mobile/plugins/with-third-party-sqlite.js', 'bundle-size', 'Expo config plugin for the iOS Podfile; read when the app config is evaluated for the bundle.'),
+  // apps/evidence-client: the evidence app runs only on a device or in a browser (D70).
+  device('apps/evidence-client/index.ts', 'P01', 'Expo entry: registers the root component with the native runtime.'),
+  build('apps/evidence-client/babel.config.js', 'bundle-size', 'Metro loads it to transform every module; the Hermes bundle build fails without it.'),
+  build('apps/evidence-client/metro.config.js', 'bundle-size', 'Metro resolver and transformer config; exercised by the Hermes bundle build.'),
+  build('apps/evidence-client/plugins/with-third-party-sqlite.js', 'bundle-size', 'Expo config plugin for the iOS Podfile; read when the app config is evaluated for the bundle.'),
   device(`${APP}/app.tsx`, 'P01', 'Chooses the gate screen at launch; React Native only.'),
   device(`${APP}/crypto-setup.ts`, 'P01', 'Installs the Hermes crypto polyfill before anything else runs.'),
   types(`${APP}/env.d.ts`, 'Declares the Expo environment variables the app reads.'),
@@ -257,6 +258,8 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   support('libs/testing/src/exercise.ts', 'unit', 'The exercise harness; its test covers the verdict, and every exercise track runs it.'),
   reExport('libs/testing/src/index.ts', 'The package entry re-exports the helpers and the catalogue.'),
   unit('libs/references/src/catalog.ts', 'The reference catalog (gates, ADRs, decisions, issues) is pure lookup; unit tests use a fixture repository.'),
+  unit('libs/references/src/diagram-labels.ts', 'Reading Mermaid labels and the prose lines around them is pure text; unit tests cover each diagram kind.'),
+  unit('libs/references/src/their-words.ts', 'Reading their-words markers and block quotes is pure text; unit tests cover each marker and each pairing problem.'),
   unit('libs/references/src/rewrite.ts', 'Rewriting bare ids into named reference links is pure text; unit tests use a fixture catalog.'),
   reExport('libs/references/src/index.ts', 'The package entry re-exports the catalog and the rewriter.'),
   reExport('libs/testing/src/node.ts', 'The Node-only entry re-exports the temp-directory helper.'),
@@ -293,7 +296,7 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   reExport('tools/qualification/src/index.ts', 'The package entry re-exports the gate table.'),
   unit('tools/qualification/src/ledger.ts', 'The ledger; its test runs every scenario in-process against a scratch repository.'),
   unit('tools/qualification/src/process.ts', 'Child-process helpers with timeouts; unit-tested.'),
-  unit(`${PROBES}/agent-cli.ts`, 'Wrappers over @expo/agent-cli; the argument building is unit-tested, device calls run in qualify.'),
+  unit(`${PROBES}/agent-cli.ts`, 'Wrappers over @expo/agent-cli and agent-device; JSON parsing and own-daemon cleanup are unit-tested, device calls run in qualify.'),
   unit(`${PROBES}/dev-client.ts`, 'Development-build helpers; the pure parts are unit-tested, device runs happen in qualify.'),
   unit(`${PROBES}/devices.ts`, 'Simulator and emulator helpers; the pure parts are unit-tested, device runs happen in qualify.'),
   qualifyOnly(`${PROBES}/keycloak.ts`, 'P11', 'Starts Keycloak on Apple Container; a lab.'),
@@ -335,26 +338,34 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   unit('tools/verify/src/baseline.ts', 'Compares repeated producer runs and composes the lockfile; pure, with unit tests.'),
   byStep('tools/verify/src/bundle-size.ts', 'bundle-size', 'Builds and measures the Hermes bundles; the bundle-size step runs it.'),
   byStep('tools/verify/src/check-diagrams.ts', 'diagrams', 'Reads every Markdown file and applies diagrams.ts; the diagrams step runs it.'),
+  byStep('tools/verify/src/check-named-identifiers.ts', 'identifiers', 'Reads the names the stack has and the living documents and applies named-identifiers.ts; the identifiers step runs it.'),
+  byStep('tools/verify/src/check-retired-words.ts', 'retired-words', 'Reads the glossary and the living documents and applies retired-words.ts; the retired-words step runs it.'),
+  byStep('tools/verify/src/check-research-index.ts', 'research-index', 'Reads the files under docs/research and the index and applies research-index.ts; the research-index step runs it.'),
+  byStep('tools/verify/src/check-glossary.ts', 'glossary', 'Reads the glossary and the living documents and applies glossary-report.ts; the glossary step runs it.'),
   byStep('tools/verify/src/check-guides.ts', 'guides', 'Reads the template, the guides, the ADRs and the projects and applies guides.ts; the guides step runs it.'),
   unit('tools/refs/src/hook.ts', 'How Claude Code, Codex and Cursor pass a written file to pnpm refs; unit tests use the documented event shapes.'),
   byStep('tools/refs/src/cli.ts', 'references', 'Rewrites living documents and checks them, including each agent hook config; the references step runs it.'),
   byStep('tools/verify/src/check-evidence.ts', 'evidence', "Loads this run's producer artifacts and applies evidence.ts; the evidence step runs it."),
   byStep('tools/verify/src/check-lint-scope.ts', 'lint-scope', 'Asks ESLint about every file and applies lint-scope.ts; the lint-scope step runs it.'),
-  byStep('tools/verify/src/check-ownership.ts', 'ownership', 'Reads the projects and the registry and applies ownership.ts; the ownership step runs it.'),
+  byStep('tools/verify/src/check-ownership.ts', 'ownership', 'Reads the projects and the evidence registry and applies ownership.ts; the ownership step runs it.'),
   byStep('tools/verify/src/check-skills.ts', 'skills', 'Reads the skill tree and applies skills-tree.ts; the skills step runs it.'),
   unit('tools/verify/src/diagrams.ts', 'The Mermaid edge rule; pure, with failing cases in unit tests.'),
   unit('tools/verify/src/docs-only.ts', 'The docs-only path rule; pure, with unit tests.'),
+  unit('tools/verify/src/named-identifiers.ts', 'Names the stack owns, found in prose code font and diagram labels outside another project\'s words; pure, with unit tests.'),
+  unit('tools/verify/src/retired-words.ts', 'Retired words in code font, read from the Avoid lines and found outside another project\'s words; pure, with unit tests.'),
+  unit('tools/verify/src/research-index.ts', 'The research index rule (record names, a row per record, links to records that exist); pure, with unit tests.'),
+  unit('tools/verify/src/glossary-report.ts', 'The glossary report (terms, living documents, unused terms, the row note); pure, with unit tests.'),
   unit('tools/verify/src/guides.ts', 'The guides rules (template shape, statuses, exemplar links, exercise layout); pure, with failing cases in unit tests.'),
   unit('tools/verify/src/hermesc.ts', 'Whether the build steps run hermesc natively or under QEMU on Linux arm64; pure plan with unit tests, the small fs parts on a scratch directory.'),
   unit('tools/verify/src/evidence-artifacts.ts', "Reads the producers' artifacts and the lockfile under a given root; tested on a scratch directory."),
   unit('tools/verify/src/evidence.ts', 'The evidence verdicts over injected runs and lockfile; pure, with unit tests.'),
-  unit('tools/verify/src/evidence-registry.ts', 'This registry; the ownership tests read it.'),
+  unit('tools/verify/src/evidence-registry.ts', 'The evidence registry; the ownership tests read it.'),
   unit('tools/verify/src/file-treatments.ts', 'File treatments and their shape checks; pure, with unit tests.'),
   reExport('tools/verify/src/index.ts', 'The package entry re-exports the stage table.'),
   unit('tools/verify/src/lint-scope.ts', 'The lint-scope rule over injected files; pure, with unit tests.'),
-  unit('tools/verify/src/lockfile.ts', 'Coverage tuples, the registry digest and stable JSON; pure, with unit tests.'),
-  unit('tools/verify/src/ownership.ts', 'Project tags and registry validation over injected data; pure, with unit tests.'),
-  unit('tools/verify/src/producers.ts', 'Which projects and files each coverage producer takes, from project.json and the registry; unit-tested.'),
+  unit('tools/verify/src/lockfile.ts', 'Coverage tuples, the evidence registry digest and stable JSON; pure, with unit tests.'),
+  unit('tools/verify/src/ownership.ts', 'Project tags and evidence registry validation over injected data; pure, with unit tests.'),
+  unit('tools/verify/src/producers.ts', 'Which projects and files each coverage producer takes, from project.json and the evidence registry; unit-tested.'),
   unit('tools/verify/src/skills-tree.ts', 'The skill-tree rule; pure, with unit tests.'),
   unit('tools/verify/src/stages.ts', 'The stage table and selectors; unit-tested.'),
   byTest('tools/verify/src/verify.ts', 'tools/verify/src/cli.test.ts', 'The verify CLI (ADR-0030); its characterization tests run it as a process.'),

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I55: Accept the foundation concepts (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-quote { border-left: 3px solid var(--color-base-content); border-left-color: color-mix(in oklab, var(--color-base-content) 30%, transparent); padding-left: 0.9rem; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  pre.mermaid { background: transparent; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I55</span>
+    <span class="badge badge-outline">2026-10-27, rounds 1 and 2, answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Accept the foundation concepts</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0055-accept-the-foundation-concepts.md">I55 Accept the foundation concepts</a> is the last ticket of map 2. It settles three rows (<code class="cr-inline">vivief:five-concepts</code>, <code class="cr-inline">vivief:concept-aligned-packages</code>, <code class="cr-inline">vivief:portability</code>), checks that all 101 map-2 rows have a disposition, and ends with a walk through <a class="cr-link" href="../adr/0032-what-viviefs-is-about.md">ADR-0032 What ViViEfs is about and its foundation concepts</a> for you to accept. This round decides the three rows and what accepting means; round 2 is the walk through the amended ADR.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 1 (Q1-Q5) and round 2 (Q6-Q10, the walk through ADR-0032, in conversation) as recommended. Recorded as D160 The foundation concepts, D161 Libs stay one per pattern and implementation, D162 Portability, two halves, and D65' Intent records accepted directly; the human accepted ADR-0032 and ADR-0002 on 2026-10-27. See <a class="cr-link" href="../issues/0055-accept-the-foundation-concepts.md">I55's Answer</a>.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li><b>All five of vivief's concepts have already landed</b>, each in a ViViEfs form, by I49-I56: Datom stands, Projection's read side is the Presenter, Surface is "a surface of any modality", Contract is accepting a change, effectHandler is the shape at the data level and the durable workflow (section 1).</li>
+      <li><b>What has not landed is the closed set.</b> vivief says five concepts model everything and the rest are patterns that compose them. ViViEfs has it the other way round: an open set of patterns, each with a contract, a suite and a gate, and a concept lives inside one pattern's guide (D82). D125 already refused vivief's closed set of six contract sub-types for the same reason (section 2).</li>
+      <li><b>Proposal: ADR-0032 gains one table</b>, its foundation concepts: twelve rows, each with a plain sentence, what it came from in vivief, the decisions, the pattern that owns it and the gate that shows it or the issue that will (section 3).</li>
+      <li><b>Libs stay one per pattern and implementation</b>; the table's pattern column, with each lib's <code class="cr-inline">metadata.guides</code>, is how code maps to the concepts (section 4).</li>
+      <li><b>Portability: the lock-in half is ours already</b> (one contract, several implementations, one suite). <b>The newcomer half</b>, "you may know it as", goes to map 3 as a glossary line, tested by I21 in map 4 (section 5).</li>
+      <li><b>98 of the 101 rows have a disposition</b>; the three missing are this ticket's own. ADR-0032 is intent with no gate, so "accepted" needs a ruling: D65 already accepts 0001 and 0002 directly (section 6). Questions in section 7.</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. vivief's five concepts in one page, and where each landed</h2>
+  <p>From <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> (vivief HEAD <code class="cr-inline">3071cb2</code>). The opening line: <i>"Five concepts. Creation is why. The formula is how. Trust varies. LLM authors rules, system enforces them."</i> And in §1: <i>"Five concepts model the entire vivief platform"</i>, drawn as a chain:</p>
+  <pre class="bg-base-200 rounded p-4 text-sm overflow-x-auto">Datom → Projection → Surface → Contract → effectHandler
+  |         |            |          ↕            |
+ fact    query+scope   render   constrains    transition
+         +delivery     +stream   all of        +actor
+         +trust scope            these</pre>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief</th><th>What it is in v6</th><th>Where it landed here</th><th>Decided by</th><th>Its word</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">Datom</code></td><td>The universal fact <code class="cr-inline">[E, A, V, Tx, Op]</code>, immutable, append-only; the log is the shared memory every actor reads and writes.</td><td><b>Stands.</b> The datom and the one log were ours before vivief was compared; the log store contract is what a datom needs from storage. Provenance, schema-as-datoms and as-of reads left out on purpose.</td><td>ADR-0006, D118-D123 (I52)</td><td>Datom, in the glossary</td></tr>
+      <tr><td><code class="cr-inline">Projection</code></td><td>One concept for query, access, encryption, delivery, freshness and trust scope ("Lens + Seal merged").</td><td><b>Adopted, split.</b> The read side (query, delivery, freshness) is the Presenter pattern; trust is origin trust; access and encryption stay where every change passes (accept, sync's filter, at rest). "Projection" keeps our meaning: deriving a store from the log.</td><td>D107-D117 (I49), ADR-0033, ADR-0034; D150 (I54)</td><td>Presenter, Frame, Origin trust, in the glossary</td></tr>
+      <tr><td><code class="cr-inline">Surface</code></td><td>The renderer, <code class="cr-inline">Surface(projection, mode)</code>, in six visual modes (stream, card, canvas, dialog, board, diagram), with an optional Render Contract (a11y, trust signals, stories).</td><td><b>Adopted, widened.</b> A frame reaches a person through a surface of any modality, a screen being one; an agent reads a frame through a tool. Modes, the Render Contract and how a screen comes to be are map 5's.</td><td>D134 (I56); <code class="cr-inline">vivief:surface</code> and <code class="cr-inline">vivief:render-contract</code> on map 5</td><td>Waits for map 3 (clashes with Paper's <code class="cr-inline">Surface</code>, "API surface")</td></tr>
+      <tr><td><code class="cr-inline">Contract</code></td><td>Declares expected behaviour, "simultaneously spec, test, and runtime guard"; cross-cuts every concept; six sub-types; "a Contract declares, an effectHandler enforces".</td><td><b>Adopted for its placement and its three-in-one</b>: authority accepts every change by asking may this writer, is it well formed, does the data stay valid; each check declared once, run early on the device and with authority, with a positive control. Contracts as datoms and the closed six sub-types are not adopted.</td><td>D124-D129 (I50), ADR-0035</td><td>Waits for map 3 (our Contract is a pattern's promise)</td></tr>
+      <tr><td><code class="cr-inline">effectHandler</code></td><td><code class="cr-inline">(state, intent) =&gt; { datoms, intents }</code>, the universal control pattern; at runtime the concepts are actors.</td><td><b>Adopted as the shape at the data level</b>: a command decides, authority accepts, the projector evolves. The actor level is the durable workflow, one execution per actor; commands and the engine are the handler runtime.</td><td>D130-D135 (I56), D136-D141 (I51), ADR-0036</td><td>Waits for map 3</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Ideas worth keeping, checked</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>One small set a newcomer can hold in their head.</b> vivief's strongest teaching move. Kept by the proposal in section 3: one table, read top to bottom as one loop.</li>
+      <li><b>"Spec, test and runtime guard at once."</b> Kept: an acceptance rule is declared once, has a positive control in a suite, and runs on the device and with authority (D125).</li>
+      <li><b>The composition table (§10)</b>: "Datom + Schema Contract = validated facts", "Projection + Surface = rendered output". Kept in spirit by D82's "builds on": a pattern relies on another's promises. Not kept as a closed algebra.</li>
+      <li><b>"Concept vs. pattern"</b> (domain, bridge, artifact, slice, profile, skill are patterns). The word clash is <code class="cr-inline">vivief:concept-vs-pattern</code>'s, on map 3. Its content is settled: a domain is a consumer app (D106), a bridge is a boundary with an origin (D129), a skill is an implementation strategy (D132).</li>
+      <li><b>"The system gets more deterministic over time."</b> <code class="cr-inline">vivief:deterministic-first</code>, map 6. Not touched here.</li>
+    </ul>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. The inversion: a closed set of concepts, or an open set of patterns</h2>
+  <div class="grid md:grid-cols-2 gap-5">
+    <div class="card bg-base-200"><div class="card-body p-4">
+      <h3 class="font-semibold">vivief</h3>
+<pre class="mermaid">
+flowchart TB
+  subgraph C["Five concepts, a closed set"]
+    D[Datom] --> P[Projection] --> S[Surface]
+    K[Contract] -.constrains.-> D
+    K -.-> P
+    K -.-> S
+    E[effectHandler] --> D
+  end
+  subgraph PT["Patterns compose them"]
+    dom[domain]
+    br[bridge]
+    sk[skill]
+  end
+  PT --> C
+</pre>
+      <p class="text-sm">A new concept is rare; everything else is built from the five.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-4">
+      <h3 class="font-semibold">ViViEfs (D82, D123)</h3>
+<pre class="mermaid">
+flowchart TB
+  subgraph PS["Patterns, an open set"]
+    LS["log store<br/>contract, suite, P04"]
+    CS["changesets<br/>contract, suite, P05"]
+    PR["Presenter<br/>contract, suite, gate to come"]
+    AC["access<br/>contract, suite, P11 again"]
+  end
+  CS -- builds on --> LS
+  PR -- builds on --> CS
+  AC -- builds on --> CS
+  LS --- c1(("datom, HLC, envelope"))
+  CS --- c2(("changeset, read model,<br/>acceptance rule"))
+</pre>
+      <p class="text-sm">A candidate with a contract code depends on, a suite and a gate is a pattern; otherwise it is a concept, taught in one pattern's guide.</p>
+    </div></div>
+  </div>
+  <p>So "foundation concept" on this map means an <i>idea</i> the P01-P10 stage built on, not D82's narrower "concept" (an idea with no contract of its own). Most foundation concepts are owned by a pattern; some are patterns themselves. D125 already refused vivief's closed set of six contract sub-types because "D82 keeps that set open". The same argument applies to the five: closing the set would make a new pattern (access, the Presenter, both added by map 2) a breach of the model rather than the normal way the stack grows.</p>
+  <p>What is worth taking from the closed set is its <b>size</b>: a newcomer reads one short list, in one order, and knows the whole loop. Section 3 keeps that without closing anything.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. Proposed: ADR-0032's foundation concepts, as one table</h2>
+  <p>Today ADR-0032's "Foundation concepts" paragraph says only that I48-I54 and I56 decide them and I55 accepts the whole; the decisions are in eight Design paragraphs below it. The proposal puts this table at the top of that section, ordered as one turn of the loop, and keeps the paragraphs as the detail. Rows marked <span class="badge badge-sm badge-success">vivief</span> come from one of the five.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>#</th><th>Foundation concept</th><th>In one plain sentence</th><th>From vivief</th><th>Decisions</th><th>Owning pattern</th><th>Shown by</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Pattern</td><td>A part built once with one promise, several ways to keep it, and a check every way must pass.</td><td>Portability's lock-in half</td><td>D82, D110, D123</td><td>(every pattern)</td><td>P04 (four stores, one suite)</td></tr>
+      <tr><td>2</td><td>Datom and the one log</td><td>Every fact is one small record, kept forever in one log per organization.</td><td><span class="badge badge-sm badge-success">vivief</span> Datom, stands</td><td>ADR-0006, D118-D123</td><td>log store</td><td>P04</td></tr>
+      <tr><td>3</td><td>Command and changeset</td><td>A command decides what should change and returns it as one batch, without writing it.</td><td><span class="badge badge-sm badge-success">vivief</span> effectHandler, the function</td><td>D36', D130, D131</td><td>changesets</td><td>P05</td></tr>
+      <tr><td>4</td><td>Authority and accepting a change</td><td>One place decides whether a batch counts: may this writer do it, is it well formed, does the data stay valid.</td><td><span class="badge badge-sm badge-success">vivief</span> Contract, its placement</td><td>D103, D124-D129, ADR-0035</td><td>changesets (acceptance rules)</td><td>P09; every rule: P09 extended (I69)</td></tr>
+      <tr><td>5</td><td>Read model and projector</td><td>What the facts mean is worked out from the log and can be thrown away and rebuilt.</td><td>-</td><td>D37, D99</td><td>changesets</td><td>P05 (rebuild check)</td></tr>
+      <tr><td>6</td><td>Presenter, frame and surface</td><td>A screen, or a speaker, asks for data and keeps receiving the latest answer.</td><td><span class="badge badge-sm badge-success">vivief</span> Projection's read side, Surface</td><td>D107-D114, D134, ADR-0033</td><td>Presenter</td><td>P05, P08 in part; Presenter gate (I62)</td></tr>
+      <tr><td>7</td><td>Origin and origin trust</td><td>Every batch says where it came from, and how far we trust that source can change at once.</td><td>Projection's trust scope</td><td>D58', D115-D117, ADR-0034</td><td>origin trust</td><td>named when built (I64)</td></tr>
+      <tr><td>8</td><td>Durable workflow and its journal</td><td>Work that must not lose progress writes down each step, so it resumes where it stopped.</td><td><span class="badge badge-sm badge-success">vivief</span> effectHandler, the actor</td><td>ADR-0012, D136-D141, D14', ADR-0036</td><td>durable workflow</td><td>P06, P07; the fence: P06, P09 again (I80)</td></tr>
+      <tr><td>9</td><td>Sync</td><td>Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept.</td><td>Sync Contract</td><td>ADR-0017, D142-D148, D34'</td><td>sync</td><td>P09; conflicts: P05, P09 again (I81)</td></tr>
+      <tr><td>10</td><td>Identity and access</td><td>Every change is accountable to someone, and one decision says what they may write and receive.</td><td>Projection's access scope</td><td>ADR-0022, D150-D154, ADR-0037</td><td>identity, access</td><td>P11; the contract: P11 again (I84)</td></tr>
+      <tr><td>11</td><td>Encryption that narrows</td><td>Locking a value limits who can open it, and never gives anyone access.</td><td>Projection's encryption scope</td><td>ADR-0023, D149</td><td>(encrypted store)</td><td>P15, P16</td></tr>
+      <tr><td>12</td><td>Tamper-evident history</td><td>Each organization's history is a chain in which any change to the past shows.</td><td>Verified segments</td><td>D155, D156, ADR-0038</td><td>(log store)</td><td>P09 again (I85)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cr-src">Not on the list on purpose: the shape at every level above the code and the four states (D132), which are a lens, not a concept; Vision - View - Effects, which names the loop the table reads as. Both stay as ADR-0032 paragraphs. Row 1 is there because it is what makes the others swappable; without it, "foundation" reads as "fixed".</p>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-1">
+    <h3 class="font-semibold">Read as one turn</h3>
+    <p>A <b>command</b> (3) decides a <b>changeset</b> of <b>datoms</b> (2), named by its <b>origin</b> (7); <b>authority accepts</b> it (4), having asked <b>access</b> (10), and chains it (12); <b>sync</b> (9) carries it to every device; the <b>projector</b> builds <b>read models</b> (5); a <b>Presenter</b> answers a screen with a <b>frame</b> (6). Long work runs as a <b>workflow</b> (8) whose journal is in the same log. Each of these is a <b>pattern</b> (1), so each can be done another way that passes the same suite.</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. Libs: concept-aligned packages, or one per pattern</h2>
+  <div class="grid md:grid-cols-2 gap-5">
+    <div class="card bg-base-200"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">vivief ADR 0051 §16</h3>
+      <pre class="text-sm overflow-x-auto">vivief-datom/       datom store engine
+vivief-contract/    validation runtime (6 sub-types)
+vivief-projection/  query engine + delivery
+vivief-surface/     React components + design system
+vivief-effect/      handler runtime, actors, XState
+vivief-llm/         LLM abstraction, trust scoring
+vivief-app/         Vite shell, router</pre>
+      <p class="text-sm cr-quote">"Architecture mirrors the concepts. Seven packages map to the five concepts. The code structure IS the conceptual structure."</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">ViViEfs <code class="cr-inline">libs/</code> today</h3>
+      <pre class="text-sm overflow-x-auto">datom               pure datom, HLC         guides: log-store
+store-sqlite-node   log store on node:sqlite guides: log-store
+store-sqlite-native log store on op-sqlite   guides: log-store
+store-sqlite-wasm   log store on OPFS        guides: log-store
+store-postgres      log store on Postgres    guides: log-store
+workflow-engine     datom-backed engine
+sync                client, protocol, server
+identity            fake, Keycloak/OIDC
+crypto-shred        per-subject keys
+blobs               content-hash files
+telemetry           OTLP, trace projector
+ui, platform-native, testing, references</pre>
+      <p class="text-sm">One lib per pattern's core, one per implementation (each store), tagged by layer and platform (D52-D54). A guide adds its pattern id to <code class="cr-inline">metadata.guides</code> in the commit that creates it (D84), so only the log store's libs carry one yet.</p>
+    </div></div>
+  </div>
+  <p>The difference that matters: vivief puts each concept in one package; here a pattern's <i>implementations</i> are separate libs because each runs on a different platform (the four stores) and the boundary lint decides what may import what. Grouping by concept would put op-sqlite and Postgres in one package. vivief's goal, that the code says the concepts, is met by the pattern id (guide folder, suite prefix, <code class="cr-inline">metadata.guides</code>, D82) and by the table's "owning pattern" column. The four patterns map 2 added (Presenter, origin trust, access, the hash chain) get their libs when phase 3 builds them.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. Portability: two halves</h2>
+  <p class="cr-quote">vivief v6 §6: "Every vivief concept maps to a conventional equivalent. Bidirectional. Read-only snapshots proving portability. A Projection maps to a SQL view, an effectHandler to an Express route, a Contract to a JSON Schema + integration test. The proof that every concept has a conventional equivalent reduces perceived lock-in."</p>
+  <div class="grid md:grid-cols-2 gap-5">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">Lock-in: ours already, stronger</h3>
+      <p class="text-sm">Here the claim is not "it maps to something conventional" but "it runs on something conventional, under the same suite": the log store on SQLite (three drivers) and Postgres, proven by P04; the Presenter's reference implementation is plain SQLite read models every other must agree with (D110). The final choice is the pattern, implementations stay free (D123). Disposition proposed: <b>keep ours</b>.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-4 space-y-2">
+      <h3 class="font-semibold">Newcomers: not done anywhere yet</h3>
+      <p class="text-sm">The glossary's <i>Avoid</i> lines say which word not to use, not what a newcomer may already know. A "like X, except Y" line would let a developer from elsewhere place a term in one read. It is a glossary line, so it belongs to map 3, and whether it helps is map 4's question (I21, a reader outside software). Disposition proposed: <b>hand to map 3</b>.</p>
+    </div></div>
+  </div>
+  <h3 class="font-semibold">Worked example: what such lines would say</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Our term</th><th>Like</th><th>Except</th></tr></thead>
+    <tbody>
+      <tr><td>Datom</td><td>an EAV row, an RDF triple with time</td><td>never updated in place; a retraction is a new datom</td></tr>
+      <tr><td>Command</td><td>a command handler, a "decider"</td><td>returns a changeset and never writes; ids and time are passed in</td></tr>
+      <tr><td>Changeset</td><td>a database transaction</td><td>can be prepared offline for days and still be rejected</td></tr>
+      <tr><td>Acceptance rule</td><td>a database constraint, a JSON Schema plus a test</td><td>runs on the device and with authority, and must have a positive control</td></tr>
+      <tr><td>Read model</td><td>a materialized view, an event-sourcing projection</td><td>disposable: rebuilding it from the log must give the same rows</td></tr>
+      <tr><td>Presenter</td><td>a view model, a live query hook</td><td>the query is data, so a faster implementation must give the same frame</td></tr>
+      <tr><td>Workflow</td><td>a Temporal workflow</td><td>its journal is datoms in the same log, on the phone too</td></tr>
+      <tr><td>Access decision</td><td>an authorization check (OpenID AuthZEN)</td><td>made only at accept and at sync's filter, never on a read</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cr-src">The "except" column is the point: a bare "Read model = materialized view" would teach the wrong thing (a view is not rebuilt from a log). That risk is why a reader test (I21) should judge it, not this ticket.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">6. The 101 rows, and what "accepted" means for ADR-0032</h2>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Row check (a script over the inventory's "Map 2: Foundation (101)" and every issue's Answer)</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>98 of 101</b> rows appear in an Answer of I47-I59. The three that do not are I55's own: <code class="cr-inline">vivief:five-concepts</code>, <code class="cr-inline">vivief:concept-aligned-packages</code>, <code class="cr-inline">vivief:portability</code>.</li>
+      <li>Six inventory lines carry two ids (a vivief row and a ViViEfs row of the same comparison); each is disposed under its first id, the second named in the same line where it matters (<code class="cr-inline">vivief:peer-validation-as-contract</code> handed from I53 to I54, settled there).</li>
+      <li>Two rows were disposed twice, on purpose: I47 deferred <code class="cr-inline">viviefs:changeset</code> and <code class="cr-inline">vivief:fractal-factory</code> to I56, and I56 settled them. The later Answer is the disposition.</li>
+    </ul>
+  </div></div>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">"Accepted" has a rule that does not fit this ADR</h3>
+    <p>The ADR index: <i>"Accepted is a human status given on the pattern's guide ..., not on the decision alone"</i> (ADR-0026, amended 2026-09-29). The glossary's Accepted: <i>"An ADR is accepted on its pattern's guide."</i> ADR-0032 is intent, qualifying gate "none", and belongs to no pattern. But D65 already makes an exception: <i>"0001 and 0002 are accepted directly."</i> Neither has been yet; both are still Proposed, unverified.</p>
+    <p>The map's destination says "the human has accepted one foundation ADR". Proposal: ADR-0032 is accepted directly, as D65 does for 0001 and 0002; D65 and the glossary's Accepted entry say so for intent records; the ADRs it links (0033-0038) keep their own status, each waiting on its gate and guide. ADR-0002 could be accepted in the same walk, since I59 just brought it in line.</p>
+  </div></div>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">7. Questions, round 1</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 The five concepts')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. <code class="cr-inline">vivief:five-concepts</code>: adopt all five, each in the form it landed, and not as a closed set?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="adopt all five in their landed forms, the set stays open"> Adopt all five in their landed forms; the set stays open (D82, as D125 did for the six sub-types) (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="adopt as a closed set of five, everything else a pattern composing them"> Adopt as vivief has it: a closed set, everything else composes them</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="adopt only some as foundation"> Only some are foundation (name which in the notes)</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 The foundation table')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. ADR-0032 lists its foundation concepts in the section 3 table: twelve rows, vivief's five and ours, ordered as one turn?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="as proposed: twelve rows at the top of Foundation concepts, paragraphs stay as detail"> As proposed: the table at the top of "Foundation concepts", the paragraphs stay as detail (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="only the rows that come from vivief's five"> Only the rows that come from vivief's five</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="as proposed with changes in the notes"> With changes (rows to add, merge or drop in the notes)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="no table, the paragraphs are enough"> No table; the paragraphs are enough</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Libs and concepts')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. <code class="cr-inline">vivief:concept-aligned-packages</code>: keep libs one per pattern core and implementation, mapped to the concepts by the pattern id?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="keep ours: libs per pattern and implementation, the table's pattern column and metadata.guides map them"> Keep ours: the table's pattern column and <code class="cr-inline">metadata.guides</code> map code to concepts (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="keep ours and add a concept tag to every lib now"> Keep ours, and tag every lib with its foundation concept now</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="regroup libs by concept as vivief does"> Regroup libs by concept, as vivief does</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Portability')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. <code class="cr-inline">vivief:portability</code>: lock-in kept ours; the newcomer mapping ("like X, except Y") handed to map 3, judged by I21?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="as proposed: keep ours for lock-in, hand the newcomer lines to map 3, I21 judges them"> As proposed (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="add a like-except column to ADR-0032's table now"> Add a "like, except" column to ADR-0032's table now</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="reject the newcomer mapping, the plain sentences are enough"> Reject the newcomer mapping; the plain sentences are enough</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 What accepted means')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. ADR-0032 is accepted directly, as D65 does for 0001 and 0002; and ADR-0002 in the same walk?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="accept 0032 directly, D65 and the Accepted entry amended; 0002 in the same walk"> Accept 0032 directly (D65 and the glossary's Accepted amended), and 0002 in the same walk (recommended)</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="accept 0032 directly, 0002 later"> Accept 0032 directly; 0002 another time</label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="a new status for intent records"> A new status word for intent records (name it in the notes)</label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <p class="cr-src">Round 2, after these: the amended ADR-0032 (the table, the three rows, its status), walked section by section with you, then accepted. Recorded afterwards: I55's Answer, decision rows from D160, ADR-0032 (and ADR-0002), D65 and the glossary's Accepted, the map's Decisions so far and its destination reached, a comment on I34, and the handover.</p>
+</section>
+
+</div>
+</body>
+</html>

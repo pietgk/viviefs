@@ -25,6 +25,10 @@ describe('parseRepositoryPage', () => {
     )
   })
 
+  it('titles the glossary Glossary on the site, while its source keeps the context name', () => {
+    expect(parseRepositoryPage('GLOSSARY.md', '# ViViEfs\n\nViViEfs is about app creation.\n').title).toBe('Glossary')
+  })
+
   it('fails on a file without a heading', () => {
     expect(() => parseRepositoryPage('docs/evidence/x.md', 'No heading.\n')).toThrow(
       'docs/evidence/x.md does not start with a "# " heading.',
@@ -76,7 +80,7 @@ describe('sidebarItems', () => {
   it('links HTML research records by their title', () => {
     expect(sidebarItems(root, 'docs/research')).toEqual([
       { label: 'Index', slug: 'research' },
-      { label: 'A note', link: '/research/2026-01-01-note.html' },
+      { label: 'A note', link: '/research/2026-01-01-note%2Ehtml' },
     ])
   })
 })
@@ -124,10 +128,10 @@ describe('a nested research area', () => {
             items: [{ label: 'A snapshot', slug: 'research/XDevl/snapshots/2026-01-02-note' }],
           },
           { label: 'Insights', slug: 'research/XDevl/insights' },
-          { label: 'Map', link: '/research/XDevl/concept-map.html' },
+          { label: 'Map', link: '/research/XDevl/concept-map%2Ehtml' },
         ],
       },
-      { label: 'A note', link: '/research/2026-01-01-note.html' },
+      { label: 'A note', link: '/research/2026-01-01-note%2Ehtml' },
     ])
   })
 

@@ -20,8 +20,6 @@ const Root = Machine.state({
   },
 })
 
-const targets = Machine.targets(Root)
-
 const Events = Machine.events({
   Start: {},
   Candidate: { hash: Schema.String },
@@ -42,25 +40,6 @@ const toEvent = (event: ComposerEvent) => {
       return Events.Cancel()
     case 'Confirm':
       return Events.Confirm()
-  }
-}
-
-function targetOf(name: 'Empty'): typeof targets.root.Empty
-function targetOf(name: 'Composing'): typeof targets.root.Composing
-function targetOf(name: 'Reviewing'): typeof targets.root.Reviewing
-function targetOf(name: 'Submitting'): typeof targets.root.Submitting
-function targetOf(
-  name: 'Empty' | 'Composing' | 'Reviewing' | 'Submitting',
-) {
-  switch (name) {
-    case 'Empty':
-      return targets.root.Empty
-    case 'Composing':
-      return targets.root.Composing
-    case 'Reviewing':
-      return targets.root.Reviewing
-    case 'Submitting':
-      return targets.root.Submitting
   }
 }
 
@@ -117,30 +96,30 @@ const makeMachine = (
       submit: (hash: string) => submit(hash),
     },
   }).handle({
-    initial: { target: targetOf(graph.initial) },
+    initial: { target: graph.initial },
     states: {
       Empty: {
         on: {
-          Start: { target: targetOf(graph.states.Empty.on.Start) },
+          Start: { target: graph.states.Empty.on.Start },
         },
       },
       Composing: {
         on: {
           Candidate: {
-            target: targetOf(graph.states.Composing.on.Candidate),
+            target: graph.states.Composing.on.Candidate,
             data: ({ event }: { readonly event: { readonly hash: string } }) => ({
               candidateHash: event.hash,
             }),
           },
-          Cancel: { target: targetOf(graph.states.Composing.on.Cancel) },
+          Cancel: { target: graph.states.Composing.on.Cancel },
         },
       },
       Reviewing: {
         on: {
-          Retake: { target: targetOf(graph.states.Reviewing.on.Retake) },
-          Cancel: { target: targetOf(graph.states.Reviewing.on.Cancel) },
+          Retake: { target: graph.states.Reviewing.on.Retake },
+          Cancel: { target: graph.states.Reviewing.on.Cancel },
           Confirm: {
-            target: targetOf(graph.states.Reviewing.on.Confirm),
+            target: graph.states.Reviewing.on.Confirm,
             data: ({
               state,
             }: {
@@ -157,9 +136,9 @@ const makeMachine = (
           }: {
             readonly state: { readonly candidateHash: string }
           }) => state.candidateHash,
-          onDone: { target: targetOf(graph.states.Submitting.invoke.onDone) },
+          onDone: { target: graph.states.Submitting.invoke.onDone },
           onFailure: {
-            target: targetOf(graph.states.Submitting.invoke.onFailure),
+            target: graph.states.Submitting.invoke.onFailure,
             data: ({
               state,
             }: {

@@ -31,8 +31,11 @@ export const RENDERED_DIRECTORIES: ReadonlyArray<RenderedDirectory> = [
 export const RENDERED_FILES: ReadonlyArray<{
   readonly file: string
   readonly route: string
+  /** The page's title on the site, where the file's heading names something else. */
+  readonly title?: string
 }> = [
-  { file: 'GLOSSARY.md', route: 'reference/glossary' },
+  // The glossary's heading is its context's name, ViViEfs, as the domain-modeling format writes it.
+  { file: 'GLOSSARY.md', route: 'reference/glossary', title: 'Glossary' },
   // Decisions are reference (D89); the rest of docs/plan stays on GitHub.
   { file: 'docs/plan/bootstrap/02-decision-log.md', route: 'reference/decisions' },
 ]
@@ -87,6 +90,35 @@ export const siteUrlFor = (repositoryPath: string): string | null => {
 export const routeFor = (repositoryPath: string): string | null =>
   siteUrlFor(repositoryPath)?.replace(/^\/|\/$/g, '') ?? null
 
+/**
+ * The publish base path (D61''). Unset, the site is served at `/`.
+ * GitHub Pages sets `DOCS_BASE` to `/viviefs`.
+ */
+export const docsBase = (): string => {
+  const base = process.env['DOCS_BASE'] ?? '/'
+  if (!base.startsWith('/')) throw new Error(`DOCS_BASE must start with /, got "${base}".`)
+  return base.length > 1 && base.endsWith('/') ? base.slice(0, -1) : base
+}
+
+/**
+ * Prefix a root-relative href with the publish base. A hash, a protocol-relative
+ * URL and an absolute URL stay as written. Applying it twice does not stack.
+ * Sidebar slugs stay unprefixed: Starlight adds the base itself.
+ */
+export const withBase = (href: string, base: string = docsBase()): string => {
+  if (!href.startsWith('/') || href.startsWith('//')) return href
+  const prefix = base === '/' ? '' : base
+  if (prefix === '' || href === prefix || href.startsWith(`${prefix}/`)) return href
+  return `${prefix}${href}`
+}
+
+/** The site path of an href written with the publish base: the inverse of `withBase`. */
+export const withoutBase = (href: string, base: string = docsBase()): string => {
+  const prefix = base === '/' ? '' : base
+  if (prefix === '' || (href !== prefix && !href.startsWith(`${prefix}/`))) return href
+  return href.slice(prefix.length) || '/'
+}
+
 export type LinkTarget =
   | { readonly _tag: 'Untouched' }
   | { readonly _tag: 'Rewritten'; readonly href: string }
@@ -101,16 +133,21 @@ const SCHEME = /^[a-z][a-z0-9+.-]*:/i
  * A relative link is a file link: it resolves against the file it is written
  * in, like on GitHub. It becomes a site URL when the site renders the target,
  * and a GitHub URL otherwise. A target that does not exist is `Missing`, so
- * the build can fail. Absolute URLs, site paths (`/...`) and in-page anchors
- * are left alone; the links validator checks site paths.
+ * the build can fail. Absolute URLs and in-page anchors are left alone. A
+ * site path (`/...`) is left alone locally and prefixed with the publish base
+ * on GitHub Pages. The links validator checks site paths.
  */
 export const resolveLink = (
   repositoryRoot: string,
   sourceFile: string,
   url: string,
 ): LinkTarget => {
-  if (url === '' || url.startsWith('#') || url.startsWith('/') || SCHEME.test(url)) {
+  if (url === '' || url.startsWith('#') || url.startsWith('//') || SCHEME.test(url)) {
     return { _tag: 'Untouched' }
+  }
+  if (url.startsWith('/')) {
+    const href = withBase(url)
+    return href === url ? { _tag: 'Untouched' } : { _tag: 'Rewritten', href }
   }
   const hashAt = url.indexOf('#')
   const pathPart = decodeURI(hashAt === -1 ? url : url.slice(0, hashAt))
@@ -122,7 +159,7 @@ export const resolveLink = (
   }
   if (!existsSync(absolute)) return { _tag: 'Missing', repositoryPath }
   const site = siteUrlFor(repositoryPath)
-  if (site) return { _tag: 'Rewritten', href: `${site}${hash}` }
+  if (site) return { _tag: 'Rewritten', href: `${withBase(site)}${hash}` }
   const kind = statSync(absolute).isDirectory() ? 'tree' : 'blob'
   const path = repositoryPath === '' ? '' : `/${repositoryPath}`
   return {

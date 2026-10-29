@@ -35,7 +35,7 @@ One pattern, three questions, each with its own mechanism.
 **Verify** (every change): staged `pnpm verify`, fail fast between stages,
 collect all failures within a stage. Stages `static -> unit -> integration ->
 ui -> quality` are an elaboration of [D48' Verify - Qualify - Teach][D48'], not a separate grilling answer.
-Ownership registry; ratchet lockfile; mobile JS bundle-size budget gated now;
+Evidence registry; ratchet lockfile; mobile JS bundle-size budget gated now;
 no retries (flakiness is a defect). Vitest + `@effect/vitest` only for unit
 and integration. Storybook, Maestro and Playwright remain other layers.
 GitHub Actions runs `verify`. Simulator crash E2E is gated before a release,
@@ -46,7 +46,7 @@ is a passing verify, with a mechanical path rule for docs-only diffs.
 probes, positive controls, fingerprinted append-only ledger, sequential full
 run. Gate table is code. Unknown gate ids fail. The ledger is a plain file,
 not datoms. [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] are the foundation stage ([D46 Spikes are gates][D46]'s six themes split so each
-fact can fail independently). [P11 Identity][P11]-[P17 Browser engine leader][P17] are follow-on, not foundation closure.
+fact can fail independently). [P11 Identity][P11]-[P17 Workflow engine leader in a browser][P17] are follow-on, not foundation closure.
 A stage closes only with one sequential full run on unchanged committed
 inputs.
 
@@ -86,11 +86,11 @@ verify baseline` is the one command that writes the lockfile. Time is
 reported, not gated.
 
 **Evidence is owned per file** (amendment 2026-09-30, Evidence ownership
-design review, [D75 Evidence vocabulary][D75]-[D79 Schema at every boundary, linted][D79]). The per-project evidence owner becomes a registry of
+design review, [D75 Evidence vocabulary][D75]-[D79 Schema at every boundary, linted][D79]). The per-project evidence owner becomes an evidence registry of
 every production file, each with one **file treatment** (the verify step that
 produces its evidence and the verdict applied) and a written rationale. Which
 contract was checked is a separate axis: a **suite** checks one aspect of one
-pattern's contract (`<pattern>/<aspect>`), and a registry entry names the
+pattern's contract (`<pattern>/<aspect>`), and an evidence registry entry names the
 suites run against the file. This refines [D71 Evidence ownership][D71], which listed conformance,
 crash matrix and probe host checks among the treatments. Exact coverage is
 judged only against the file's owning producer and recorded in the evidence
@@ -98,8 +98,8 @@ lockfile, written by `pnpm verify baseline` alone.
 
 **Guides map onto patterns without repeating each other** (amendment
 2026-10-01, Log-store guide design review, [D81 What a lesson is][D81]-[D86 Named, linked references][D86]). Patterns build on each
-other; they do not nest. A concept lives in the guide of the pattern whose
-contract defines it and whose suite checks it, and every ADR is named by exactly
+other; they do not nest. A concept that is not a pattern lives in the guide of
+the pattern whose contract defines it and whose suite checks it, and every ADR is named by exactly
 one guide. A lesson is one page that teaches one idea and ends in its exercise
 section, with recall before and after and one primary source. A project's
 `metadata.guides` is a list, because one project can be the exemplar of two
@@ -150,12 +150,12 @@ in [P06 Workflow engine crash matrix][P06], not in verify ([D71][D71]); the `ui`
 jsdom, and no story runs in a real browser or on a device ([D72 UI on every platform][D72]).
 
 2026-10-01, Evidence ownership ([D75-D80 Evidence ownership design review][D75-D80]). Every production file has one file
-treatment in the registry (226 files), checked by `ownership` in `static`. The
+treatment in the evidence registry (226 files), checked by `ownership` in `static`. The
 coverage producers `unit`, `integration` and `storybook` are one root Vitest
 run each, with Istanbul coverage limited to the files they own; `evidence` in
 `quality` fails when an owned tuple differs from `evidence-baseline.json`,
 when a named suite or a declared suite has no passing test, when stories or a
-process entry's test did not pass, or when the registry or the coverage
+process entry's test did not pass, or when the evidence registry or the coverage
 provider changed. `pnpm verify baseline` ran each producer three times with
 identical tuples before writing the lockfile. A deliberately uncovered
 function in `libs/datom` fails `evidence`, naming the file and both tuples.

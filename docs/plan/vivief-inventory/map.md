@@ -21,7 +21,7 @@ the other, accepted by the human in a review. Maps 2-6 of [I34 vivief as the sou
   `docs/archive/`, read in full; `docs/REVIEW.md` (round 3 intent triage) and
   `docs/contract/adr/RELEVANCE.md` as the index of what vivief itself still
   holds; `plugins/devac/`. ViViEfs: `GLOSSARY.md`, the decision log [D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94],
-  [ADR-0001 Record architectural decisions][ADR-0001] to [ADR-0031 TypeScript strictness flags from Effect, evaluated][ADR-0031], the gates [P01 Platform on SDK 58][P01]-[P17 Browser engine leader][P17], the log-store guide. The ideas
+  [ADR-0001 Record architectural decisions][ADR-0001] to [ADR-0031 TypeScript strictness flags from Effect, evaluated][ADR-0031], the gates [P01 Platform on SDK 58][P01]-[P17 Workflow engine leader in a browser][P17], the log-store guide. The ideas
   batches I24-[I33 Ideas batch: abstractions that constrain agents][I33] are cross-linked, not covered.
 - **One table, two sides.** A row is one idea (a concept, term, principle,
   decision or mechanism), not a file. It has a vivief side and a ViViEfs side;
@@ -76,7 +76,7 @@ the other, accepted by the human in a review. Maps 2-6 of [I34 vivief as the sou
   the trust model, `Surface`, the creation loop and effects as data.
 
 - [I36: Index ViViEfs's ideas from its sources](../../issues/0036-index-viviefs-ideas-from-its-sources.md):
-  77 `viviefs:` ideas covering every glossary term, [D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94], the 31 ADRs, [P01 Platform on SDK 58][P01]-[P17 Browser engine leader][P17]
+  77 `viviefs:` ideas covering every glossary term, [D1 A reference stack][D1]-[D94 A glossary a newcomer can read][D94], the 31 ADRs, [P01 Platform on SDK 58][P01]-[P17 Workflow engine leader in a browser][P17]
   and the log-store guide ([rows](rows/I36.md)); 35 verified, 23 implemented,
   8 proposed, 11 accepted.
 

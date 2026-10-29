@@ -117,7 +117,7 @@ export const formatReport = (report: PlatformReport): string => {
 
 const main = () => {
   const app = process.argv[2]
-  if (!app) throw new Error('usage: bundle-size.ts <app directory, e.g. apps/evidence-mobile>')
+  if (!app) throw new Error('usage: bundle-size.ts <app directory, e.g. apps/evidence-client>')
   const budget = JSON.parse(readFileSync(join(ROOT, app, 'bundle-budget.json'), 'utf8')) as Budget
   const lockfilePath = join(ROOT, LOCKFILE)
   const references = existsSync(lockfilePath)

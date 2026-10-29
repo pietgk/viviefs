@@ -1,5 +1,5 @@
 // What execute returns for a run it awaited (I74): a suspension preempted by a
-// deferred's completion reads as Suspended; every other exit is the run's own.
+// durable deferred's completion reads as Suspended; every other exit is the run's own.
 import { describe, expect, it } from '@effect/vitest'
 import * as Cause from 'effect/Cause'
 import * as Exit from 'effect/Exit'

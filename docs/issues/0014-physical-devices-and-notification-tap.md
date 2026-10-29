@@ -1,4 +1,4 @@
-# I14: Physical devices, and a notification tap that completes a deferred
+# I14: Physical devices, and a notification tap that completes a durable deferred
 
 Status: ready-for-human
 
@@ -8,11 +8,11 @@ Decide when: before the first consumer app
 
 ## What
 
-Every device run so far used simulators and emulators, and [P07 Device resume E2E][P07]'s visible local-notification tap still misses on both platforms: the deferred completes through the relaunch fallback ([ADR-0013 Device durability][ADR-0013]).
+Every device run so far used simulators and emulators, and [P07 Device resume E2E][P07]'s visible local-notification tap still misses on both platforms: the durable deferred completes through the relaunch fallback ([ADR-0013 Device durability][ADR-0013]).
 
 ## Direction
 
-One real-phone run on iOS and Android covering both.
+One run on a physical iOS device and a physical Android device, covering both.
 
 ## Comments
 

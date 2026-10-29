@@ -31,13 +31,13 @@ export const gateProbes: GateProbe[] = [
     gate: 'P01',
     name: 'Platform on SDK 58',
     claim:
-      'Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes, and builds with Metro',
+      'Effect v4 runs on Expo SDK 58 / RN 0.88 / Hermes, and builds with Metro',
     path: 'tools/qualification/src/probes/p01.ts',
     args: [],
     timeoutMs: 2_700_000,
     stage: 'foundation',
     summary:
-      'Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes on iOS and Android, with polyfills and the Migrator babel workaround.',
+      'Effect v4 runs on Expo SDK 58 / RN 0.88 / Hermes on iOS and Android, with polyfills and the Migrator babel workaround.',
   },
   {
     gate: 'P02',
@@ -221,15 +221,15 @@ export const gateProbes: GateProbe[] = [
   },
   {
     gate: 'P17',
-    name: 'Browser engine leader',
+    name: 'Workflow engine leader in a browser',
     claim:
-      'Only one tab runs the engine',
+      'Only one tab runs the workflow engine',
     path: 'tools/qualification/src/probes/p17.ts',
     args: [],
     timeoutMs: 600_000,
     stage: 'follow-on',
     summary:
-      'One browser leader tab runs the engine (Web Locks); killing the leader promotes the follower.',
+      'One browser leader tab runs the workflow engine (Web Locks); killing the leader promotes the follower.',
   },
 ]
 

@@ -5,7 +5,7 @@
 ```
 viviefs/
 ├─ apps/                          composition roots: pick features, provide the context as Layers
-│  ├─ evidence-mobile/            Expo SDK 58 (iOS, Android, web): the exemplar app
+│  ├─ evidence-client/            Expo SDK 58 (iOS, Android, web): the exemplar app
 │  ├─ evidence-server/            Node Effect server for the exemplar
 │  └─ docs/                       docs site (concepts, guides, ADRs, API reference, llms.txt)
 ├─ features/                      vertical slices of business capability
@@ -16,7 +16,7 @@ viviefs/
 ├─ libs/                          shared capability, no business meaning
 │  ├─ datom/                      datom types, HLC, changesets, projector core
 │  ├─ workflow-engine/            datom-backed WorkflowEngine
-│  ├─ sync/                       outbox, cursor stream (client and server entry points as separate projects)
+│  ├─ sync/                       outbox, sync cursor stream (client and server entry points as separate projects)
 │  ├─ store-sqlite-native/        log store on op-sqlite            ┐
 │  ├─ store-sqlite-wasm/          log store on sqlite-wasm (OPFS)   │ one pattern,
 │  ├─ store-sqlite-node/          log store on node:sqlite          │ several implementations,
@@ -49,7 +49,7 @@ A feature's effects declare their requirements in the type: `Effect<A, E, LogSto
 app provides implementations, by composing Layers at its root:
 
 ```ts
-// apps/evidence-mobile/src/runtime.ts (illustrative)
+// apps/evidence-client/src/runtime.ts (illustrative)
 const AppLive = Layer.mergeAll(
   EvidenceClient.layer,
   LogStore.sqliteNative,
@@ -86,7 +86,7 @@ Every `project.json` declares its tags; an untagged project fails `verify`:
 }
 ```
 
-Evidence is owned per file, not per project ([D75 Evidence vocabulary][D75], [D76 Eleven file treatments][D76], amended 2026-09-30): the registry
+Evidence is owned per file, not per project ([D75 Evidence vocabulary][D75], [D76 Eleven file treatments][D76], amended 2026-09-30): the evidence registry
 (`tools/verify/src/evidence-registry.ts`) gives every production file one file treatment and a rationale, and
 `verify`'s `ownership` step fails on an unclassified file. The per-project `evidenceOwner` is gone.
 
@@ -121,7 +121,7 @@ configs, `tools/` and the evidence apps may import a `suites` entry or `@viviefs
 | Generator | Creates |
 |---|---|
 | `nx g @viviefs/generators:feature <name>` | `model` / `client` / `server` projects with tags, an exemplar command, attribute Schema, tests, a story, a concept-page stub, an exercise stub |
-| `nx g @viviefs/generators:lib <name> --layer=<layer> --platform=<platform>` | tagged lib with `exports`, test setup, registry entry |
+| `nx g @viviefs/generators:lib <name> --layer=<layer> --platform=<platform>` | tagged lib with `exports`, test setup, evidence registry entry |
 | `nx g @viviefs/generators:workflow <feature> <name>` | versioned workflow + activities + crash-matrix test |
 | `nx g @viviefs/generators:screen <feature> <name>` | screen-view selector, query atoms with Reactivity keys, component, story |
 | `nx g @viviefs/generators:exercise <track> <name>` | exercise stub, failing test, reference solution |

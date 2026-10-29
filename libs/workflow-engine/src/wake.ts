@@ -4,7 +4,7 @@ import * as Layer from 'effect/Layer'
 import type { ClockValue } from './journal.ts'
 
 /**
- * Port for OS wake-ups (D24). The engine writes `viviefs/clock/wake-at` and
+ * Port for OS wake-ups (D24). The workflow engine writes `viviefs/clock/wake-at` and
  * then asks this port to schedule a local notification. Tests provide a no-op.
  */
 export class WakeScheduler extends Context.Service<

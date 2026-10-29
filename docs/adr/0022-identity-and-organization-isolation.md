@@ -4,15 +4,15 @@ Summary: People sign in through OIDC; the server enforces organization isolation
 
 Status: Qualified
 
-Date: 2026-09-20. Amended 2026-09-27 by the [P11 Identity][P11] grilling; 2026-09-28 with how the device signs in (step 6).
+Date: 2026-09-20. Amended 2026-09-27 by the [P11 Identity][P11] grilling; 2026-09-28 with how the device signs in (step 6); 2026-10-27 with one meaning of identity, agent accounts and who grants ([I54 Trust, encryption and who may sign in][I54]).
 
 Qualifying gate: [P11 Identity][P11]
 
-Related: [D18 Organization isolation on the server][D18], [D47 Identity via OIDC][D47]. complyj `ADR 0005` and 0009 as lesson sources.
+Related: [D18 Organization isolation on the server][D18], [D47 Identity via OIDC][D47], [D152 One meaning of identity][D152], [D153 Agent accounts][D153], [D154 Whoever grants is the actor][D154], [D157 The device after a revoked membership][D157]. complyj `ADR 0005` and 0009 as lesson sources.
 [P11 design review](../evidence/p11-design-review.md) (grilling record, Q1-Q24).
 [ADR-0016](0016-commands-and-server-validation.md) (server validation),
 [ADR-0011](0011-log-store-pattern.md) (no server compaction),
-[ADR-0023](0023-data-at-rest-and-crypto-shredding.md) (erasure and the future hash chain).
+[ADR-0023](0023-data-at-rest-and-crypto-shredding.md) (erasure), [ADR-0037 Access][ADR-0037] (access), [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] (the hash chain and signing).
 
 ## Problem
 
@@ -80,6 +80,9 @@ database-level guard. The server reads it on
 every request, so revocation is immediate even while a token is valid. Roles
 are carried in the caller and not enforced (roles in use, invitations and
 self-service membership come with the first consumer app that needs them).
+Amended 2026-10-27: the roles the caller carries are the identity provider's
+realm roles, the same in every organization, so they are not the roles access
+will use; roles are per-organization facts beside membership ([D151 The access pattern][D151], [I16 Roles in use, invitations and self-service membership][I16]).
 
 **Handler checks**, in addition to [ADR-0016 Commands, server validation and rejection][ADR-0016]'s validation:
 
@@ -93,12 +96,29 @@ self-service membership come with the first consumer app that needs them).
 - Blobs are keyed per organization.
 - `CompleteDeferred` is an authenticated RPC.
 
+**One meaning of identity** (amendment 2026-10-27, [D152 One meaning of identity][D152]-[D154 Whoever grants is the actor][D154], [I54 Trust, encryption and who may sign in][I54]). An
+identity is who a request or a change is accountable to: a person, the server
+or an agent account, a kind read when access is decided. It proves itself with
+a credential: today an access token from a provider account, later a key bound
+to it ([ADR-0038 Tamper-evidence and proof of authorship][ADR-0038]). The envelope's `actor` is an identity. A device is
+not an identity, and a provider account is where a credential comes from. An
+identity whose credential is its own key, with no one vouching, is
+self-certifying (Effect's `EventLog.Identity`). This replaces the reading that
+nothing is called an identity; the pattern keeps its name. An agent may have
+its own identity, an agent account, created only by a person, deferred
+([D153 Agent accounts][D153], [I86 Agent accounts][I86]). Whoever creates an identity or grants or revokes a
+membership is that changeset's actor; `server` is the actor only for what the
+server decides itself, and the operator signs in with an operator role
+([D154][D154], built by [I84 Build the access pattern][I84]). Authorization in the handlers is the
+access decision of [ADR-0037 Access][ADR-0037]. Until [I84][I84] qualifies [P11 Identity][P11] again,
+this amended part is Proposed, unverified.
+
 **Authenticated but not a member.** An account that was never granted
 membership verifies, and its caller has no person. Every handler then answers
 `MembershipMissing`; nothing is minted.
 
 **Device.** The workflow engine writes its journal on behalf of the signed-in
-person (`EngineConfig.actor`), so a pushed journal write passes the actor
+person (`WorkflowEngineConfig.actor`), so a pushed journal write passes the actor
 check. Lab runs that never reach a server use a fixed lab person. One local
 replica per provider account; signing out closes it. Refresh
 token in `expo-secure-store` with `offline_access` on iOS and Android; in
@@ -162,10 +182,10 @@ sign-in-needed; one local replica per provider account. Positive control: cross-
 access denied while same-organization access allowed.
 
 Stated limitation: stored history is trusted, not provable, against an
-operator or database administrator. Tamper-evidence (hash chain with
-device-held checkpoints; signed changesets only if a consumer needs proof
-against the operator) is decided before the first consumer app that makes
-audit claims, together with [P16 Crypto-shredding][P16]. Until then the server log is never compacted.
+operator or database administrator. Amended 2026-10-27: a hash chain per
+organization is built now ([D155 A hash chain per organization][D155], [I85 Build the hash chain][I85]), and signed changesets
+wait for an app that needs proof of who wrote what ([D156 Levels of proof of authorship][D156], [I15 Identity, keys and trust][I15]).
+Until the chain is checkable across compaction the server log is never compacted.
 
 The lab runs plain HTTP. TLS is decided with production hosting.
 
@@ -173,7 +193,9 @@ Known limitations ([P11 Identity][P11] grilling Q23, 2026-09-28), decided in the
 keys and trust step (Q24): `envelope.device` is chosen by the device and not
 authenticated; any member of an organization may take over any execution's
 lease there by raising the epoch, which is how failover works ([D15 Server authority after a lost lease][D15]), but who
-may take a lease is unspecified.
+may take a lease is unspecified. Amended 2026-10-27: who may take over a run
+is answered by [ADR-0036 The journal is the fence][ADR-0036]; nothing trusts the device id once the journal
+fence is built ([I80 Build the journal fence][I80]).
 
 **How a device labels its writes** (Q22). The device keeps a copy of the
 server's statement about the signed-in provider account, from the `Caller`
@@ -226,7 +248,7 @@ run `2026-09-28T22-40-46.395Z-cfafc842`, [closure note](../evidence/2026-09-28-p
 so [P11][P11]'s changes to the log, the protocol and the evidence app left every
 earlier gate passing, [P02 SQLite drivers][P02], [P04 Log store conformance][P04] and [P05 Changesets and projections][P05] on web included.
 
-Not measured: physical devices, TLS, `EngineConfig.actor` from the
+Not measured: physical devices, TLS, `WorkflowEngineConfig.actor` from the
 statement, and the limitations above (stored history, device identity,
 lease authorization).
 
@@ -235,10 +257,27 @@ lease authorization).
 [ADR-0006]: 0006-one-datom-log.md
 [ADR-0010]: 0010-entity-ids-and-defining-attributes.md
 [ADR-0016]: 0016-commands-and-server-validation.md
+[ADR-0036]: 0036-the-journal-is-the-fence.md
+[ADR-0037]: 0037-access.md
+[ADR-0038]: 0038-tamper-evidence-and-proof-of-authorship.md
 [D15]: ../plan/bootstrap/02-decision-log.md#d15
+[D151]: ../plan/bootstrap/02-decision-log.md#d151
+[D152]: ../plan/bootstrap/02-decision-log.md#d152
+[D153]: ../plan/bootstrap/02-decision-log.md#d153
+[D154]: ../plan/bootstrap/02-decision-log.md#d154
+[D155]: ../plan/bootstrap/02-decision-log.md#d155
+[D156]: ../plan/bootstrap/02-decision-log.md#d156
+[D157]: ../plan/bootstrap/02-decision-log.md#d157
 [D18]: ../plan/bootstrap/02-decision-log.md#d18
 [D31]: ../plan/bootstrap/02-decision-log.md#d31
 [D47]: ../plan/bootstrap/02-decision-log.md#d47
+[I15]: ../issues/0015-identity-keys-and-trust.md
+[I16]: ../issues/0016-roles-and-self-service-membership.md
+[I54]: ../issues/0054-trust-encryption-and-who-may-sign-in.md
+[I80]: ../issues/0080-build-the-journal-fence.md
+[I84]: ../issues/0084-build-the-access-pattern.md
+[I85]: ../issues/0085-build-the-hash-chain.md
+[I86]: ../issues/0086-agent-accounts.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P02]: ../plan/bootstrap/06-qualification-gates.md#p02
 [P04]: ../plan/bootstrap/06-qualification-gates.md#p04
@@ -246,4 +285,3 @@ lease authorization).
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09
 [P10]: ../plan/bootstrap/06-qualification-gates.md#p10
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11
-[P16]: ../plan/bootstrap/06-qualification-gates.md#p16

@@ -1,7 +1,7 @@
 export const P07_NOTIFICATION_TITLE = 'P07 approval'
 export const P07_CHANNEL_ID = 'viviefs-p07-alarm'
 
-export type DeferredNotificationData = {
+export type DurableDeferredNotificationData = {
   kind: 'deferred' | 'clock'
   workflowName: string
   executionId: string
@@ -53,7 +53,7 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   return next.granted
 }
 
-export const scheduleDeferredNotification = async (options: {
+export const scheduleDurableDeferredNotification = async (options: {
   executionId: string
   workflowName: string
   deferredName: string
@@ -61,7 +61,7 @@ export const scheduleDeferredNotification = async (options: {
 }): Promise<string> => {
   const Notifications = await loadNotifications()
   await ensureNotificationChannel()
-  const data: DeferredNotificationData = {
+  const data: DurableDeferredNotificationData = {
     kind: 'deferred',
     workflowName: options.workflowName,
     executionId: options.executionId,
@@ -94,7 +94,7 @@ export const scheduleWakeNotification = async (options: {
   const Notifications = await loadNotifications()
   await ensureNotificationChannel()
   const seconds = Math.max(2, Math.ceil((options.wakeAtMs - Date.now()) / 1000))
-  const data: DeferredNotificationData = {
+  const data: DurableDeferredNotificationData = {
     kind: 'clock',
     workflowName: options.workflowName,
     executionId: options.executionId,
@@ -130,7 +130,7 @@ export const cancelWakeNotification = async (
 
 export const readNotificationData = (
   value: unknown,
-): DeferredNotificationData | null => {
+): DurableDeferredNotificationData | null => {
   if (!value || typeof value !== 'object') return null
   const data = value as Record<string, unknown>
   if (
@@ -151,14 +151,14 @@ export const readNotificationData = (
 }
 
 export const lastNotificationData =
-  async (): Promise<DeferredNotificationData | null> => {
+  async (): Promise<DurableDeferredNotificationData | null> => {
     const Notifications = await loadNotifications()
     const response = await Notifications.getLastNotificationResponseAsync()
     return readNotificationData(response?.notification.request.content.data)
   }
 
 export const subscribeNotificationResponses = (
-  onData: (data: DeferredNotificationData) => void,
+  onData: (data: DurableDeferredNotificationData) => void,
 ): (() => void) => {
   let sub: { remove: () => void } | undefined
   void loadNotifications().then((Notifications) => {

@@ -1,6 +1,6 @@
 /**
  * verify quality / evidence (D71, D75-D77): judges what the coverage producers
- * produced in this run against the registry and the evidence lockfile. Pure
+ * produced in this run against the evidence registry and the evidence lockfile. Pure
  * over injected data; `check-evidence.ts` reads the artifacts and runs it.
  *
  * - An exactly covered file's tuple from its owning producer equals the
@@ -11,11 +11,11 @@
  *   producer; every suite the catalogue declares, except a lab-only one, runs.
  * - Test support is reached; a rendered component's stories ran and passed; a
  *   process entry's named test ran and passed.
- * - The lockfile's registry digest and coverage provider match this run.
+ * - The lockfile's evidence registry digest and coverage provider match this run.
  */
 import type { Suite } from '@viviefs/testing'
 import { COVERAGE_PRODUCERS, type CoverageProducer } from '@viviefs/testing/vitest'
-import { hasExactCoverage, owningProducer, type RegistryEntry } from './file-treatments.ts'
+import { hasExactCoverage, owningProducer, type EvidenceRegistryEntry } from './file-treatments.ts'
 import {
   METRICS,
   covered,
@@ -48,7 +48,7 @@ export type ProducerRun = {
 }
 
 export type EvidenceInput = {
-  readonly registry: ReadonlyArray<RegistryEntry>
+  readonly evidenceRegistry: ReadonlyArray<EvidenceRegistryEntry>
   readonly digest: string
   readonly suites: ReadonlyArray<Suite>
   /** Keyed by repository-relative path. */
@@ -95,7 +95,7 @@ export const judgeEvidence = (input: EvidenceInput): Evidence => {
   const tuples: Partial<Record<CoverageProducer, Record<string, Tuple>>> = {}
 
   const needed = new Set(
-    input.registry.map(owningProducer).filter((producer): producer is CoverageProducer => producer !== undefined),
+    input.evidenceRegistry.map(owningProducer).filter((producer): producer is CoverageProducer => producer !== undefined),
   )
   for (const producer of COVERAGE_PRODUCERS) {
     if (needed.has(producer) && !input.runs[producer]) {
@@ -107,7 +107,7 @@ export const judgeEvidence = (input: EvidenceInput): Evidence => {
     issues.push(`No evidence lockfile; ${BASELINE}.`)
   } else {
     if (input.lockfile.registryDigest !== input.digest) {
-      issues.push(`The registry changed since the lockfile was written; ${BASELINE}.`)
+      issues.push(`The evidence registry changed since the lockfile was written; ${BASELINE}.`)
     }
     for (const producer of COVERAGE_PRODUCERS) {
       const run = input.runs[producer]
@@ -121,7 +121,7 @@ export const judgeEvidence = (input: EvidenceInput): Evidence => {
     }
   }
 
-  for (const entry of input.registry) {
+  for (const entry of input.evidenceRegistry) {
     const producer = owningProducer(entry)
     if (producer === undefined) {
       if (entry.treatment === 'process-entry' && 'test' in entry.runBy && input.runs.unit) {

@@ -2,11 +2,11 @@
 
 The inbox. The Research bot appends. It does not edit an entry, and it does
 not edit the stable core. The first grill session, on 2026-10-21, recorded
-[D130 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d130) through
-[D136 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d136) and left these entries **raw**. N01-N14
+[D209 Knowledge layers by distance](../../plan/bootstrap/02-decision-log.md#d209) through
+[D215 Issue and Area defined](../../plan/bootstrap/02-decision-log.md#d215) and left these entries **raw**. N01-N14
 carry a layer tag from that session
-([D131 Layers as the backbone](../../plan/bootstrap/02-decision-log.md#d131)). Questions still open are
-[I75 XDevl grill: open questions](../../issues/0075-xdevl-grill-open-questions.md).
+([D210 Layers as the backbone](../../plan/bootstrap/02-decision-log.md#d210)). Questions still open are
+[I102 XDevl grill: open questions](../../issues/0102-xdevl-grill-open-questions.md).
 
 Statements are copied from the snapshots. A figure is the snapshot's report
 of its source, not a measurement this area ran. `verified` means the

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charting map 3: the words (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, td, th, .badge) { overflow-wrap: anywhere; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Wayfinder - charting map 3 of I34</span>
+    <span class="badge badge-outline">2026-10-27</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Charting map 3: the words</h1>
+  <p class="text-lg opacity-80">Map 2 is done and <a class="cr-link" href="2026-10-27-effect-vocabulary-against-ours.md">I78's record</a> has compared Effect's names with ours. <a class="cr-link" href="../issues/0034-vivief-as-the-source-of-viviefs-concepts.md">I34</a> gave map 3 its destination in one line: <b>a glossary where each term means one thing</b>. Before I chart tickets, this round settles what "done" means, how far a word change reaches, and where a word decision is written down. The clusters and worked words below are real, so you can judge the shape on content.</p>
+</header>
+
+<section class="space-y-5" id="inherits">
+  <h2 class="text-2xl font-bold">What map 3 inherits: 14 inventory rows, about 40 waiting words, five issues</h2>
+  <p>Three sources. The <a class="cr-link" href="2026-10-06-vivief-inventory.html">vivief inventory</a>'s map-3 section (14 rows, 15 ids). The words map 2 left waiting (<a class="cr-link" href="../plan/next-session.md">next-session</a>, phase 2's row, and I34's comments). I78's questions 1-11; question 12 is map 6's and is already on <a class="cr-link" href="../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md">I29</a>. The issues whose <code class="cr-inline">Decide when:</code> is map 3: <b>I26</b> (glossary links on words that are not our terms), <b>I30</b> (the formula and its names), <b>I33</b> (abstraction or pattern), <b>I77</b> (change has two meanings); <b>I32</b> (explain any word on demand) waits for I26. The sorting into clusters below is mine and is what round 2 would ticket.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Cluster</th><th>What is in it</th><th>The question it asks</th></tr></thead>
+    <tbody>
+<tr><td><b>1. How a word is chosen and written</b><div class="cr-src">5 rows, D162, D135</div></td><td>Rows <code class="cr-inline">glossary-shape</code>, <code class="cr-inline">deprecated-terms</code>, <code class="cr-inline">names-that-carry-context</code>, <code class="cr-inline">plain-glossary</code>, <code class="cr-inline">surface-area-as-risk</code>. The "like X, except Y" line (D162). The "not Effect's X" line I78 proposes. Effect's names first (D135) as a rule with its exceptions.</td><td>The rules every other ticket applies: when a bare word, when a compound (<i>App creation</i> over <code class="cr-inline">Creation</code>); what an entry carries; whether a replaced word keeps its reason.</td></tr>
+<tr><td><b>2. Words in another project's sense</b><div class="cr-src">I26, I32's trigger, I78 Q2</div></td><td>How a page, a quote or a table says "not our terms"; whether a mark stops glossary links only or ids too (vivief's <code class="cr-inline">ADR 0027</code>); how the linker tells <code class="cr-inline">node</code> from Node.js and Effects from <code class="cr-inline">Effect</code>.</td><td>The site's half of "one meaning": a reader hovering a word gets our meaning only where it is meant.</td></tr>
+<tr><td><b>3. Effect, effects and the formula</b><div class="cr-src">5 rows, I30, I78 Q2-Q3, Q5</div></td><td>Rows <code class="cr-inline">effect-handler</code>/<code class="cr-inline">command</code>, <code class="cr-inline">intent</code>, <code class="cr-inline">datom-in-motion</code>, <code class="cr-inline">effects-as-data</code>, <code class="cr-inline">effect-v4-backbone</code>. Words: effect, Vision, View and Effects, <code class="cr-inline">effectHandler</code>, the formula's names (<code class="cr-inline">State</code> or <code class="cr-inline">Context</code>, <code class="cr-inline">Intent</code> or <code class="cr-inline">Effect</code>), intent, "a command decides".</td><td>Which sense of "effect" each word takes, when Effect the library owns the bare word and an <code class="cr-inline">Effect</code> is work not yet run.</td></tr>
+<tr><td><b>4. Pattern, concept, contract, abstraction</b><div class="cr-src">3 rows, I33, D160</div></td><td>Rows <code class="cr-inline">concept-vs-pattern</code>/<code class="cr-inline">pattern</code>, <code class="cr-inline">contract</code>, <code class="cr-inline">project-kinds-and-boundaries</code> (Feature). Words: foundation concept (against D82's concept), "abstraction" or "pattern", <code class="cr-inline">Contract</code> (ours: a promise checked by suites; vivief's: spec, test and guard).</td><td>The architecture words a newcomer meets first, each with one meaning.</td></tr>
+<tr><td><b>5. Effect's names against ours</b><div class="cr-src">I78 Q1, Q4-Q10</div></td><td>Envelope, Journal, Entity (an entity type that acts), Decision, Tool (D134's sentence), Prompt, Worker (runner recommended), Deferred (durable deferred), <code class="cr-inline">tx</code>, Command (<code class="cr-inline">effect/cli</code>), session, model, Service ("tag" or key), Registry, compaction, drain, scope, cause.</td><td>Mostly marks, a few renames: which side moves for each, by cluster 1's rules.</td></tr>
+<tr><td><b>6. Map 2's new words</b><div class="cr-src">I77, I78 Q11, D101-D134</div></td><td><code class="cr-inline">node</code>, surface, frame, the lab qualifier, hot, frontier, warm and cold, the kinds of intent, "change" (data changeset and code commit).</td><td>Glossary entries for words map 2 decided the meaning of and left unnamed.</td></tr>
+<tr><td><b>7. Naming facts</b><div class="cr-src">2 rows</div></td><td>Rows <code class="cr-inline">past-tense-fact-naming</code> (a tense rule for attribute names, P05's vocabulary pass) and <code class="cr-inline">cross-domain-references</code> (an attribute namespace per consumer app).</td><td>Attribute names are words too, but pinned ones never change (D44). Map 3's, or map 4's with the first consumer app?</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="cr-src">Not inherited: I28's Alchemy names wait for I7 (hosting); I21's reader test is map 4's and judges map 3's result.</p>
+</section>
+
+<section class="space-y-5" id="worked">
+  <h2 class="text-2xl font-bold">Three words, as they would end under the recommended answers</h2>
+  <p>Illustrations of the shape, not proposed answers: what each ticket would write, and where.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold">Worker</h3>
+      <p class="cr-src">cluster 5; Effect's name first, our own code already uses worker for the OPFS thread</p>
+      <p><b>Decision log:</b> D16x "Runner, not worker": <i>&lt;the human's answer&gt;</i>.</p>
+      <p><b>Glossary:</b> <b>Runner</b>: "The program on a phone or a server that runs workflows." Then: "Like Temporal's worker. Not Effect's <code class="cr-inline">Worker</code>, a thread." <i>Avoid: worker (for this)</i>.</p>
+      <p><b>Living documents edited in the ticket:</b> the glossary, ADR-0036's "A device cannot be a runner" (a Cluster runner), D2's paraphrase where a living page repeats it.</p>
+      <p><b>Kept as written:</b> D2's row, research records, closed Answers. The Avoid line maps the old word for their readers.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold">Effects (Vision - View - Effects)</h3>
+      <p class="cr-src">cluster 3; clashes with the library and with Effect's type</p>
+      <p><b>Decision log:</b> D16x: <i>&lt;which word, or a compound like "the Effects of the loop"&gt;</i>.</p>
+      <p><b>Glossary:</b> an entry whose plain sentence is "what actually happened", and the line "Not Effect, the library, and not its <code class="cr-inline">Effect</code> type, which is work not yet run; what happened is its <code class="cr-inline">Exit</code>."</p>
+      <p><b>Site (cluster 2):</b> the linker sends Effects to this entry and Effect to the library's.</p>
+      <p><b>Disposition:</b> rows <code class="cr-inline">effects-as-data</code>, <code class="cr-inline">effect-v4-backbone</code> settled here.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body space-y-2">
+      <h3 class="font-bold"><code class="cr-inline">node</code></h3>
+      <p class="cr-src">cluster 6; D103's meaning, waiting because of Node.js</p>
+      <p><b>Decision log:</b> D16x: <i>&lt;Node, with Node.js written node-js where a name is needed (the human's hint, I48), or another word&gt;</i>.</p>
+      <p><b>Glossary:</b> <b>Node</b>: "One installation of an app that keeps all or part of an organization's data and writes changes to it."</p>
+      <p><b>Site (cluster 2):</b> "Node.js" never links to it.</p>
+      <p><b>Living documents:</b> the code-font <code class="cr-inline">node</code> in ADR-0032 and the decisions becomes the term.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-6" id="round1">
+  <h2 class="text-2xl font-bold">Round 1: the destination and the rules of the map</h2>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 destination')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q1 - What is the destination?</h3>
+      <p>I34: "a glossary where each term means one thing". Map 2 made its version checkable: every row disposed of in a ticket's Answer, and one ADR the human accepted. Map 3's thing to accept is the glossary itself.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: every map-3 inventory row, every waiting word and I78's questions 1-11 have a disposition in a ticket's Answer; every term in GLOSSARY.md has one meaning in the stack, and where another project (Effect first) uses the word otherwise the entry says so; I26 is decided; done when a closing review sees all of it and the human accepts the glossary as it stands" checked><span><b>A (recommended).</b> Every map-3 row, every waiting word and I78's questions 1-11 have a disposition in a ticket's Answer. Every glossary term has one meaning in the stack, and where another project (Effect first) uses the word otherwise, the entry says so. I26 is decided. Done when a closing review sees all of it and <b>the human accepts the glossary</b> as it stands.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: as A, plus an ADR for the naming rules (cluster 1), accepted at the close"><span><b>B.</b> As A, plus one ADR for the naming rules (cluster 1), accepted at the close. Something a reader can open for the why, but the glossary's own introduction can carry the rules, as it carries D94's.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="C: only the waiting words and I78's clashes; the glossary's shape and naming rules stay as D94 left them"><span><b>C.</b> Only the waiting words and I78's clashes. The glossary's shape and the naming rules stay as D94 left them. Smaller, but leaves the next clash to be argued from nothing.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 plan or do')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q2 - Does map 3 change the words, or only decide them?</h3>
+      <p>Map 2 was "plan, don't do": decisions, glossary entries, and an issue for every consequence. For words that leaves the glossary saying runner while ADR-0036 says worker, which is the two meanings the map exists to remove. The linker (I26) is code in <code class="cr-inline">apps/docs</code>.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: a ticket writes its glossary entries and edits the living documents a word decision forces, in the same commit; code (I26's linker, any identifier) becomes an issue for phase 3's build" checked><span><b>A (recommended).</b> A ticket writes its glossary entries <b>and edits the living documents its word decision forces</b>, in the same commit, so the repository never holds both words. Code (I26's linker, any identifier) becomes an issue in phase 3's build.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: as A, and I26's linker is built inside map 3 as its last task ticket, so the close sees the site right"><span><b>B.</b> As A, and I26's linker is built inside map 3 as a task ticket before the close, so the closing review sees the site right too.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="C: plan only, as map 2: decisions and glossary entries; every edit elsewhere becomes an issue"><span><b>C.</b> Plan only, as map 2: decisions and glossary entries; every edit elsewhere becomes an issue.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 reach')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q3 - When a word changes, what is rewritten and what is kept?</h3>
+      <p>Today's rules: attributes, pinned names and the RPC are never renamed (D44, D44'); research records are kept as written (D68); a decision whose meaning changes gets a primed row (D14'). A word-only change is new. The living documents are the ones <code class="cr-inline">pnpm refs fix</code> covers: the glossary, AGENTS.md, ADRs, issues, plan pages and guides.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: rewrite the prose of the glossary, AGENTS.md, guides, ADR bodies, plan pages and open issues; keep decision-log rows, resolved issues' Answers and research records as written; the new entry's Avoid line names the old word so their readers can map it; persisted names never change (D44)" checked><span><b>A (recommended).</b> Rewrite the prose of the glossary, AGENTS.md, guides, ADR bodies, plan pages and open issues. Keep decision-log rows, resolved issues' Answers and research records as written: they are what was said then. The new entry's Avoid line names the old word, so a reader of an old record can map it. Persisted names never change (D44).</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: rewrite every living document, decision-log rows and resolved issues included, so a search for the old word finds nothing"><span><b>B.</b> Rewrite every living document, decision-log rows and resolved issues too, so a search for the old word finds nothing. Clean to search, but a decision row would say words nobody used when it was decided.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="C: rewrite only the glossary; other pages change when someone next edits them"><span><b>C.</b> Rewrite only the glossary; other pages change when someone next edits them. Cheapest, and leaves two words in use for months.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q4" onsubmit="crQueue(event, 'q4', 'Q4 record')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q4 - Where is a word decision written down?</h3>
+      <p>The glossary holds the term; domain modeling says the glossary is not a place for decisions. Many of map 3's answers are small marks ("not Effect's Envelope") with nothing weighed; some are real choices (runner or worker, what Effects is called).</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q4" value="A: a decision-log row (D163 on) for each rule and for each word where alternatives were weighed; a mark that only says another project's sense goes in the glossary alone; no ADR unless a word changes an architectural record's meaning" checked><span><b>A (recommended).</b> A decision-log row (D163 on) for each rule and each word where alternatives were weighed. A mark that only says another project's sense goes in the glossary alone. No ADR, unless a word changes what an architectural record means.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="B: a decision-log row for every word map 3 touches, marks included"><span><b>B.</b> A row for every word map 3 touches, marks included. Complete, and about 40 rows of little weight.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q5" onsubmit="crQueue(event, 'q5', 'Q5 name')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q5 - What is the map called?</h3>
+      <p>I34 calls it Vocabulary; the sequence and the handover say "map 3, the words". Both are plain. The effort slug becomes <code class="cr-inline">docs/plan/&lt;slug&gt;/</code> and every ticket's <code class="cr-inline">Effort:</code> line.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q5" value="A: &quot;The words&quot;, effort docs/plan/the-words/" checked><span><b>A (recommended).</b> "The words", <code class="cr-inline">docs/plan/the-words/</code>: what everyone has been calling it, and everyday English.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="B: &quot;Vocabulary&quot;, effort docs/plan/vocabulary/, I34's name"><span><b>B.</b> "Vocabulary", <code class="cr-inline">docs/plan/vocabulary/</code>, I34's name.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q6" onsubmit="crQueue(event, 'q6', 'Q6 inputs')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q6 - Which inputs are map 3's?</h3>
+      <p>Clusters 1-6 above are clearly map 3's. Two edges: cluster 7 (attribute tense and a namespace per consumer app) is about names a consumer app will pin, and I32 (explain any word on demand) is a reading feature whose trigger is I26.</p>
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q6" value="A: clusters 1-6; cluster 7's two rows handed to map 4 (with P05's vocabulary pass and the first consumer app); I32 gets a comment confirming or narrowing its trigger in I26's ticket, nothing built; I28 stays with I7, I21 with map 4" checked><span><b>A (recommended).</b> Clusters 1-6. Cluster 7's two rows go to map 4, beside P05's vocabulary pass and the first consumer app that pins names. I32 gets a comment in I26's ticket confirming or narrowing its trigger, nothing built. I28 stays with I7, I21 with map 4.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="B: clusters 1-7: a tense rule for attribute names is decided now, before any consumer app pins one"><span><b>B.</b> Clusters 1-7: a tense rule for attribute names is decided now, before a consumer app pins one. The pinned <code class="cr-inline">viviefs/</code> names already mix past tense and nouns.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<section class="space-y-4" id="round1-settled">
+  <h2 class="text-2xl font-bold">Round 1, settled</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Q</th><th>Answer</th></tr></thead>
+    <tbody>
+<tr><td>Q1 destination</td><td>A, with a rule: a single-word term only where its meaning matches our own use and the libraries we use, inside and outside (as entity did, D137); otherwise the term is a compound that names its context (a workflow runner, an OPFS worker, a test runner). Compounds are welcome where they make communication clearer.</td></tr>
+<tr><td>Q2 plan or do</td><td>B: a ticket edits the living documents its word decision forces, and I26's linker is built inside map 3 as a task ticket before the close.</td></tr>
+<tr><td>Q3 reach</td><td>A, with a check that keeping an old word in records does not get in the way of later work (Q9 below).</td></tr>
+<tr><td>Q4 record</td><td>A: a decision-log row for each rule and each weighed word; marks in the glossary alone.</td></tr>
+<tr><td>Q5 name</td><td>Open: you had "term" and "glossary" in mind (Q10 below).</td></tr>
+<tr><td>Q6 inputs</td><td>B: clusters 1-7, so a tense rule for attribute names and a namespace per consumer app are decided now.</td></tr>
+<tr><td>Effect</td><td>Your proposal: "effect" can mean having an effect; that Effect's <code class="cr-inline">Effect</code> describes it and running it is another step is how the library works. Agree one description of effect and effect handler first, as with entity (Q7 below).</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-6" id="round2">
+  <h2 class="text-2xl font-bold">Round 2: the tickets</h2>
+  <form class="card bg-base-200" data-lavish-question="q7" onsubmit="crQueue(event, 'q7', 'Q7 effect')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q7 - The effect description: is this the direction to start from?</h3>
+      <p>A draft, written the way D137 settled entity, for the first ticket's review page to test on real code. <b>Effect</b>: "Something that happens and makes a difference: a fact written, a message sent, a screen redrawn, a model asked." Then: "Effect, the TypeScript library, writes an effect down as a value of its type <code class="cr-inline">Effect</code> and runs it later; that describing and running are two steps is how the library works, not another meaning." <b>Effect handler</b>: "A step that takes what is known and an effect that comes in, and decides which effects follow." A command is the data level's effect handler (a read model and an intent in, a changeset or a typed error out), and the engine runs a workflow's steps the same way. Open for the ticket: whether an intent is an effect asked for and not yet accepted, and what the formula's parts are called (I30).</p>
+<label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q7" value="A: yes, as the first ticket, Effect and the effect handler; its review page tests the draft on a command, a workflow step, a model call and Vision - View - Effects" checked><span><b>A (recommended).</b> Yes. It is the first ticket, "Effect and the effect handler", and its review page tests the draft on a command, a workflow step, a model call and Vision - View - Effects before you decide.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="B: settle the description now, in this charting, before any ticket"><span><b>B.</b> Settle it now, in this charting, before any ticket is written.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q8" onsubmit="crQueue(event, 'q8', 'Q8 tickets')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q8 - The tickets and which blocks which</h3>
+      <p>One grilling per cluster, a task for the linker (Q2), and a closing review. Numbers are the next free issues.</p>
+<ol class="list-decimal pl-6 space-y-1">
+<li><b>I88 Effect and the effect handler</b> (cluster 3, with Vision, View and Effects, intent, the formula, I30). First; blocks the rest.</li>
+<li><b>I89 How a word is chosen and written</b> (cluster 1: the single-word rule above made a decision, "like X, except Y", a replaced word's reason, the glossary's opening, growth as a risk). After I88.</li>
+<li><b>I90 Pattern, concept, contract, abstraction</b> (cluster 4, I33). After I89.</li>
+<li><b>I91 Effect's names against ours</b> (cluster 5: runner and worker, Envelope, Journal, Decision, Tool, Prompt and the rest). After I88 and I89.</li>
+<li><b>I92 Map 2's new words</b> (cluster 6: <code class="cr-inline">node</code>, surface, frame, the lab qualifier, the four states, kinds of intent, change, I77). After I88 and I89.</li>
+<li><b>I93 Naming facts</b> (cluster 7: a tense rule for attribute names, a namespace per consumer app). After I88 (is a request ever a fact) and I89.</li>
+<li><b>I94 Words in another project's sense</b> (cluster 2, I26; I32's trigger checked). After I89.</li>
+<li><b>I95 Build the glossary linker as decided</b> (task, I26's code). After I94.</li>
+<li><b>I96 Accept the vocabulary</b> (closing review: every row and word disposed of, the glossary accepted). After all.</li>
+</ol>
+<label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q8" value="A: these nine, in this order" checked><span><b>A (recommended).</b> These nine, in this order. I90-I94 can run in any order once I88 and I89 are done.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="B: I88 and I89 in parallel, neither blocking the other"><span><b>B.</b> I88 and I89 in parallel. Faster to start, but the rules would be written before the hardest word is settled.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q8" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q9" onsubmit="crQueue(event, 'q9', 'Q9 old words')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q9 - What "keeping an old word does not get in the way" checks</h3>
+      <p>My reading of your Q3 note. Before a ticket retires a word, it checks three things and writes the result in its Answer: (1) no persisted name or code identifier uses the word in the retired sense, or an issue is opened for it; (2) no planned concept (open issues, maps 4-6, the Schedule) needs that bare word for another meaning; (3) if a retired word is ever given a new meaning later, its entry says what old records meant by it.</p>
+<label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q9" value="A: these three checks, recorded in the Answer" checked><span><b>A (recommended).</b> These three checks, recorded in the ticket's Answer.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="B: also never give a retired word a new meaning"><span><b>B.</b> As A, and a retired word is never given a new meaning at all.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q9" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <form class="card bg-base-200" data-lavish-question="q10" onsubmit="crQueue(event, 'q10', 'Q10 name')">
+    <div class="card-body space-y-3">
+      <h3 class="text-xl font-bold">Q10 - The map's name, with the reasons</h3>
+      <p>I offered only the two names already in use (I34's and the sequence's). Your two, and what each says:</p>
+<ul class="list-disc pl-6 space-y-1">
+<li><b>"The glossary"</b>: names the artifact the close accepts, but the map does more than <code class="cr-inline">GLOSSARY.md</code>: prose across living documents, the site's linker, attribute names (cluster 7).</li>
+<li><b>"Terms"</b>: a term is a word with a glossary entry ("glossary term" in 22 files, the linker's <code class="cr-inline">termFinder</code>). The map also decides words that are deliberately <i>not</i> our terms (I26) and attribute names, which are not terms.</li>
+<li><b>"Vocabulary"</b>: the glossary already says it "fixes the vocabulary the stack uses", AGENTS.md lists it as "vocabulary", and P05's "vocabulary pass" is about attribute names. It covers terms, non-terms and names, which with Q6 B is all seven clusters.</li>
+<li><b>"The words"</b>: plain, but says least as a folder name.</li>
+</ul>
+<label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q10" value="A: Vocabulary, effort docs/plan/vocabulary/" checked><span><b>A (recommended).</b> "Vocabulary", <code class="cr-inline">docs/plan/vocabulary/</code>: it already means what the map covers, here and in I34.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="B: Terms, effort docs/plan/terms/"><span><b>B.</b> "Terms", <code class="cr-inline">docs/plan/terms/</code>.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="C: The glossary, effort docs/plan/glossary/"><span><b>C.</b> "The glossary", <code class="cr-inline">docs/plan/glossary/</code>.</span></label>
+<label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q10" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      <button class="btn btn-primary btn-sm w-fit">Queue answer</button>
+    </div>
+  </form>
+  <div class="card bg-base-200"><div class="card-body space-y-2">
+    <h3 class="text-xl font-bold">Standing rules, fog and out of scope (no question, tell me if one is wrong)</h3>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>Notes:</b> Q1-Q4's answers; one session per ticket with <code class="cr-inline">grilling</code> and <code class="cr-inline">domain-modeling</code> and a review page with worked examples; Effect's names first (D135) under the single-word rule; map 2's dispositions (adopt, keep ours, reject, defer, hand to map N, stands); sources are the inventory, I78's record and vivief on demand.</li>
+      <li><b>Fog:</b> code identifiers a word decision touches (each becomes an issue for phase 3, unless pinned); whether the glossary's groups change (I89 may answer it).</li>
+      <li><b>Out of scope:</b> I28's Alchemy names (with I7); I21's reader test (map 4, judges this map); building I32 (only its trigger is checked); I78's question 12 (map 6, on I29).</li>
+    </ul>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body space-y-2">
+    <h3 class="text-xl font-bold">Round 2, settled</h3>
+    <p>Q7-Q10 as recommended: I88 Effect and the effect handler is the first ticket and tests the draft on real code; the nine tickets in the order above; the three checks before a word is retired, recorded in the Answer; the map is <b>Vocabulary</b>, <code class="cr-inline">docs/plan/vocabulary/</code>. The standing rules, fog and out of scope stand. Charted in <a class="cr-link" href="../plan/vocabulary/map.md">the map</a>.</p>
+  </div></div>
+</section>
+
+</div>
+</body>
+</html>

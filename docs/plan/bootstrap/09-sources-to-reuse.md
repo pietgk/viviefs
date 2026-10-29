@@ -38,7 +38,7 @@ record the origin in the commit message.
 
 | Take | Path | Use |
 |---|---|---|
-| Durable execution field guide | `research/durable-execution.md`, `research/_notes/` | Vocabulary, engine comparison, limits |
+| Durable execution field guide | `research/durable-execution.md`, `research/_notes/` | Vocabulary, workflow engine comparison, limits |
 | E2E tooling | [ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010], `package.json` agent-device and Maestro scripts, `.maestro/` | Gate [P07 Device resume E2E][P07] |
 | Ports ADR | `docs/adr/0009-external-capabilities-behind-swappable-ports.md` | Superseded by Effect services, useful for teaching |
 | XState orchestration | `docs/adr/0014-...`, `0017-...` | Input for gate [P08 UI three-way prototype][P08] |

@@ -33,7 +33,7 @@ import {
   CrashHook,
   encodeExit,
   encodeLease,
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
   noopWakeScheduler,
 } from '@viviefs/workflow-engine'
@@ -150,7 +150,7 @@ const outboxOffline = (directory: string, clock: MutableClock) =>
 
 /**
  * p09-check cursorStream
- * `renameList` creates two lists, `one` and `two`. One `pull` returns both. The next `pull` returns nothing new and keeps the same server cursor.
+ * `renameList` creates two lists, `one` and `two`. One `pull` returns both. The next `pull` returns nothing new and keeps the same sync cursor.
  */
 const cursorStream = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'stream', [
@@ -501,10 +501,10 @@ const waitLayer = Wait.toLayer(() =>
 )
 
 /**
- * p09-check serverDeferred
- * The device runs a workflow that is waiting on a deferred. `completeDeferred` is the server writing that deferred's exit. The server does not run the workflow. The device `pull`s the exit and the workflow finishes.
+ * p09-check serverDurableDeferred
+ * The device runs a workflow that is waiting on a durable deferred. `completeDeferred` is the server writing that durable deferred's exit. The server does not run the workflow. The device `pull`s the exit and the workflow finishes.
  */
-const serverDeferred = (directory: string, clock: MutableClock) =>
+const serverDurableDeferred = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'deferred', [['a', 'p09-wait']], (world) =>
     Effect.gen(function* () {
       const org = 'deferred'
@@ -520,7 +520,7 @@ const serverDeferred = (directory: string, clock: MutableClock) =>
       const engineLive = waitLayer.pipe(
         Layer.provideMerge(engineLayer),
         Layer.provide(Layer.succeedContext(a.context)),
-        Layer.provide(engineConfigLayer({ org, actor: personOf(a) })),
+        Layer.provide(workflowEngineConfigLayer({ org, actor: personOf(a) })),
         Layer.provide(deviceLayer(a.id)),
         Layer.provide(hook),
         Layer.provide(noopWakeScheduler),
@@ -547,10 +547,10 @@ const serverDeferred = (directory: string, clock: MutableClock) =>
   )
 
 /**
- * p09-check fileManifest
- * The changeset names a file hash in its manifest. The server answers that the file is missing, so the push stays `waiting-file` and B does not see the file. After `upload`, the same changeset pushes and is acked. B's `pull` shows the hash.
+ * p09-check fileInChangesetManifest
+ * The changeset names a file hash in its changeset manifest. The server answers that the file is missing, so the push stays `waiting-file` and B does not see the file. After `upload`, the same changeset pushes and is acked. B's `pull` shows the hash.
  */
-const fileManifest = (directory: string, clock: MutableClock) =>
+const fileInChangesetManifest = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'files', [
     ['a', 'p09-a'],
     ['b', 'p09-b'],
@@ -664,13 +664,13 @@ export const syncProtocolChecks = (
       ),
       runCheck('P09', 
         'server deferred completion',
-        'serverDeferred',
-        serverDeferred(directory, clock),
+        'serverDurableDeferred',
+        serverDurableDeferred(directory, clock),
       ),
       runCheck('P09', 
         'file manifest waits',
-        'fileManifest',
-        fileManifest(directory, clock),
+        'fileInChangesetManifest',
+        fileInChangesetManifest(directory, clock),
       ),
     ],
     { concurrency: 1 },

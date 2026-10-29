@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I92: Map 2's new words (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-quote { border-left: 3px solid var(--color-base-content); border-left-color: color-mix(in oklab, var(--color-base-content) 30%, transparent); padding-left: 0.9rem; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .mermaid { background: var(--color-base-200); border-radius: 0.5rem; padding: 1rem; }
+  del { opacity: 0.6; }
+  ins { text-decoration: none; background: color-mix(in oklab, var(--color-success) 22%, transparent); padding: 0 0.15rem; border-radius: 0.2rem; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 3, Vocabulary - I92</span>
+    <span class="badge badge-outline">2026-10-28, rounds 1-2 answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Map 2's new words</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0092-map-2s-new-words.md">I92 Map 2's new words</a> names the words map 2 gave a meaning and left unnamed. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d198">D198 Map 3 finishes lean</a> narrows it: name only the words the app shell (<a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p12">P12 UI on every platform</a>, <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p13">P13 Links and routing</a>) meets, and defer the rest with a <code class="cr-inline">Decide when:</code>. Each word gets <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d170">D170 One word only where it matches</a>'s test: the bare word only where our sense and the libraries' share their core; otherwise a compound, or the bare word with a <code class="cr-inline">_Not_</code> line, weighed and recorded.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 1 (2026-10-28): Q1 A, Sync node; <b>Q2 C, Screen and Presentation surface, ADR-0032 amended</b>; Q3 A, Frame keeps its word with a <code class="cr-inline">_Not_</code> line; Q4 A, change stays plain English and Verify's line is fixed; Q5 A, the lab qualifier, the four states and the kinds of intent deferred. Round 2, Q6-Q8 all A: the entries and the amendment as drafted; <code class="cr-inline">verify</code> fails only <code class="cr-inline">node</code> in code font outside a marked passage; the rewrite and hand-overs as written. Recorded as D199-D203; see <a class="cr-link" href="../issues/0092-map-2s-new-words.md">I92's Answer</a>.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ol class="list-decimal pl-6 space-y-1">
+      <li>The app shell meets frame, frame subscription and change from I92's list, and screen, which D134 left for map 3. <code class="cr-inline">node</code> is also needed now, because next session's linker work (<a class="cr-link" href="../issues/0094-words-in-another-projects-sense.md">I94</a>, <a class="cr-link" href="../issues/0095-build-the-glossary-linker-as-decided.md">I95</a>) has to tell it from Node.js (section 1).</li>
+      <li><code class="cr-inline">node</code> fails the test four times in the libraries we use. In Effect and in our own code, "node" means Node.js. Recommended: the compound <b>Sync node</b>, as Cursor became Sync cursor (section 2).</li>
+      <li>"Surface" clashes with React Native's own renderer, which calls a running React root a surface. The app shell only meets screens. Recommended: a <b>Screen</b> entry now, and the any-modality word deferred until a frame is presented on something other than a screen (section 3).</li>
+      <li><b>Frame</b> keeps its word, with a <code class="cr-inline">_Not_</code> line for animation frames, iframes, stack frames and WebSocket frames. Frame subscription and Trust level stand as written (section 4).</li>
+      <li><b>Change</b> stays plain English for both a changeset and a commit; only Verify's hover line, where the two meet, says "change to the code". That resolves <a class="cr-link" href="../issues/0077-change-has-two-meanings.md">I77</a> (section 5).</li>
+      <li>The lab qualifier, hot, frontier, warm and cold, and the kinds of intent are deferred, each with a <code class="cr-inline">Decide when:</code> (section 6). Round 1 is five questions (section 7).</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. Which words the app shell meets</h2>
+  <p>"Lines" counts the lines matching the word in the living documents (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d173">D173</a>'s list: glossary, AGENTS.md, ADRs, plan pages without the decision log, guides, issues), 2026-10-28 at <code class="cr-inline">d040f4ac6</code>. The count includes other senses.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>From</th><th>Entry today</th><th>App shell meets it?</th><th>Lines</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">node</code></td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d103">D103</a></td><td>None; code font everywhere</td><td>Barely; but I94/I95 need it next session</td><td>90</td><td><b>Sync node</b> (Q1)</td></tr>
+      <tr><td>Surface</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d134">D134</a></td><td>None; in the foundation concept's name</td><td>Only as screens</td><td>108</td><td>Defer; add <b>Screen</b> (Q2)</td></tr>
+      <tr><td>Screen</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d73">D73</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d134">D134</a></td><td>None; used in 10 entries</td><td><b>Yes</b>: P13's claim is "one URL opens the same screen"</td><td>119</td><td>New entry (Q2)</td></tr>
+      <tr><td>Frame</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d109">D109</a></td><td>Yes; held here by I89's sweep</td><td><b>Yes</b>: what a screen renders</td><td>79</td><td>Keep, <code class="cr-inline">_Not_</code> line (Q3)</td></tr>
+      <tr><td>Frame subscription</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d109">D109</a></td><td>Yes</td><td><b>Yes</b></td><td>-</td><td>Stands, already a compound</td></tr>
+      <tr><td>Trust level</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d115">D115</a></td><td>Yes</td><td>No; origin trust is built later (<a class="cr-link" href="../issues/0064-build-origin-trust.md">I64</a>)</td><td>-</td><td>Stands, no clash found</td></tr>
+      <tr><td>Change</td><td><a class="cr-link" href="../issues/0077-change-has-two-meanings.md">I77</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d133">D133</a></td><td>None; plain English</td><td><b>Yes</b>: a person's change on a screen</td><td>412</td><td>Plain English; fix Verify's line (Q4)</td></tr>
+      <tr><td>The lab qualifier</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d101">D101</a></td><td>None</td><td>No</td><td>85</td><td>Defer (Q5)</td></tr>
+      <tr><td>Hot, frontier, warm, cold</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a></td><td>None; plain in ADR-0032's lens paragraph</td><td>No; but it meets <i>hot reload</i> and <i>cold start</i></td><td>15 / 15 / 29 / 28</td><td>Defer (Q5)</td></tr>
+      <tr><td>The kinds of intent</td><td><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d195">D195</a></td><td>None; "prompt" only in decision-log rows</td><td>Only a button press, which needs no word</td><td>-</td><td>Defer (Q5)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. <code class="cr-inline">node</code>: four other senses in the libraries we use</h2>
+  <p>D103's meaning: one installation of an app that keeps all or part of an organization's data and writes changes to it. A device is the one a person uses, and the server is the one that holds authority. A tool is an app but not one of these, because it keeps no replica and writes no changesets. D103 put it in code font until map 3 because of Node.js. The human's hint then was: write Node.js as <code class="cr-inline">node-js</code> where a name is needed, so that node stays free for a node in a network.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>What "node" means there</th><th>Core shared with ours?</th></tr></thead>
+    <tbody>
+      <tr><td>Effect (checked fully, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135</a>)</td><td>Node.js: <code class="cr-inline">@effect/platform-node</code>, <code class="cr-inline">NodeRuntime</code>, <code class="cr-inline">NodeHttpServer</code>, <code class="cr-inline">NodeServices</code></td><td>No</td></tr>
+      <tr><td>Our own code</td><td>Node.js, every time: <code class="cr-inline">libs/store-sqlite-node</code>, <code class="cr-inline">@viviefs/testing/node</code>, <code class="cr-inline">@viviefs/identity/suites/node</code>, the suite name <code class="cr-inline">'sqlite-node'</code>. No identifier uses D103's sense.</td><td>No</td></tr>
+      <tr><td>The web platform</td><td>The DOM's <code class="cr-inline">Node</code>: every element and text in a page</td><td>No (a tree node)</td></tr>
+      <tr><td>React and React Native</td><td><code class="cr-inline">ReactNode</code>: anything a component can render</td><td>No (a tree node)</td></tr>
+      <tr><td>The lab (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d101">D101</a>: a local Kubernetes)</td><td>A Kubernetes node: a machine in a cluster</td><td>Partly: a member of a network, but a machine, not an installation of an app</td></tr>
+      <tr><td>Plain distributed systems</td><td>A participant in a network, such as a peer-to-peer node</td><td><b>Yes</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>The test fails four times, and two of the failures are in places we cannot change: Effect's package names, and the platforms. <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d195">D195</a> dropped "prompt" for three senses in Effect, and <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d193">D193</a> made Cursor a compound for fewer clashes than this. The hint's <code class="cr-inline">node-js</code> would rename our packages while Effect's next to them stay <code class="cr-inline">platform-node</code>, so one import line would read "node" in both senses.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">A. Sync node (recommended)</h3>
+<pre class="cr-code">**Sync node**:
+One installation of an app that keeps an organization's data and sends its changes: a device or the server.
+It keeps all or part of an organization's data and writes changesets to it ([D103 Nodes and authority][D103]); a device is the sync node a person uses, and the server is the sync node that holds authority. A tool is an app but not a sync node: it keeps no replica and writes no changesets.
+_Like_: a node in a peer-to-peer network, except that today one sync node, the server, holds authority for every organization.
+_Not_: Node.js, the web's DOM `Node`, React's `ReactNode`, or a Kubernetes node.
+_Avoid_: `node` (alone, our word until [D199][D199]), peer</pre>
+      <p class="text-sm">It goes in the Sync group, before Device. "Node" alone, in prose and in code, then means Node.js, as it does in Effect. Nothing in the code is renamed.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">B. Bare node (the hint)</h3>
+<pre class="cr-code">**Node**:
+One installation of an app that keeps an organization's data and sends its changes: a device or the server.
+...
+_Not_: Node.js (written Node.js, and node-js in our package names), the DOM's `Node`, React's `ReactNode`, a Kubernetes node.</pre>
+      <p class="text-sm">Cost: <code class="cr-inline">store-sqlite-node</code> becomes <code class="cr-inline">store-sqlite-node-js</code>, and so do <code class="cr-inline">testing/node</code> and <code class="cr-inline">suites/node</code>, in <a class="cr-link" href="../issues/0099-code-names-for-map-3s-retired-words.md">I99</a>, next to Effect's <code class="cr-inline">platform-node</code>. The linker (I95) has to tell our node from Node.js, the DOM and React on every page about the app shell.</p>
+    </div></div>
+  </div>
+  <h3 class="text-lg font-semibold">Worked examples, before and after (A)</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>Today</th><th>With Sync node</th></tr></thead>
+    <tbody>
+      <tr><td>ADR-0032, Nodes and authority</td><td>An app is the program; a <code class="cr-inline">node</code> is one installation of an app that keeps all or part of an organization's data and writes changes to it; a device is the <code class="cr-inline">node</code> a person uses.</td><td>An app is the program; a sync node is one installation of an app that keeps all or part of an organization's data and writes changes to it; a device is the sync node a person uses.</td></tr>
+      <tr><td>Glossary, Server</td><td>It is a <code class="cr-inline">node</code> like a device, one that holds authority.</td><td>It is a sync node like a device, one that holds authority.</td></tr>
+      <tr><td>Glossary, Tool</td><td>it is an app but not a <code class="cr-inline">node</code></td><td>it is an app but not a sync node</td></tr>
+      <tr><td>ADR-0032, Actors or the engine</td><td>Reactivity in process, the sync cursor stream between <code class="cr-inline">node</code>s</td><td>Reactivity in process, the sync cursor stream between sync nodes</td></tr>
+      <tr><td>ADR-0032, The datom and its store</td><td><code class="cr-inline">tx</code> is an HLC corrected against the <code class="cr-inline">node</code> holding authority</td><td><code class="cr-inline">tx</code> is an HLC corrected against the sync node holding authority</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. Surface and screen</h2>
+  <p>D134: a frame reaches a person through a surface of any modality, such as a screen, a speaker, haptics, or ways not known yet. "Surface" was the leading candidate, with its clashes named. The test, on the libraries the code runs on:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>What "surface" means there</th><th>Core shared?</th></tr></thead>
+    <tbody>
+      <tr><td>React Native (the renderer, 0.88)</td><td>A running React root inside a host view: <code class="cr-inline">ReactCommon/react/renderer/scheduler/SurfaceHandler.h</code> ("Represents a running React Native surface"), <code class="cr-inline">React/Fabric/Surface/RCTFabricSurface</code>, <code class="cr-inline">SurfaceId</code></td><td>No: visual, and one per React tree, while ours is any modality</td></tr>
+      <tr><td>Android</td><td><code class="cr-inline">android.view.Surface</code>: a buffer the compositor draws</td><td>No</td></tr>
+      <tr><td>Material, React Native Paper</td><td>The <code class="cr-inline">Surface</code> component: a raised card-like box (not a dependency today)</td><td>No</td></tr>
+      <tr><td>Plain software</td><td>API surface, attack surface</td><td>No</td></tr>
+      <tr><td>vivief</td><td><code class="cr-inline">Surface</code>, six modes, all visual</td><td>Narrower</td></tr>
+    </tbody>
+  </table></div>
+  <p>The app shell renders on screens only, and P13's claim is "one URL opens the same <i>screen</i>". "Screen" matches React Navigation and Expo Router (Expo's, so on D170's list), where a screen is the component a route renders. The general word has one instance today, and no gate or issue in phase 3 presents anything other than a screen. Naming it now picks a word with only one example to test it against.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">A. Screen now, the general word deferred (recommended)</h3>
+<pre class="cr-code">**Screen**:
+One full view of an app that a person moves to, such as a list or one item's details.
+What a link or a route opens ([D73 Links and routing][D73]); it asks a Presenter for frames and renders them. A screen is the visual way a frame reaches a person, one of several ([D134 Presenting in any modality][D134]).
+_Like_: a screen in React Navigation or Expo Router, the component a route renders, except that it gets its data only as frames from a Presenter.
+_Avoid_: page, view (the View of Vision - View - Effects is wider)</pre>
+      <p class="text-sm">In the Reading group, after Presenter. The foundation concept keeps its accepted name, "Presenter, frame and surface", with surface in plain English; Start here's Entries column gains Screen. <code class="cr-inline">Decide when:</code> a frame is presented on something other than a screen, such as speech, or the Presenter gate (<a class="cr-link" href="../issues/0062-presenter-conformance-gate.md">I62</a>) names its input.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">B or C. Name the general word now</h3>
+      <p class="text-sm"><b>B. Surface</b>, bare, with <code class="cr-inline">_Not_</code>: React Native's surface (a running React root), Android's <code class="cr-inline">Surface</code>, Material's <code class="cr-inline">Surface</code>, an API or attack surface. The app shell code meets React Native's sense in native logs and crash traces.</p>
+      <p class="text-sm"><b>C. Presentation surface</b>, a compound, written whole every time. ADR-0032's foundation concept would become "Presenter, frame and presentation surface", an amendment to an accepted ADR.</p>
+      <p class="text-sm">Either way Screen is added too, for the visual case.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. Frame, frame subscription, trust level</h2>
+  <p>I89's sweep held Frame here as a clash. Effect has no public <code class="cr-inline">Frame</code> (only internal comments in <code class="cr-inline">SchemaBinary.ts</code>). The other senses in the platforms: an animation frame and a frame rate (the web's <code class="cr-inline">requestAnimationFrame</code>, React Native's 60 frames a second), the web's <code class="cr-inline">&lt;iframe&gt;</code>, a stack frame in Node.js and Hermes, and a WebSocket frame under the sync RPC. None of them shares our core: typed rows with each value's origin and a status.</p>
+  <p>Nearly every one of those senses comes with its qualifier: "animation frame", "frame rate", "stack frame", "dropped frames". In our living documents, every bare "frame" is ours, and no code identifier uses the word yet. A compound ("Presenter frame") would also force "Presenter frame subscription", by <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d172">D172</a>.</p>
+<pre class="cr-code">**Frame**:
+The rows a screen shows, with typed columns, where each value came from and how fresh it is.
+A Presenter's result; one entity is a one-row frame, and its status says fresh, gathering, remote or failed ([D109 Frame and frame subscription][D109]).
+_Not_: an animation frame or a frame rate, a web `&lt;iframe&gt;`, a stack frame, or a WebSocket frame.
+_Avoid_: data frame, result set</pre>
+  <p>Frame subscription is already a compound, and Trust level has no clash found. Both stand as written.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. Change: a changeset or a commit</h2>
+  <p><a class="cr-link" href="../issues/0077-change-has-two-meanings.md">I77</a>: ADR-0035 ("Accepting a change") means a data changeset; the glossary's Verify entry ("every change must pass") means a code change. The two are parallel steps at two levels (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a>), so one plain word fits both. Of 412 lines, almost all read correctly from their page: ADRs about data mean a changeset, and pages about verify mean a commit. The only place where both meet is the glossary, where Verify's hover line sits a few groups below "Changes and accept".</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>Today</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr><td>Glossary, Verify</td><td>The full set of checks every change must pass before it is done.</td><td>The full set of checks every change to the code must pass before it is done.</td></tr>
+      <tr><td>ADR-0035's title, "Changes and accept" group</td><td>Accepting a change</td><td>Unchanged: on a data page, change means a changeset</td></tr>
+      <tr><td>The rule, in <code class="cr-inline">docs/agents/domain.md</code></td><td>-</td><td>"Change" is plain English; where a page speaks of both levels, it writes changeset or commit.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="opacity-80">Not recommended: making "change" mean data only and writing "commit" everywhere for code (a sweep of a plain word, and "change to the code" is often not one commit yet), or a glossary entry Change (a term for a word with two meanings, which is what D170 rules out).</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">6. Deferred, each with a Decide when</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Words</th><th>Why not now</th><th><code class="cr-inline">Decide when:</code></th><th>Until then</th></tr></thead>
+    <tbody>
+      <tr><td>The lab qualifier (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d101">D101</a>)</td><td>No phase-3 work qualifies anything "in the lab, for learning"; the out-of-scope list already says "lab or not yet" per item (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d158">D158</a>)</td><td><a class="cr-link" href="../issues/0058-several-servers-in-the-lab.md">I58</a> or <a class="cr-link" href="../issues/0008-engine-scale-out.md">I8</a> is picked up</td><td>"lab" stays plain English: the local containers a gate runs in, as <code class="cr-inline">tools/qualification/README.md</code> uses it</td></tr>
+      <tr><td>Hot, frontier, warm, cold (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a>)</td><td>A lens, not a foundation concept; the app shell meets hot reload and cold start in their platform sense, so naming ours now would collide there first</td><td>A page, tool or gate shows a thing's state by name (maps 4-5)</td><td>Plain English in ADR-0032's lens paragraph, as today</td></tr>
+      <tr><td>The kinds of intent, among them the person's request to an agent (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d132">D132</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d195">D195</a>)</td><td>No living document lists them by name; the IntentComposer the app shell rewrites only meets a button press</td><td>A tool records which kind an intent is, or map 6 (agents) is charted; D195 holds: no bare "prompt"</td><td>ADR-0032's "from a WayFinder map down to a button press"</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">7. Questions, round 1 (answered: A, C, A, A, A)</h2>
+  <p class="opacity-80">Each is independent of the others. Round 2 follows from the answers: the <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d173">D173</a> retire checks for <code class="cr-inline">node</code>, the sentences each answer rewrites, and the comments on I77, I94 and the issues the deferred words touch.</p>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 node')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. <code class="cr-inline">node</code></h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: Sync node, a compound in the Sync group; bare node means Node.js in prose and code, as in Effect; no code renamed"> <span><b>A. Sync node</b> (recommended), the entry in section 2. Bare "node" is left to Node.js, as in Effect.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: bare Node, with Node.js written node-js in our package names (renamed in I99) and a _Not_ line for the DOM, React and Kubernetes"> <span><b>B. Bare Node</b>, the hint: our packages renamed to <code class="cr-inline">node-js</code> in I99.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: defer; node stays in code font"> <span><b>C. Defer</b>; code font stays, and I94 keeps the case open.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 Surface and screen')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. Surface and screen</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: Screen entry now (React Navigation and Expo Router's sense); the any-modality word deferred until a frame is presented on something other than a screen, or I62 names its input; surface stays plain English in the foundation concept's name"> <span><b>A. Screen now, the general word deferred</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: Screen, and Surface as a bare term with _Not_ lines for React Native's, Android's and Material's surfaces"> <span><b>B. Screen and bare Surface</b>, with <code class="cr-inline">_Not_</code> lines.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="C: Screen, and Presentation surface as a compound; ADR-0032's foundation concept renamed by amendment"> <span><b>C. Screen and Presentation surface</b>; ADR-0032 amended.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Frame')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. Frame</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: Frame keeps its word with a _Not_ line (animation frame and frame rate, iframe, stack frame, WebSocket frame); Frame subscription and Trust level stand"> <span><b>A. Keep, with the <code class="cr-inline">_Not_</code> line</b> (recommended); Frame subscription and Trust level stand.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: Presenter frame and Presenter frame subscription, compounds"> <span><b>B. Presenter frame</b> and Presenter frame subscription.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Change')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. Change (resolves I77)</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: change stays plain English for both; a page that speaks of both levels writes changeset or commit; Verify's hover line says every change to the code; the rule goes in docs/agents/domain.md"> <span><b>A. Plain English, Verify's line fixed</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: change means a data change only; code says commit everywhere"> <span><b>B. Change is data only</b>; code pages say commit.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 Deferred words')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. The deferred words</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="A: lab qualifier, the four states and the kinds of intent deferred with the Decide when lines in section 6"> <span><b>A. As section 6</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="B: name some now (in the notes)"> <span><b>B. Name some now</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">8. Round 2: the entries, what they rewrite, the hand-overs (answered: all A)</h2>
+
+  <h3 class="text-lg font-semibold">The new and changed entries</h3>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Presentation surface (Reading, after Frame subscription)</h3>
+<pre class="cr-code">**Presentation surface**:
+Where what an app shows reaches a person: a screen, a speaker, or a vibration.
+Any modality: a screen (text, diagrams, pictures), a speaker (speech, music), haptics, or ways not known yet; the Presenter's contract names none ([D134 Presenting in any modality][D134], [D200][D200]). A screen is one kind. An agent reads a frame through a model's tool, not a presentation surface.
+_Like_: a CSS media type (screen, print, speech), except that it is where a Presenter's frame arrives, not what a style targets.
+_Not_: React Native's surface (a running React root in a host view), Android's `Surface`, Material's `Surface` component, or an API or attack surface.
+_Avoid_: surface (alone), output, display</pre>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">Screen (Reading, after Presentation surface)</h3>
+<pre class="cr-code">**Screen**:
+One full view of an app that a person moves to, such as a list or one item's details.
+What a link or a route opens ([D73 Links and routing][D73]); it asks a Presenter for frames and renders them. It is the visual kind of presentation surface ([D200][D200]).
+_Like_: a screen in React Navigation or Expo Router, the component a route renders, except that it gets its data only as frames from a Presenter.
+_Avoid_: page, view (the View of Vision - View - Effects is wider)</pre>
+      <p class="text-sm">Sync node and Frame's <code class="cr-inline">_Not_</code> line as in sections 2 and 4. Verify's hover line: "The full set of checks every change to the code must pass before it is done."</p>
+    </div></div>
+  </div>
+
+  <h3 class="text-lg font-semibold">ADR-0032, amended</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where in ADR-0032</th><th>Today</th><th>Amended</th></tr></thead>
+    <tbody>
+      <tr><td>Summary</td><td>to a Presenter answering a surface</td><td>to a Presenter answering a presentation surface</td></tr>
+      <tr><td>Foundation concepts, the one turn</td><td>a Presenter answers a surface with a frame</td><td>a Presenter answers a presentation surface with a frame</td></tr>
+      <tr><td>Table, row 6</td><td>Presenter, frame and surface</td><td>Presenter, frame and presentation surface (the From vivief column keeps vivief's <code class="cr-inline">Surface</code>)</td></tr>
+      <tr><td>After the table</td><td>surface and <code class="cr-inline">node</code> wait for map 3</td><td>presentation surface and sync node are named ([D199], [D200])</td></tr>
+      <tr><td>One shape at every level</td><td>A frame reaches a person through a surface of any modality, a screen being one.</td><td>A frame reaches a person through a presentation surface of any modality, a screen being one.</td></tr>
+      <tr><td>Nodes and authority, and every <code class="cr-inline">node</code></td><td>10 uses in code font</td><td>sync node; the heading keeps D103's name</td></tr>
+      <tr><td>Outcome, Observed</td><td>-</td><td>"Amended on 2026-10-28 by I92 (D199, D200): the foundation concept is named Presenter, frame and presentation surface, and <code class="cr-inline">node</code> is the sync node." Status stays Accepted; the glossary's Start here row follows.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">What else is rewritten (D173)</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b><code class="cr-inline">node</code></b>: every use in code font in the glossary, the vision page, ADR bodies (0007, 0009, 0010, 0011, 0033-0038), plan pages and open issues (I12, I15, I26, I34, I58, I60, I63, I67, I68, I69, I81, I94) becomes sync node. All of them mean D103's sense: none is the Node.js binary. Kept as written: decision-log rows, resolved issues' Answers, research records.</li>
+    <li><b>Surface, our sense</b>: ADR-0032 (above), the glossary's Start here row, the foundation-concepts map, I26's line ("map 3's leading candidate"). Other senses stay: "API surface" in ADR-0003, the verb in ADR-0009, "triage surface" in <code class="cr-inline">issue-tracker.md</code>, vivief's <code class="cr-inline">Surface</code> in ADR-0034 and I34.</li>
+    <li><b>The rule for change</b> in <code class="cr-inline">docs/agents/domain.md</code>: "change" is plain English; a page that speaks of both levels writes changeset or commit.</li>
+  </ul>
+
+  <h3 class="text-lg font-semibold">The three checks for each retired word (D173)</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Retired</th><th>1. Persisted name or code identifier in the retired sense?</th><th>2. Planned concept needing the bare word?</th><th>3. A later new meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">node</code> (our sense)</td><td>None: every <code class="cr-inline">node</code> in code is Node.js; no pinned attribute names it</td><td>Yes, Node.js, which is why the bare word is left to it</td><td>Bare "node" means Node.js; Sync node's <code class="cr-inline">_Avoid_</code> line says what old records meant</td></tr>
+      <tr><td>surface (our sense)</td><td>None: no identifier, no pinned name</td><td>None of ours; the other senses are plain English</td><td>Presentation surface's <code class="cr-inline">_Avoid_</code> line says what old records meant</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">Decision rows and hand-overs</h3>
+  <ul class="list-disc pl-6 space-y-1">
+    <li>D199 Sync node; D200 Presentation surface and screen (ADR-0032 amended); D201 Frame keeps its word; D202 Change stays plain English (I77 resolved); D203 The lab qualifier, the four states and the kinds of intent wait.</li>
+    <li>Comments: <a class="cr-link" href="../issues/0094-words-in-another-projects-sense.md">I94</a> (the <code class="cr-inline">node</code>-from-Node.js case is gone: the term is Sync node; bare node, surface and frame in another sense are now the cases to mark); <a class="cr-link" href="../issues/0058-several-servers-in-the-lab.md">I58</a> and <a class="cr-link" href="../issues/0008-engine-scale-out.md">I8</a> (name the lab qualifier when picked up); <a class="cr-link" href="../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md">I29</a> (map 6 names the kinds of intent, D195 holds); <a class="cr-link" href="../issues/0062-presenter-conformance-gate.md">I62</a> (its input is a presentation surface's request). <a class="cr-link" href="../issues/0077-change-has-two-meanings.md">I77</a> resolved with an Answer. The map's Out of scope gains the three deferred rows; the four states' <code class="cr-inline">Decide when:</code> lives there, as no issue owns them.</li>
+  </ul>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q6', 'Q6 Entries and ADR-0032')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. The entries and ADR-0032's amendment</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="A: as written"> <span><b>A. As written</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="B: with changes in the notes"> <span><b>B. With changes</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q7', 'Q7 Retired forms for verify')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q7. Which retired forms verify fails (built in I95, D198's default)</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="A: only node in code font in prose fails outside a marked passage; bare node and bare surface are never checked, since their other senses are ours to use"> <span><b>A. <code class="cr-inline">node</code> in code font only</b> (recommended): it only ever meant ours. Bare node and surface are not checked.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="B: none; the Avoid lines are enough"> <span><b>B. None</b>; the <code class="cr-inline">_Avoid_</code> lines are enough.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q8', 'Q8 Rewrite, rows and hand-overs')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q8. The rewrite, the decision rows and the hand-overs</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="A: as written"> <span><b>A. As written</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q8" value="B: with changes in the notes"> <span><b>B. With changes</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<footer class="cr-src">Sources: <code class="cr-inline">GLOSSARY.md</code>; the decision log (D73, D101, D103, D109, D115, D132-D135, D158, D170, D172, D173, D193, D195, D196, D198); ADR-0032, ADR-0035; P12, P13; I77, I89, I92, I94; <code class="cr-inline">repos/effect</code> at <code class="cr-inline">effect@4.0.5</code> (<code class="cr-inline">platform-node</code>, <code class="cr-inline">SchemaBinary.ts</code>); <code class="cr-inline">react-native@0.88.0</code> in <code class="cr-inline">node_modules</code> (<code class="cr-inline">SurfaceHandler.h</code>, <code class="cr-inline">RCTFabricSurface</code>); the app's <code class="cr-inline">package.json</code> files (no Paper, Material, React Navigation or Expo Router today). Counts: lines matching the word in the living documents, 2026-10-28, at <code class="cr-inline">d040f4ac6</code>. The DOM's <code class="cr-inline">Node</code>, <code class="cr-inline">ReactNode</code>, Android's <code class="cr-inline">Surface</code>, Kubernetes nodes and React Navigation's screens are from general knowledge; they were not checked against their docs today.</footer>
+
+</div>
+</body>
+</html>

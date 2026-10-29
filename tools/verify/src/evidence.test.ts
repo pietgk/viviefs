@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@effect/vitest'
 import type { Suite } from '@viviefs/testing'
 import { judgeEvidence, type EvidenceInput, type ProducerRun, type TestReport } from './evidence.ts'
-import type { RegistryEntry } from './file-treatments.ts'
+import type { EvidenceRegistryEntry } from './file-treatments.ts'
 import type { FileCoverage, Lockfile, Provider } from './lockfile.ts'
 
 const provider: Provider = { name: 'istanbul', package: '@vitest/coverage-istanbul', version: '5.0.1' }
@@ -36,13 +36,13 @@ const suite: Suite = {
   source: 's',
 }
 
-const store: RegistryEntry = {
+const store: EvidenceRegistryEntry = {
   path: 'libs/store/src/layer.ts',
   treatment: 'node-integration',
   rationale: 'r',
   suites: ['log-store/conformance'],
 }
-const hlc: RegistryEntry = { path: 'libs/datom/src/hlc.ts', treatment: 'node-unit', rationale: 'r' }
+const hlc: EvidenceRegistryEntry = { path: 'libs/datom/src/hlc.ts', treatment: 'node-unit', rationale: 'r' }
 
 const lockfile = (overrides: Partial<Lockfile> = {}): Lockfile => ({
   notice: 'n',
@@ -57,7 +57,7 @@ const lockfile = (overrides: Partial<Lockfile> = {}): Lockfile => ({
 })
 
 const input = (overrides: Partial<EvidenceInput> = {}): EvidenceInput => ({
-  registry: [hlc, store],
+  evidenceRegistry: [hlc, store],
   digest: 'digest',
   suites: [suite],
   runs: {
@@ -115,11 +115,11 @@ describe('evidence', () => {
   })
 
   it('treats a file with nothing Istanbul counts as an empty tuple', () => {
-    const tag: RegistryEntry = { path: 'libs/a/src/tag.ts', treatment: 'node-unit', rationale: 'r' }
+    const tag: EvidenceRegistryEntry = { path: 'libs/a/src/tag.ts', treatment: 'node-unit', rationale: 'r' }
     const base = lockfile()
     const evidence = judgeEvidence(
       input({
-        registry: [hlc, store, tag],
+        evidenceRegistry: [hlc, store, tag],
         lockfile: {
           ...base,
           coverage: {
@@ -136,12 +136,12 @@ describe('evidence', () => {
   })
 
   it('checks stories, the test of a process entry, and support files', () => {
-    const view: RegistryEntry = { path: 'features/a/src/View.tsx', treatment: 'rendered-ui', stories: 'features/a/src/View.stories.test.tsx', rationale: 'r' }
-    const cli: RegistryEntry = { path: 'tools/a/src/cli.ts', treatment: 'process-entry', runBy: { test: 'tools/a/src/cli.test.ts' }, rationale: 'r' }
-    const harness: RegistryEntry = { path: 'libs/a/src/harness.ts', treatment: 'test-support', producer: 'unit', rationale: 'r' }
+    const view: EvidenceRegistryEntry = { path: 'features/a/src/View.tsx', treatment: 'rendered-ui', stories: 'features/a/src/View.stories.test.tsx', rationale: 'r' }
+    const cli: EvidenceRegistryEntry = { path: 'tools/a/src/cli.ts', treatment: 'process-entry', runBy: { test: 'tools/a/src/cli.test.ts' }, rationale: 'r' }
+    const harness: EvidenceRegistryEntry = { path: 'libs/a/src/harness.ts', treatment: 'test-support', producer: 'unit', rationale: 'r' }
     const issues = judgeEvidence(
       input({
-        registry: [hlc, store, view, cli, harness],
+        evidenceRegistry: [hlc, store, view, cli, harness],
         runs: {
           ...input().runs,
           unit: run({ [hlc.path]: file(1, 1, 0), [harness.path]: file(0) }, report({ file: 'tools/a/src/cli.test.ts', status: 'failed' })),
@@ -154,7 +154,7 @@ describe('evidence', () => {
     expect(issues).toContain('libs/a/src/harness.ts: test-support, owned by unit, but no unit test reaches it')
   })
 
-  it('fails a changed registry, a changed provider, a stale entry and a missing producer', () => {
+  it('fails a changed evidence registry, a changed provider, a stale entry and a missing producer', () => {
     const base = lockfile()
     const issues = judgeEvidence(
       input({
@@ -169,7 +169,7 @@ describe('evidence', () => {
         },
       }),
     ).issues.join('\n')
-    expect(issues).toContain('The registry changed since the lockfile was written')
+    expect(issues).toContain('The evidence registry changed since the lockfile was written')
     expect(issues).toContain('the lockfile has @vitest/coverage-istanbul@5.0.1')
     expect(issues).toContain('libs/gone.ts (unit): in the lockfile but no longer exactly owned by unit')
     expect(issues).toContain('The integration producer did not run in this verify run')

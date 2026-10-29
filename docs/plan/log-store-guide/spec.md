@@ -17,22 +17,22 @@ terms in `GLOSSARY.md`. The review page is the research record
 | The log-store ADRs are 0006 (one datom log, [P04 Log store conformance][P04]), 0007 (HLC, [P04][P04]) and 0011 (log store pattern, [P04][P04] and [P05 Changesets and projections][P05]); all `Qualified` | The guide's `adrs`; its `gates` are [P04 Log store conformance][P04] and [P05 Changesets and projections][P05], because 0011's read-model claim ("rebuild equals incremental") is a [P05][P05] check |
 | One `LogStore` service over `SqlClient` in `libs/datom/src/log-store.ts`; each store project is a Layer recipe (`sqliteNodeLogStore`, `pgliteLogStore`, `sqliteNativeLogStore`, the wasm store) | "Add a store implementation" is: a `SqlClient` Layer, the shared `logStoreLayer`, and `log-store/conformance` run against it |
 | `log-store/conformance` (`runLogStoreChecks`, 12 checks) lives in `@viviefs/datom/suites`; `verify` runs it on sqlite-node and PGlite (`integration`); [P04 Log store conformance][P04] runs it on every store, devices included | The `testing` page maps each check to its gate and its verify step from code, not prose |
-| `libs/datom` also holds the changesets and projections code (`projector.ts`, `manifest.ts`, `visibility.ts`, `catalog.ts`), which is a later guide ([D65 Guide inventory and order][D65]) | `libs/datom` is the exemplar of two guides; `metadata.guide` as one string cannot say that (question 2) |
-| No exemplar project has a README; no project has `metadata.guide` | [D67 Exemplar links to its guide][D67]'s links are new for `libs/datom` and the four stores |
-| Exercise files would sit under `exercises/`, outside `isProductionFile` (`apps/`, `features/`, `libs/`, `tools/`) | Exercises need no registry entry; their own test is the positive control ([D66 Exercise tracks][D66]). A `test` target puts the track in the `unit` producer as it is |
+| `libs/datom` also holds the changesets and projections code (`projector.ts`, `manifest.ts`, `visibility.ts`, `catalog.ts`), which is a later guide ([D65 Guide inventory and order][D65]) | `libs/datom` is the exemplar of two guides; one guide named in a string in its `metadata` cannot say that (question 2) |
+| No exemplar project has a README, and none names its guide in its `metadata` | [D67 Exemplar links to its guide][D67]'s links are new for `libs/datom` and the four stores |
+| Exercise files would sit under `exercises/`, outside `isProductionFile` (`apps/`, `features/`, `libs/`, `tools/`) | Exercises need no evidence registry entry; their own test is the positive control ([D66 Exercise tracks][D66]). A `test` target puts the track in the `unit` producer as it is |
 | `starlight-typedoc` 0.23.1 (MIT) peers on Starlight >= 0.39, Astro >= 6, `typedoc` >= 0.28; `typedoc` 0.28.20 (Apache-2.0) supports `typescript` 6.0.x, which is what the `typescript` name resolves to here ([ADR-0028 TypeScript 7 CLI with TypeScript 6 API][ADR-0028]) | The API reference looks possible on the pinned stack; build time and output are measured in the build, not assumed |
 | `teach` defines a lesson as one self-contained HTML page in its own workspace, with retrieval practice, one tangible win, a primary source and a reminder to ask the agent | Its pedagogy is input; its workspace layout is not (handover). Section 4 adapts it |
 
 ## 2. Scope: what the log-store guide owns (D82, D83)
 
 Patterns build on each other; they do not nest. A candidate is a pattern when it has a contract code depends on, a
-suite and a gate; otherwise it is a concept, and it lives in the guide of the pattern whose contract defines it and
+suite and a gate; otherwise it is a concept one pattern owns ([D181 Concept is the wider word][D181]), and it lives in the guide of the pattern whose contract defines it and
 whose suite checks it. Every ADR is named by exactly one guide. The pattern id is the guide folder, the suite prefix
 and the `metadata.guides` value.
 
 | Log-store guide ([ADR-0006 One datom log as the substrate][ADR-0006], [ADR-0007 Hybrid logical clock for tx][ADR-0007], [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]; [P04 Log store conformance][P04], [P05 Changesets and projections][P05]) | Changesets guide ([ADR-0008 Single-datom transactions with changesets][ADR-0008] to [ADR-0010 Entity ids, defining attributes and strict-composition prefixes][ADR-0010]; [P05 Changesets and projections][P05], later) |
 | --- | --- |
-| Datom (the six fields; append-only; dedup by `tx`) | Changeset, commit datom, manifest, abort, expiry, basis |
+| Datom (the six fields; append-only; dedup by `tx`) | Changeset, commit datom, changeset manifest, abort, expiry, basis |
 | HLC and `tx` (mint, receive, future skew, reboot) | Conflict policy, conflict datom |
 | Envelope and acceptance time (`LogStore.append` stores them; [P04 Log store conformance][P04] checks them) | Entity ids, defining attribute, prefix composition |
 | Log position, acknowledged cursor, compaction horizon, `heldBy`, prefix scans | Read model, projector, Reactivity keys, draft view |
@@ -54,7 +54,7 @@ them from it, so changing the template changes the rule.
 | --- | --- |
 | `index.mdx` | What it is; When to use it; When not to; Status (the generated block); Reading paths (discuss, design, implement, review) |
 | `concepts.mdx` | one per concept, free; each names the ADR that is its why |
-| `how-to.mdx` | one per task, free ("Add a store implementation", "Read the log from a cursor", "Register a consumer that holds compaction") |
+| `how-to.mdx` | one per task, free ("Add a store implementation", "Read the log from a position", "Register a consumer that holds compaction") |
 | `testing.mdx` | Claims and their gates; Behaviours and their verify steps; When you extend it |
 | `review.mdx` | Enforced by a tool; Needs judgment; Common mistakes |
 | `lessons/NN-name.mdx` | the lesson shape (section 4) |
@@ -109,7 +109,7 @@ Proposed lessons and track (`exercises/log-store/`):
   check function run against both: the solution must pass, the problem must fail with the expected assertion.
 - Learners run `pnpm exercise log-store 02.01`: the same check against `problem/` only, reported as pass or the
   failing assertion. A thin process entry over a tested module, as `check-*.ts` are.
-- Exercise files are not production files, so they have no registry entry; they are typechecked and linted like
+- Exercise files are not production files, so they have no evidence registry entry; they are typechecked and linted like
   any other project (`lint-scope` must see them).
 - [D66 Exercise tracks][D66] says the log-store track is written by hand; `scaffold-exercises` gets its layout step replaced by the
   `guides` check.
@@ -124,7 +124,7 @@ module (`guides.ts`) and a thin entry (`check-guides.ts`), as `diagrams` is.
 | Every guide has the template's pages, `##` headings in order and frontmatter keys; every lesson has the lesson shape | [D62 The shape of a guide][D62] |
 | `adrs` exist; `gates` are in the gate table; `exercises` names an existing track; each lesson's `evidence` exists under `docs/evidence/` | [D62 The shape of a guide][D62], [D63 Acceptance on the guide][D63] |
 | An ADR is `Accepted` only if an accepted guide names it; an accepted guide's ADRs are all `Accepted`; an `Accepted` ADR names a qualifying gate and has an Observed entry | [D63 Acceptance on the guide][D63] |
-| A guide's exemplar projects point back (`metadata.guide`), and their README and entry-module TSDoc link the guide page; a project's `metadata.guide` names an existing guide | [D67 Exemplar links to its guide][D67] |
+| A guide's exemplar projects point back (`metadata.guides`), and their README and entry-module TSDoc link the guide page; each name in a project's `metadata.guides` is an existing guide | [D67 Exemplar links to its guide][D67] |
 | Exercise layout: `NN.MM-name/{problem,solution}/` plus `exercise.test.ts`, numbers contiguous, sections paired with lessons | [D66 Exercise tracks][D66] |
 | A guide's prose names gates and ADRs through `<Gate>` and `<Adr>`, never as a bare id; every ADR is named by at most one guide | [D82 Patterns build on each other][D82], [D86 Named, linked references][D86] |
 
@@ -209,7 +209,7 @@ and the exercise loop was not explained. Decided as [D87-D91 References, names a
 
 ## 11. Review round 3 (2026-10-02): issues, claims, the glossary
 
-Decided as [D92-D94 Claims, issues and the glossary][D92-D94] (review page
+Decided as [D92 Issues as records][D92]-[D94 A glossary a newcomer can read][D94] (review page
 [2026-10-02 Claims, issues and glossary review](../../research/2026-10-02-claims-issues-glossary-review.html)); built
 the same day, in the agreed order:
 
@@ -239,6 +239,7 @@ the same day, in the agreed order:
 [ADR-0011]: ../../adr/0011-log-store-pattern.md
 [ADR-0026]: ../../adr/0026-verify-qualify-teach.md
 [ADR-0028]: ../../adr/0028-typescript-7-cli-with-typescript-6-api.md
+[D181]: ../bootstrap/02-decision-log.md#d181
 [D33']: ../bootstrap/02-decision-log.md#d33p
 [D60]: ../bootstrap/02-decision-log.md#d60
 [D62]: ../bootstrap/02-decision-log.md#d62
@@ -261,7 +262,6 @@ the same day, in the agreed order:
 [D90]: ../bootstrap/02-decision-log.md#d90
 [D91]: ../bootstrap/02-decision-log.md#d91
 [D92]: ../bootstrap/02-decision-log.md#d92
-[D92-D94]: ../bootstrap/02-decision-log.md#d92-d94
 [D93]: ../bootstrap/02-decision-log.md#d93
 [D94]: ../bootstrap/02-decision-log.md#d94
 [I20]: ../../issues/0020-trace-projector-on-devices.md

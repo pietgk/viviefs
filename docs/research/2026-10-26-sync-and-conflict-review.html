@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I53: Sync and conflict (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.6rem; overflow-x: auto; line-height: 1.45; white-space: pre; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .cr-table-wrap td:first-child code.cr-inline, .cr-table-wrap td:first-child > b { white-space: nowrap; overflow-wrap: normal; }
+  .cr-table-wrap td:first-child { overflow-wrap: normal; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  .cr-mermaid { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; overflow-x: auto; text-align: center; }
+  .cr-figure { background: var(--color-base-200); border-radius: 1rem; padding: 1rem; }
+  .cr-svg { display: block; width: 100%; height: auto; color: var(--color-base-content); }
+  .cr-svg text { fill: currentColor; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13px; }
+  .cr-svg .lane { stroke: currentColor; stroke-opacity: 0.3; stroke-dasharray: 4 4; }
+  .cr-svg .box { fill: var(--color-base-300); stroke: currentColor; stroke-opacity: 0.45; }
+  .cr-svg .msg { stroke: currentColor; stroke-width: 1.4; fill: none; }
+  .cr-svg .reply { stroke-dasharray: 6 4; }
+  .cr-svg .msg-warn { stroke: var(--color-warning); }
+  .cr-svg .note { fill: var(--color-base-100); stroke: var(--color-info); stroke-opacity: 0.7; }
+  .cr-svg .note-warn { stroke: var(--color-warning); }
+  .cr-svg .note-ok { stroke: var(--color-success); }
+  .cr-svg .note-bad { stroke: var(--color-error); }
+  .cr-svg .region { fill: none; stroke-opacity: 0.6; stroke-dasharray: 3 3; }
+  .cr-svg .region-ok { stroke: var(--color-success); }
+  .cr-svg .region-bad { stroke: var(--color-error); }
+  .cr-svg .node { fill: var(--color-base-300); stroke: currentColor; stroke-opacity: 0.6; }
+  .cr-svg .node-ok { fill: var(--color-base-300); stroke: var(--color-success); stroke-width: 2; }
+  .cr-svg .node-bad { fill: var(--color-base-300); stroke: var(--color-error); stroke-width: 2; stroke-dasharray: 5 3; }
+  .cr-svg .node-warn { fill: var(--color-base-300); stroke: var(--color-warning); stroke-width: 2; }
+  .cr-svg .edge { stroke: currentColor; stroke-opacity: 0.7; stroke-width: 1.4; fill: none; }
+  .cr-svg .edge-ok { stroke: var(--color-success); stroke-width: 1.6; fill: none; }
+  .cr-svg .edge-bad { stroke: var(--color-error); stroke-width: 1.6; stroke-dasharray: 5 3; fill: none; }
+  .cr-svg .edge-warn { stroke: var(--color-warning); stroke-width: 1.6; fill: none; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 2, the foundation concepts - I53</span>
+    <span class="badge badge-outline">2026-10-26, two rounds</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+    <span class="badge badge-success">Settled: D142-D148, D34'</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Sync and conflict</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0053-sync-and-conflict.md">I53 Sync and conflict</a> asks whether sync in the foundation is a deliberate difference from vivief, which defers sync until one user works well, and whether the foundation's story should say why; whether an attribute needs a cardinality, with many-valued attributes resolved as a set; whether text ever needs a CRDT; and whether server validation is the stack's one trust strategy. It settles 5 rows of <a class="cr-link" href="2026-10-06-vivief-inventory.html">the vivief inventory</a> and reviews <a class="cr-link" href="../issues/0011-quarantine-after-a-lost-lease.md">I11 Quarantine of user content after a lost lease</a> and <a class="cr-link" href="../issues/0012-partial-sync-and-history.md">I12 Partial sync, history consolidation and client data access</a>. Effect's <code class="cr-inline">eventlog</code> is read first: a concept Effect already names takes Effect's name (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135 Effect's names first</a>).</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in five lines</h2>
+    <ol class="list-decimal pl-5 space-y-1">
+      <li>vivief designed sync early (Hypercore from phase 1 "so the P2P path is never blocked by a storage migration") and deferred building it. ViViEfs built it and qualified it (<a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p09">P09 Sync</a>), because its first app is a phone that goes offline and a person who switches devices. The difference is the build order, not the design, and the foundation story can say so in one paragraph.</li>
+      <li>Sync itself, outbox up and one cursor stream down, holds up. Effect's <code class="cr-inline">EventLog</code> has the same shape (server sequence, dedup by entry id) and still lacks a typed rejection: a handler that fails turns the whole batch into an <code class="cr-inline">InternalServerError</code> the client retries forever.</li>
+      <li><b>Found: human conflict is not built as decided.</b> The basis is a sequence number in whichever log projects it, and every changeset outside <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p05">P05 Changesets and projections</a> sends basis <code class="cr-inline">0</code>. A conflict is a row each projector derives, never a fact. The server checks write-once only. And a human-conflict attribute never drops a value: a retract is ignored, so no command can resolve a conflict (run below).</li>
+      <li>The proposal: authority decides a human conflict at accept, against the server cursor the writer had pulled, and writes it into the log as a <code class="cr-inline">viviefs/conflict</code> fact; a command resolves it. Effect's own <code class="cr-inline">EventLog</code> detects <code class="cr-inline">conflicts</code> at the server on ingest, too.</li>
+      <li>No cardinality: a set is an entity per member, as membership already is, so a member can gain data later with nothing to migrate. No text CRDT until two people type in one text at once. One checkpoint stays the one place trust is enforced (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>). Under the journal fence, a refused history holds no user content; quarantine is the device's rejected changesets that carry some.</li>
+    </ol>
+  </div></div>
+</header>
+
+<section class="space-y-3" id="round-1">
+  <h2 class="text-2xl font-bold">Round 1, answered (2026-10-26)</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+    <tbody>
+      <tr><td><b>Q1</b> sync in the foundation</td><td><b>A, agreed.</b> Keep ours; <a class="cr-link" href="../adr/0032-what-viviefs-is-about.md">ADR-0032 What ViViEfs is about and its foundation concepts</a> gets a paragraph "Sync from the start".</td></tr>
+      <tr><td><b>Q2</b> who decides a human conflict</td><td><b>A, agreed.</b> Authority at accept; the basis is the server cursor the writer had pulled; authority writes a <code class="cr-inline">viviefs/conflict</code> fact in the same step; orphan detection moves to accept with I69's read model.</td></tr>
+      <tr><td><b>Q3</b> resolving</td><td><b>A, agreed.</b> Per value, the later of assert and retract wins; a replace is "retract old, assert new"; a resolving command retracts the values not chosen and closes the conflict; P05 and P09 qualified again with two devices.</td></tr>
+      <tr><td><b>Q4</b> cardinality</td><td><b>Explainer asked for:</b> <a class="cr-link" href="#q4-explained">section 8</a>, then <a class="cr-link" href="#questions-2">round 2</a>.</td></tr>
+      <tr><td><b>Q5</b> text CRDT</td><td><b>A, agreed.</b> Deferred, <code class="cr-inline">Decide when:</code> two people type in one text at the same time; until then short text LWW, a person's longer text human conflict.</td></tr>
+      <tr><td><b>Q6</b> one trust strategy</td><td><b>A, agreed.</b> One checkpoint on the <code class="cr-inline">node</code> holding authority; a device does not check the cursor stream again; signed changesets go to I54.</td></tr>
+      <tr><td><b>Q7</b> quarantine</td><td><b>Explainer asked for:</b> <a class="cr-link" href="#q7-explained">section 9</a>, then <a class="cr-link" href="#questions-2">round 2</a>.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm">The diagrams in sections 3 and 4b first failed to render. The cause found: a <code class="cr-inline">;</code> inside a sequence-diagram note ends the statement in Mermaid, a parse error. They are Mermaid again with the <code class="cr-inline">;</code> removed, checked in the Lavish view.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="vivief">
+  <h2 class="text-2xl font-bold">1. vivief's sync in one page</h2>
+  <p class="cr-src">vivief HEAD <code class="cr-inline">3071cb2</code>: <code class="cr-inline">vivief ADR 0047</code> (Datom Store and Sync Architecture, superseded by <code class="cr-inline">vivief ADR 0050</code>, its datom shape, conflict resolution and Loro scoping carried forward) §2, §5-§8, §10; <code class="cr-inline">vivief ADR 0051</code> §9; <code class="cr-inline">docs/contract/vivief-concepts-v6.md</code> §2.4 "Sync Contract"; <code class="cr-inline">docs/contract/vivief-concepts-impl-kb.md</code> §2.3 P2P &amp; Replication, §4 phase 20+, §8 What to Defer.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>vivief term</th><th>What it is</th><th>Where it lands here</th></tr></thead>
+    <tbody>
+      <tr><td><b>The log is a CRDT</b></td><td>"<code class="cr-inline">assert</code> is an add-operation to a grow-only set; <code class="cr-inline">retract</code> is a tagged remove. They are commutative." So "no external CRDT library is needed for structured data" (ADR 0047 Context).</td><td>Holds for our log too: append-only, deduplicated by <code class="cr-inline">tx</code>, reduced by a deterministic rule per attribute. It holds for LWW and write-once; human conflict needs someone to notice the concurrency, which a set alone does not (section 5).</td></tr>
+      <tr><td><b>Cardinality</b></td><td>A schema datom per attribute, <code class="cr-inline">:db.cardinality/one</code> or <code class="cr-inline">/many</code>; "Cardinality governs conflict resolution" (§2).</td><td>None. Every attribute holds one value; a set is an entity per member, as membership <code class="cr-inline">O{org}/M{person}</code> is. The schema is code, not datoms (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d118">D118 What a datom needs from storage</a>).</td></tr>
+      <tr><td><b>Conflict table</b></td><td><code class="cr-inline">:one</code> scalar LWW by highest <code class="cr-inline">tx</code> ULID; <code class="cr-inline">:many</code> OR-Set; <code class="cr-inline">:one</code> ref produces a <code class="cr-inline">:contract/conflict</code> datom for a person, "NOT silently resolved by LWW"; rich text Loro (§7; ADR 0051 §9).</td><td>Conflict policy per attribute: LWW, write-once fenced, human conflict (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d34">D34 Per-attribute conflict policies</a>, <a class="cr-link" href="../adr/0009-per-attribute-conflict-policies.md">ADR-0009 Per-attribute conflict policies</a>). 09-sources took the conflict datom from ADR 0047. We add write-once for the journal; vivief has no journal.</td></tr>
+      <tr><td><b>Rich text, Loro</b></td><td>One <code class="cr-inline">LoroDoc</code> per text attribute instance (one per session note); the datom holds a <code class="cr-inline">ContainerRef</code>, and the text syncs on its own channel <code class="cr-inline">loro-text/v1</code>, "independently of datom replication" (§8).</td><td>None. Text is LWW today (titles). A CRDT's state beside the log would be a second sync protocol (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d31">D31 One datom log</a>).</td></tr>
+      <tr><td><b>Subscription as replication filter</b></td><td>"The Projection's filter expression IS the subscription IS the download hint", per attribute namespace first (§6).</td><td>The direction for partial sync on demand (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d114">D114 Partial sync on demand</a>), built under <a class="cr-link" href="../issues/0012-partial-sync-and-history.md">I12 Partial sync, history consolidation and client data access</a>'s trigger. Settled by <a class="cr-link" href="../issues/0049-projection-one-concept-or-several-patterns.md">I49 Projection: one concept or several patterns</a>.</td></tr>
+      <tr><td><b>Sync Contract</b></td><td><code class="cr-inline">resolution: { text: "crdt-loro", scalar: "last-writer-wins", ref: "manual-merge" }</code>, <code class="cr-inline">scope: { push, pull }</code>, <code class="cr-inline">claim: { pattern: ":work/claimed-by", timeout: "30s" }</code> (v6 §2.4; ADR 0047 §10). One of six contract sub-types, enforced "External (infrastructure)".</td><td>Three parts, each already ours: resolution is the conflict policy; scope is the organization (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d18">D18 Organization isolation on the server</a>), partial on demand later (D114); the claim is the journal fence, "an online writer may claim a step before acting" (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d14p">D14' The journal is the fence</a>), with no timeout. Contracts as datoms and the closed set of sub-types were not adopted (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d125">D125 Acceptance rules</a>).</td></tr>
+      <tr><td><b>Peer validation</b></td><td>"Peers are remote actors governed by the same Contracts as local actors"; "Peer validation = Contract enforcement on incoming datoms" (kb §2.3).</td><td>One checkpoint on the <code class="cr-inline">node</code> holding authority (D124); a device applies the cursor stream without checking it again. A <code class="cr-inline">node</code> that accepts from a peer would run the same checkpoint (<a class="cr-link" href="../issues/0060-server-independent-mode.md">I60 Server-independent mode</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d105">D105 What must stay possible</a>).</td></tr>
+      <tr><td><b>Sync after the core</b></td><td>"P2P / Sync Contract / CRDT" is phase 20+, "When core platform validated"; "Defer full implementation until core platform is validated" (kb §2.3, §4, §8).</td><td>Sync was a foundation theme (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d46">D46 Spikes are gates</a>), qualified by <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p09">P09 Sync</a>. Question 1.</td></tr>
+      <tr><td><b>Transport and encryption</b></td><td>Holepunch, then Iroh with MoQ; Noise keypairs as peer identity; end-to-end encryption by default (§5, §9).</td><td>Effect RPC to one server (<a class="cr-link" href="../adr/0017-sync-outbox-and-cursor-stream.md">ADR-0017 Sync: outbox and cursor stream over Effect RPC</a>). A connectivity choice gets its own gate when I60 picks it up (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d123">D123 The final choice is the pattern</a>). Keys and encryption are <a class="cr-link" href="../issues/0054-trust-encryption-and-who-may-sign-in.md">I54 Trust, encryption and who may sign in</a>'s.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Ideas worth keeping</h3>
+    <ul class="list-disc pl-5 text-sm space-y-1">
+      <li><b>A relationship is never silently re-assigned</b> ("a session silently pointing to a different client ... too high for a healthcare context"). We have it: references are human conflict. Section 5 shows it is not yet built as decided.</li>
+      <li><b>Design for sync before you need it.</b> vivief's own reason for Hypercore in phase 1 is ours for building sync in the foundation: retrofitting replication onto a store designed for one writer is a migration.</li>
+      <li><b>A set is not a scalar.</b> vivief resolves a many-valued attribute differently from a one-valued one. We get the same by making each member its own entity (example c).</li>
+      <li><b>One CRDT document per text instance</b> bounds its history and makes archiving clean. Worth keeping for the day a CRDT comes (example d).</li>
+      <li><b>The read filter is the download hint</b>: already the direction (D114).</li>
+    </ul>
+  </div></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="eventlog">
+  <h2 class="text-2xl font-bold">2. Effect's <code class="cr-inline">EventLog</code> against our sync</h2>
+  <p class="cr-src">Effect 4.0.5, <code class="cr-inline">repos/effect/packages/effect/src/eventlog/</code>, exported as <code class="cr-inline">effect/eventlog</code>; every module <code class="cr-inline">@stability unstable</code>. Earlier reading: <a class="cr-link" href="../plan/bootstrap/research/03-effect-eventlog-and-sync-engines.md">research/03</a> (2026-09-18, on <code class="cr-inline">4.0.0-rc.115</code>, then under <code class="cr-inline">unstable/eventlog</code>), the basis of <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d21">D21 Sync as datom replication (superseded)</a> and ADR-0017. The module has moved out of the <code class="cr-inline">unstable/</code> path since; the model has not changed.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Effect name</th><th>What it does</th><th>Ours</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td><b>EventJournal</b></td><td>The local journal: <code class="cr-inline">write</code>, <code class="cr-inline">writeFromRemote</code>, <code class="cr-inline">withRemoteUncommited</code>, <code class="cr-inline">nextRemoteSequence</code>, <code class="cr-inline">changes</code>. Memory, IndexedDB and SQL (<code class="cr-inline">SqlEventJournal</code>) implementations.</td><td>The log store (<code class="cr-inline">LogStore</code>) plus the outbox table</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/eventlog/EventJournal.ts"><code class="cr-inline">EventJournal.ts</code></a>:44-118</td></tr>
+      <tr><td><b>Entry</b></td><td><code class="cr-inline">{ id, event, primaryKey, payload }</code>; the id is a UUID v7, so its order is the writing device's clock.</td><td>A datom, ordered by an HLC corrected against authority (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d119">D119 Time corrected by authority</a>)</td><td><code class="cr-inline">EventJournal.ts</code>:270-301</td></tr>
+      <tr><td><b>RemoteEntry, remoteSequence</b></td><td>The server numbers each store's entries; a client catches up from the next sequence; a duplicate id is skipped.</td><td>The server sequence and the cursor per organization; a second append of the same <code class="cr-inline">tx</code> acks. Our design took this from EventLog (ADR-0017).</td><td><code class="cr-inline">EventJournal.ts</code>:378-379, :448-455</td></tr>
+      <tr><td><b>conflicts</b></td><td>When an entry arrives, every later entry with the same <code class="cr-inline">event</code> and <code class="cr-inline">primaryKey</code> is passed to the event's handler as <code class="cr-inline">conflicts</code>; the handler decides. The server does it on ingest (<code class="cr-inline">toConflicts</code>) and every client on import.</td><td>A human-conflict check per attribute in each projector, against the basis (section 3)</td><td><code class="cr-inline">EventJournal.ts</code>:466-481; <a class="cr-link" href="../../repos/effect/packages/effect/src/eventlog/EventLogServerUnencrypted.ts"><code class="cr-inline">EventLogServerUnencrypted.ts</code></a>:126-147, :417-437; <a class="cr-link" href="../../repos/effect/packages/effect/src/eventlog/EventLog.ts"><code class="cr-inline">EventLog.ts</code></a>:296-305</td></tr>
+      <tr><td><b>EventLogServerAuthorization</b></td><td><code class="cr-inline">authorizeWrite</code> sees the whole batch; a failure is <code class="cr-inline">Unauthorized</code> for all of it.</td><td>The first question of the checkpoint, per changeset (D124)</td><td><code class="cr-inline">EventLogServerUnencrypted.ts</code>:199-212, :294</td></tr>
+      <tr><td><b>Handler failure on the server</b></td><td>The batch runs in one transaction; any failure becomes <code class="cr-inline">InternalServerError "Persistence failure"</code>; the client retries the uncommitted batch on <code class="cr-inline">remoteRetrySchedule</code>, forever.</td><td>A typed rejection per changeset; the client aborts it locally, rebuilds and pushes the rest (<a class="cr-link" href="../adr/0016-commands-and-server-validation.md">ADR-0016 Commands, server validation and rejection</a>)</td><td><code class="cr-inline">EventLogServerUnencrypted.ts</code>:214-226; <code class="cr-inline">EventLog.ts</code>:794-797, :903-907</td></tr>
+      <tr><td><b>groupCompaction</b>, <b>groupReactivity</b></td><td>A handler may replace a run of entries with fewer; Reactivity keys per event.</td><td>Compaction horizon (<a class="cr-link" href="../adr/0011-log-store-pattern.md">ADR-0011 Log store pattern, read models, compaction and analytics</a>); Reactivity keys from the projector</td><td><code class="cr-inline">EventLog.ts</code>:596, :695</td></tr>
+      <tr><td><b>EventLogEncryption</b>, <b>EventLogSessionAuth</b></td><td>The server can store only ciphertext; sessions by an Ed25519 key pair over WebCrypto.</td><td>No end-to-end encryption; identity by OIDC (<a class="cr-link" href="../adr/0022-identity-and-organization-isolation.md">ADR-0022 Identity and organization isolation</a>). I54's.</td><td><a class="cr-link" href="../../repos/effect/packages/effect/src/eventlog/EventLogEncryption.ts"><code class="cr-inline">EventLogEncryption.ts</code></a></td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">What it does that we do</h3>
+      <p class="text-sm">Append-only, server-sequenced catch-up, dedup by id, SQL on both sides, Reactivity. A React Native path is now plausible through <code class="cr-inline">SqlEventJournal</code> over <code class="cr-inline">@effect/sql-sqlite-react-native</code>, though session auth still needs WebCrypto Ed25519 on Hermes. And one thing worth copying: <b>conflicts are found where entries are accepted</b>, the server on ingest, and handed to code that decides.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">What it still lacks</h3>
+      <p class="text-sm">A typed rejection of one entry: a rule that fails on the server is still a poison batch. Order by a corrected clock: a skewed phone's entries sort by its own clock. Changesets: an entry is one event, with no atomic group and no draft. One journal for the engine: Effect's durable workflow persists in Cluster's <code class="cr-inline">MessageStorage</code>, not in an <code class="cr-inline">EventJournal</code>. ADR-0017's reasons stand on 4.0.5; nothing to adopt, and the word "conflict" agrees with Effect's.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="as-built">
+  <h2 class="text-2xl font-bold">3. Ours as built</h2>
+  <p class="cr-src">Sources: <a class="cr-link" href="../../libs/sync/client/src/client.ts"><code class="cr-inline">libs/sync/client/src/client.ts</code></a> (<code class="cr-inline">submit</code>:393, <code class="cr-inline">push</code>:483, rejection :541-548); <a class="cr-link" href="../../libs/sync/server/src/server.ts"><code class="cr-inline">libs/sync/server/src/server.ts</code></a> (write-once :604-623); <a class="cr-link" href="../../libs/datom/src/projector.ts"><code class="cr-inline">libs/datom/src/projector.ts</code></a> (<code class="cr-inline">applyReady</code>:470-575); <a class="cr-link" href="../../libs/datom/src/visibility.ts"><code class="cr-inline">libs/datom/src/visibility.ts</code></a> (<code class="cr-inline">reduceAttribute</code>:29-46); <a class="cr-link" href="../../libs/datom/src/catalog.ts"><code class="cr-inline">libs/datom/src/catalog.ts</code></a>; evidence <a class="cr-link" href="../evidence/2026-09-22-p09.md">2026-09-22-p09.md</a>.</p>
+  <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant C as Command on phone A
+  participant A as Phone A log
+  participant O as Phone A outbox
+  participant V as Server accept
+  participant L as Server log
+  participant B as Phone B
+  C->>A: members appended, open (draft view)
+  C->>O: changeset with basis 0
+  O->>V: Append(org, basis, envelope, datoms)
+  Note over V: membership, organization, catalog,<br/>manifest, files, lease, write-once<br/>(BasisRejected if the fact exists)
+  alt accepted
+    V->>L: append, acceptedAt set
+    V-->>O: ack with cursor
+  else rejected
+    V-->>O: typed rejection
+    O->>A: abort locally, rebuild read models,<br/>push the rest of the outbox
+  end
+  B->>L: Pull(org, cursor)
+  L-->>B: accepted datoms and envelopes
+  Note over B: projector: LWW by highest commit tx,<br/>human conflict against the basis<br/>as a projection_conflicts row
+  </pre></div>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Policy</th><th>Used for (catalog)</th><th>Checked by the server</th><th>Decided by each projector</th></tr></thead>
+    <tbody>
+      <tr><td><b>LWW</b></td><td><code class="cr-inline">list/title</code>, <code class="cr-inline">item/title</code>, <code class="cr-inline">evidence/title</code>, every defining attribute, <code class="cr-inline">viviefs/lease/holder</code>, <code class="cr-inline">viviefs/membership/granted</code></td><td>Nothing</td><td>Highest commit <code class="cr-inline">tx</code>, then member <code class="cr-inline">tx</code>; a retract as the latest hides the value. The same on every node, in any order.</td></tr>
+      <tr><td><b>Write-once</b></td><td><code class="cr-inline">item/seal</code>, journal facts, account facts</td><td>Rejects if any fact for <code class="cr-inline">(e, a)</code> exists, as <code class="cr-inline">BasisRejected</code>; the basis is not read</td><td>Rejects a second changeset; the first commit <code class="cr-inline">tx</code> wins</td></tr>
+      <tr><td><b>Human conflict</b></td><td><code class="cr-inline">evidence/file</code>, <code class="cr-inline">evidence/owner</code></td><td>Nothing</td><td>A <code class="cr-inline">concurrent</code> row in <code class="cr-inline">projection_conflicts</code> when another changeset's fact has a <code class="cr-inline">commitSeq</code> above this commit's basis; every asserted value stays visible</td></tr>
+      <tr><td><b>Orphan</b> (not a policy)</td><td>User-content types (<code class="cr-inline">evidence</code>)</td><td>Nothing</td><td>An <code class="cr-inline">orphan</code> row when the owner is not visible (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d38">D38 Entity ids and strict composition</a>)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm"><a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d35pp">D35'' Single-datom transactions with changesets</a> says "the commit records its basis and the server checks, per attribute policy, whether touched attributes changed since". As built, the server checks write-once only, and the server has no projector. Human conflict exists only in device projectors.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="examples">
+  <h2 class="text-2xl font-bold">4. Worked examples on real code</h2>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(a) Two phones retitle a list offline (LWW)</h3>
+    <ol class="list-decimal pl-5 text-sm space-y-1">
+      <li>Phone A, offline at 10:00, runs <code class="cr-inline">renameList</code> to "Groceries" (<a class="cr-link" href="../../features/evidence/model/src/command.ts"><code class="cr-inline">command.ts</code></a>). Phone B, offline at 11:00, renames the same list to "Shopping".</li>
+      <li>A comes online at 12:00 and pushes; the server accepts (no check for LWW). B pushes at 13:00; accepted.</li>
+      <li>Every projector reduces <code class="cr-inline">list/title</code> by the highest commit <code class="cr-inline">tx</code>: "Shopping", on A, on B, on the server's read of the log, whichever arrived first. Shown by P05 "basis lww".</li>
+    </ol>
+    <p class="text-sm"><b>Reading.</b> This is right and needs nothing. The HLC makes "later" mean later in time, corrected against the server, so a phone with a wrong clock cannot win by it (<a class="cr-link" href="../adr/0007-hybrid-logical-clock.md">ADR-0007 Hybrid logical clock for tx</a>). The cost is the usual one: A's person sees their title replaced on the next pull, with no notice. For a title that is the right trade; for a person's work it is not, which is why user content is not LWW.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(b) Two phones attach a file to one evidence item (human conflict)</h3>
+    <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="space-y-2">
+        <p><b>Concurrent: works by accident.</b></p>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li>A attaches <code class="cr-inline">blob:a</code> to evidence <code class="cr-inline">E1</code>, B attaches <code class="cr-inline">blob:b</code>; neither has seen the other. Both send basis <code class="cr-inline">0</code>, as every changeset outside P05 does (<a class="cr-link" href="../../tools/qualification/src/probes/p09-checks.ts"><code class="cr-inline">p09-checks.ts</code></a>, <a class="cr-link" href="../../apps/evidence-client/src/p11-runtime.ts"><code class="cr-inline">p11-runtime.ts</code></a>:362).</li>
+          <li>The server accepts both.</li>
+          <li>On each phone the projector applies one first; the second finds the first's fact above basis 0 and writes a <code class="cr-inline">concurrent</code> row. A and B may disagree on which changeset the row names until a rebuild.</li>
+          <li>Both files stay visible. P05 "basis human conflict" shows exactly this, on one store.</li>
+        </ol>
+      </div>
+      <div class="space-y-2">
+        <p><b>Sequential, and the resolution: broken.</b></p>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li>B has pulled <code class="cr-inline">blob:a</code> and deliberately replaces it with <code class="cr-inline">blob:b</code>. Basis <code class="cr-inline">0</code> says "I saw nothing", so a conflict is raised that is not one.</li>
+          <li>Both values stay visible anyway: <code class="cr-inline">reduceAttribute</code> returns every assert for a human-conflict attribute and drops retracts (<code class="cr-inline">visibility.ts</code>:34-36).</li>
+          <li>A person "resolves" by retracting <code class="cr-inline">blob:a</code>. Nothing changes: the retract is ignored.</li>
+          <li>The conflict is a row in <code class="cr-inline">projection_conflicts</code>, deleted and derived again on every rebuild (<code class="cr-inline">projector.ts</code>:376). It has no id a command could close.</li>
+        </ol>
+      </div>
+    </div>
+    <pre class="cr-code">// A throwaway run of libs/datom/src/visibility.ts reduceAttribute (2026-10-26):
+sequential re-attach:      [ 'blob:a', 'blob:b' ]   // a replace keeps both
+retract after keep-both:   [ 'blob:a', 'blob:b' ]   // a retract removes nothing
+lww:                       [ 'Shopping' ]</pre>
+    <p class="text-sm"><b>Reading.</b> No command writes <code class="cr-inline">evidence/file</code> outside the P05 suite, and P09 never put two devices on a human-conflict attribute, so no gate saw this. What the policy needs: a basis that means the same on every node, someone who can see every accepted fact to decide, a conflict that is a fact so every node shows the same one and a command can close it, and a reduce in which a retract removes a value. Section 5 and Q2-Q3.</p>
+    <div class="cr-mermaid"><pre class="mermaid">
+sequenceDiagram
+  participant A as Phone A
+  participant V as Authority (accept)
+  participant L as Log
+  participant B as Phone B
+  Note over A: pulled up to cursor 41
+  B->>V: attach blob:b to E1 (basis 41)
+  V->>L: accepted at seq 42
+  A->>V: attach blob:a to E1 (basis 41)
+  Note over V: a fact for (E1, evidence/file) accepted<br/>after 41 by another device: seq 42
+  V->>L: seq 43 A's changeset<br/>seq 44 viviefs/conflict on E1 (server-authored)
+  L-->>A: pull: both files, one open conflict
+  L-->>B: pull: the same
+  Note over A,B: a person chooses, a command retracts the other file<br/>and closes the conflict, every node agrees
+    </pre></div>
+    <p class="text-sm text-center opacity-75">The proposal (Q2-Q3): the basis is the server cursor the writer had pulled; authority decides at accept and writes the conflict as a fact.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(c) A set of tags: a many-valued attribute, or an entity per member</h3>
+    <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="space-y-2">
+        <p><b>vivief: <code class="cr-inline">:many</code> with an OR-Set.</b></p>
+        <pre class="cr-code">[I1  item/tag  "urgent"  tx1  assert]
+[I1  item/tag  "fragile" tx2  assert]
+[I1  item/tag  "urgent"  tx3  retract]
+-&gt; item I1 tags: { "fragile" }</pre>
+        <p>A new dimension on every attribute (<code class="cr-inline">one</code> or <code class="cr-inline">many</code>), a new reduce, and a typed read model that cannot hold it in a column: a set needs its own table (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d121">D121 Attribute value types</a>, <a class="cr-link" href="../issues/0066-attribute-value-types.md">I66 Attribute value types and the typed reference read model</a>). If a tag later needs data of its own (a colour, a note), the attribute must become entities: a migration, which <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d44p">D44' Never rename, never migrate, the RPC too</a> forbids.</p>
+      </div>
+      <div class="space-y-2">
+        <p><b>Ours today: an entity per member.</b></p>
+        <pre class="cr-code">[O1/L1/I1/T{urgent}
+   item-tag/added "1" tx1 assert]
+[O1/L1/I1/T{fragile}
+   item-tag/added "1" tx2 assert]
+[O1/L1/I1/T{urgent}
+   item-tag/added "1" tx3 retract]
+-&gt; tags under I1: { fragile }</pre>
+        <p>A tag is an entity under its item by strict composition, its id derived from the tag (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d120">D120 Minted and derived id segments</a>), its defining attribute LWW. Two phones adding "urgent" write the same entity; adding and removing it concurrently resolves by time. This is how membership already works (<code class="cr-inline">O{org}/M{person}</code>, <code class="cr-inline">viviefs/membership/granted</code>). A member gains attributes later with nothing to migrate, and the typed read model has one table per type as it does today.</p>
+      </div>
+    </div>
+    <p class="text-sm"><b>Reading.</b> Both converge. The OR-Set's one advantage is add-wins: an add concurrent with a remove of the same tag survives, where the entity's LWW picks the later. For tags and members that is rarely what matters, and an entity per member never needs a migration. Q4.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(d) A note edited on two phones: LWW, human conflict, or a CRDT</h3>
+    <p class="text-sm">An inspector writes a paragraph about item I1 on phone A, offline; a colleague edits the same note on phone B. Hypothetical: no attribute holds long text today.</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>Policy</th><th>What the people see</th><th>What it costs</th></tr></thead>
+      <tbody>
+        <tr><td><b>LWW</b></td><td>The later edit wins whole; the other's paragraph is gone with no notice.</td><td>Nothing. Wrong for a person's work: "user work is never silently lost" (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d15">D15 Server authority after a lost lease</a>).</td></tr>
+        <tr><td><b>Human conflict</b></td><td>Both versions shown, a person merges them by hand and saves one.</td><td>Nothing new once Q2-Q3 are built. Fine when concurrent edits are rare, as offline edits of one note are.</td></tr>
+        <tr><td><b>CRDT (Loro)</b></td><td>Both edits merged character by character, no prompt.</td><td>A text value that is not a value: either the CRDT's updates are stored in the log as opaque facts and every reader runs Loro to read the text, or the text lives beside the log on its own channel (vivief's <code class="cr-inline">ContainerRef</code>), a second sync protocol. Acceptance rules on that text (not blank, a length) run on the merged result, so authority runs Loro too. A WASM or native dependency on Hermes, unqualified.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>Reading.</b> A CRDT pays off when two people type in one text at the same time, live. Edits made apart, offline, are what a human conflict is for. Q5.</p>
+  </div></div>
+
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-3">
+    <h3 class="text-lg font-semibold">(e) An offline phone overtaken under the journal fence (I11)</h3>
+    <p class="text-sm">An inspection run <code class="cr-inline">W1</code>; its head is <code class="cr-inline">h3</code>, the start of activity "photo". Phone A goes offline. A person asks phone B to continue <code class="cr-inline">W1</code>: B writes <code class="cr-inline">h4b</code> (photo exit) and <code class="cr-inline">h5b</code> (seal start) and seals item I1 "gold". Meanwhile A, offline, does its own steps. A's outbox, in order:</p>
+    <div class="cr-table-wrap"><table class="table table-sm">
+      <thead><tr><th>A's outbox</th><th>Kind</th><th>On push, under D14'</th><th>User content?</th></tr></thead>
+      <tbody>
+        <tr><td><code class="cr-inline">cs-photo</code></td><td>Domain changeset: evidence <code class="cr-inline">E9</code>, <code class="cr-inline">evidence/file</code> = the photo, owner I1</td><td><b>Accepted.</b> Not an engine fact, judged on its own; E9 is new and I1 is visible.</td><td>Yes, and it is in the log, under I1. Nothing lost.</td></tr>
+        <tr><td><code class="cr-inline">h4a</code></td><td>Engine fact: photo exit, follows <code class="cr-inline">h3</code></td><td><b>Refused:</b> the head is <code class="cr-inline">h5b</code>.</td><td>No, if its value is the evidence id, not the photo.</td></tr>
+        <tr><td><code class="cr-inline">cs-seal</code></td><td>Domain changeset: <code class="cr-inline">item/seal</code> "silver" and a closing photo, evidence <code class="cr-inline">E10</code></td><td><b>Rejected whole</b> (<code class="cr-inline">BasisRejected</code>: the seal is write-once and B sealed first). Aborted locally, read models rebuilt.</td><td><b>Yes: E10 is now only in A's outbox row</b> (state <code class="cr-inline">rejected</code>, payload kept) and A's blob store.</td></tr>
+        <tr><td><code class="cr-inline">h5a</code></td><td>Engine fact: seal start, follows <code class="cr-inline">h4a</code></td><td><b>Refused:</b> built on a refused fact.</td><td>No.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="text-sm"><b>Reading.</b> The journal fence refuses engine facts only. User content travels in domain changesets, which pass or fail on their own, so a refused history strands no user content <b>as long as an activity never keeps user content only in its journal value</b> (an activity that captures a photo writes it as a domain changeset and returns its id). What is stranded is user content inside a changeset authority rejected for another reason, here a write-once collision. The device already keeps it: the rejected outbox row holds the whole changeset, and the blob is local. Quarantine is showing those rows to a person, who resubmits the content through a command (here, E10 as a new evidence item on I1) or discards it, and keeping their blobs until then. It is device-local: the changeset never reached the log, so there is nothing for a conflict fact in the log to point at. Q7 and I11's comment.</p>
+  </div></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="findings">
+  <h2 class="text-2xl font-bold">5. Findings</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>#</th><th>Finding</th><th>Evidence</th><th>Proposed home</th></tr></thead>
+    <tbody>
+      <tr><td><b>F1</b></td><td><b>A conflict is not a fact.</b> It is a <code class="cr-inline">projection_conflicts</code> row each projector derives and a rebuild deletes. ADR-0009 said <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p09">P09 Sync</a> "may persist them as log datoms"; P09's evidence lists "conflict-datom append" as an empty slot. <code class="cr-inline">viviefs/conflict</code> is in the vocabulary and written by nobody.</td><td><code class="cr-inline">projector.ts</code>:346-376, :491-516; <a class="cr-link" href="../../libs/datom/src/vocabulary.ts"><code class="cr-inline">vocabulary.ts</code></a>:13; <a class="cr-link" href="../evidence/2026-09-22-p09.md">p09 evidence</a> line 55</td><td>Q2</td></tr>
+      <tr><td><b>F2</b></td><td><b>The basis means nothing across nodes.</b> It is a <code class="cr-inline">seq</code> in the log of whoever projects; a device's local seq and the server's seq differ. Every changeset outside P05 sends <code class="cr-inline">0</code> (no command is given a real one), and a self-committed datom gets its own local seq minus one.</td><td><code class="cr-inline">projector.ts</code>:434, :486; <a class="cr-link" href="../../tools/qualification/src/probes/sync-world.ts"><code class="cr-inline">sync-world.ts</code></a>:259-291; P05's <code class="cr-inline">basis()</code> reads the one store's last seq (<a class="cr-link" href="../../libs/datom/src/suites/changesets.ts"><code class="cr-inline">changesets.ts</code></a>:149-154)</td><td>Q2</td></tr>
+      <tr><td><b>F3</b></td><td><b>A human-conflict attribute never drops a value.</b> The reduce keeps every assert and ignores retracts, so it is a grow-only set: a replace keeps both, and no command can resolve a conflict.</td><td><code class="cr-inline">visibility.ts</code>:34-36; the run in example (b)</td><td>Q3</td></tr>
+      <tr><td><b>F4</b></td><td><b>The server decides no conflict but write-once.</b> D35'' and ADR-0016 say it checks the basis per policy; it checks whether a write-once fact exists and names that <code class="cr-inline">BasisRejected</code>. The server has no projector.</td><td><code class="cr-inline">server.ts</code>:604-623</td><td>Q2; the name stays (D44')</td></tr>
+      <tr><td><b>F5</b></td><td><b>No gate puts two devices on human conflict.</b> P05 runs it on one store; P09's checks cover LWW, write-once and the lease. No command writes <code class="cr-inline">evidence/file</code>.</td><td><a class="cr-link" href="../../tools/qualification/src/probes/p09-checks.ts"><code class="cr-inline">p09-checks.ts</code></a></td><td>The build issue, re-qualifying P05 and P09</td></tr>
+      <tr><td><b>F6</b></td><td><b>Orphan detection is a projector's too.</b> User content whose owner is no longer visible becomes an <code class="cr-inline">orphan</code> row, the same per-projector, rebuild-only kind as F1. Deciding it at accept needs a read model on the server, which <a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a> brings for acceptance rules.</td><td><code class="cr-inline">projector.ts</code>:518-556</td><td>Q2, built with I69</td></tr>
+      <tr><td><b>F7</b></td><td><b>My plan misdated EventLog's rejection.</b> ADR-0017's reasons came from Effect 4 (rc.115), not 3.x. They still hold on 4.0.5.</td><td>research/03; section 2</td><td>Nothing to change</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="rows">
+  <h2 class="text-2xl font-bold">6. The 5 rows, proposed dispositions</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Row</th><th>Proposed</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">vivief:sync-after-core</code></td><td><b>keep ours</b>, with the why in <a class="cr-link" href="../adr/0032-what-viviefs-is-about.md">ADR-0032 What ViViEfs is about and its foundation concepts</a></td><td>A deliberate difference in build order: phones offline for days with a server, device switching (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d13">D13 Server holds workflow state</a>), server authority (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d36p">D36' Shared commands, as built</a>) and one log for engine and data (D31) all need it from the first app. vivief made sync possible from phase 1 for the same reason (Q1).</td></tr>
+      <tr><td><code class="cr-inline">vivief:sync-contract</code></td><td><b>keep ours</b>, as three parts; text CRDT <b>deferred</b></td><td>Resolution is the conflict policy, scope the organization with partial sync on demand later (D114), the claim the journal fence (D14'). No "Sync Contract" as one thing: contracts as datoms were rejected (D124). A text CRDT waits for <code class="cr-inline">Decide when:</code> two people type in one text at the same time (Q5).</td></tr>
+      <tr><td><code class="cr-inline">viviefs:conflict-policy</code></td><td><b>keep ours, amended</b></td><td>The three policies stand. Human conflict is decided by authority at accept against the cursor the writer had pulled and kept as a fact; a command resolves it; a retract removes a value (Q2, Q3). No cardinality: a set is an entity per member (Q4). Pairs with <code class="cr-inline">vivief:conflict-resolution-by-cardinality</code>.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:server-authoritative-validation</code></td><td><b>keep ours</b>; peer validation <b>handed to I54</b></td><td>One checkpoint on the <code class="cr-inline">node</code> holding authority is the one place trust is enforced (D124); vivief's three trust strategies are commit paths above it (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d117">D117 Trust strategies as commit paths</a>). A device does not check the cursor stream again; whether signed changesets let it check who wrote what is I54's (Q6). Pairs with <code class="cr-inline">vivief:peer-validation-as-contract</code>.</td></tr>
+      <tr><td><code class="cr-inline">viviefs:sync-as-datom-replication</code></td><td><b>stands</b></td><td>Outbox up, one cursor stream down, Effect RPC, shown by P09; Effect's EventLog adds nothing to adopt (section 2). The partial-sync details wait for I12's trigger (D114), with one constraint from Q2: a basis is a server cursor, which a partial <code class="cr-inline">node</code> keeps too.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">Deferred issues: proposed comments</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Issue</th><th>Proposed comment</th></tr></thead>
+    <tbody>
+      <tr><td><a class="cr-link" href="../issues/0011-quarantine-after-a-lost-lease.md"><b>I11</b></a></td><td>Narrowed (if Q7 is A). The journal fence refuses engine facts only; user content travels in domain changesets, judged on their own, so a refused history strands no user content, given the rule that an activity never keeps user content only in its journal value. What is stranded is user content in a changeset authority rejected (a write-once collision, a rule, an access decision). The device already keeps it: the rejected outbox row holds the changeset and the blob is local. Quarantine is a device-local list of those rows that touch a user-content type, kept with their blobs until a person resubmits through a command or discards; not a conflict fact, because the changeset never reached the log. <code class="cr-inline">Decide when:</code> unchanged, <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p14">P14 Quarantine after a lost lease</a>'s grilling, which designs the screen.</td></tr>
+      <tr><td><a class="cr-link" href="../issues/0012-partial-sync-and-history.md"><b>I12</b></a></td><td>Confirmed. When it fires, the sync details to decide: what the server sends for a Presenter's query (entity prefixes, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d120">D120 Minted and derived id segments</a>, or attribute namespaces as vivief started); one cursor per organization with a filter, or one per query; and how a partial <code class="cr-inline">node</code> sends a basis for data it holds only in part. Fixed already: a basis is a server cursor (Q2), and authority decides conflicts, so a partial <code class="cr-inline">node</code> never has to. <code class="cr-inline">Decide when:</code> unchanged.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-8" id="questions">
+  <h2 class="text-2xl font-bold">7. Questions, round 1 (answered above; Q4 and Q7 again in <a class="cr-link" href="#questions-2">round 2</a>)</h2>
+  <p>Seven questions. Q2 and Q3 are the structural ones; Q4 depends on Q3 only for the reduce it would share. What is written where comes in a later round.</p>
+
+  <form class="card bg-base-200" data-lavish-question="q1" onsubmit="crQueue(event, 'q1', 'Q1 sync in the foundation')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q1. Is sync in the foundation a deliberate difference from vivief, and does the foundation story say why?</h3>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q1" value="A: yes, keep ours; ADR-0032 gets a paragraph: the first app is phones offline with a server and people who switch devices, server authority and one log need sync from the start; vivief designed for sync early too and deferred only the build" checked><span><b>A (recommended).</b> Yes, keep ours. ADR-0032 gets a short paragraph, "Sync from the start": the first app is phones offline for days with a server and people who switch devices (D13), server authority (D36') and one log for the engine and data (D31) need it from the start, and vivief designed for sync in phase 1 too, deferring only the build.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="B: keep ours, no story: the gates already say it"><span><b>B.</b> Keep ours with no paragraph: D46 and P09 already say it. A reader of ADR-0032 would not learn why.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q1" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q2" onsubmit="crQueue(event, 'q2', 'Q2 who decides a human conflict')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q2. Who decides a human conflict, and against what basis?</h3>
+      <p class="text-sm">Example (b), F1, F2, F4, F6.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q2" value="A: authority at accept; the basis is the server cursor the writer had pulled; a fact for the same (e, a) accepted after it from another device is a conflict; authority writes a viviefs/conflict fact in the same step; projectors read conflicts from the log; a device may preview; orphan detection moves to accept with I69's read model" checked><span><b>A (recommended).</b> Authority, at accept. The basis is the server cursor the writer had pulled when the command ran. A fact for the same <code class="cr-inline">(e, a)</code> accepted after that cursor by another device is a conflict (the writer's own earlier outbox is not). Authority writes a <code class="cr-inline">viviefs/conflict</code> fact in the same step as the append, so every node shows the same conflict and a command can close it. Projectors read conflicts from the log; a device may show a preview. Orphan detection moves to accept too, with I69's read model. As Effect's <code class="cr-inline">EventLog</code> does on ingest.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="B: keep it in each projector, with the basis made a server cursor and the server seq kept per fact on every device"><span><b>B.</b> Keep it in each projector, with the basis a server cursor and the server's seq kept beside every fact on every device. Every node decides alone, and a conflict is still not a fact a command can close.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="C: defer to P14's grilling"><span><b>C.</b> Defer to P14's grilling. Leaves D34's human conflict described but not working, and the next app with a reference would meet F3.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q2" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q3" onsubmit="crQueue(event, 'q3', 'Q3 resolving a conflict')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q3. What does a human-conflict attribute show, and how is a conflict resolved?</h3>
+      <p class="text-sm">F3. Today it shows every value ever asserted.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q3" value="A: per value, the latest of assert and retract wins, so a replace (retract old, assert new) shows one value and two concurrent replaces show both; an open conflict marks it; a resolving command retracts the losers and closes the conflict; P05 and P09 qualified again" checked><span><b>A (recommended).</b> Per value, the latest of its assert and retract wins. A command that replaces writes "retract old, assert new", so one writer leaves one value and two concurrent replaces leave both, marked by the open conflict. A resolving command retracts the values not chosen and closes the conflict. P05 and P09 are qualified again with two devices.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="B: show only the latest value, with the others reachable from the conflict fact"><span><b>B.</b> Show the latest value only, the others reachable through the conflict fact. Hides a person's work behind a prompt, which is what LWW does.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q3" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q4" onsubmit="crQueue(event, 'q4', 'Q4 cardinality')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q4. Does an attribute need a cardinality?</h3>
+      <p class="text-sm">Example (c).</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q4" value="A: no; every attribute holds one value; a set is an entity per member under its owner, its id derived from the member, as membership is; a member gains attributes with nothing to migrate; the typed read model keeps one table per type" checked><span><b>A (recommended).</b> No. Every attribute holds one value. A set is an entity per member under its owner, its id derived from the member (D120), as membership already is. A member can gain attributes later with nothing to migrate, and the typed read model keeps one table per type.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="B: adopt cardinality many, reduced per value as in Q3 A, with no conflict raised"><span><b>B.</b> Adopt <code class="cr-inline">cardinality: 'many'</code>, reduced per value as Q3 A, with no conflict. Cheap once Q3 is built; a set needs its own read-model table, and a member that gains data is a migration.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="C: defer, Decide when: an app needs a set whose members carry no data and the entity per member is measured as a cost"><span><b>C.</b> Defer, <code class="cr-inline">Decide when:</code> an app needs a set whose members carry no data and an entity per member is measured as a cost.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q5" onsubmit="crQueue(event, 'q5', 'Q5 text CRDT')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q5. Does text ever need a CRDT?</h3>
+      <p class="text-sm">Example (d).</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q5" value="A: defer, Decide when: an app needs two people typing in one text at the same time; until then short text is LWW and a person's longer text is human conflict; the decision then includes where the CRDT's state lives and one document per text instance" checked><span><b>A (recommended).</b> Defer, <code class="cr-inline">Decide when:</code> an app needs two people typing in one text at the same time. Until then short text (titles) is LWW and a person's longer text is human conflict. The decision then includes where the CRDT's state lives (in the log or beside it) and vivief's one document per text instance.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="B: adopt Loro now as a fourth policy"><span><b>B.</b> Adopt Loro now as a fourth policy. No app needs it, and it brings a second sync channel or opaque values every reader must decode.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="C: reject"><span><b>C.</b> Reject. Closes a door a collaborative app may need.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q5" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q6" onsubmit="crQueue(event, 'q6', 'Q6 one trust strategy')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q6. Is server validation the stack's one trust strategy, and does a device check what it receives?</h3>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q6" value="A: one checkpoint on the node holding authority is the one place trust is enforced (D124); vivief's strategies are commit paths above it (D117); a device applies the cursor stream without checking it again; a node accepting from a peer runs the same checkpoint (I60); signed changesets and what a device could check with them go to I54" checked><span><b>A (recommended).</b> One checkpoint on the <code class="cr-inline">node</code> holding authority is the one place trust is enforced (D124); vivief's three strategies are commit paths above it (D117). A device applies the cursor stream without checking it again. A <code class="cr-inline">node</code> that accepts from a peer runs the same checkpoint (I60). Signed changesets, and what a device could check with them, go to I54.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="B: devices also check incoming datoms now (Schema and catalog)"><span><b>B.</b> Devices also check what they receive now (Schema and catalog). Guards against a compromised server only once changesets are signed; until then it checks the server against itself.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q6" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q7" onsubmit="crQueue(event, 'q7', 'Q7 quarantine under the fence')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q7. Under the journal fence, what does quarantine keep?</h3>
+      <p class="text-sm">Example (e).</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q7" value="A: an activity never keeps user content only in its journal value, so a refused history strands none; quarantine is the device's rejected outbox rows that touch a user-content type, kept with their blobs until a person resubmits through a command or discards; device-local; P14 designs the screen; I11 narrowed" checked><span><b>A (recommended).</b> A rule: an activity never keeps user content only in its journal value (it writes a domain changeset and returns its id), so a refused history strands none. Quarantine is the device's rejected outbox rows that touch a user-content type, kept with their blobs until a person resubmits through a command or discards. Device-local. P14's grilling designs the screen; I11 narrowed as drafted above.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="B: keep I11's direction: a human-conflict entry in the log resolved by a command"><span><b>B.</b> Keep I11's direction, a human-conflict entry in the log. The rejected content never reached the log, so the entry would point at nothing other devices hold.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="q4-explained">
+  <h2 class="text-2xl font-bold">8. Q4 explained: one value or many</h2>
+  <p><b>Cardinality</b> is how many values one attribute of one entity holds at the same time. A list has one title. An item can have several tags; a team has several members; a photo can show several people. Q4 asks how ViViEfs writes "several", and whether the catalog needs a field that says "this attribute holds many values".</p>
+
+  <h3 class="text-lg font-semibold">Three ways to write "item I1 is tagged urgent and fragile"</h3>
+  <div class="grid md:grid-cols-3 gap-4 text-sm">
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-4 space-y-2">
+      <h4 class="font-semibold">1. One value that is a list</h4>
+      <pre class="cr-code">[I1 item/tags
+  '["urgent","fragile"]'
+  tx1 assert]</pre>
+      <p>One LWW attribute whose value Schema is an array (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d121">D121 Attribute value types</a> allows it). Every change writes the whole list again.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-4 space-y-2">
+      <h4 class="font-semibold">2. A many-valued attribute</h4>
+      <pre class="cr-code">[I1 item/tag
+  "urgent" tx1 assert]
+[I1 item/tag
+  "fragile" tx2 assert]</pre>
+      <p>vivief's <code class="cr-inline">:many</code>, as in Datomic. The catalog says <code class="cr-inline">cardinality: 'many'</code>; each value is added or removed on its own, the later of its assert and retract winning (Q3's reduce, with no conflict).</p>
+    </div></div>
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-4 space-y-2">
+      <h4 class="font-semibold">3. An entity per member</h4>
+      <pre class="cr-code">[O1/L1/I1/T{urgent}
+  item-tag/added "1"
+  tx1 assert]
+[O1/L1/I1/T{fragile}
+  item-tag/added "1"
+  tx2 assert]</pre>
+      <p>Each tag is an entity under its item (strict composition, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d38">D38 Entity ids and strict composition</a>), its id segment derived from the tag (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d120">D120 Minted and derived id segments</a>), its defining attribute LWW. No new catalog field. A SQL database does the same with a join table.</p>
+    </div></div>
+  </div>
+
+  <h3 class="text-lg font-semibold">Eight situations, each shape</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Situation</th><th>1. A list value</th><th>2. Many-valued attribute</th><th>3. Entity per member</th></tr></thead>
+    <tbody>
+      <tr><td><b>s1</b> Offline, phone A adds "urgent" and phone B adds "fragile"</td><td><b>One add is lost.</b> Each phone writes a whole list; the later list wins.</td><td>Both kept: <code class="cr-inline">{urgent, fragile}</code>.</td><td>Both kept: two tag entities.</td></tr>
+      <tr><td><b>s2</b> A removes "urgent" while B, offline, adds "urgent" again</td><td>The later whole list wins.</td><td>The later in time wins. (An OR-Set would keep "urgent": an add the remover never saw survives. This is the one place an OR-Set differs.)</td><td>The later in time wins: the same rule, on the tag's defining attribute.</td></tr>
+      <tr><td><b>s3</b> Both phones add "urgent"</td><td>Equal lists, fine.</td><td>One value.</td><td>One entity, because both phones derive the same id <code class="cr-inline">T{urgent}</code>. With a minted id it would be two "urgent" tags: shape 3 needs a derived id when a member is known by its value.</td></tr>
+      <tr><td><b>s4</b> Later, a tag needs data of its own: a colour, a note, a due date per member</td><td colspan="2"><b>The tag must become an entity.</b> Old facts stay in the old shape, because data is never migrated (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d44p">D44' Never rename, never migrate, the RPC too</a>), so every reader and the projector read both shapes from then on.</td><td>Add an attribute to the tag type. Nothing to migrate. (Who added a tag and when is in the envelope of its changeset, in every shape.)</td></tr>
+      <tr><td><b>s5</b> A screen asks "every item tagged urgent"</td><td>A JSON search inside a column.</td><td>The typed read model cannot keep a set in a column (<a class="cr-link" href="../issues/0066-attribute-value-types.md">I66 Attribute value types and the typed reference read model</a>), so the projector builds a side table <code class="cr-inline">item_tag(item, value)</code> per many-valued attribute.</td><td>The tag type's own table, like any type. The same table as shape 2's side table, reached without a special case.</td></tr>
+      <tr><td><b>s6</b> The item is deleted (its defining attribute retracted)</td><td>Hidden with the item.</td><td>Hidden with the item.</td><td>Hidden by the prefix cascade, as todos under a deleted list.</td></tr>
+      <tr><td><b>s7</b> The members are other entities: a team's people</td><td>A list of ids, s1's loss included.</td><td><code class="cr-inline">[T1 team/member P7]</code>: a reference set. An access decision reads a set of values.</td><td><code class="cr-inline">O1/T1/M{P7}</code>: exactly how membership in an organization is built today (<code class="cr-inline">viviefs/membership/granted</code>, <a class="cr-link" href="../adr/0022-identity-and-organization-isolation.md">ADR-0022 Identity and organization isolation</a>), and what <a class="cr-link" href="../issues/0016-roles-and-self-service-membership.md">I16 Roles in use, invitations and self-service membership</a> will add roles to.</td></tr>
+      <tr><td><b>s8</b> Writing the catalog</td><td>Nothing new.</td><td>A cardinality on every attribute, a second reduce, a side table per many-valued attribute, and a rule for which policies combine with <code class="cr-inline">many</code>.</td><td>One entity type per set, with a derived id. More declarations per set, no new concept.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2 text-sm">
+      <h3 class="font-semibold">What the table shows</h3>
+      <ul class="list-disc pl-5 space-y-1">
+        <li><b>Shape 1 is out</b> for anything two people may change: it loses a concurrent add (s1). A list value is still right where a value is always replaced whole by one writer, such as the corners of a drawn area.</li>
+        <li><b>Shapes 2 and 3 sync the same way</b> (s1, s2, s3, s6): a value's later assert or retract wins in 2, the member's defining attribute's later fact wins in 3. They differ only in where a member lives, a value on its owner or an entity of its own.</li>
+        <li><b>That difference decides s4, s5, s7 and s8.</b> Shape 2 is less to declare for a plain set of labels. Shape 3 grows without a migration, needs no second reduce or side table, and is what membership already is.</li>
+      </ul>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2 text-sm">
+      <h3 class="font-semibold">A rule of thumb, like D38's</h3>
+      <p>D38 says "can it ever move? then it is a reference". The same kind of rule here: <b>"is it a set? then it is entities"</b>, because whether a member will ever carry data of its own (s4) is rarely known on the day the set is designed, and the wrong guess cannot be migrated away.</p>
+      <p>Effect has no concept to name here (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d135">D135 Effect's names first</a>): <code class="cr-inline">Schema.Array</code> is shape 1, one value.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-6" id="q7-explained">
+  <h2 class="text-2xl font-bold">9. Q7 explained: what quarantine keeps</h2>
+  <p><b>The promise.</b> <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d15">D15 Server authority after a lost lease</a>: "User content (photos, recordings, drafts) is never dropped; it is quarantined for human resolution." <a class="cr-link" href="../issues/0011-quarantine-after-a-lost-lease.md">I11 Quarantine of user content after a lost lease</a> says there is no mechanism yet, and <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p14">P14 Quarantine after a lost lease</a> will show one. D15 was written for the lease: a phone that lost its lease drops its journal entries and replays the server's. Under the journal fence (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d14p">D14' The journal is the fence</a>) the same event is a <b>refused history</b>. Q7 asks what, then, is at risk and what quarantine holds.</p>
+
+  <h3 class="text-lg font-semibold">Step 1: a phone sends two kinds of writes, judged apart</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Kind</th><th>Written by</th><th>Examples</th><th>Judged by</th></tr></thead>
+    <tbody>
+      <tr><td><b>Engine facts</b></td><td>The workflow engine, for a run</td><td>run started, an activity's start and exit, a durable clock, the result</td><td><b>The journal fence:</b> each names the fact it follows and is accepted only on the run's head; anything built on a refused fact is refused too (<a class="cr-link" href="../adr/0036-the-journal-is-the-fence.md">ADR-0036 The journal is the fence</a>).</td></tr>
+      <tr><td><b>Domain changesets</b></td><td>Commands, from a screen or an activity</td><td>a new evidence item with its photo, a title, a seal</td><td><b>The checkpoint:</b> may this writer do this, is it well formed, does the data stay valid (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d124">D124 One checkpoint</a>). Whole or not at all. The run's head plays no part.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">Step 2: example (e) as a picture</h3>
+  <div class="cr-figure"><svg class="cr-svg" viewBox="0 0 960 360" role="img" aria-labelledby="fig-fence-title">
+    <title id="fig-fence-title">An offline phone overtaken: its engine facts are refused, its domain changesets are judged on their own</title>
+    <defs><marker id="arr-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <text x="20" y="24" font-weight="600">The run's journal (engine facts)</text>
+    <g id="f-common"><title>The history both phones share</title>
+      <circle class="node" cx="70" cy="100" r="22"/><text x="70" y="105" text-anchor="middle">h1</text>
+      <circle class="node" cx="170" cy="100" r="22"/><text x="170" y="105" text-anchor="middle">h2</text>
+      <circle class="node" cx="270" cy="100" r="22"/><text x="270" y="105" text-anchor="middle">h3</text>
+      <line class="edge" x1="92" y1="100" x2="146" y2="100" marker-end="url(#arr-f)"/><line class="edge" x1="192" y1="100" x2="246" y2="100" marker-end="url(#arr-f)"/>
+      <text x="170" y="145" text-anchor="middle" font-size="12" opacity="0.8">shared until A went offline</text></g>
+    <g id="f-b"><title>Phone B continued the run online; h5b is the head</title>
+      <line class="edge-ok" x1="290" y1="90" x2="376" y2="62" marker-end="url(#arr-f)"/>
+      <circle class="node-ok" cx="400" cy="56" r="22"/><text x="400" y="61" text-anchor="middle">h4b</text>
+      <line class="edge-ok" x1="422" y1="56" x2="476" y2="56" marker-end="url(#arr-f)"/>
+      <circle class="node-ok" cx="500" cy="56" r="22"/><text x="500" y="61" text-anchor="middle">h5b</text>
+      <text x="540" y="52">phone B, online: accepted, h5b is the head</text>
+      <text x="540" y="70" font-size="12" opacity="0.8">B also sealed item I1 "gold"</text></g>
+    <g id="f-a"><title>Phone A's offline steps follow h3, which is no longer the head: refused</title>
+      <line class="edge-bad" x1="290" y1="110" x2="376" y2="138" marker-end="url(#arr-f)"/>
+      <circle class="node-bad" cx="400" cy="144" r="22"/><text x="400" y="149" text-anchor="middle">h4a</text>
+      <line class="edge-bad" x1="422" y1="144" x2="476" y2="144" marker-end="url(#arr-f)"/>
+      <circle class="node-bad" cx="500" cy="144" r="22"/><text x="500" y="149" text-anchor="middle">h5a</text>
+      <text x="540" y="140">phone A, offline: refused when it syncs</text>
+      <text x="540" y="158" font-size="12" opacity="0.8">no user content in them, if activities return ids</text></g>
+    <line x1="20" y1="190" x2="940" y2="190" stroke="currentColor" stroke-opacity="0.2"/>
+    <text x="20" y="218" font-weight="600">Phone A's domain changesets (judged by the checkpoint)</text>
+    <g id="f-photo"><title>The photo changeset is accepted on its own merit</title>
+      <rect class="node-ok" x="20" y="236" width="290" height="44" rx="6"/><text x="165" y="263" text-anchor="middle">cs-photo: evidence E9 with a photo</text>
+      <line class="edge-ok" x1="310" y1="258" x2="456" y2="258" marker-end="url(#arr-f)"/>
+      <rect class="note note-ok" x="460" y="236" width="480" height="44" rx="6"/><text x="700" y="263" text-anchor="middle">accepted: in the log under item I1, every device sees it</text></g>
+    <g id="f-seal"><title>The seal changeset is rejected whole, with the closing photo inside it</title>
+      <rect class="node-warn" x="20" y="296" width="290" height="44" rx="6"/><text x="165" y="323" text-anchor="middle">cs-seal: seal "silver" + photo E10</text>
+      <line class="edge-warn" x1="310" y1="318" x2="456" y2="318" marker-end="url(#arr-f)"/>
+      <rect class="note note-warn" x="460" y="296" width="480" height="44" rx="6"/><text x="700" y="323" text-anchor="middle">rejected whole (B sealed first): E10 is what quarantine keeps</text></g>
+  </svg></div>
+
+  <h3 class="text-lg font-semibold">Step 3: where user content can be when a history is refused</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where the photo is</th><th>What happens, as built</th><th>At risk?</th></tr></thead>
+    <tbody>
+      <tr><td><b>(i)</b> In a domain changeset that is accepted (<code class="cr-inline">cs-photo</code>)</td><td>In the log, under its item, on every device. If B's person also took a photo for that step, the item shows two, and a person deletes one like any duplicate.</td><td>No.</td></tr>
+      <tr><td><b>(ii)</b> In a domain changeset authority rejects (<code class="cr-inline">cs-seal</code>): a write-once collision, an acceptance rule, revoked access</td><td>Rejected whole. The phone aborts it, rebuilds its read models, and the outbox row stays with state <code class="cr-inline">rejected</code> and the full changeset in its payload (<a class="cr-link" href="../../libs/sync/client/src/client.ts"><code class="cr-inline">client.ts</code></a>:541-548). Its file was already uploaded, because accept checks files before write-once (<a class="cr-link" href="../../libs/sync/server/src/server.ts"><code class="cr-inline">server.ts</code></a>:546-549, then :604), so the server holds a blob no fact refers to. No screen shows any of it.</td><td><b>Yes: lost in practice.</b> This is what quarantine keeps.</td></tr>
+      <tr><td><b>(iii)</b> Only in an activity's journal value (the activity returns the blob hash; a later step writes the evidence)</td><td>Refused with the history. The blob is on the phone, maybe on the server, and nothing refers to it.</td><td><b>Yes, and nothing could recover it.</b> Prevented by a rule: an activity that captures user content writes it as a domain changeset and returns its id. Then case (iii) becomes (i) or (ii).</td></tr>
+      <tr><td><b>(iv)</b> In an open draft on the phone (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d35pp">D35'' Single-datom transactions with changesets</a>)</td><td>Untouched: a draft is not sent until its author commits it. Then it is (i) or (ii).</td><td>Not by the refusal.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="text-sm">So under the journal fence a refused history strands no user content by itself, given the rule in (iii). What strands user content is a rejected domain changeset, and that can happen without any run at all: two people sealing the same item with a closing photo, no workflow involved. Quarantine is not about workflows; it is about rejection.</p>
+
+  <h3 class="text-lg font-semibold">Step 4: what a person would see</h3>
+  <div class="card bg-base-200 max-w-xl"><div class="card-body p-4 space-y-2 text-sm">
+    <p class="font-semibold">Not accepted (1)</p>
+    <p>Closing photo for item "Fire exit, level 2". Item was already sealed by Pat on another device.</p>
+    <div class="flex gap-2"><span class="badge badge-outline">Keep as new evidence</span><span class="badge badge-outline">Discard</span></div>
+    <p class="text-xs opacity-70">A sketch to make the idea concrete; P14's grilling designs the screen.</p>
+  </div></div>
+  <p class="text-sm">"Keep as new evidence" runs an ordinary command that makes a fresh changeset (new ids, a fresh basis) from the kept content, judged again like any other. "Discard" deletes the row and lets the blob go. The two choices are what "resolved by a person" means.</p>
+
+  <h3 class="text-lg font-semibold">Step 5: where quarantine lives, the real choice</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Option</th><th>What it is</th><th>Gains</th><th>Costs</th></tr></thead>
+    <tbody>
+      <tr><td><b>A. On the phone</b></td><td>The rejected outbox rows that touch a user-content type (catalog <code class="cr-inline">userContent: true</code>), shown to the person who wrote them; their blobs kept on the phone until resolved.</td><td>Built from what exists (the outbox keeps the row). Nothing authority refused enters the organization's data.</td><td>A phone lost or reset before its person decides loses the content. Another device of the same person does not see it. The orphan blob on the server needs a retention rule.</td></tr>
+      <tr><td><b>B. On the phone and, for its writer, on the server</b></td><td>As A, and the server also keeps a rejected changeset that carries user content, for the person who wrote it, beside the log (it already has the blob).</td><td>Survives a lost phone; the person can resolve it on any device.</td><td>A second store outside the log (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d31">D31 One datom log</a>), with its own retention, erasure and crypto-shredding (<a class="cr-link" href="../adr/0023-data-at-rest-and-crypto-shredding.md">ADR-0023 Data at rest and crypto-shredding</a>).</td></tr>
+      <tr><td><b>C. In the organization's log</b></td><td>A rejected changeset with user content is accepted as a "quarantined" changeset that the read models hide.</td><td>One store; survives a lost phone; the team can see it.</td><td>Puts what authority refused into the shared log, which is wrong when the reason was access: a removed member must not add to the organization (<a class="cr-link" href="../issues/0071-an-append-can-land-after-a-revocation.md">I71 An append can land after a revocation</a>). Every reader must filter it.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2 text-sm">
+      <h3 class="font-semibold">Why not I11's first direction</h3>
+      <p>I11 said "a human-conflict entry resolved by a command". After Q2, a conflict is a fact in the log that names values in the log. The rejected photo is not in the log, so a conflict fact would point at something no other device holds.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2 text-sm">
+      <h3 class="font-semibold">Revoked access is a special case</h3>
+      <p>When the rejection is <code class="cr-inline">MembershipMissing</code>, "keep as new evidence" cannot go back to that organization. What a phone keeps after its membership is revoked is <a class="cr-link" href="../issues/0017-local-deletion-after-revoked-membership.md">I17 Local deletion after a revoked membership</a>'s to decide; quarantine follows it.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-8" id="questions-2">
+  <h2 class="text-2xl font-bold">10. Questions, round 2</h2>
+
+  <form class="card bg-base-200" data-lavish-question="q4b" onsubmit="crQueue(event, 'q4b', 'Q4 cardinality (round 2)')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q4. Does an attribute need a cardinality?</h3>
+      <p class="text-sm">Section 8.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q4b" value="A: no cardinality; a set is an entity per member (is it a set? then it is entities), its id derived from the member's value or the referenced entity's id, as membership is; a list value only where one writer always replaces it whole" checked><span><b>A (recommended).</b> No cardinality. A set is an entity per member ("is it a set? then it is entities"), its id derived from the member's value or the referenced entity's id, as membership is. A list value only where one writer always replaces it whole. Shapes 2 and 3 sync alike, and 3 never needs a migration.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4b" value="B: cardinality many only for plain sets of values that will never carry data (labels, aliases), reduced per value; an entity per member otherwise"><span><b>B.</b> <code class="cr-inline">cardinality: 'many'</code> only for plain sets of values that will never carry data (labels, aliases), reduced per value; an entity per member otherwise. Less to declare for labels; two ways to write a set, and a wrong guess about "never" cannot be migrated.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4b" value="C: adopt cardinality many generally, per-value later-wins, as vivief and Datomic"><span><b>C.</b> Adopt <code class="cr-inline">cardinality: 'many'</code> generally, the later of each value's assert and retract winning, as vivief and Datomic. A side table per many-valued attribute in the typed read model.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4b" value="D: as C, with OR-Set add-wins"><span><b>D.</b> As C, with an OR-Set's add-wins for s2. The only rule in ViViEfs that is not "later wins".</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q4b" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+
+  <form class="card bg-base-200" data-lavish-question="q7b" onsubmit="crQueue(event, 'q7b', 'Q7 quarantine (round 2)')">
+    <div class="card-body space-y-3">
+      <h3 class="font-semibold">Q7. What does quarantine keep, and where?</h3>
+      <p class="text-sm">Section 9.</p>
+      <div class="space-y-2 text-sm">
+      <label class="flex gap-3 items-start pl-3 cr-rec"><input type="radio" class="radio radio-sm mt-1" name="q7b" value="A: the rule (an activity that captures user content writes a domain changeset and returns its id); quarantine is rejected changesets with user content, on the phone (option A), kept with their blobs until a person keeps them as new or discards; B deferred, Decide when: a person loses unresolved quarantined content with a lost or reset phone, or must resolve it on another device; a retention rule for blobs no fact refers to as a consequence issue; revoked access follows I17; P14 designs the screen" checked><span><b>A (recommended).</b> The rule from (iii): an activity that captures user content writes it as a domain changeset and returns its id. Quarantine is rejected changesets that carry user content, on the phone (option A), kept with their blobs until a person keeps them as new or discards them. Option B deferred, <code class="cr-inline">Decide when:</code> a person loses unresolved quarantined content with a lost or reset phone, or must resolve it on another device. A retention rule for blobs no fact refers to becomes an issue. Revoked access follows I17. P14's grilling designs the screen.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7b" value="B: as A, with option B now: the server keeps rejected changesets with user content for their writer"><span><b>B.</b> As A, with option B now: the server keeps rejected changesets with user content for their writer, so a lost phone loses nothing. A second store beside the log, with its own erasure.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7b" value="C: option C, quarantined changesets in the organization's log"><span><b>C.</b> Option C: quarantined changesets in the organization's log. Wrong for revoked access, and every reader filters.</span></label>
+      <label class="flex gap-3 items-start pl-3"><input type="radio" class="radio radio-sm mt-1" name="q7b" value="other: see notes"><span>Other</span></label>
+      <textarea class="textarea textarea-bordered w-full" name="notes" placeholder="Notes"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm w-fit" type="submit">Queue answer</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-3" id="round-2">
+  <h2 class="text-2xl font-bold">Round 2, answered (2026-10-26)</h2>
+  <p><b>Q4: A, agreed.</b> No cardinality; a set is entities, one per member with a derived id; a list value only where one writer always replaces it whole. <b>Q7: A, agreed.</b> An activity that captures user content writes a domain changeset and returns its id; quarantine is rejected changesets with user content, on the phone, kept with their blobs until a person keeps them as new or discards them; a server-side copy deferred; a retention rule for blobs no fact refers to; revoked access follows I17; P14 designs the screen.</p>
+  <p class="text-sm">The 5 rows, the I11 and I12 comments (section 6, I11's narrowed as Q7 A) and the write-up below follow from these answers.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="space-y-5" id="write-up">
+  <h2 class="text-2xl font-bold">11. Proposed write-up (for the human's check before any file changes)</h2>
+  <p>The exact text for the decision log, then the ADRs, the glossary and everything else. New decisions D142-D148 and one amendment, D34'. New issues I81-I83 (I80 is the last taken).</p>
+
+  <h3 class="text-lg font-semibold">Decision log: a new section, "Sync and conflict (2026-10-26)"</h3>
+  <p class="text-sm">Intro: "From I53, the eighth ticket of the foundation concepts map, grilled with the human on the review page over two rounds. ADR-0032 records D142-D148 among the foundation concepts; ADR-0009 records D34', which amends D34 and is placed after it."</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>#</th><th>Name</th><th>Decision</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><b>D142</b></td><td>Sync from the start</td><td>Sync is in the foundation on purpose: a difference from vivief in build order, not in design. ViViEfs's first app is phones offline for days with a server and people who switch devices (D13), the server holds authority (D36'), and the engine, domain data and sync share one log (D31), so sync was a foundation theme (D46), qualified by P09. vivief also made sync possible from its first phase (Hypercore "so the P2P path is never blocked by a storage migration", <code class="cr-inline">vivief ADR 0047</code> §5) and deferred only the build. ADR-0032 says so. <code class="cr-inline">vivief:sync-after-core</code>: keep ours.</td><td>Adding replication later to a store built for one writer is a migration, which D44' forbids, and the first app could not be shown without it.</td></tr>
+      <tr><td><b>D143</b></td><td>The sync contract as three parts</td><td>vivief's Sync Contract is three parts ViViEfs already has, not one thing: its resolution is the conflict policy (D34'), its scope the organization (D18) with partial sync on demand later (D114), and its claim the journal fence, where an online writer may claim a step before acting (D14'), with no timeout. Sync stays datom replication: an outbox up, one cursor stream per organization down, over Effect RPC (ADR-0017). Effect's <code class="cr-inline">EventLog</code>, read again on 4.0.5, has the same shape (server sequence, dedup by id) and still has no typed rejection of one entry, orders by the device's clock and has no changesets; it finds <code class="cr-inline">conflicts</code> where entries are accepted, as D34' now does. <code class="cr-inline">vivief:sync-contract</code>: keep ours, its text CRDT deferred (D145); <code class="cr-inline">viviefs:sync-as-datom-replication</code>: stands.</td><td>A contract as one declared thing was not adopted (D124); each part has its own home and its own gate.</td></tr>
+      <tr><td><b>D34'</b></td><td>Per-attribute conflict policies, decided at accept</td><td>As D34: LWW, write-once fenced and human conflict, per attribute. A commit's basis is the server cursor its writer had pulled when the command ran, which gives D35'''s basis one meaning on every <code class="cr-inline">node</code>. The <code class="cr-inline">node</code> holding authority decides a human conflict at accept: a fact for the same entity and attribute accepted after the basis from another device is a conflict (the writer's own earlier outbox is not), and authority writes a <code class="cr-inline">viviefs/conflict</code> fact in the same step as the append, so every <code class="cr-inline">node</code> shows the same conflict and a command can close it. Projectors read conflicts from the log; a device may show a preview. An orphan (user content whose owner is not visible, D38) is decided at accept too, with I69's read model. Per value, the later of its assert and retract wins: a replace writes "retract old, assert new", so one writer leaves one value and two concurrent replaces leave both, marked by the open conflict; a resolving command retracts the values not chosen and closes the conflict. Effect's <code class="cr-inline">EventLog</code> finds conflicts on the server on ingest the same way. Built by I81; P05 and P09 qualified again with two devices.</td><td>Found in I53: the basis was a sequence number in whichever log projected it, and every changeset outside P05 sent 0; a conflict was a row each projector derived, never a fact; the server checked write-once only (<code class="cr-inline">BasisRejected</code>); and a human-conflict attribute kept every value ever asserted, so a retract removed nothing and no conflict could be resolved. No gate put two devices on human conflict.</td></tr>
+      <tr><td><b>D144</b></td><td>A set is entities</td><td>No cardinality. Every attribute holds one value; a set is an entity per member under its owner, its id segment derived from the member's value or the referenced entity's id (D120), as membership is (<code class="cr-inline">O{org}/M{person}</code>). The rule of thumb, beside D38's: "is it a set? then it is entities". A list value (an array Schema, D121) only where one writer always replaces it whole. vivief's <code class="cr-inline">:many</code> with an OR-Set is not adopted; <code class="cr-inline">vivief:conflict-resolution-by-cardinality</code> is settled with <code class="cr-inline">viviefs:conflict-policy</code>.</td><td>A many-valued attribute and an entity per member sync alike. The entity also gains data of its own without a migration (D44'), needs no second reduce or side table in the typed read model (D121), and is what membership already is.</td></tr>
+      <tr><td><b>D145</b></td><td>Text without a CRDT</td><td>Short text (a title) is LWW; a person's longer text is human conflict, so two edits made apart are both kept for a person to merge. A CRDT is deferred, <code class="cr-inline">Decide when:</code> an app needs two people typing in one text at the same time (I83). That decision includes where the CRDT's state lives (in the log or beside it, D31) and vivief's one document per text instance.</td><td>Edits made apart, offline, are what human conflict is for. A CRDT needs a second sync channel, or opaque values every reader and authority must decode, for a need no app has.</td></tr>
+      <tr><td><b>D146</b></td><td>One checkpoint enforces trust</td><td>Accept on the <code class="cr-inline">node</code> holding authority is the one place trust is enforced (D124); vivief's three trust strategies are commit paths above it (D117). A device applies the cursor stream without checking it again. A <code class="cr-inline">node</code> that accepts from a peer runs the same checkpoint (I60, D105). Whether signed changesets let a device check who wrote what is I54's. <code class="cr-inline">viviefs:server-authoritative-validation</code>: keep ours; its pair <code class="cr-inline">vivief:peer-validation-as-contract</code>: handed to I54.</td><td>A device checking what the server sent against the server's own rules guards nothing until a changeset can be checked against its writer's key.</td></tr>
+      <tr><td><b>D147</b></td><td>User content outside the journal</td><td>An activity that captures user content (a photo, a recording, a signature) writes it as a domain changeset and returns its id; a journal value never holds user content alone. So a refused history (D14') strands no user content.</td><td>Under the journal fence engine facts are refused whole and domain changesets are judged on their own; content kept only in a journal value would be lost with no way back.</td></tr>
+      <tr><td><b>D148</b></td><td>Quarantine is rejected user content</td><td>Quarantine keeps the user content of a changeset authority rejected (a write-once collision, an acceptance rule, revoked access): the device's rejected outbox rows that touch a user-content type, kept with their blobs until a person keeps the content as new (a command makes a fresh changeset, judged again) or discards it. It lives on the device; a copy on the server for its writer is deferred, <code class="cr-inline">Decide when:</code> a person loses unresolved quarantined content with a lost or reset phone, or must resolve it on another device (I11). It is not a conflict fact: the content never reached the log. After revoked access it follows I17. Blobs no accepted fact refers to (a rejected changeset's file is uploaded before accept judges it) get a retention rule (I82). P14's grilling designs the screen. This is D15's quarantine under D14'.</td><td>A rejected changeset is aborted and rebuilt away with no screen showing it, so its user content is lost in practice; and that happens without any workflow, when two people seal one item.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">ADR amendments</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>ADR</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><b>ADR-0009</b></td><td>An amendment paragraph in Design (2026-10-26, D34', D144, I53): the basis is the server cursor; authority decides a human conflict at accept and writes the <code class="cr-inline">viviefs/conflict</code> fact in the same step; per value, the later of assert and retract wins; a resolving command closes a conflict; orphans decided at accept with I69; no cardinality, a set is entities. The table's "Behaviour" column unchanged. The sentence "P09 may persist them as log datoms" replaced by "authority writes them (D34')". Trade-offs gain the out-of-scope line: none made harder, any <code class="cr-inline">node</code> holding authority decides (D105). An Observed entry dated 2026-10-26: the four findings (F1-F4), and that P05 showed the projector's behaviour on one store. Related gains D34', D144, I81. Status stays Qualified for the three policies; the amended design is Proposed, unverified until I81 qualifies P05 and P09 again.</td></tr>
+      <tr><td><b>ADR-0016</b></td><td>Observed gains a line (2026-10-26, I53): <code class="cr-inline">BasisRejected</code> checks only whether a write-once fact exists and does not read the basis; the name stays (D44'). Human conflict is decided at accept by D34' (ADR-0009).</td></tr>
+      <tr><td><b>ADR-0017</b></td><td>An amendment paragraph (2026-10-26, D143, I53): Effect <code class="cr-inline">EventLog</code> read again on 4.0.5 (now <code class="cr-inline">effect/eventlog</code>, still unstable): ADR-0017's reasons hold; it finds conflicts at ingest, as D34' does. The basis a changeset carries is the device's cursor (D34'). Related gains D142, D143.</td></tr>
+      <tr><td><b>ADR-0032</b></td><td>A new Design paragraph after "Actors or the engine": "<b>Sync and conflict (D142-D148, D34', I53).</b> Sync is in the foundation on purpose: the first app is phones offline for days with a server and people who switch devices, and the engine, domain data and sync share one log; vivief made sync possible from its first phase too and deferred only the build. vivief's Sync Contract is three parts ViViEfs has: the conflict policy, the organization as scope with partial sync on demand later, and the journal fence as the claim. The <code class="cr-inline">node</code> holding authority decides a human conflict when it accepts a change, against the cursor its writer had pulled, and writes the conflict as a fact a command resolves. An attribute holds one value; a set is entities, one per member. Text has no CRDT until two people type in one text at once. One checkpoint is the one place trust is enforced. User content never lives only in a journal, and quarantine keeps the user content of a rejected change on the device until a person resolves it." Related gains D142-D148, D34'.</td></tr>
+      <tr><td><b>ADR-0036</b></td><td>Failure-handling's line "user content goes to quarantine (P14, D15)" becomes "its domain changesets are judged on their own; user content never lives only in a journal value (D147), and user content in a changeset that is rejected goes to quarantine (D148, P14)". Related gains D147, D148.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">Glossary (Data section)</h3>
+  <pre class="cr-code">**Basis**:
+The point a change was made from: how far its writer had caught up with the
+server. The server cursor the writer had pulled; authority uses it at accept to
+notice that someone else changed the same thing since ([D34']).
+
+**Conflict policy**:
+The rule for what happens when two people change the same thing at once. Per
+attribute: last writer wins (LWW), write-once fenced, or human conflict, decided
+by authority when the change is accepted. An attribute holds one value; a set
+is entities, one per member ([D144]).
+
+**Conflict datom**:
+A note that two people changed the same thing and a person must choose. Written
+by authority under the human-conflict policy, in the same step as the change it
+found; a resolving command closes it.
+
+**Quarantine**:   (new, after Conflict datom)
+A person's work in a change the server refused, such as a photo sent with a seal
+someone else set first, kept on their phone until they keep it as new or throw
+it away. The user content of a rejected changeset, kept on the device with its
+blobs until a person resolves it ([D148]).
+_Avoid_: lost lease</pre>
+  <p class="text-sm">No new word clashes: "conflict" agrees with Effect's <code class="cr-inline">EventLog</code> (D135). Cardinality is not adopted, so it gets no entry.</p>
+
+  <h3 class="text-lg font-semibold">Everything else</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Where</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td><b>I53 Answer</b></td><td>The 5 rows with their dispositions (section 6, with D-numbers), the two rounds in short (round 1: Q1-Q3, Q5, Q6; round 2: Q4, Q7 after the explainers), the findings, links to this page and I81-I83. <code class="cr-inline">Status: resolved</code>.</td></tr>
+      <tr><td><b>I81 Build conflicts decided at accept</b></td><td>New. "Build D34' (ADR-0009): the sync client gives a command its cursor as the basis; accept finds a fact for the same entity and attribute accepted after it from another device and writes a server-authored <code class="cr-inline">viviefs/conflict</code> in the same step; projectors read conflicts from the log; per value, the later of assert and retract wins; a resolving command; orphans decided at accept with I69's read model; P05 and P09 qualified again with two devices." <code class="cr-inline">Status: ready-for-agent</code>, <code class="cr-inline">Category: enhancement</code>. Details for its design: the conflict fact's entity and value shape, how "another device" is read from the envelope, the device preview. In phase 3 after I69 and I80.</td></tr>
+      <tr><td><b>I82 Blobs no fact refers to</b></td><td>New. A rejected changeset's file is uploaded before accept judges it (<code class="cr-inline">server.ts</code>:546-549 before :604), so the server keeps blobs no accepted fact refers to; nothing removes them. <code class="cr-inline">Status: ready-for-human</code>, <code class="cr-inline">Decide when:</code> P14's grilling (quarantine decides what still holds a blob), or a server's blob storage is measured growing.</td></tr>
+      <tr><td><b>I83 Live co-editing of text</b></td><td>New. D145's CRDT. <code class="cr-inline">Status: ready-for-human</code>, <code class="cr-inline">Decide when:</code> an app needs two people typing in one text at the same time. Its questions: where the CRDT's state lives, one document per text instance, acceptance rules on merged text, Loro on Hermes.</td></tr>
+      <tr><td><b>I11</b></td><td>The comment drafted in section 6 (narrowed: quarantine is rejected user content on the device, D147, D148), with the deferred server-side copy's <code class="cr-inline">Decide when:</code> added. Direction rewritten to D148.</td></tr>
+      <tr><td><b>I12</b></td><td>The comment drafted in section 6 (confirmed; the details to decide when it fires; a basis is a server cursor).</td></tr>
+      <tr><td><b>I54</b></td><td>A comment: peer validation (D146): whether signed changesets let a device check who wrote what, and what a <code class="cr-inline">node</code> accepting from a peer checks (with I60).</td></tr>
+      <tr><td><b>I69</b></td><td>A comment: I81 decides orphans at accept with I69's read model on the server.</td></tr>
+      <tr><td><b>I80</b></td><td>A comment: D147 (an activity that captures user content writes a domain changeset and returns its id) is a rule for the durable-workflow pattern; ADR-0036's failure-handling now names D147 and D148.</td></tr>
+      <tr><td><b>I17</b></td><td>A comment: quarantine after revoked access follows I17's rules (D148).</td></tr>
+      <tr><td><b>Map 2</b></td><td>"Decisions so far": "I53: sync is in the foundation on purpose; vivief's Sync Contract is three parts we have; authority decides a human conflict at accept against the writer's cursor and writes it as a fact a command resolves; a set is entities, with no cardinality; no text CRDT until live co-editing; one checkpoint enforces trust; user content never lives only in a journal, and quarantine keeps a rejected change's user content on the device (D142-D148, D34'). Added I81-I83."</td></tr>
+      <tr><td><b>next-session.md</b></td><td>Map 2 adds I53 to what is resolved; the next step is I54. Phase 3's row: "... I69 (needs I66's value Schemas), I80 (needs I71), I81 (conflicts at accept, after I69), I67, then the app shell ...". Phase 1's I53 reviewing note marked done.</td></tr>
+      <tr><td><b>Research README</b></td><td>A row for this page: "I53's design review: vivief's sync and Effect's EventLog against ours, worked examples, human conflict as built (not as decided), cardinality and quarantine explained; settled over two rounds (D142-D148, D34')."</td></tr>
+      <tr><td><b>Then</b></td><td><code class="cr-inline">mise exec -- pnpm refs fix</code>, <code class="cr-inline">mise exec -- pnpm verify</code>, one commit on <code class="cr-inline">main</code> after asking ("Resolve I53: ..."). <code class="cr-inline">pnpm qualify</code> is not run: no gate inputs change.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+
+
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  // Mermaid measures labels while it lays a diagram out, so a diagram must stay
+  // visible until it is done. Lavish hides a .mermaid container as soon as an SVG
+  // appears in it (to put a whiteboard there), and preloads the page in a hidden
+  // frame. So each diagram is drawn apart, once the page has a size, and only the
+  // finished SVG goes into its container.
+  const diagrams = [...document.querySelectorAll(".mermaid")];
+  function source(el) {
+    const raw = document.createElement("textarea");
+    raw.innerHTML = el.innerHTML;
+    return raw.value.trim();
+  }
+  async function draw() {
+    for (const [i, el] of diagrams.entries()) {
+      try {
+        const { svg } = await mermaid.render(`diagram-${i}`, source(el));
+        el.innerHTML = svg;
+      } catch (error) {
+        console.error(`Mermaid diagram ${i} in #${el.closest("section")?.id} failed:`, error?.message ?? error);
+      }
+    }
+  }
+  const sized = new ResizeObserver(([entry]) => {
+    if (entry.contentRect.width === 0) return;
+    sized.disconnect();
+    void draw();
+  });
+  window.addEventListener("load", () => sized.observe(document.body), { once: true });
+</script>
+</body>
+</html>

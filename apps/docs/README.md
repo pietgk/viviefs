@@ -15,6 +15,12 @@ pnpm docs:prod                   # builds, then serves dist/ as it would be depl
 pnpm docs:stop                   # stops both servers, wherever they were started
 ```
 
+`verify`'s `docs-e2e` step then opens the built `dist/` in a browser
+(`e2e/`, `vitest.e2e.config.ts`): it serves the files itself, as they are
+deployed, and checks the preview card on a page link (I97). It launches the
+installed Google Chrome, as qualification's web probes do, and falls back to
+Playwright's own Chromium, which exits at start on macOS 26.
+
 Search is Pagefind: `astro build` writes its index to `dist/pagefind/`, and
 Starlight shows "Search is only available in production builds" instead of
 the search box in the development server. Use `docs:prod` to search.

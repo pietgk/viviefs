@@ -8,7 +8,7 @@ description: Which gate established each claim, which verify step keeps each beh
 
 | Claim | Gate | Where it ran |
 | --- | --- | --- |
-| One `LogStore` over `SqlClient` appends, dedups by `tx`, mints and receives HLC values, streams from a cursor, scans prefixes and holds the compaction horizon, on every store | [P04 Log store conformance][P04] | sqlite-node, PGlite, the iOS simulator and the Android emulator (op-sqlite), web (wasm with OPFS) |
+| One `LogStore` over `SqlClient` appends, dedups by `tx`, mints and receives HLC values, streams from a log position, scans prefixes and holds the compaction horizon, on every store | [P04 Log store conformance][P04] | sqlite-node, PGlite, the iOS simulator and the Android emulator (op-sqlite), web (wasm with OPFS) |
 | The HLC never mints below history across a backwards wall clock, a reboot and a remote-ahead receive; a `tx` 5001 ms in the future is refused | [P04 Log store conformance][P04] | the same five stores |
 | Read models rebuilt from the log equal the incrementally projected ones, so they can be dropped | [P05 Changesets and projections][P05] | the same five stores |
 
@@ -25,7 +25,7 @@ sinks as consumers, and since 2026-09-27 minted time is whole milliseconds
 | HLC encoding, ordering, mint and receive edge cases, whole-millisecond time | `libs/datom/src/hlc.test.ts` | `unit` |
 | SQL rows decode through a Schema, never a `sql<T>` assertion | the [D79 Schema at every boundary, linted][D79] lint rule, and `rowsOf` in `libs/datom/src/rows.ts` | `lint` |
 | `libs/datom` reads no clock and no randomness except through `HlcClock` and `HlcEntropy` | the [D26 AI-robust guardrails][D26] lint rules | `lint` |
-| Every exemplar file that `unit` or `integration` owns keeps its exact coverage | the registry and `evidence-baseline.json` | `evidence` |
+| Every exemplar file that `unit` or `integration` owns keeps its exact coverage | the evidence registry and `evidence-baseline.json` | `evidence` |
 
 The native and wasm stores need a device or a browser, so `verify` only
 typechecks and lints them; [P04 Log store conformance][P04] runs the suite there.

@@ -1,13 +1,13 @@
 /**
  * verify static / ownership: reads the projects, the production files and the
- * registry, and applies the rules in `ownership.ts` (ADR-0024, D76).
+ * evidence registry, and applies the rules in `ownership.ts` (ADR-0024, D76).
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { SUITES } from '@viviefs/testing'
-import { REGISTRY } from './evidence-registry.ts'
-import { isProductionFile, projectProblems, registryProblems, type ProjectFile } from './ownership.ts'
+import { EVIDENCE_REGISTRY } from './evidence-registry.ts'
+import { isProductionFile, projectProblems, evidenceRegistryProblems, type ProjectFile } from './ownership.ts'
 import { ROOT, STAGES } from './stages.ts'
 
 const tracked = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
@@ -72,7 +72,7 @@ const gates = [...(read('tools/qualification/src/gates.ts') ?? '').matchAll(/gat
 
 const problems = [
   ...projectProblems(projects, workspacePackages),
-  ...registryProblems(REGISTRY, {
+  ...evidenceRegistryProblems(EVIDENCE_REGISTRY, {
     productionFiles: tracked.filter(isProductionFile),
     source: read,
     gates,
@@ -90,9 +90,9 @@ if (problems.length > 0) {
 }
 
 const counts = new Map<string, number>()
-for (const { treatment } of REGISTRY) counts.set(treatment, (counts.get(treatment) ?? 0) + 1)
+for (const { treatment } of EVIDENCE_REGISTRY) counts.set(treatment, (counts.get(treatment) ?? 0) + 1)
 console.log(
-  `Ownership: ${projects.length} projects tagged; ${REGISTRY.length} production files classified (` +
+  `Ownership: ${projects.length} projects tagged; ${EVIDENCE_REGISTRY.length} production files classified (` +
     [...counts].map(([treatment, count]) => `${treatment} ${count}`).join(', ') +
     ').',
 )

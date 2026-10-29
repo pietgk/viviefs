@@ -1,9 +1,9 @@
 import { describe, expect, it } from '@effect/vitest'
-import { REGISTRY } from './evidence-registry.ts'
-import type { RegistryEntry } from './file-treatments.ts'
-import { isProductionFile, projectProblems, registryProblems, type RegistryContext } from './ownership.ts'
+import { EVIDENCE_REGISTRY } from './evidence-registry.ts'
+import type { EvidenceRegistryEntry } from './file-treatments.ts'
+import { isProductionFile, projectProblems, evidenceRegistryProblems, type EvidenceRegistryContext } from './ownership.ts'
 
-const context = (overrides: Partial<RegistryContext> & { files?: Record<string, string> } = {}): RegistryContext => {
+const context = (overrides: Partial<EvidenceRegistryContext> & { files?: Record<string, string> } = {}): EvidenceRegistryContext => {
   const files = overrides.files ?? {}
   return {
     productionFiles: Object.keys(files).filter(isProductionFile),
@@ -16,12 +16,12 @@ const context = (overrides: Partial<RegistryContext> & { files?: Record<string, 
   }
 }
 
-const unit = (path: string): RegistryEntry => ({ path, treatment: 'node-unit', rationale: 'pure' })
+const unit = (path: string): EvidenceRegistryEntry => ({ path, treatment: 'node-unit', rationale: 'pure' })
 
 describe('production files', () => {
   it('are source under apps, features, libs and tools, minus evidence', () => {
     expect(isProductionFile('libs/datom/src/hlc.ts')).toBe(true)
-    expect(isProductionFile('apps/evidence-mobile/metro.config.js')).toBe(true)
+    expect(isProductionFile('apps/evidence-client/metro.config.js')).toBe(true)
     expect(isProductionFile('libs/datom/src/hlc.test.ts')).toBe(false)
     expect(isProductionFile('libs/a/src/x.integration.test.ts')).toBe(false)
     expect(isProductionFile('features/c/src/X.stories.test.tsx')).toBe(false)
@@ -51,20 +51,20 @@ describe('projects', () => {
   })
 })
 
-describe('the registry', () => {
+describe('the evidence registry', () => {
   it('fails an unclassified file, a stale entry and a duplicate', () => {
-    const problems = registryProblems(
+    const problems = evidenceRegistryProblems(
       [unit('libs/a/src/gone.ts'), unit('libs/a/src/twice.ts'), unit('libs/a/src/twice.ts')],
       context({ files: { 'libs/a/src/new.ts': 'export const a = 1', 'libs/a/src/twice.ts': 'export const b = 1' } }),
     ).join('\n')
-    expect(problems).toContain('libs/a/src/new.ts: no registry entry')
-    expect(problems).toContain('libs/a/src/gone.ts: registry entry has no production file')
-    expect(problems).toContain('libs/a/src/twice.ts: 2 registry entries')
+    expect(problems).toContain('libs/a/src/new.ts: no evidence registry entry')
+    expect(problems).toContain('libs/a/src/gone.ts: evidence registry entry has no production file')
+    expect(problems).toContain('libs/a/src/twice.ts: 2 evidence registry entries')
   })
 
   it('fails an empty rationale', () => {
     expect(
-      registryProblems(
+      evidenceRegistryProblems(
         [{ path: 'libs/a/src/a.ts', treatment: 'node-unit', rationale: ' ' }],
         context({ files: { 'libs/a/src/a.ts': 'export const a = 1' } }),
       ),
@@ -81,7 +81,7 @@ describe('the registry', () => {
       'libs/a/src/suite.ts': 'x()\n',
       'libs/a/src/entry.ts': 'x()\n',
     }
-    const problems = registryProblems(
+    const problems = evidenceRegistryProblems(
       [
         { path: 'libs/a/src/index.ts', treatment: 're-export', rationale: 'r' },
         { path: 'libs/a/src/slot.ts', treatment: 'named-slot', rationale: 'r' },
@@ -110,7 +110,7 @@ describe('the registry', () => {
       'tools/verify/src/check-ownership.ts': 'x()\n',
     }
     expect(
-      registryProblems(
+      evidenceRegistryProblems(
         [
           { path: 'libs/a/src/index.ts', treatment: 're-export', rationale: 'r' },
           { path: 'libs/a/src/slot.ts', treatment: 'named-slot', rationale: 'r' },
@@ -122,7 +122,7 @@ describe('the registry', () => {
     ).toEqual([])
   })
 
-  it('gives every entry of the real registry a rationale', () => {
-    expect(REGISTRY.filter((entry) => entry.rationale.trim() === '')).toEqual([])
+  it('gives every entry of the real evidence registry a rationale', () => {
+    expect(EVIDENCE_REGISTRY.filter((entry) => entry.rationale.trim() === '')).toEqual([])
   })
 })

@@ -1,7 +1,7 @@
 /**
- * `@viviefs/workflow-engine/suites`: the engine suites (D78, D80):
+ * `@viviefs/workflow-engine/suites`: the workflow engine suites (D78, D80):
  * `durable-workflow/crash-matrix`, `device-durability/launch-sweep` and
- * `tracing/engine-trace`, run against the engine on each log store.
+ * `tracing/engine-trace`, run against the workflow engine on each log store.
  * Test-support: only tests, other suites, `tools/` and the evidence apps may
  * import it.
  */

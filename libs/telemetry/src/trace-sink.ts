@@ -96,7 +96,7 @@ export const toTraceData = (
 
 /**
  * OTLP/HTTP JSON sink. `name` keys the trace cursor, so two sinks keep
- * independent cursors over the same log.
+ * independent trace cursors over the same log.
  */
 export const otlpTraceSink = (options: {
   readonly name: string

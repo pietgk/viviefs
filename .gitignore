@@ -13,10 +13,10 @@ coverage/
 .motel-data/
 .tmp/
 tmp/
-apps/evidence-mobile/ios/
-apps/evidence-mobile/android/
-apps/evidence-mobile/dist/
-apps/evidence-mobile/expo-env.d.ts
+apps/evidence-client/ios/
+apps/evidence-client/android/
+apps/evidence-client/dist/
+apps/evidence-client/expo-env.d.ts
 
 # Astro
 apps/docs/.astro/

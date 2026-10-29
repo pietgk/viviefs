@@ -30,7 +30,7 @@ the whole changeset with a typed error. On rejection the client rebuilds read
 models from confirmed datoms, reapplies its remaining outbox, and traces the
 rejection.
 
-One write path for app and engine.
+One write path for app and workflow engine.
 
 **What the server checks, as built** (amendment 2026-10-09, [D36' Shared commands, as built][D36'], [I50 Contracts checked as data or by commands][I50]). The
 server does not re-execute the command (Observed below), so "invariants such
@@ -65,17 +65,26 @@ demand an upgrade, not a silent drop.
 2026-09-22. Ledger pass `2026-09-22T13-18-45.675Z-a314ca28`. `renameList` and
 `sealItem` live in `features/evidence/model` and return one changeset. The
 client submits that changeset. The server checks schema, organization,
-catalog, manifest, files, lease and write-once, then appends or rejects the
+catalog, changeset manifest, files, lease and write-once, then appends or rejects the
 whole changeset. It does not re-execute the command. `BasisRejected` aborts
 the open changeset locally, rebuilds, and the next outbox entry is acked.
 `UnknownAttribute` is the upgrade error. Not Accepted. Evidence:
 [2026-09-22-p09.md](../evidence/2026-09-22-p09.md).
 
+2026-10-26, found in [I53 Sync and conflict][I53]. `BasisRejected` checks only whether a write-once fact
+already exists for the entity and attribute; it does not read the basis. The
+name stays ([D44' Never rename, never migrate, the RPC too][D44']). Human conflict is decided at accept by [D34' Per-attribute conflict policies, decided at accept][D34']
+([ADR-0009 Per-attribute conflict policies](0009-per-attribute-conflict-policies.md)), built by [I81 Build conflicts decided at accept][I81].
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0035]: 0035-accepting-a-change.md
+[D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [D36']: ../plan/bootstrap/02-decision-log.md#d36p
+[D44']: ../plan/bootstrap/02-decision-log.md#d44p
 [I50]: ../issues/0050-contracts-checked-as-data-or-by-commands.md
+[I53]: ../issues/0053-sync-and-conflict.md
 [I69]: ../issues/0069-accept-checks-every-change.md
+[I81]: ../issues/0081-build-conflicts-decided-at-accept.md
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09

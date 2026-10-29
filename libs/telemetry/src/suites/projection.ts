@@ -1,13 +1,13 @@
 /**
  * The trace projector half of P10, on the same crash-and-resume run as the
- * engine checks (`trace-scenario.ts`). A fake sink records what it
+ * workflow engine checks (`trace-scenario.ts`). A fake sink records what it
  * acknowledged, or refuses on purpose.
  *
  * Order matters and mirrors the gate text: the projector first runs with
  * its trace cursor disabled (nothing may leave, and compaction may not
  * remove what it has not exported), then against a refusing sink (the
- * cursor may not move), then against an accepting sink (the whole backlog
- * must arrive), then from a fresh cursor (the same spans again), then in
+ * trace cursor may not move), then against an accepting sink (the whole backlog
+ * must arrive), then from a fresh trace cursor (the same spans again), then in
  * batches of four log entries (the same spans over several ticks).
  */
 import * as Effect from 'effect/Effect'
@@ -123,7 +123,7 @@ export type ProjectionRun = {
   readonly accepted: Tick
   readonly again: Tick
   readonly fresh: Tick
-  /** A sink read four log entries per tick until its cursor reached the end. */
+  /** A sink read four log entries per tick until its trace cursor reached the end. */
   readonly batched: ReadonlyArray<Tick>
 }
 

@@ -7,7 +7,7 @@ shipped Hermes bundle, generous for now and revisited as the app grows.
 `pnpm verify` gates it (`quality / bundle-size`) and prints the report:
 `node --experimental-strip-types tools/verify/src/bundle-size.ts apps/evidence-mobile`.
 The budget and the references it compares with are in
-[`apps/evidence-mobile/bundle-budget.json`](../../apps/evidence-mobile/bundle-budget.json).
+[`apps/evidence-mobile/bundle-budget.json`](../../apps/evidence-client/bundle-budget.json).
 The breakdown attributes the minified JS to packages through Metro's source
 map ([`bundle-report.ts`](../../tools/verify/src/bundle-report.ts)); the
 Hermes bundle is compiled from that JS.

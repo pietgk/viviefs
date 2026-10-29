@@ -1,0 +1,61 @@
+import { expect, it } from '@effect/vitest'
+import { GLOSSARY_FILE, glossaryReport, glossaryTerms, isLivingDocument, livingDocuments, reportedNote } from './glossary-report.ts'
+
+const glossary = [
+  '# ViViEfs',
+  '',
+  '**Read model**:',
+  'A table built from the facts.',
+  '',
+  '**Activity**:',
+  'One step that touches the outside world.',
+  '',
+  '**Token verifier**:',
+  "The server's check of an access token.",
+  '_Avoid_: authenticator',
+].join('\n')
+
+it('reads the terms the glossary defines', () => {
+  expect(glossaryTerms(glossary)).toEqual(['Read model', 'Activity', 'Token verifier'])
+})
+
+it('counts the terms and finds those no living document uses, plurals and any case included (D178)', () => {
+  const report = glossaryReport(glossary, ['Every read model is disposable.', 'Two ACTIVITIES ran.'])
+  expect(report).toEqual({ terms: 3, unused: ['Token verifier'] })
+  expect(glossaryReport(glossary, ['read models, activities and the token verifier']).unused).toEqual([])
+  // Whole words only: "reactivity" is not "activity".
+  expect(glossaryReport(glossary, ['Reactivity keys; read model; token verifier']).unused).toEqual(['Activity'])
+})
+
+it('reads living documents only: not research records, evidence notes, resolved issues or the glossary', () => {
+  expect(isLivingDocument('docs/adr/0999-example.md', '')).toBe(true)
+  expect(isLivingDocument('docs/plan/example/map.md', '')).toBe(true)
+  expect(isLivingDocument('apps/docs/src/content/docs/guides/example/index.mdx', '')).toBe(true)
+  expect(isLivingDocument('docs/issues/0999-open.md', 'Status: ready-for-human\n')).toBe(true)
+  expect(isLivingDocument('docs/issues/0998-done.md', 'Status: resolved\n')).toBe(false)
+  expect(isLivingDocument('docs/research/2026-01-01-example.md', '')).toBe(false)
+  expect(isLivingDocument('docs/evidence/2026-01-01-p99.md', '')).toBe(false)
+  expect(isLivingDocument(GLOSSARY_FILE, '')).toBe(false)
+  expect(isLivingDocument('libs/example/src/index.ts', '')).toBe(false)
+  expect(isLivingDocument('libs/example/README.md', '')).toBe(false)
+})
+
+it("keeps the report's own record out of what it reads, so an unused term stays unused (D178)", () => {
+  const repository = [
+    { path: 'docs/adr/0999-example.md', content: 'Every read model is disposable; an activity is retried.' },
+    // The open ticket that reviews the report points at the record; it does not name the terms.
+    { path: 'docs/issues/0999-accept.md', content: "Status: ready-for-human\n\nThe glossary report lists one unused term; I998's Answer names it.\n" },
+    // The record itself is in a resolved ticket's Answer, kept as written and not read.
+    { path: 'docs/issues/0998-done.md', content: 'Status: resolved\n\n## Answer\n\nUnused in the first report: Token verifier.\n' },
+  ]
+  expect(livingDocuments(repository)).toHaveLength(2)
+  expect(glossaryReport(glossary, livingDocuments(repository)).unused).toEqual(['Token verifier'])
+  // Named in an open ticket instead, the record would hide the very term it reports.
+  const named = [...repository.slice(0, 1), { path: 'docs/issues/0999-accept.md', content: 'Status: ready-for-human\n\nUnused: Token verifier.\n' }]
+  expect(glossaryReport(glossary, livingDocuments(named)).unused).toEqual([])
+})
+
+it('turns a report into the note on the verify row, and reads a note back from a step', () => {
+  expect(reportedNote('Glossary: 3 terms.\nnote: 3 terms; 1 unused: Token verifier\n')).toBe('3 terms; 1 unused: Token verifier')
+  expect(reportedNote('all fine\n')).toBeUndefined()
+})

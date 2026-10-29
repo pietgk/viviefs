@@ -1,6 +1,6 @@
 # I26: Glossary links on words that are not our terms
 
-Status: ready-for-human
+Status: resolved
 
 Category: bug
 
@@ -18,7 +18,7 @@ Writing [I25 Ideas batch: understanding and maintaining code bases][I25], a page
 
 | Text on the page | Meant | Linked to |
 | --- | --- | --- |
-| `architecture, workflow, sequence` (archify's diagram kinds) | a kind of diagram | Workflow (durable work on the engine) |
+| `architecture, workflow, sequence` (archify's diagram kinds) | a kind of diagram | Workflow (durable work on the workflow engine) |
 | `Cursor's index` | the `Cursor` editor | Cursor (a sync position) |
 | `Nextcloud with shared cursors` | mouse pointers of other people | Cursor |
 | `The diagram editor Bausteinsicht builds on` | uses | Builds on (a pattern relation) |
@@ -48,10 +48,14 @@ This repo has the problem waiting already: the plans call vivief, complyj and we
 
 - How does an author mark a passage, a quote, a table or a whole page as "not our terms": a block quote, a directive such as `:::foreign`, a comment marker, front matter, or a per-folder rule like `KEPT_AS_WRITTEN` for paths?
 - Should a mark stop glossary links only, or [D87 References resolved when rendered][D87] references too (ids of another repo)?
-- Should every new glossary term name its context (`Sibling Repo`, `Code Effect`), and should existing bare terms (Workflow, Cursor, Attribute, Engine) be renamed that way, or only marked where they clash?
+- Should every new glossary term name its context (`Sibling Repo`, `Code Effect`), and should existing bare terms (Workflow, Cursor, Attribute, Workflow engine) be renamed that way, or only marked where they clash?
 - Should a source table or a quote of another project be detected without a mark, for example every block quote?
 - Should `verify` report terms linked in a marked passage, or a term whose sense is ambiguous, so a human decides?
 - Is a short list of words with more than one sense in our own docs (workflow, cursor, attribute, app) worth adding to the `EVERYDAY_TERMS` rule, or is a mark enough?
+
+## Answer
+
+Decided in [I94 Words in another project's sense][I94] on 2026-10-29 ([D204 Words in another project's sense][D204], [D180' Retired words in code font][D180']) and built in [I95 Build the glossary linker as decided][I95]. A block quote, or a passage between `<!-- their words: whose -->` and `<!-- /their words -->`, resolves nothing against this repository: no glossary link, no bare id (`P95`, vivief's `ADR 0027`), no path check, and a URL link keeps its target; a reference-style link still resolves. Each row of Observed, and this issue's comments, is a test in `apps/docs/src/lib/reference-links.test.ts`. Questions: a comment pair, not a directive or front matter; ids and paths too, not glossary links only; names that carry their context are [D170 One word only where it matches][D170]'s rule; block quotes are detected without a mark, tables are not; `verify` reports no ambiguous sense; `EVERYDAY_TERMS` gains no words.
 
 ## Comments
 
@@ -63,14 +67,28 @@ A quote cannot be reworded at all: in [I33 Ideas batch: abstractions that constr
 to good decisions" links "decisions" to our Decision entry, and the quote has
 to stay as he wrote it.
 
-2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is phase 2, with map 3: map 3 needs the linker to tell `node` from Node.js and Frame from frame.
+2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is phase 2, with map 3: map 3 needs the linker to tell sync node from Node.js and Frame from frame.
+
+2026-10-24: Input from [I56 One shape at every level?][I56]. [I78 Research: Effect's vocabulary against ours][I78] compares Effect's vocabulary with ours, and its clashes (Envelope, Journal, Entity, Decision and "decide", Tool, Prompt) are words this issue's linker must tell apart ([D135 Effect's names first][D135]). "Surface" is map 3's leading candidate for what a frame reaches a person through, and it clashes with React Native Paper's and Material's `Surface` component ([D134 Presenting in any modality][D134]).
+
+2026-10-27: map 3 started. Decided in [I94 Words in another project's sense][I94] Words in another project's sense, after [I89 How a word is chosen and written][I89]; built in [I95 Build the glossary linker as decided][I95] Build the glossary linker as decided, inside map 3.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0027]: ../adr/0027-developer-experience-planes.md
+[D134]: ../plan/bootstrap/02-decision-log.md#d134
+[D135]: ../plan/bootstrap/02-decision-log.md#d135
+[D170]: ../plan/bootstrap/02-decision-log.md#d170
+[D180']: ../plan/bootstrap/02-decision-log.md#d180p
+[D204]: ../plan/bootstrap/02-decision-log.md#d204
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I24]: 0024-ideas-batch-andrej-karpathy-understanding.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I31]: 0031-ideas-batch-dataframes-as-a-universal-data-format.md
 [I33]: 0033-ideas-batch-abstractions-that-constrain-agents.md
+[I56]: 0056-one-shape-at-every-level.md
+[I78]: 0078-research-effect-vocabulary-against-ours.md
+[I89]: 0089-how-a-word-is-chosen-and-written.md
+[I94]: 0094-words-in-another-projects-sense.md
+[I95]: 0095-build-the-glossary-linker-as-decided.md

@@ -20,7 +20,7 @@ columnar copy), [I12 Partial sync, history consolidation and client data access]
 vivief names one concept, `Projection`, for query, access, encryption,
 delivery, freshness and trust scope. ViViEfs has each of those it has as a
 separate part with its own gate: SQL over read models and the projector ([P05 Changesets and projections][P05]),
-query atoms with invalidation keys ([P05][P05], [P08 UI three-way prototype][P08]), cursors ([P04 Log store conformance][P04], [P09 Sync][P09], [P10 Trace projection][P10]), the
+query atoms with invalidation keys ([P05][P05], [P08 UI three-way prototype][P08]), acknowledged cursors ([P04 Log store conformance][P04], [P09 Sync][P09], [P10 Trace projection][P10]), the
 server's membership check on every pull, push, lease and command ([P11 Identity][P11]), and
 encryption for data at rest and erasure ([ADR-0023 Data at rest and crypto-shredding][ADR-0023]). It had no name for the
 whole a screen asks of, and no answer for data a log store cannot hold
@@ -47,7 +47,7 @@ screen ── query ──► Presenter ──► frame ──► frame subscrip
 
 **The query is data ([D108 The query is data][D108]).** A typed expression written in code, translated
 by each implementation: to SQL for SQLite, Postgres and DuckDB, to Polars, or
-to parameters for a remote `node` or an outside source. vivief's L1 idea
+to parameters for a remote sync node or an outside source. vivief's L1 idea
 (queries in code an LLM can write) is this decision, and its entity operations
 (`entity`, `pull` with depth) are part of the vocabulary; an entity with its
 children is a frame per level, linked by id. An implementation may be plain
@@ -59,7 +59,7 @@ afterwards, so it runs only where that input is held.
 entity is a one-row frame. Freshness is committed, or committed plus my open
 changesets ([D42 Live reads with query atoms][D42]). Gathering commits in batches; each batch invalidates the
 frame's keys and the frame grows. The frame subscription ends with its screen;
-the gathering activity is durable. Cursor consumers stay their own pattern.
+the gathering activity is durable. Consumers of an acknowledged cursor stay their own pattern.
 
 **The reference implementation ([D110 The reference implementation][D110]).** Every implementation returns the
 reference's frame for the same query at the same `tx`. SQLite read models with
@@ -82,8 +82,8 @@ organization only, erasable, gone with the local replica at sign-out.
 **Who chooses ([D113 Who chooses the implementation][D113]).** The app builder declares an implementation per
 Presenter and swaps it without touching the screen.
 
-**Partial sync on demand ([D114 Partial sync on demand][D114]).** A Presenter's query can say what a partial
-`node` fetches; the facts land in its log and the projector builds the read
+**Partial sync on demand ([D114 Partial sync on demand][D114]).** A Presenter's query can say what a sync node
+holding part of the data fetches; the facts land in its log and the projector builds the read
 model. Built under [I12 Partial sync, history consolidation and client data access][I12], with [I53 Sync and conflict][I53].
 
 Revisit when a screen needs output finer than a committed batch ([D109 Frame and frame subscription][D109]), when
@@ -98,8 +98,8 @@ a screen a frame does not fit.
   lets a replica hold data its reader may not see ([I54 Trust, encryption and who may sign in][I54]).
 - **vivief's meaning of "projection"** would give the word two meanings, since
   the projector does not make Projections.
-- **One engine everywhere** (DuckDB or Polars as the frame): DuckDB on the
-  phone is a one-maintainer module and Polars has nothing for it ([I31 Ideas batch: DataFrames as a universal data format][I31]). A
+- **One engine everywhere** (DuckDB or Polars as the frame): DuckDB in a React
+  Native app is a one-maintainer module and Polars has nothing for it ([I31 Ideas batch: DataFrames as a universal data format][I31]). A
   contract with implementations is the log store's move again.
 - **Raw SQL per screen**, as today, cannot be passed past one store.
 - **Writing outside content or model output only into a read model** breaks
@@ -108,7 +108,7 @@ a screen a frame does not fit.
   planner; it can grow out of declared choice, not the reverse.
 - **Out-of-scope items ([D100 Out of scope means not yet][D100], [I57 Out-of-scope items in an ADR's trade-offs][I57]).** Partial sync on demand ([D114 Partial sync on demand][D114]) is [D105 What must stay possible][D105]
   (3) in practice and makes the server-independent mode ([I60 Server-independent mode][I60]) no harder.
-  Nothing here assumes one server: a Presenter's remote source is any `node`.
+  Nothing here assumes one server: a Presenter's remote source is any sync node.
 
 ## Failure-handling
 

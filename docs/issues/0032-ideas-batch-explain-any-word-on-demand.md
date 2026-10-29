@@ -4,7 +4,7 @@ Status: ready-for-human
 
 Category: enhancement
 
-Decide when: [I26 Glossary links on words that are not our terms][I26] is decided
+Decide when: map 4 looks at the docs site, or the build time or the number of links on a page becomes a problem again
 
 Found: 2026-10-04
 
@@ -39,7 +39,7 @@ Let a reader point at any word on a docs page and get an explanation when one ex
 ## Questions for the brainstorm
 
 - **What is the thing called?** A word that has an explanation: a term, a name, a reference, an entry? It needs a glossary name of its own ([I30 Ideas batch: glossary entries written as effects][I30]).
-- **How is it asked for?** Hover alone fires on every word the pointer passes. A short delay, a modifier key, a selection, a long press on a phone, keyboard focus: which ones, so it works for touch and for keyboard and screen-reader users, not only for a mouse?
+- **How is it asked for?** Hover alone fires on every word the pointer passes. A short delay, a modifier key, a selection, a long press on a touch screen, keyboard focus: which ones, so it works for touch and for keyboard and screen-reader users, not only for a mouse?
 - **How does a reader know a word has an explanation** without a link: no sign at all, a quiet underline that appears on hover, or a mode the reader turns on?
 - **What is looked up, and from where?** One published index of terms, ids and names, built with the site; the explanation fetched per word, or shipped with the page because it is small?
 - **Which sense?** When a word is a term here and means something else nearby ([I26 Glossary links on words that are not our terms][I26]), does the card pick by context, show both, or ask?
@@ -50,11 +50,17 @@ Let a reader point at any word on a docs page and get an explanation when one ex
 
 2026-10-09: Triaged with the human ([2026-10-09 Phase 0](../research/2026-10-09-phase-0-review.html), the sequence in [next-session](../plan/next-session.md)): its home is the docs site, after [I26 Glossary links on words that are not our terms][I26] (the same linker).
 
+2026-10-27: map 3 started. [I94 Words in another project's sense][I94] Words in another project's sense decides [I26 Glossary links on words that are not our terms][I26] and comments here on this issue's trigger.
+
+2026-10-29: the trigger fired: [I26 Glossary links on words that are not our terms][I26] is decided and built ([D204 Words in another project's sense][D204]). A marked passage now links nothing at build time, so the wrong-sense problem this issue lists under "Words in another sense" is answered without a reader in the loop. The idea itself, explaining a word when the reader asks in the browser, is untouched and stays parked. Decide when: map 4 looks at the docs site, or the build time or the number of links on a page becomes a problem again.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D204]: ../plan/bootstrap/02-decision-log.md#d204
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D90]: ../plan/bootstrap/02-decision-log.md#d90
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I27]: 0027-docs-dev-server-unreliable-and-without-search.md
 [I30]: 0030-ideas-batch-glossary-entries-written-as-effects.md
+[I94]: 0094-words-in-another-projects-sense.md

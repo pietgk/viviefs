@@ -12,7 +12,7 @@ Found: 2026-10-08
 
 A log store can grow very large; a derived, delayed columnar copy of it in Parquet would let a faster Presenter implementation ([D111 Faster and enriching implementations][D111]) read it with DuckDB or Polars, together with the log store's recent tail. Decide its shape, budget and gate when it is needed.
 
-From [I49](0049-projection-one-concept-or-several-patterns.md) ([D110 The reference implementation][D110]-[D112 Intermediate presentations][D112], [ADR-0033](../adr/0033-the-presenter-pattern.md)). Decided already: the copy is derived from a cursor and rebuildable, never a tier of the durable log ([D37 Log store tables][D37], [D112][D112]); a Presenter reads Parquet up to `tx` N and the tail after N.
+From [I49](0049-projection-one-concept-or-several-patterns.md) ([D110 The reference implementation][D110]-[D112 Intermediate presentations][D112], [ADR-0033](../adr/0033-the-presenter-pattern.md)). Decided already: the copy is derived from an acknowledged cursor and rebuildable, never a tier of the durable log ([D37 Log store tables][D37], [D112][D112]); a Presenter reads Parquet up to `tx` N and the tail after N.
 
 ### Notes from the I49 grilling (2026-10-08)
 
@@ -28,9 +28,9 @@ From [I49](0049-projection-one-concept-or-several-patterns.md) ([D110 The refere
 
 2026-10-08: [I52](0052-the-datom-and-its-store.md) decides that every attribute carries a value Schema in the catalog, mapped by each implementation to its column type ([D121 Attribute value types][D121]), which the wide table's "typed from the catalog" needs. The reference read model faces the same layout choice, one table per entity type or one table for all types under a checked cap below Postgres's 1600 columns; [I66 Attribute value types and the typed reference read model][I66] decides it by measurement together with this issue, so both make the same choice. `vivief:datom-store-needs`'s read as of a `tx` stays deferred here ([D118 What a datom needs from storage][D118]).
 
-2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): re-running a command on accept is deferred until an app needs proof that a changeset is exactly what its command makes, and needs a read as of a cursor so authority can re-run it on the data the device saw ([D127 Registered commands][D127]).
+2026-10-09: [I50](0050-contracts-checked-as-data-or-by-commands.md): re-running a command on accept is deferred until an app needs proof that a changeset is exactly what its command makes, and needs a read as of a log position so authority can re-run it on the data the device saw ([D127 Registered commands][D127]).
 
-2026-10-09: [I31 Ideas batch: DataFrames as a universal data format][I31] Ideas batch: DataFrames as a universal data format is merged here. Its remaining questions are this issue's: which DataFrame engines (DuckDB, Polars, Arrow) run on which `node` (phone, browser, server), and whether Arrow works on Hermes; its sources (Pinot, DuckDB, Polars, Arrow) stay in [I31][I31].
+2026-10-09: [I31 Ideas batch: DataFrames as a universal data format][I31] Ideas batch: DataFrames as a universal data format is merged here. Its remaining questions are this issue's: which DataFrame engines (DuckDB, Polars, Arrow) run on which sync node (native app, browser, server), and whether Arrow works on Hermes; its sources (Pinot, DuckDB, Polars, Arrow) stay in [I31][I31].
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

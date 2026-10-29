@@ -21,7 +21,7 @@ import * as DurableDeferred from 'effect/workflow/DurableDeferred'
 import * as Workflow from 'effect/workflow/Workflow'
 import { deviceLayer, HlcClock } from '@viviefs/datom'
 import {
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
   noopCrashHook,
   noopWakeScheduler,
@@ -73,7 +73,7 @@ const session = (openStore: StoreFactory, clock: MutableClock) =>
   exitsLayer.pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer({ org: 'p06', actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: 'p06', actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(noopCrashHook),
     Layer.provide(noopWakeScheduler),
@@ -104,7 +104,7 @@ export const typedFailuresSurviveAKill = (
     const executionId = yield* Exits.executionId(payload)
 
     // Session 1: run until the workflow waits on the gate, then drop the
-    // session: the in-memory engine state is gone, the journal stays.
+    // session: the in-memory workflow engine state is gone, the journal stays.
     yield* Effect.scoped(
       Effect.gen(function* () {
         const ctx = yield* Layer.build(session(openStore, clock))

@@ -8,18 +8,18 @@ unverified until its gate in [06-qualification-gates.md](06-qualification-gates.
 ```mermaid
 flowchart TD
   subgraph Device["Device (Expo: iOS, Android, web)"]
-    UI["Screens: pure views over screen-view selectors"]
+    UI["Screens rendered from screen-view selectors"]
     ATOMS["Query atoms (Effect Atom), Reactivity keys"]
     CMD["Commands (feature model, shared)"]
     ENG["WorkflowEngine (datom-backed)"]
     PROJ["Projector: changesets -> read models"]
     LOG[("Datom log + read models (SQLite)")]
-    OUT["Outbox / cursor"]
-    TRC["Trace projector (cursor -> OTLP)"]
+    OUT["Outbox / sync cursor"]
+    TRC["Trace projector (trace cursor -> OTLP)"]
   end
   subgraph Server["Server (Node + Effect)"]
     API["HttpApi / RPC: sync, lease, commands"]
-    VAL["Validation: Schema, membership, invariants, fencing, basis"]
+    VAL["Accept: access, well formed, acceptance rules, lease fencing, basis"]
     SENG["WorkflowEngine (same code)"]
     SLOG[("Datom log + read models (Postgres or SQLite)")]
     BLOB[("Object storage (content hash)")]
@@ -33,10 +33,10 @@ flowchart TD
   LOG --> OUT <--> API --> VAL --> SLOG
   SENG <--> SLOG
   LOG --> TRC --> SINK
-  API -.->|"reviewer: deferred completion (D40)"| SLOG
+  API -.->|"reviewer: durable deferred completion (D40)"| SLOG
 ```
 
-The diagram is simplified: commands go through the shared command function and outbox ([D36 Shared commands][D36]), not a raw write to the log. The reviewer's path is a second actor on the server that writes a deferred-completion datom ([D40 Server-side human steps][D40]); it is shown as a dashed edge.
+The diagram is simplified: commands go through the shared command function and outbox ([D36 Shared commands][D36]), not a raw write to the log. The reviewer's path is a second actor on the server that writes a durable deferred-completion datom ([D40 Server-side human steps][D40]); it is shown as a dashed edge.
 
 ## 2. The datom
 
@@ -95,8 +95,8 @@ correctedClock():
 
 - **Lifecycle**: a changeset is open until a write-once commit or abort datom (attribute names illustrative until
   the [P05 Changesets and projections][P05] vocabulary pass), or TTL expiry. Open changesets are drafts (review-before-apply is native).
-- **Manifest**: the commit carries the member count and hash (and file references, [D43 Files by content hash][D43]). The server and every
-  projector apply the changeset only when the manifest is satisfied.
+- **Changeset manifest**: the commit carries the member count and hash (and file references, [D43 Files by content hash][D43]). The server and every
+  projector apply the changeset only when the changeset manifest is satisfied.
 - **Ordering**: conflicts use the commit `tx` (when the change took effect). Member `tx` orders within the changeset.
 - **Basis check**: the commit records the log position it was built on. For every touched attribute the server
   checks changes after the basis and applies that attribute's policy ([D34 Per-attribute conflict policies][D34]): LWW wins, write-once rejects, human
@@ -110,13 +110,13 @@ correctedClock():
 - **Defining attribute**: one per entity type. Asserted = exists, retracted = deleted (subtree hidden), re-asserted =
   restored with its other attributes.
 - **Parent in id** only for strict composition: `O{org}/` root, list -> todo, order -> line,
-  `O{org}/W{exec}/A{activity}#{attempt}` journal entries, `O{org}/W{exec}/D{name}` deferreds.
+  `O{org}/W{exec}/A{activity}#{attempt}` journal entries, `O{org}/W{exec}/D{name}` durable deferreds.
 - **References** (attributes) for anything that can move or is many-to-many.
 - **Projection rule**: an entity is visible iff its defining attribute is asserted and its owner (id parent or owner
   reference) is visible.
 - **Orphans**: writes to user-content types under a deleted parent raise a human conflict (never silent loss).
 - **Prefix power**: authorization, compaction, export and Reactivity keys all work by prefix. Sync of the first
-  protocol is full-store per organization (one cursor), not prefix subscriptions.
+  protocol is full-store per organization (one sync cursor), not prefix subscriptions.
 
 ## 6. Conflict policies (D34)
 
@@ -125,7 +125,7 @@ Declared per attribute in the feature model Schema:
 | Policy | Used for | Behaviour |
 |---|---|---|
 | LWW | domain scalars (title, note, amount) | highest commit `tx` wins |
-| write-once, fenced | journal facts, deferred completions, lease grants, changeset commit/abort | first valid write under a valid lease wins, others rejected |
+| write-once, fenced | journal facts, durable deferred completions, lease grants, changeset commit/abort | first valid write under a valid lease wins, others rejected |
 | human conflict | references, evidence attachments, approvals, user content | both values kept, a conflict datom raised (attribute name illustrative until the [P05 Changesets and projections][P05] vocabulary pass), a person resolves |
 
 ## 7. Commands and validation (D36)
@@ -155,18 +155,18 @@ client on reject: rebuild read models from confirmed datoms, reapply remaining o
 - Log store is one Effect service with implementations `sqliteNative` (op-sqlite), `sqliteWasm` (OPFS),
   `sqliteNode`, `postgres`, all passing the same conformance suite (optionally `sqlcipher`, [D50 Data at rest on device][D50]).
 
-## 9. The durable execution engine (D10, D39, D40, D24)
+## 9. Durable execution: the workflow engine (D10, D39, D40, D24)
 
 Our implementation of Effect's `WorkflowEngine.Encoded` interface (`register, execute, poll, interrupt, resume,
 activityExecute, deferredResult, deferredDone, scheduleClock`, see research/01 section 2) that stores everything as
 datoms. Attribute names in this table were pinned by [P06 Workflow engine crash matrix][P06] ([D44 Never rename, never migrate][D44]: a shipped name cannot be renamed). Id shapes
 (`O{org}/W{exec}`, `/A{name}#{attempt}`, `/D{name}`, `/C{name}`) were decided.
 
-| Engine fact | Datom |
+| Workflow engine fact | Datom |
 |---|---|
 | execution started | `[O{org}/W{exec} viviefs/workflow/started {name, payload} ...]` (defining attribute) |
 | activity result | `[O{org}/W{exec}/A{name}#{attempt} viviefs/activity/exit <encoded Exit> ...]` write-once |
-| deferred completion | `[O{org}/W{exec}/D{name} viviefs/deferred/exit <encoded Exit> ...]` write-once |
+| durable deferred completion | `[O{org}/W{exec}/D{name} viviefs/deferred/exit <encoded Exit> ...]` write-once |
 | clock scheduled | `[O{org}/W{exec}/C{name} viviefs/clock/wake-at {wakeAtMs, ...} ...]` + local notification |
 | lease | `[O{org}/W{exec} viviefs/lease/holder {device, epoch, expiresAtMs}]` LWW, fenced by epoch |
 | execution result | `[O{org}/W{exec} viviefs/workflow/result <encoded Exit>]` |
@@ -175,10 +175,10 @@ datoms. Attribute names in this table were pinned by [P06 Workflow engine crash 
 - **Determinism**: time, randomness and ids only inside activities (lint rule [D26 AI-robust guardrails][D26]).
 - **Versioning**: by workflow name; activity names unique and stable within a version.
 - **Wake-ups**: sweep due clocks and pending resumes on launch and foreground; opportunistic background task;
-  notification actions complete deferreds; push from the server is only a hint.
-- **Browser**: Web Locks leader tab runs the engine ([D25 Browser engine leader][D25]). Other tabs render and forward events to the leader over
+  notification actions complete durable deferreds; push from the server is only a hint.
+- **Browser**: Web Locks leader tab runs the workflow engine ([D25 Browser engine leader][D25]). Other tabs render and forward events to the leader over
   BroadcastChannel. Each browser profile counts as one device for leases.
-- **Server**: same engine over Postgres; Effect Cluster is the scale-out path later.
+- **Server**: same workflow engine over Postgres; Effect Cluster is the scale-out path later.
 - **Leases**: a device must hold the execution lease to run it; the server rejects journal writes from a stale epoch.
 
 Known Effect constraints (research/01): `Workflow` hashes ids with `crypto.subtle.digest` (needs a polyfill on
@@ -188,7 +188,7 @@ sleeps up to 60s run in memory.
 ## 10. Sync (D13, D21, D36)
 
 - **Up**: outbox of datoms (self-committed and changeset members + commits), idempotent by `tx`.
-- **Down**: one cursor stream (server sequence) of accepted datoms for the whole organization the identity is a
+- **Down**: one sync cursor stream (server sequence) of accepted datoms for the whole organization the identity is a
   member of. Prefix subscriptions (partial sync) are later, not part of [P09 Sync][P09].
 - **Server**: validates per changeset (section 7), enforces leases, rejects unknown attributes with a typed upgrade
   error ([D44 Never rename, never migrate][D44]). Isolation is server-authoritative ([D18 Organization isolation on the server][D18]).
@@ -202,7 +202,7 @@ sleeps up to 60s run in memory.
 ## 11. Tracing (D32, D45')
 
 - Trace context (`traceId`, `spanId`, `sampled`) is stored in every changeset's envelope ([D58 Envelope per changeset][D58]).
-- A trace projector reads the log from its own cursor and emits spans with deterministic ids derived from
+- A trace projector reads the log from its own trace cursor and emits spans with deterministic ids derived from
   `executionId + activity + attempt` ([D32 Traces derived from the log][D32]). Extending that scheme to changeset ids for commands is new, not
   grilled; keep it only if [P10 Trace projection][P10] needs command spans, otherwise drop it. Replays emit nothing new for stored results;
   new attempts link to previous ones.
@@ -220,7 +220,7 @@ sleeps up to 60s run in memory.
 - Query atoms declare Reactivity keys (prefixes + attributes); the projector invalidates exactly what changed.
   Two variants: committed, and committed + my open changesets. A dev-mode check warns when an atom returns different
   data without having been invalidated.
-- Workflows own durable progress; the UI completes deferreds via commands and rebuilds from scratch after a kill.
+- Workflows own durable progress; the UI completes durable deferreds via commands and rebuilds from scratch after a kill.
 
 ## 13. Files (D43) and privacy (D50, D51)
 
@@ -233,7 +233,7 @@ sleeps up to 60s run in memory.
 - Effect v4 core runs on Hermes V1 with Expo's `TextDecoder`; add `crypto.getRandomValues` and
   `crypto.subtle.digest` polyfills (expo-crypto or react-native-quick-crypto).
 - Metro rejects the dynamic `import()` in `effect/sql/Migrator.js` (Effect-TS/effect#6347). The babel
-  plugin in `apps/evidence-mobile/babel.config.js` stubs it.
+  plugin in `apps/evidence-client/babel.config.js` stubs it.
 - Prefer deep imports (`effect/Effect`) or Expo tree shaking: the barrel adds about 2.7 MB to an iOS bundle, deep
   imports about 0.6 MB.
 - All of this was measured on SDK 56 / RN 0.85 and must be rerun on SDK 58 (gate [P01 Platform on SDK 58][P01]).

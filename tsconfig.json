@@ -22,7 +22,7 @@
       "path": "./libs/store-sqlite-wasm"
     },
     {
-      "path": "./apps/evidence-mobile"
+      "path": "./apps/evidence-client"
     },
     {
       "path": "./apps/evidence-server"

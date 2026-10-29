@@ -1,15 +1,17 @@
 {
   "bundle": {
-    "apps/evidence-mobile": {
+    "apps/evidence-client": {
       "android": {
-        "hbcBytes": 7456815,
-        "jsBytes": 4591898,
+        "hbcBytes": 7628834,
+        "jsBytes": 4676369,
         "packages": {
-          "(unmapped)": 200309,
+          "(unmapped)": 204862,
           "@babel/runtime": 2100,
-          "@effect/sql-sqlite-react-native": 2909,
+          "@effect/sql-sqlite-react-native": 2931,
           "@expo/cli": 2348,
           "@expo/devtools": 14336,
+          "@expo/log-box-utils": 3061,
+          "@expo/metro": 20,
           "@formatjs/bigdecimal": 8753,
           "@formatjs/fast-memoize": 1047,
           "@formatjs/intl-datetimeformat": 1621669,
@@ -22,115 +24,123 @@
           "@react-native/asset-utils": 730,
           "@react-native/js-polyfills": 7065,
           "@react-native/normalize-colors": 7656,
-          "@react-native/virtualized-lists": 50126,
+          "@react-native/virtualized-lists": 49910,
           "@ungap/structured-clone": 3485,
           "abort-controller": 1719,
+          "ansi-styles": 2017,
           "await-lock": 1503,
           "base64-js": 1401,
-          "effect": 1091395,
+          "effect": 1124676,
           "event-target-shim": 6391,
-          "expo": 96374,
-          "expo-application": 2587,
-          "expo-asset": 7061,
-          "expo-auth-session": 24959,
+          "expo": 95139,
+          "expo-application": 2806,
+          "expo-asset": 6772,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
-          "expo-crypto": 5362,
-          "expo-linking": 6411,
-          "expo-modules-core": 13929,
-          "expo-notifications": 35779,
+          "expo-crypto": 5502,
+          "expo-linking": 6900,
+          "expo-modules-core": 15296,
+          "expo-notifications": 36273,
           "expo-secure-store": 2235,
-          "expo-sqlite": 21685,
-          "expo-status-bar": 1145,
+          "expo-sqlite": 22091,
+          "expo-status-bar": 2224,
           "expo-web-browser": 3640,
           "flow-enums-runtime": 1128,
           "invariant": 359,
           "memoize-one": 443,
+          "metro-runtime": 5322,
           "nullthrows": 214,
-          "\u0000polyfill:assets-registry": 151,
           "\u0000polyfill:external-require": 421,
+          "pretty-format": 14995,
           "promise": 4135,
-          "react": 7799,
-          "react-native": 595759,
+          "react": 8142,
+          "react-is": 1900,
+          "react-native": 612206,
           "regenerator-runtime": 6632,
           "scheduler": 3995,
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-mobile": 48307,
+          "workspace:apps/evidence-client": 48330,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 63715,
+          "workspace:libs/datom": 63724,
           "workspace:libs/identity": 10550,
-          "workspace:libs/platform-native": 7267,
+          "workspace:libs/platform-native": 7288,
           "workspace:libs/store-sqlite-native": 1253,
           "workspace:libs/sync/client": 8148,
           "workspace:libs/sync/protocol": 5414,
           "workspace:libs/telemetry": 8968,
-          "workspace:libs/workflow-engine": 41763
+          "workspace:libs/workflow-engine": 41934
         },
-        "recordedAt": "2026-10-21"
+        "recordedAt": "2026-10-29"
       },
       "ios": {
-        "hbcBytes": 5351377,
-        "jsBytes": 2498470,
+        "hbcBytes": 5522837,
+        "jsBytes": 2582435,
         "packages": {
-          "(unmapped)": 198618,
+          "(unmapped)": 203177,
           "@babel/runtime": 2100,
-          "@effect/sql-sqlite-react-native": 2909,
+          "@effect/sql-sqlite-react-native": 2931,
           "@expo/cli": 2348,
           "@expo/devtools": 14336,
+          "@expo/log-box-utils": 3061,
+          "@expo/metro": 20,
           "@noble/hashes": 19017,
           "@op-engineering/op-sqlite": 7395,
           "@react-native/asset-utils": 730,
           "@react-native/js-polyfills": 7065,
           "@react-native/normalize-colors": 7656,
-          "@react-native/virtualized-lists": 50127,
+          "@react-native/virtualized-lists": 49911,
           "@ungap/structured-clone": 3485,
           "abort-controller": 1719,
+          "ansi-styles": 2017,
           "await-lock": 1503,
           "base64-js": 1401,
-          "effect": 1091395,
+          "effect": 1124676,
           "event-target-shim": 6391,
-          "expo": 96370,
-          "expo-application": 2624,
-          "expo-asset": 6980,
-          "expo-auth-session": 24959,
+          "expo": 94920,
+          "expo-application": 2843,
+          "expo-asset": 6691,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
-          "expo-crypto": 5362,
-          "expo-linking": 6547,
-          "expo-modules-core": 13698,
-          "expo-notifications": 33704,
+          "expo-crypto": 5502,
+          "expo-linking": 7036,
+          "expo-modules-core": 15065,
+          "expo-notifications": 33901,
           "expo-secure-store": 2235,
-          "expo-sqlite": 21685,
-          "expo-status-bar": 1145,
+          "expo-sqlite": 22091,
+          "expo-status-bar": 2224,
           "expo-web-browser": 2810,
           "flow-enums-runtime": 1128,
           "invariant": 359,
           "memoize-one": 443,
+          "metro-runtime": 5322,
           "nullthrows": 214,
-          "\u0000polyfill:assets-registry": 151,
           "\u0000polyfill:external-require": 421,
+          "pretty-format": 14995,
           "promise": 4135,
-          "react": 7799,
-          "react-native": 591634,
+          "react": 8142,
+          "react-is": 1900,
+          "react-native": 608081,
           "regenerator-runtime": 6632,
           "scheduler": 3995,
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-mobile": 48293,
+          "workspace:apps/evidence-client": 48316,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 63715,
+          "workspace:libs/datom": 63724,
           "workspace:libs/identity": 10550,
-          "workspace:libs/platform-native": 7225,
+          "workspace:libs/platform-native": 7246,
           "workspace:libs/store-sqlite-native": 1253,
           "workspace:libs/sync/client": 8148,
           "workspace:libs/sync/protocol": 5414,
           "workspace:libs/telemetry": 8968,
-          "workspace:libs/workflow-engine": 41763
+          "workspace:libs/workflow-engine": 41934
         },
-        "recordedAt": "2026-10-21"
+        "recordedAt": "2026-10-29"
       }
     }
   },
@@ -174,9 +184,9 @@
       },
       "libs/workflow-engine/src/engine.ts": {
         "branches": "118/151",
-        "functions": "54/57",
-        "lines": "245/260",
-        "statements": "265/292"
+        "functions": "55/57",
+        "lines": "245/259",
+        "statements": "266/292"
       },
       "libs/workflow-engine/src/sweep.ts": {
         "branches": "0/0",
@@ -193,9 +203,9 @@
     },
     "unit": {
       "apps/docs/src/lib/claims.ts": {
-        "branches": "30/40",
+        "branches": "33/40",
         "functions": "18/18",
-        "lines": "38/38",
+        "lines": "39/39",
         "statements": "44/44"
       },
       "apps/docs/src/lib/guides.ts": {
@@ -205,16 +215,16 @@
         "statements": "34/38"
       },
       "apps/docs/src/lib/reference-links.ts": {
-        "branches": "116/129",
-        "functions": "26/26",
-        "lines": "125/125",
-        "statements": "158/164"
+        "branches": "176/188",
+        "functions": "44/44",
+        "lines": "185/185",
+        "statements": "237/242"
       },
       "apps/docs/src/lib/references.ts": {
-        "branches": "83/89",
-        "functions": "36/36",
-        "lines": "124/124",
-        "statements": "155/156"
+        "branches": "112/116",
+        "functions": "41/41",
+        "lines": "159/159",
+        "statements": "203/203"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
@@ -229,16 +239,22 @@
         "statements": "11/25"
       },
       "apps/docs/src/lib/repo-pages.ts": {
-        "branches": "43/47",
-        "functions": "24/24",
-        "lines": "60/60",
-        "statements": "64/67"
+        "branches": "45/49",
+        "functions": "25/25",
+        "lines": "61/61",
+        "statements": "66/69"
       },
       "apps/docs/src/lib/repo.ts": {
-        "branches": "42/47",
-        "functions": "7/7",
-        "lines": "43/47",
-        "statements": "48/52"
+        "branches": "76/81",
+        "functions": "10/10",
+        "lines": "59/63",
+        "statements": "68/72"
+      },
+      "apps/docs/src/lib/site-pages.ts": {
+        "branches": "38/47",
+        "functions": "24/24",
+        "lines": "69/69",
+        "statements": "81/84"
       },
       "features/evidence/client/src/index.ts": {
         "branches": "0/0",
@@ -259,10 +275,10 @@
         "statements": "14/16"
       },
       "features/evidence/client/src/intent-composer/effect-machine.ts": {
-        "branches": "28/30",
-        "functions": "20/20",
-        "lines": "61/62",
-        "statements": "63/64"
+        "branches": "24/26",
+        "functions": "19/19",
+        "lines": "55/56",
+        "statements": "57/58"
       },
       "features/evidence/client/src/intent-composer/graph.ts": {
         "branches": "6/8",
@@ -450,11 +466,23 @@
         "lines": "131/135",
         "statements": "147/156"
       },
+      "libs/references/src/diagram-labels.ts": {
+        "branches": "81/88",
+        "functions": "16/16",
+        "lines": "103/103",
+        "statements": "126/126"
+      },
       "libs/references/src/rewrite.ts": {
-        "branches": "200/276",
-        "functions": "39/40",
-        "lines": "275/298",
-        "statements": "322/362"
+        "branches": "230/302",
+        "functions": "40/41",
+        "lines": "298/321",
+        "statements": "351/388"
+      },
+      "libs/references/src/their-words.ts": {
+        "branches": "46/48",
+        "functions": "8/8",
+        "lines": "56/56",
+        "statements": "66/66"
       },
       "libs/sync/client/src/client.ts": {
         "branches": "30/34",
@@ -535,10 +563,10 @@
         "statements": "49/54"
       },
       "tools/qualification/src/probes/agent-cli.ts": {
-        "branches": "5/12",
-        "functions": "1/4",
-        "lines": "13/21",
-        "statements": "13/23"
+        "branches": "20/24",
+        "functions": "5/7",
+        "lines": "36/42",
+        "statements": "40/47"
       },
       "tools/qualification/src/probes/dev-client.ts": {
         "branches": "0/129",
@@ -547,10 +575,10 @@
         "statements": "27/209"
       },
       "tools/qualification/src/probes/devices.ts": {
-        "branches": "0/71",
-        "functions": "0/24",
-        "lines": "20/128",
-        "statements": "20/136"
+        "branches": "3/71",
+        "functions": "4/24",
+        "lines": "26/128",
+        "statements": "27/136"
       },
       "tools/qualification/src/probes/motel.ts": {
         "branches": "5/48",
@@ -648,6 +676,12 @@
         "lines": "27/27",
         "statements": "27/28"
       },
+      "tools/verify/src/glossary-report.ts": {
+        "branches": "11/13",
+        "functions": "11/11",
+        "lines": "22/22",
+        "statements": "27/27"
+      },
       "tools/verify/src/guides.ts": {
         "branches": "164/203",
         "functions": "63/66",
@@ -672,17 +706,35 @@
         "lines": "23/23",
         "statements": "29/29"
       },
+      "tools/verify/src/named-identifiers.ts": {
+        "branches": "48/56",
+        "functions": "21/21",
+        "lines": "57/57",
+        "statements": "70/71"
+      },
       "tools/verify/src/ownership.ts": {
         "branches": "54/72",
         "functions": "7/7",
-        "lines": "53/62",
-        "statements": "60/72"
+        "lines": "55/64",
+        "statements": "62/74"
       },
       "tools/verify/src/producers.ts": {
         "branches": "4/8",
         "functions": "12/12",
         "lines": "16/16",
         "statements": "20/20"
+      },
+      "tools/verify/src/research-index.ts": {
+        "branches": "21/22",
+        "functions": "12/12",
+        "lines": "31/31",
+        "statements": "37/37"
+      },
+      "tools/verify/src/retired-words.ts": {
+        "branches": "11/15",
+        "functions": "7/7",
+        "lines": "23/23",
+        "statements": "27/27"
       },
       "tools/verify/src/skills-tree.ts": {
         "branches": "43/50",
@@ -716,5 +768,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "5a9bec8b41e95f4b413162f310a5fb4455647d422c5868f6f4ee561649ddeb14"
+  "registryDigest": "ad01dbe885ef2ed6e165863e84d1a78419861af845c8849c871d975eb1c2ab66"
 }
