@@ -23,6 +23,7 @@
     "@types/mdast": "4.0.4",
     "@viviefs/testing": "workspace:*",
     "effect": "4.0.5",
+    "playwright": "1.55.1",
     "vite": "8.3.4",
     "vitest": "5.0.1"
   }

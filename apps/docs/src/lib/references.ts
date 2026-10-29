@@ -41,7 +41,7 @@ export {
   plainText,
 }
 
-export type ReferenceKind = 'Gate' | 'ADR' | 'Decision' | 'Issue' | 'Glossary'
+export type ReferenceKind = 'Gate' | 'ADR' | 'Decision' | 'Issue' | 'Glossary' | 'Page'
 
 export type Reference = {
   /** The canonical id: `P04`, `ADR-0011`, `D37`, `D33'`, `I1`. */

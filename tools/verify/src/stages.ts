@@ -206,6 +206,17 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'docs-e2e',
+        blurb: 'the built docs site in a browser: every link in a page\'s text shows its preview card',
+        invocations: [
+          {
+            command: 'pnpm',
+            args: ['exec', 'vitest', 'run', '--config', 'vitest.e2e.config.ts'],
+            cwd: resolve(ROOT, 'apps/docs'),
+          },
+        ],
+      },
+      {
         name: 'diagrams',
         blurb: 'every Mermaid edge in Markdown and MDX survives rendering',
         invocations: [

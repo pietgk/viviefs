@@ -103,6 +103,7 @@ export const EVIDENCE_REGISTRY: ReadonlyArray<EvidenceRegistryEntry> = [
   build('apps/docs/src/lib/repo-docs-loader.ts', 'docs', 'An Astro content loader: its contract is what the build renders, and the build fails on a missing page.'),
   unit('apps/docs/src/lib/repo-links.ts', 'Link rewriting is pure path logic with unit tests.'),
   unit('apps/docs/src/lib/repo-pages.ts', 'Sidebar groups and ADR status come from pure functions with unit tests.'),
+  unit('apps/docs/src/lib/site-pages.ts', 'Each site page\'s title and first sentence for its preview card; the reference plugin\'s tests read them from a fixture repository.'),
   unit('apps/docs/src/lib/repo.ts', 'Which repository files become which site pages is pure path logic with unit tests.'),
   build('apps/docs/src/pages/research/[record].html.ts', 'docs', 'An Astro endpoint that serves research HTML as is; exercised by the docs build.'),
 

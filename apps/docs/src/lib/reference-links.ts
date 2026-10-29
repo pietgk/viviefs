@@ -8,7 +8,9 @@
  *   id but is not the catalog name fails the build (D86');
  * - a link whose label is only an id keeps its target and gets the name;
  * - an inline-code repository path becomes a link to its site page or to
- *   GitHub.
+ *   GitHub;
+ * - any other link to a site page carries that page's preview: the kind Page,
+ *   its title and its first sentence (D90').
  *
  * Headings, code and text already inside a link are left alone. An unknown
  * id fails the build, and so does a missing path under a checked root,
@@ -44,6 +46,7 @@ import {
   type GlossaryTerm,
   type Reference,
 } from './references.ts'
+import { pageAt } from './site-pages.ts'
 
 /** Where a glossary term links: its entry on the glossary page. */
 export const GLOSSARY_PAGE = '/reference/glossary/'
@@ -72,6 +75,14 @@ export const previewProperties = (reference: Reference) => ({
   'data-ref-summary': reference.summary,
   'data-ref-meta': reference.meta,
 })
+
+/** The preview data of a link to a site page (D90'), or undefined for any other link. */
+const pagePreview = (root: string, url: string) => {
+  const page = pageAt(root, url)
+  return page === undefined
+    ? undefined
+    : previewProperties({ id: url, kind: 'Page', label: page.title, href: url, summary: page.summary, meta: '' })
+}
 
 /** A glossary term as a reference: its entry, its plain first sentence (D94). */
 export const termReference = (term: GlossaryTerm): Reference => ({
@@ -256,8 +267,13 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
       link(node, context) {
         if (inTheirWords(node, context)) return
         const reference = linkedReference(textOf(node), catalog, repositoryPath, false)
-        if (reference === undefined) return
-        context.replaceNode(node, referenceLink(reference, reference.label))
+        if (reference !== undefined) {
+          context.replaceNode(node, referenceLink(reference, reference.label))
+          return
+        }
+        const preview = pagePreview(repositoryRoot, node.url)
+        if (preview === undefined) return
+        context.replaceNode(node, { ...node, data: { hProperties: preview } })
       },
       linkReference(node, context) {
         const reference = linkedReference(textOf(node), catalog, repositoryPath, true)
@@ -290,11 +306,13 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           if (KEPT_AS_WRITTEN.test(repositoryPath)) return
           throw new Error(`${repositoryPath}: \`${path.path}\` names a repository path that does not exist (D87).`)
         }
+        const preview = pagePreview(repositoryRoot, path.href)
         context.replaceNode(node, {
           type: 'link',
           url: path.href,
           title: null,
           children: [{ type: 'inlineCode', value: node.value }],
+          ...(preview === undefined ? {} : { data: { hProperties: preview } }),
         })
       },
     }
