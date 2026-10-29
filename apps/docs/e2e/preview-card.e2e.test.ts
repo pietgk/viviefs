@@ -9,7 +9,7 @@ import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { chromium, type Browser, type Page } from 'playwright'
-import { withBase, withoutBase } from '../src/lib/repo.ts'
+import { docsBase, withBase, withoutBase } from '../src/lib/repo.ts'
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url))
 
@@ -25,10 +25,13 @@ const TYPES: Record<string, string> = {
 const serve = (): Promise<Server> =>
   new Promise((resolve) => {
     const server = createServer((request, response) => {
-      const path = normalize(withoutBase(decodeURIComponent((request.url ?? '/').split('?')[0] ?? '/')))
+      const requested = decodeURIComponent((request.url ?? '/').split('?')[0] ?? '/')
+      const path = normalize(withoutBase(requested))
+      // Under a base, the deployed site answers nothing outside it: a root-relative asset would 404 there.
+      const outside = docsBase() !== '/' && path === normalize(requested)
       let file = join(DIST, path)
       if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html')
-      if (!file.startsWith(DIST) || !existsSync(file)) {
+      if (outside || !file.startsWith(DIST) || !existsSync(file)) {
         response.writeHead(404).end()
         return
       }

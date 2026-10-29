@@ -83,7 +83,8 @@ const sourceFiles = (root: string): ReadonlyArray<string> => [
   ...contentFiles(root, CONTENT),
   ...contentFiles(root, TEMPLATE),
   ...RENDERED_FILES.map(({ file }) => file),
-  ...[...RENDERED_DIRECTORIES.map(({ directory }) => directory), RAW_HTML_DIRECTORY].flatMap((directory) =>
+  // The research directory renders Markdown and serves HTML: list it once.
+  ...[...new Set([...RENDERED_DIRECTORIES.map(({ directory }) => directory), RAW_HTML_DIRECTORY])].flatMap((directory) =>
     existsSync(join(root, directory)) ? readdirSync(join(root, directory)).map((name) => `${directory}/${name}`) : [],
   ),
   GATES,
@@ -130,7 +131,8 @@ const cache = new Map<string, { readonly version: string; readonly pages: Readon
  */
 export const sitePages = (root: string): ReadonlyMap<string, SitePage> => {
   const files = sourceFiles(root)
-  const version = files.map((path) => (existsSync(join(root, path)) ? statSync(join(root, path)).mtimeMs : 0)).join()
+  // Paths as well as times: a renamed file keeps its time.
+  const version = files.map((path) => `${path}:${existsSync(join(root, path)) ? statSync(join(root, path)).mtimeMs : 0}`).join()
   const cached = cache.get(root)
   if (cached?.version === version) return cached.pages
   const pages = read(root, files)
