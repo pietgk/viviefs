@@ -1,9 +1,9 @@
 # Publishes the docs site (D61'').
 #
-# After merge, a green push to main deploys it. Until then, the open pull
-# request from docs-github-pages deploys the same URL so the site can be read
-# before merge. GitHub Pages has one site, so that preview is the site.
-# Another pull request does not match and does not replace it.
+# After merge, a green push to main deploys it. Until then, a push to
+# docs-github-pages deploys the same URL so the site can be read from the
+# pull request before merge. A pull_request run is refs/pull/N/merge, which
+# the Pages environment rejects. Another branch does not match.
 name: Docs
 
 on:
@@ -11,8 +11,8 @@ on:
     workflows: [CI]
     types: [completed]
     branches: [main]
-  pull_request:
-    branches: [main]
+  push:
+    branches: [docs-github-pages]
 
 permissions:
   actions: read
@@ -28,7 +28,7 @@ jobs:
   deploy:
     if: |
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') ||
-      (github.event_name == 'pull_request' && github.head_ref == 'docs-github-pages')
+      (github.event_name == 'push' && github.ref == 'refs/heads/docs-github-pages')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -39,12 +39,12 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           WORKFLOW_SHA: ${{ github.event.workflow_run.head_sha }}
-          PULL_REQUEST_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_SHA: ${{ github.sha }}
         run: |
           if [ "$EVENT_NAME" = "workflow_run" ]; then
             echo "sha=$WORKFLOW_SHA" >> "$GITHUB_OUTPUT"
           else
-            echo "sha=$PULL_REQUEST_SHA" >> "$GITHUB_OUTPUT"
+            echo "sha=$PUSH_SHA" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/checkout@v5
