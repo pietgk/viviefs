@@ -79,6 +79,9 @@ describe('retired words in code font', () => {
       'docs/plan/x.md:3: `node` is retired by D199; write Sync node, or mark the passage as their words (D204)',
     ])
     expect(retiredWordUses('docs/plan/x.md', '> A quote\nwith a `node` lazily.\n', words)).toEqual([])
+    expect(retiredWordUses('docs/plan/x.md', '> Their text.\n***\nOur `node`.\n', words)).toEqual([
+      'docs/plan/x.md:3: `node` is retired by D199; write Sync node, or mark the passage as their words (D204)',
+    ])
   })
 
   it('checks living documents, not the glossary, the decision log or a resolved issue', () => {

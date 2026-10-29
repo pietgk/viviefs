@@ -60,19 +60,20 @@ export const theirWords = (): TheirWords => {
 
 const QUOTE_START = /^\s*(?:(?:[-*+]|\d+[.)])\s+)*>/
 const NEW_BLOCK = /^\s*(?:[-*+]\s|\d+[.)]\s|#{1,6}\s|`{3,}|~{3,}|\||<!--|\{\/\*)/
+const HORIZONTAL_RULE = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/
 
 /**
  * Which lines of a run of source lines are in a block quote, also one that
  * starts a list item (`- > ...`). A quote goes on through lazy continuation
- * lines, as Markdown reads them, until a blank line or a line that starts a
- * new block. Every block quote is another's words (D204).
+ * lines, as Markdown reads them, until a blank line, a horizontal rule or a
+ * line that starts a new block. Every block quote is another's words (D204).
  */
 export const quotedLines = (lines: ReadonlyArray<string>): ReadonlyArray<boolean> => {
   let quoted = false
   return lines.map((line) => {
     if (line.trim() === '') quoted = false
     else if (QUOTE_START.test(line)) quoted = true
-    else if (NEW_BLOCK.test(line)) quoted = false
+    else if (NEW_BLOCK.test(line) || HORIZONTAL_RULE.test(line)) quoted = false
     return quoted
   })
 }

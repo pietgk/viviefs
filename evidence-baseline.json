@@ -467,10 +467,10 @@
         "statements": "340/377"
       },
       "libs/references/src/their-words.ts": {
-        "branches": "44/46",
+        "branches": "46/48",
         "functions": "8/8",
-        "lines": "55/55",
-        "statements": "65/65"
+        "lines": "56/56",
+        "statements": "66/66"
       },
       "libs/sync/client/src/client.ts": {
         "branches": "30/34",

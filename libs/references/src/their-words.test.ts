@@ -71,6 +71,8 @@ describe('block quotes', () => {
   it('keeps a quote through its lazy continuation lines, until a blank line or a new block', () => {
     expect(quotedLines(['> Pinot answers', 'in 10ms P95.', '', 'Ours again.'])).toEqual([true, true, false, false])
     expect(quotedLines(['> A quote', '- a list item', '# A heading'])).toEqual([true, false, false])
+    expect(quotedLines(['> Their text.', '***', 'Our D107.'])).toEqual([true, false, false])
+    expect(quotedLines(['> Their text.', '---', 'Ours.', '> Theirs.', '_ _ _'])).toEqual([true, false, false, true, false])
   })
 })
 
