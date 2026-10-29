@@ -4,6 +4,8 @@ Status: needs-triage
 
 Category: bug
 
+<!-- Category is one of: bug, enhancement, question. -->
+
 ## What
 
 One sentence that says the issue: what is wrong or missing, and where. Shown

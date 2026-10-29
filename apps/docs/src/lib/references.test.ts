@@ -282,6 +282,9 @@ describe('glossary terms in prose (D94)', () => {
       '**Command**:',
       'A request to change the data.',
       '',
+      '**Issue**:',
+      'A recorded reason we might act.',
+      '',
       '**Effect**:',
       'The TypeScript library this stack is written with.',
       '',
@@ -380,6 +383,7 @@ describe('glossary terms in prose (D94)', () => {
 
   it('links an everyday word only as the glossary writes it, mid-sentence', () => {
     expect(found('the CLI command runs; it sends a Command. Command at the start is not one')).toEqual(['Command'])
+    expect(found('file an issue, then open the Issue mid-sentence. Issue at the start is not one')).toEqual(['Issue'])
     expect(found('Vision - View - Effects, built with Effect')).toEqual(['Vision - View - Effects', 'Effect'])
     expect(termForms('Effect')).toEqual(['Effect'])
     expect(termForms('Activity')).toEqual(['Activity', 'Activities'])

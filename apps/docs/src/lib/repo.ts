@@ -16,12 +16,14 @@ const GITHUB_BRANCH = 'main'
 export type RenderedDirectory = {
   readonly directory: string
   readonly route: string
+  /** Markdown nested under this directory is a page too. Dated records stay flat; a living area is a subfolder. */
+  readonly nested?: boolean
 }
 
 export const RENDERED_DIRECTORIES: ReadonlyArray<RenderedDirectory> = [
   { directory: 'docs/adr', route: 'reference/adr' },
   { directory: 'docs/evidence', route: 'reference/evidence' },
-  { directory: 'docs/research', route: 'research' },
+  { directory: 'docs/research', route: 'research', nested: true },
   { directory: 'docs/issues', route: 'reference/issues' },
 ]
 
@@ -39,8 +41,8 @@ export const RENDERED_FILES: ReadonlyArray<{
 ]
 
 /**
- * Research records that are HTML pages (D68) are served byte for byte from
- * this directory, next to the Markdown records.
+ * Research HTML is served byte for byte (D68), from this directory and from
+ * a subfolder of it. Markdown under `docs/research` is nested the same way.
  */
 export const RAW_HTML_DIRECTORY = 'docs/research'
 
@@ -67,14 +69,21 @@ export const siteUrlFor = (repositoryPath: string): string | null => {
   if (file) return `/${file.route}/`
   const directory = posix.dirname(repositoryPath)
   const fileName = posix.basename(repositoryPath)
-  if (directory === RAW_HTML_DIRECTORY && fileName.endsWith('.html')) {
-    return `/${RAW_HTML_DIRECTORY.replace(/^docs\//, '')}/${fileName}`
+  if (
+    fileName.endsWith('.html') &&
+    (directory === RAW_HTML_DIRECTORY || directory.startsWith(`${RAW_HTML_DIRECTORY}/`))
+  ) {
+    return `/${repositoryPath.slice('docs/'.length)}`
   }
   const rendered = RENDERED_DIRECTORIES.find(
-    (entry) => entry.directory === directory,
+    (entry) =>
+      directory === entry.directory ||
+      (entry.nested === true && directory.startsWith(`${entry.directory}/`)),
   )
   if (!rendered || !fileName.endsWith('.md')) return null
-  return `/${markdownRoute(rendered.route, fileName)}/`
+  const rest = directory === rendered.directory ? '' : directory.slice(rendered.directory.length + 1)
+  const route = rest === '' ? rendered.route : `${rendered.route}/${rest}`
+  return `/${markdownRoute(route, fileName)}/`
 }
 
 /** The page route (no slashes around it) of a rendered Markdown file. */

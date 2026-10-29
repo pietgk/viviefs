@@ -502,6 +502,21 @@ Decided with the human in [I96](../../issues/0096-accept-the-vocabulary.md), on 
 | <a id="d207"></a>D207 | Accept, told apart by what is accepted | Accept keeps both its senses: authority accepts a change ([ADR-0035 Accepting a change][ADR-0035]), and a person accepts an ADR, a guide or the glossary (Accepted, [D63 Acceptance on the guide][D63], [D65' Intent records accepted directly][D65']). There is no accept entry: Authority's entry defines authority's step, and Accepted's gains a `_Not_` line. Accepted's hover line no longer says its gates passed, which an intent record has none of. Not chosen: an accept entry of its own beside Accepted (a person's "accept the vocabulary" would link to authority's step); another verb for a person's sense (ADR statuses and issue titles rewritten). | Each sense is the standard one in its field (event sourcing; an ADR's status), the object always says which is meant, and the linker already links Accepted only as written. |
 | <a id="d208"></a>D208 | The lease is marked, and goes with the journal fence | Lease and Lease epoch stay defined, each with a line that it is decided to go ([ADR-0036 The journal is the fence][ADR-0036]); Authority's duty reads "fence each workflow run's writers". [I80 Build the journal fence][I80]'s build retires both under [D173 What a word change rewrites, and where it is written][D173]'s three checks, rewrites the lease in Journal, Envelope, Causing span and Quarantine, and names the fence's words (journal fence, takeover, a run's head). Not chosen: leave the glossary as it is until [I80][I80]; retire them now and add Journal fence. | The code still uses the lease, so retiring it now would describe code that is not built; leaving it unmarked teaches a newcomer what is decided to go. The glossary already marks a decided word not yet built (Agent account, Tamper-evidence). |
 
+<a id="d209-d215"></a>
+## XDevl grill session 1 (2026-10-21)
+
+The human ran the first XDevl grill session on 2026-10-21. The answers are these rows. Questions still open are [I102 XDevl grill: open questions][I102]. No ADR: none of these decides the stack's architecture. The session first numbered them [D130 One shape at the data level][D130]-[D136 The actor level is the durable workflow][D136]; main already held those numbers, so they are [D209-D215 XDevl grill session 1][D209-D215].
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d209"></a>D209 | Knowledge layers by distance | XDevl's main axis is how far knowledge is from the model's working context. The knowledge layers are L0 model weights (training cut-off, fine-tunes), L1 context window (prompt, KV-cache, compaction), L2 agent memory across sessions (notes, plans), L3 repo knowledge (AGENTS.md, glossary, ADRs, progressive disclosure), L4 system feedback (tests, types, logs, traces), L5 org knowledge (docs, tickets, databases, indexed), and L6 internet (search, scrapers, llms.txt, Context7), plus the Human (tacit knowledge, reaching the model through grilling, the glossary and written decisions). Lenses apply to every layer: structure (relational, graph, chunked linked documents, vector, and others), storage (in-memory, local disk, remote disk, data lake; size and speed), freshness and trust, and who writes it (human, LLM, system). | Every finding then answers which layer it improves and how that knowledge reaches a session. |
+| <a id="d210"></a>D210 | Layers as the backbone | The XDevl README opens with the layer diagram. Every practice and every finding carries a layer tag (L0-L6 or Human). Practices are grouped under the layer they improve. | Gaps per layer become visible. |
+| <a id="d211"></a>D211 | Layers, lenses, practices, findings | Knowledge layers say where knowledge sits. Lenses describe a layer. A practice is an action that improves a layer or moves knowledge between layers. A finding is evidence in the insights inbox that a practice works, and it becomes a practice once it has been grilled and tested. The area README carries that diagram under the layer diagram. | The four words stay distinct, so a finding is evidence and a practice is the action that follows. |
+| <a id="d212"></a>D212 | First core practices | Promote C1-C4 into the XDevl core and park C5-C7 until they are tried in this repository. The sentences stay the ones already written in the area README. The session's shorter labels (C1 glossary, C2 grill loop, C3 ADRs for hard-to-reverse decisions, C4 test and type feedback loops) name different subjects than those sentences, so each practice is tagged from what its sentence says: C1 L3, C2 L3, C3 L3, C4 Human, and the parked C5 L4, C6 L0 and L1, C7 L3. | C1-C4 rest on statements the 2026-10-09 snapshot marks verified. C5-C7 have not been tried here. The inbox already cites the sentences, so the sentences stay. |
+| <a id="d213"></a>D213 | Numbers stay in snapshots | Prices and benchmark scores stay out of the XDevl core and live only in dated snapshots. The core links to the newest snapshot. | A number goes stale. The core stays a practice, and the snapshot keeps the figure as it was written ([D68 Research records][D68]). |
+| <a id="d214"></a>D214 | Grill outcomes in the decision log | Answers given in a grill session go straight to the decision log as D rows. An ADR follows only when the decision is architectural. Questions still open when a session ends go into one issue per session, category question, status ready-for-human. The next session answers them as D rows and resolves the issue with links. An area does not keep a grill log. [Where decisions go](../../agents/domain.md) states the same rule. | A second log would restate this one. One issue holds what the session did not answer. |
+| <a id="d215"></a>D215 | Issue and Area defined | Issue and Area are glossary terms. An issue is a recorded reason we might act: a bug, an improvement, an idea, or a question for the human, one numbered file in `docs/issues/`, resolved by work or by a decision it links to. Category `question` is allowed beside `bug` and `enhancement`. An area is a directory that owns one topic. Its README maps the topic and links up to the glossary, the issues, this log and the ADRs. It holds living docs and dated records, and keeps no decisions and no vocabulary of its own. The XDevl terms live in the repository glossary. | One glossary and one issue tracker. An area that keeps its own of either drifts. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -604,6 +619,7 @@ Decided with the human in [I96](../../issues/0096-accept-the-vocabulary.md), on 
 [D199]: #d199
 [D2]: #d2
 [D204]: #d204
+[D209-D215]: #d209-d215
 [D22]: #d22
 [D24]: #d24
 [D25]: #d25
@@ -672,6 +688,7 @@ Decided with the human in [I96](../../issues/0096-accept-the-vocabulary.md), on 
 [D98]: #d98
 [D98']: #d98p
 [D99]: #d99
+[I102]: ../../issues/0102-xdevl-grill-open-questions.md
 [I11]: ../../issues/0011-quarantine-after-a-lost-lease.md
 [I12]: ../../issues/0012-partial-sync-and-history.md
 [I15]: ../../issues/0015-identity-keys-and-trust.md

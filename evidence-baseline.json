@@ -2,8 +2,8 @@
   "bundle": {
     "apps/evidence-client": {
       "android": {
-        "hbcBytes": 7628498,
-        "jsBytes": 4676392,
+        "hbcBytes": 7628834,
+        "jsBytes": 4676369,
         "packages": {
           "(unmapped)": 204862,
           "@babel/runtime": 2100,
@@ -35,12 +35,12 @@
           "expo": 95139,
           "expo-application": 2806,
           "expo-asset": 6772,
-          "expo-auth-session": 24959,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 6900,
           "expo-modules-core": 15296,
-          "expo-notifications": 36279,
+          "expo-notifications": 36273,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -76,8 +76,8 @@
         "recordedAt": "2026-10-29"
       },
       "ios": {
-        "hbcBytes": 5522498,
-        "jsBytes": 2582458,
+        "hbcBytes": 5522837,
+        "jsBytes": 2582435,
         "packages": {
           "(unmapped)": 203177,
           "@babel/runtime": 2100,
@@ -102,12 +102,12 @@
           "expo": 94920,
           "expo-application": 2843,
           "expo-asset": 6691,
-          "expo-auth-session": 24959,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 7036,
           "expo-modules-core": 15065,
-          "expo-notifications": 33907,
+          "expo-notifications": 33901,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -239,16 +239,16 @@
         "statements": "11/25"
       },
       "apps/docs/src/lib/repo-pages.ts": {
-        "branches": "34/38",
-        "functions": "11/14",
-        "lines": "37/39",
-        "statements": "39/45"
+        "branches": "45/49",
+        "functions": "25/25",
+        "lines": "61/61",
+        "statements": "66/69"
       },
       "apps/docs/src/lib/repo.ts": {
-        "branches": "68/73",
+        "branches": "76/81",
         "functions": "10/10",
-        "lines": "57/61",
-        "statements": "66/70"
+        "lines": "59/63",
+        "statements": "68/72"
       },
       "apps/docs/src/lib/site-pages.ts": {
         "branches": "38/47",
@@ -768,5 +768,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "f61ca98402a480cb08cfc0a29e47c182475d98eb95c78d30cf509aaf217fe464"
+  "registryDigest": "ad01dbe885ef2ed6e165863e84d1a78419861af845c8849c871d975eb1c2ab66"
 }

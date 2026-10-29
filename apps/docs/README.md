@@ -65,9 +65,10 @@ after 60000ms") and leaves a server that says it is ready but never answers.
 ## How it is put together
 
 - One content loader, `src/lib/repo-docs-loader.ts`, renders repository
-  Markdown in place. Those pages are not under `src/content/docs`, so
-  Starlight's `autogenerate` cannot list them; `src/lib/repo-pages.ts` builds
-  their sidebar groups, with ADR status badges.
+  Markdown in place, including a subfolder of `docs/research/`. Those pages
+  are not under `src/content/docs`, so Starlight's `autogenerate` cannot
+  list them; `src/lib/repo-pages.ts` builds their sidebar groups, with ADR
+  status badges. A research subfolder is a collapsed group.
 - Relative file links in any rendered Markdown become site or GitHub links,
   and a link to a missing file fails the build (`src/lib/repo-links.ts`);
   `starlight-links-validator` checks site paths and anchors.

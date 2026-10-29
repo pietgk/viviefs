@@ -18,6 +18,8 @@ for (const file of [
   'docs/evidence/note.md',
   'docs/plan/plan.md',
   'docs/research/2026-01-01-record.html',
+  'docs/research/XDevl/insights.md',
+  'docs/research/XDevl/concept-map.html',
   'libs/example/src/index.ts',
 ]) {
   mkdirSync(dirname(join(root, file)), { recursive: true })
@@ -40,8 +42,23 @@ describe('siteUrlFor', () => {
     )
   })
 
+  it('renders a nested research area, including its html', () => {
+    expect(siteUrlFor('docs/research/XDevl/README.md')).toBe('/research/XDevl/')
+    expect(siteUrlFor('docs/research/XDevl/insights.md')).toBe('/research/XDevl/insights/')
+    expect(siteUrlFor('docs/research/XDevl/snapshots/2026-01-02-note.md')).toBe(
+      '/research/XDevl/snapshots/2026-01-02-note/',
+    )
+    expect(siteUrlFor('docs/research/XDevl/concept-map.html')).toBe(
+      '/research/XDevl/concept-map.html',
+    )
+  })
+
   it('does not render other files', () => {
     expect(siteUrlFor('docs/plan/plan.md')).toBeNull()
+    expect(siteUrlFor('docs/adr/extra/note.md')).toBeNull()
+    expect(siteUrlFor('docs/adr/note.html')).toBeNull()
+    expect(siteUrlFor('docs/research/XDevl/notes.txt')).toBeNull()
+    expect(siteUrlFor('docs/research-notes/foo.md')).toBeNull()
     expect(siteUrlFor('libs/example/src/index.ts')).toBeNull()
   })
 })
@@ -51,6 +68,17 @@ describe('resolveLink', () => {
     expect(resolveLink(root, adr, '0002-second.md#design')).toEqual({
       _tag: 'Rewritten',
       href: '/reference/adr/0002-second/#design',
+    })
+  })
+
+  it('links a nested research page on the site', () => {
+    expect(resolveLink(root, adr, '../research/XDevl/insights.md')).toEqual({
+      _tag: 'Rewritten',
+      href: '/research/XDevl/insights/',
+    })
+    expect(resolveLink(root, adr, '../research/XDevl/concept-map.html')).toEqual({
+      _tag: 'Rewritten',
+      href: '/research/XDevl/concept-map.html',
     })
   })
 

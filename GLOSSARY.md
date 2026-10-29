@@ -861,6 +861,16 @@ _Not_: Effect's `Decision`, a model's answer about one input: that answer is an
 enrichment, with the model as its origin
 ([D111 Faster and enriching implementations][D111]).
 
+**Issue**:
+A recorded reason we might act: a bug, an improvement, an idea, or a question for the human.
+One numbered file in `docs/issues/`. It is resolved by work or by a decision, and links to that decision rather than restating it.
+_Avoid_: ticket (for questions and ideas), intent (for this meaning)
+
+**Area**:
+A directory that owns one topic, such as the XDevl research folder.
+Its README maps the topic and links up to the repo-level glossary, issues, decision log and ADRs. It holds living docs and dated records, never its own decisions or vocabulary.
+_Avoid_: module, section, effort, context (for this meaning)
+
 **ADR**:
 A short document that records one important decision and why it was made, so the reason is not lost later.
 An architecture decision record, `ADR-NNNN`. It names its claims and the gates
@@ -1003,6 +1013,92 @@ _Avoid_: module, unit (of a course)
 A small piece of code to fix yourself, with a check that tells you when it is right.
 A stub, a failing test and a reference solution that passes in verify.
 
+## How we develop
+
+Terms for the account of how this repository develops software. They moved
+here from the XDevl area, which keeps no vocabulary of its own
+([D215 Issue and Area defined][D215]). Knowledge distance is named L0-L6 in
+that account. The glossary term Layer stays the recipe that supplies a service.
+
+**Our way**:
+The account of developing software by giving each of the human, the LLM and the system the work it does best.
+_Avoid_: process, methodology, playbook
+
+**Stable core**:
+The short part of an area's README that holds the practices a grill session has promoted.
+_Avoid_: spec, canon, guide
+
+**Practice**:
+An action that improves a knowledge layer or moves knowledge between layers.
+In the stable core it is one sentence, in EARS or Given/When/Then, that names
+who verifies it and its evidence label.
+_Avoid_: pattern
+
+**Finding**:
+Evidence, written in the insights inbox, that a practice works.
+It becomes a practice once it has been grilled and tested.
+_Avoid_: insight, note, idea
+
+**Snapshot**:
+A dated research record kept as it was written.
+In XDevl, prices and benchmark scores live only in a snapshot.
+_Avoid_: draft, copy
+
+**Grill session**:
+The conversation in which the human answers questions about this work.
+Its answers are rows in the decision log, and questions still open at the end go into one issue.
+_Avoid_: review, meeting, chat
+
+**Grill outcome**:
+What a grill session decides for one finding: promote, park, or reject.
+_Avoid_: verdict
+
+**Promotion**:
+A grill outcome a human has approved, after which the stable core carries the practice.
+_Avoid_: merge, landing
+
+**Park**:
+A grill outcome that leaves a finding out of the stable core for now, with a reason.
+_Avoid_: defer, postpone
+
+**Reject**:
+A grill outcome that leaves a finding out of the stable core because it does not hold, with a reason.
+_Avoid_: delete, discard
+
+**Reason**:
+The sentence recorded with a grill outcome that says why.
+_Avoid_: rationale
+
+**Human**:
+The person whose tacit knowledge reaches the model through grilling, the glossary and written decisions.
+In this repository that person is Piet.
+_Avoid_: user, owner
+
+**LLM**:
+A language model in a named role: the Research bot, XDevl, or a coding agent.
+_Avoid_: AI, model
+
+**Research bot**:
+The LLM role that adds a snapshot and appends a finding, and leaves the stable core unchanged.
+_Avoid_: agent, researcher
+
+**XDevl**:
+The LLM role that grills with the human.
+_Avoid_: assistant
+
+**Coding agent**:
+The LLM role that edits the repository from the human's decisions, in a pull request the human reviews and merges.
+_Avoid_: agent, coder
+
+**System**:
+The checks and files that hold the work: verify, the docs site and the skills.
+_Avoid_: tooling, platform
+
+**Evidence label**:
+The mark on a finding that says what the statement rests on.
+The marks in use are verified, release, X chatter, our experiment and unlabelled.
+_Avoid_: proof, qualified, evidence note
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: docs/adr/0002-purpose-scope-and-exemplar.md
@@ -1078,6 +1174,7 @@ A stub, a failing test and a reference solution that passes in verify.
 [D206]: docs/plan/bootstrap/02-decision-log.md#d206
 [D207]: docs/plan/bootstrap/02-decision-log.md#d207
 [D208]: docs/plan/bootstrap/02-decision-log.md#d208
+[D215]: docs/plan/bootstrap/02-decision-log.md#d215
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D52]: docs/plan/bootstrap/02-decision-log.md#d52
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p

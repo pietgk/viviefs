@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from '@effect/vitest'
-import { parseRepositoryPage, sidebarItems, statusBadge } from './repo-pages.ts'
+import { parseRepositoryPage, repositoryMarkdownFiles, researchHtmlFiles, sidebarItems, statusBadge } from './repo-pages.ts'
 
 describe('parseRepositoryPage', () => {
   it('takes the title from the heading and the status from its line', () => {
@@ -81,6 +81,74 @@ describe('sidebarItems', () => {
     expect(sidebarItems(root, 'docs/research')).toEqual([
       { label: 'Index', slug: 'research' },
       { label: 'A note', link: '/research/2026-01-01-note%2Ehtml' },
+    ])
+  })
+})
+
+describe('a nested research area', () => {
+  const root = mkdtempSync(join(tmpdir(), 'viviefs-research-'))
+  afterAll(() => rmSync(root, { recursive: true, force: true }))
+  const write = (path: string, content: string) => {
+    mkdirSync(join(root, path, '..'), { recursive: true })
+    writeFileSync(join(root, path), content)
+  }
+  write('docs/research/README.md', '# Research records\n')
+  write('docs/research/2026-01-01-note.html', '<title>A note</title>')
+  write('docs/adr/README.md', '# Decisions\n')
+  mkdirSync(join(root, 'docs/evidence'))
+  mkdirSync(join(root, 'docs/issues'))
+  write('docs/research/XDevl/README.md', '# XDevl\n')
+  write('docs/research/XDevl/insights.md', '# Insights\n')
+  write('docs/research/XDevl/concept-map.html', '<title>Map</title>')
+  write('docs/research/XDevl/snapshots/2026-01-02-note.md', '# A snapshot\n')
+  write('docs/research/XDevl/box/inner/note.md', '# Inner\n')
+
+  it('groups the living area after the index and serves nested html', () => {
+    expect(sidebarItems(root, 'docs/research')).toEqual([
+      { label: 'Index', slug: 'research' },
+      {
+        label: 'XDevl',
+        collapsed: true,
+        items: [
+          { label: 'Index', slug: 'research/XDevl' },
+          {
+            label: 'box',
+            collapsed: true,
+            items: [
+              {
+                label: 'inner',
+                collapsed: true,
+                items: [{ label: 'Inner', slug: 'research/XDevl/box/inner/note' }],
+              },
+            ],
+          },
+          {
+            label: 'snapshots',
+            collapsed: true,
+            items: [{ label: 'A snapshot', slug: 'research/XDevl/snapshots/2026-01-02-note' }],
+          },
+          { label: 'Insights', slug: 'research/XDevl/insights' },
+          { label: 'Map', link: '/research/XDevl/concept-map%2Ehtml' },
+        ],
+      },
+      { label: 'A note', link: '/research/2026-01-01-note%2Ehtml' },
+    ])
+  })
+
+  it('lists nested markdown and html for the loader and the endpoint', () => {
+    expect(repositoryMarkdownFiles(root)).toEqual([
+      'GLOSSARY.md',
+      'docs/plan/bootstrap/02-decision-log.md',
+      'docs/adr/README.md',
+      'docs/research/README.md',
+      'docs/research/XDevl/README.md',
+      'docs/research/XDevl/insights.md',
+      'docs/research/XDevl/box/inner/note.md',
+      'docs/research/XDevl/snapshots/2026-01-02-note.md',
+    ])
+    expect(researchHtmlFiles(root)).toEqual([
+      'docs/research/2026-01-01-note.html',
+      'docs/research/XDevl/concept-map.html',
     ])
   })
 })

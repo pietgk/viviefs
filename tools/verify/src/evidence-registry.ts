@@ -105,7 +105,7 @@ export const EVIDENCE_REGISTRY: ReadonlyArray<EvidenceRegistryEntry> = [
   unit('apps/docs/src/lib/repo-pages.ts', 'Sidebar groups and ADR status come from pure functions with unit tests.'),
   unit('apps/docs/src/lib/site-pages.ts', 'Each site page\'s title and first sentence for its preview card; the reference plugin\'s tests read them from a fixture repository.'),
   unit('apps/docs/src/lib/repo.ts', 'Which repository files become which site pages is pure path logic with unit tests.'),
-  build('apps/docs/src/pages/research/[record].html.ts', 'docs', 'An Astro endpoint that serves research HTML as is; exercised by the docs build.'),
+  build('apps/docs/src/pages/research/[...record].html.ts', 'docs', 'An Astro endpoint that serves research HTML as is, including HTML nested under docs/research; exercised by the docs build.'),
 
   // apps/evidence-client: the evidence app runs only on a device or in a browser (D70).
   device('apps/evidence-client/index.ts', 'P01', 'Expo entry: registers the root component with the native runtime.'),
