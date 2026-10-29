@@ -47,7 +47,7 @@ import {
   type GlossaryTerm,
   type Reference,
 } from './references.ts'
-import { pageAt } from './site-pages.ts'
+import { pageAt, sitePages, type SitePage } from './site-pages.ts'
 
 /** Where a glossary term links: its entry on the glossary page. */
 export const GLOSSARY_PAGE = '/reference/glossary/'
@@ -78,8 +78,8 @@ export const previewProperties = (reference: Reference) => ({
 })
 
 /** The preview data of a link to a site page (D90'), or undefined for any other link. */
-const pagePreview = (root: string, url: string) => {
-  const page = pageAt(root, url)
+const pagePreview = (pages: ReadonlyMap<string, SitePage>, url: string) => {
+  const page = pageAt(pages, url)
   return page === undefined
     ? undefined
     : previewProperties({ id: url, kind: 'Page', label: page.title, href: url, summary: page.summary, meta: '' })
@@ -227,6 +227,7 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
     const repositoryPath = relative(repositoryRoot, sourceFile).split('\\').join('/')
     const index = referenceIndex(repositoryRoot)
     const catalog = referenceCatalog(repositoryRoot)
+    const pages = sitePages(repositoryRoot)
     const isDecisionLog = repositoryPath === DECISION_LOG
     const isGlossary = repositoryPath === GLOSSARY
     const find = termFinder(glossaryTerms(repositoryRoot))
@@ -287,7 +288,7 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           context.replaceNode(node, referenceLink(reference, reference.label))
           return
         }
-        const preview = pagePreview(repositoryRoot, node.url)
+        const preview = pagePreview(pages, node.url)
         if (preview === undefined) return
         context.replaceNode(node, { ...node, data: { hProperties: preview } })
       },
@@ -298,7 +299,7 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           return
         }
         // The converter resolves the link's target and title; the preview needs only the page.
-        const preview = pagePreview(repositoryRoot, definitionUrl(node.identifier, rootOf(node, context)))
+        const preview = pagePreview(pages, definitionUrl(node.identifier, rootOf(node, context)))
         if (preview === undefined) return
         context.replaceNode(node, { ...node, data: { hProperties: preview } })
       },
@@ -328,7 +329,7 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           if (KEPT_AS_WRITTEN.test(repositoryPath)) return
           throw new Error(`${repositoryPath}: \`${path.path}\` names a repository path that does not exist (D87).`)
         }
-        const preview = pagePreview(repositoryRoot, path.href)
+        const preview = pagePreview(pages, path.href)
         context.replaceNode(node, {
           type: 'link',
           url: path.href,

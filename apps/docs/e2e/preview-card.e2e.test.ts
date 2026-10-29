@@ -9,6 +9,7 @@ import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { chromium, type Browser, type Page } from 'playwright'
+import { docsBase, withBase, withoutBase } from '../src/lib/repo.ts'
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url))
 
@@ -20,14 +21,17 @@ const TYPES: Record<string, string> = {
   '.json': 'application/json',
 }
 
-/** The site as it is deployed: a static server over `dist/`. */
+/** The site as it is deployed: a static server over `dist/`, under the build's base path (D61''). */
 const serve = (): Promise<Server> =>
   new Promise((resolve) => {
     const server = createServer((request, response) => {
-      const path = normalize(decodeURIComponent((request.url ?? '/').split('?')[0] ?? '/'))
+      const requested = decodeURIComponent((request.url ?? '/').split('?')[0] ?? '/')
+      const path = normalize(withoutBase(requested))
+      // Under a base, the deployed site answers nothing outside it: a root-relative asset would 404 there.
+      const outside = docsBase() !== '/' && path === normalize(requested)
       let file = join(DIST, path)
       if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html')
-      if (!file.startsWith(DIST) || !existsSync(file)) {
+      if (outside || !file.startsWith(DIST) || !existsSync(file)) {
         response.writeHead(404).end()
         return
       }
@@ -48,21 +52,28 @@ const launch = async (): Promise<Browser> => {
   }
 }
 
-let server: Server
-let browser: Browser
+let server: Server | undefined
+let browser: Browser | undefined
 let page: Page
+/** Every request the page made that the site could not answer. */
+const missing: string[] = []
 
 beforeAll(async () => {
   if (!existsSync(join(DIST, 'index.html'))) throw new Error('No built site: run `pnpm exec nx run docs:build` first.')
   server = await serve()
   browser = await launch()
   page = await browser.newPage()
-  await page.goto(`http://127.0.0.1:${(server.address() as AddressInfo).port}/`)
+  page.on('response', (response) => {
+    if (response.status() >= 400) missing.push(`${response.status()} ${response.url()}`)
+  })
+  await page.goto(`http://127.0.0.1:${(server.address() as AddressInfo).port}${withBase('/')}`)
 })
 
 afterAll(async () => {
   await browser?.close()
-  await new Promise((resolve) => server?.close(resolve))
+  // A missing build fails before the server starts; its error should not wait on a close that never comes.
+  const started = server
+  if (started) await new Promise((resolve) => started.close(resolve))
 })
 
 const card = () => page.locator('#ref-card')
@@ -70,6 +81,10 @@ const card = () => page.locator('#ref-card')
 const ADR_LIST_CARD = ['Page', 'Architectural decision records', 'ADRs preserve why consequential choices were made.']
 
 describe('How a pattern is delivered', () => {
+  it('loads every script and style the page asks for, as the site is deployed', () => {
+    expect(missing).toEqual([])
+  })
+
   it('shows the second "ADRs" as a page when it is hovered', async () => {
     const links = page.locator('.sl-markdown-content a', { hasText: /^ADRs$/ })
     await expect.poll(() => links.count()).toBeGreaterThan(1)
