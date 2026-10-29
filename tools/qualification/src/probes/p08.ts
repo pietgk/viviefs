@@ -10,7 +10,7 @@ import {
   runComposerChecks,
   xstateDriver,
   type ComposerCheck,
-} from '@viviefs/evidence-client'
+} from '@viviefs/evidence-client-feature'
 import { fail, writeJson } from './dev-client.ts'
 import { command } from '../process.ts'
 
@@ -68,8 +68,8 @@ const runVitest = async (cwd: string, label: string) => {
 const run = async () => {
   await mkdir(ARTIFACTS, { recursive: true })
 
-  console.log('P08 evidence-client tests and stories...')
-  await runVitest(CLIENT, 'evidence-client')
+  console.log('P08 evidence-client-feature tests and stories...')
+  await runVitest(CLIENT, 'evidence-client-feature')
   console.log('P08 settled-text tests...')
   await runVitest(UI, 'ui')
 

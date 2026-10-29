@@ -79,7 +79,7 @@ export async function inputsFingerprint(root = process.cwd()): Promise<string> {
     '-z',
     '--',
     'tools/qualification',
-    'apps/evidence-mobile',
+    'apps/evidence-client',
     'libs/platform-native',
     'libs/telemetry',
     'libs/store-sqlite-native',

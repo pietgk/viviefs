@@ -17,7 +17,7 @@
     "@effect/vitest": "4.0.5",
     "@viviefs/blobs": "workspace:*",
     "@viviefs/datom": "workspace:*",
-    "@viviefs/evidence-client": "workspace:*",
+    "@viviefs/evidence-client-feature": "workspace:*",
     "@viviefs/evidence-model": "workspace:*",
     "@viviefs/store-postgres": "workspace:*",
     "@viviefs/store-sqlite-node": "workspace:*",

@@ -1,5 +1,5 @@
 {
-  "name": "@viviefs/evidence-client",
+  "name": "@viviefs/evidence-client-feature",
   "version": "0.0.0",
   "private": true,
   "type": "module",

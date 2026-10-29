@@ -1,8 +1,8 @@
 {
   "bundle": {
-    "apps/evidence-mobile": {
+    "apps/evidence-client": {
       "android": {
-        "hbcBytes": 7628412,
+        "hbcBytes": 7628413,
         "jsBytes": 4676179,
         "packages": {
           "(unmapped)": 204862,
@@ -61,7 +61,7 @@
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-mobile": 48307,
+          "workspace:apps/evidence-client": 48307,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
           "workspace:libs/datom": 63715,
@@ -76,7 +76,7 @@
         "recordedAt": "2026-10-29"
       },
       "ios": {
-        "hbcBytes": 5522464,
+        "hbcBytes": 5522467,
         "jsBytes": 2582245,
         "packages": {
           "(unmapped)": 203177,
@@ -128,7 +128,7 @@
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-mobile": 48293,
+          "workspace:apps/evidence-client": 48293,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
           "workspace:libs/datom": 63715,
@@ -750,5 +750,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "3134ea1303d2402d6e32c7c15ee4103bd0a44a4ec227ed803aaefea170af33bc"
+  "registryDigest": "95e7bd6b82973ae233ba08f3e3087dd51e3b22369d69c4e3a4afe20a81c909a2"
 }

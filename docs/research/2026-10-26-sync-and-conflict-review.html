@@ -219,7 +219,7 @@ sequenceDiagram
       <div class="space-y-2">
         <p><b>Concurrent: works by accident.</b></p>
         <ol class="list-decimal pl-5 space-y-1">
-          <li>A attaches <code class="cr-inline">blob:a</code> to evidence <code class="cr-inline">E1</code>, B attaches <code class="cr-inline">blob:b</code>; neither has seen the other. Both send basis <code class="cr-inline">0</code>, as every changeset outside P05 does (<a class="cr-link" href="../../tools/qualification/src/probes/p09-checks.ts"><code class="cr-inline">p09-checks.ts</code></a>, <a class="cr-link" href="../../apps/evidence-mobile/src/p11-runtime.ts"><code class="cr-inline">p11-runtime.ts</code></a>:362).</li>
+          <li>A attaches <code class="cr-inline">blob:a</code> to evidence <code class="cr-inline">E1</code>, B attaches <code class="cr-inline">blob:b</code>; neither has seen the other. Both send basis <code class="cr-inline">0</code>, as every changeset outside P05 does (<a class="cr-link" href="../../tools/qualification/src/probes/p09-checks.ts"><code class="cr-inline">p09-checks.ts</code></a>, <a class="cr-link" href="../../apps/evidence-client/src/p11-runtime.ts"><code class="cr-inline">p11-runtime.ts</code></a>:362).</li>
           <li>The server accepts both.</li>
           <li>On each phone the projector applies one first; the second finds the first's fact above basis 0 and writes a <code class="cr-inline">concurrent</code> row. A and B may disagree on which changeset the row names until a rebuild.</li>
           <li>Both files stay visible. P05 "basis human conflict" shows exactly this, on one store.</li>

@@ -256,7 +256,7 @@ export default [
       '**/*.spec.ts',
       '**/src/suites/**',
       '**/vitest*.config.ts',
-      'apps/evidence-mobile/**',
+      'apps/evidence-client/**',
       'apps/evidence-server/**',
       'libs/testing/**',
     ],

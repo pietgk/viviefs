@@ -117,7 +117,7 @@ the docs site. Open questions for the human ([I1 Advisories that fail audit with
 |---|---|---|
 | Effect modules marked `@stability unstable` (workflow, sql, rpc, http, cli, reactivity, observability; under `effect/*` since 4.0) change in minor releases | Breakage on upgrade | Exact version pin; upgrades as their own change with full verify and gate rerun (ledger goes stale on dependency change) |
 | Effect Workflow has no versioning API | In-flight executions break on code changes | Version by workflow name, stable activity names, old versions ship until drained, lint on activity-name changes |
-| Metro Migrator dynamic `import()` (Effect-TS/effect#6347, closed by Effect-TS/effect#9157 on `v4/next-minor`; still in 4.0.5 on 2026-10-22) | Build failure when importing SQL modules | Babel stub plugin (`apps/evidence-mobile/babel.config.js`) until the Effect release with the fix is pinned |
+| Metro Migrator dynamic `import()` (Effect-TS/effect#6347, closed by Effect-TS/effect#9157 on `v4/next-minor`; still in 4.0.5 on 2026-10-22) | Build failure when importing SQL modules | Babel stub plugin (`apps/evidence-client/babel.config.js`) until the Effect release with the fix is pinned |
 | Basis checks on long-lived changesets are subtle | Wrong conflict outcomes | Dedicated [P05 Changesets and projections][P05] cases, a lesson and an exercise |
 | Clock skew beyond HLC tolerance on long-offline devices | Wrong LWW winners | Server-side skew detection, flagged in trace; human-conflict policy for important attributes |
 | Scope size: many patterns at once | Slow progress | Gate order, delivery definition, one exemplar |

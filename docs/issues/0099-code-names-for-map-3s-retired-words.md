@@ -13,7 +13,7 @@ Rename the code identifiers that still use a word [I91 Effect's names against ou
 Rename, choosing each new name here (the review page's examples: `WorkflowEngineConfig`, `completeDurableDeferred`, `readSyncCursor`, `EvidenceRegistryEntry`):
 
 - workflow engine ([D186 Workflow engine and workflow runner][D186]): `EngineConfig`, `EngineSweep` (`libs/workflow-engine`).
-- durable deferred ([D187 Durable deferred][D187]): `completeDeferred` (`libs/workflow-engine/src/engine.ts`), `scheduleDeferredNotification` and `DeferredNotificationData` (`libs/platform-native/src/notifications.ts`, `apps/evidence-mobile/src/p07-runtime.ts`), `serverDeferred` (`tools/qualification/src/probes/p09-checks.ts`).
+- durable deferred ([D187 Durable deferred][D187]): `completeDeferred` (`libs/workflow-engine/src/engine.ts`), `scheduleDeferredNotification` and `DeferredNotificationData` (`libs/platform-native/src/notifications.ts`, `apps/evidence-client/src/p07-runtime.ts`), `serverDeferred` (`tools/qualification/src/probes/p09-checks.ts`).
 - changeset manifest ([D192 Changeset manifest][D192]): `CommitManifest` (`libs/datom/src/manifest.ts`, `projector.ts`; the commit datom's value, the changeset manifest and the basis), `fileManifest` (`p09-checks.ts`).
 - sync cursor ([D193 Sync cursor][D193]): `readCursor`, `writeCursor`, `CursorRow` (`libs/sync/client/src/client.ts`). `Cursor` in `libs/datom` and the trace projector, and the projector's `loadCursor` and `saveCursor`, are any consumer's acknowledged cursor, not a sync cursor: check each before renaming.
 - evidence registry ([D197 Evidence registry, and the code names follow in one issue][D197]): `RegistryEntry`, `RegistryContext` (`tools/verify`).

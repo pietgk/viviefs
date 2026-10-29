@@ -14,7 +14,7 @@ import {
 } from './dev-client.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
-const APP = join(ROOT, 'apps/evidence-mobile')
+const APP = join(ROOT, 'apps/evidence-client')
 const QUAL = join(ROOT, 'tools/qualification')
 const ARTIFACTS = join(ROOT, '.artifacts/qualification/p01')
 

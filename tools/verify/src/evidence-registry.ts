@@ -88,7 +88,7 @@ const types = (path: string, rationale: string): RegistryEntry => ({
   rationale,
 })
 
-const APP = 'apps/evidence-mobile/src'
+const APP = 'apps/evidence-client/src'
 const PROBES = 'tools/qualification/src/probes'
 
 export const REGISTRY: ReadonlyArray<RegistryEntry> = [
@@ -106,11 +106,11 @@ export const REGISTRY: ReadonlyArray<RegistryEntry> = [
   unit('apps/docs/src/lib/repo.ts', 'Which repository files become which site pages is pure path logic with unit tests.'),
   build('apps/docs/src/pages/research/[record].html.ts', 'docs', 'An Astro endpoint that serves research HTML as is; exercised by the docs build.'),
 
-  // apps/evidence-mobile: the evidence app runs only on a device or in a browser (D70).
-  device('apps/evidence-mobile/index.ts', 'P01', 'Expo entry: registers the root component with the native runtime.'),
-  build('apps/evidence-mobile/babel.config.js', 'bundle-size', 'Metro loads it to transform every module; the Hermes bundle build fails without it.'),
-  build('apps/evidence-mobile/metro.config.js', 'bundle-size', 'Metro resolver and transformer config; exercised by the Hermes bundle build.'),
-  build('apps/evidence-mobile/plugins/with-third-party-sqlite.js', 'bundle-size', 'Expo config plugin for the iOS Podfile; read when the app config is evaluated for the bundle.'),
+  // apps/evidence-client: the evidence app runs only on a device or in a browser (D70).
+  device('apps/evidence-client/index.ts', 'P01', 'Expo entry: registers the root component with the native runtime.'),
+  build('apps/evidence-client/babel.config.js', 'bundle-size', 'Metro loads it to transform every module; the Hermes bundle build fails without it.'),
+  build('apps/evidence-client/metro.config.js', 'bundle-size', 'Metro resolver and transformer config; exercised by the Hermes bundle build.'),
+  build('apps/evidence-client/plugins/with-third-party-sqlite.js', 'bundle-size', 'Expo config plugin for the iOS Podfile; read when the app config is evaluated for the bundle.'),
   device(`${APP}/app.tsx`, 'P01', 'Chooses the gate screen at launch; React Native only.'),
   device(`${APP}/crypto-setup.ts`, 'P01', 'Installs the Hermes crypto polyfill before anything else runs.'),
   types(`${APP}/env.d.ts`, 'Declares the Expo environment variables the app reads.'),

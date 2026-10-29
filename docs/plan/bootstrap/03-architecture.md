@@ -233,7 +233,7 @@ sleeps up to 60s run in memory.
 - Effect v4 core runs on Hermes V1 with Expo's `TextDecoder`; add `crypto.getRandomValues` and
   `crypto.subtle.digest` polyfills (expo-crypto or react-native-quick-crypto).
 - Metro rejects the dynamic `import()` in `effect/sql/Migrator.js` (Effect-TS/effect#6347). The babel
-  plugin in `apps/evidence-mobile/babel.config.js` stubs it.
+  plugin in `apps/evidence-client/babel.config.js` stubs it.
 - Prefer deep imports (`effect/Effect`) or Expo tree shaking: the barrel adds about 2.7 MB to an iOS bundle, deep
   imports about 0.6 MB.
 - All of this was measured on SDK 56 / RN 0.85 and must be rerun on SDK 58 (gate [P01 Platform on SDK 58][P01]).
