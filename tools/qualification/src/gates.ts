@@ -31,13 +31,13 @@ export const gateProbes: GateProbe[] = [
     gate: 'P01',
     name: 'Platform on SDK 58',
     claim:
-      'Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes, and builds with Metro',
+      'Effect v4 runs on Expo SDK 58 / RN 0.88 / Hermes, and builds with Metro',
     path: 'tools/qualification/src/probes/p01.ts',
     args: [],
     timeoutMs: 2_700_000,
     stage: 'foundation',
     summary:
-      'Effect v4 RC runs on Expo SDK 58 / RN 0.88 / Hermes on iOS and Android, with polyfills and the Migrator babel workaround.',
+      'Effect v4 runs on Expo SDK 58 / RN 0.88 / Hermes on iOS and Android, with polyfills and the Migrator babel workaround.',
   },
   {
     gate: 'P02',

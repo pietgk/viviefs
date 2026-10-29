@@ -16,6 +16,10 @@ minimumReleaseAgeExclude:
   - '@op-engineering/op-sqlite@18.2.5'
 
 overrides:
+  # effect-solutions isolates Effect beta.59, but platform-bun's range pulled
+  # node-shared rc.116 with an incompatible Effect peer. Keep that tool's
+  # platform packages on its own beta; the application stays on stable Effect.
+  '@effect/platform-bun@4.0.0-beta.59>@effect/platform-node-shared': 4.0.0-beta.59
   smol-toml: 1.8.0
   # GHSA-6j4f-fj2g-mc7p and GHSA-qhr7-859c-m2p7 (high): nx's minimatch resolved 5.0.9.
   'brace-expansion@5': 5.0.12

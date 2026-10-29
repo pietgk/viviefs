@@ -2,7 +2,7 @@
   "bundle": {
     "apps/evidence-client": {
       "android": {
-        "hbcBytes": 7628413,
+        "hbcBytes": 7628412,
         "jsBytes": 4676179,
         "packages": {
           "(unmapped)": 204862,
@@ -76,7 +76,7 @@
         "recordedAt": "2026-10-29"
       },
       "ios": {
-        "hbcBytes": 5522467,
+        "hbcBytes": 5522466,
         "jsBytes": 2582245,
         "packages": {
           "(unmapped)": 203177,
@@ -269,10 +269,10 @@
         "statements": "14/16"
       },
       "features/evidence/client/src/intent-composer/effect-machine.ts": {
-        "branches": "28/30",
-        "functions": "20/20",
-        "lines": "61/62",
-        "statements": "63/64"
+        "branches": "24/26",
+        "functions": "19/19",
+        "lines": "55/56",
+        "statements": "57/58"
       },
       "features/evidence/client/src/intent-composer/graph.ts": {
         "branches": "6/8",

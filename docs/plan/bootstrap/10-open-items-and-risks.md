@@ -35,7 +35,7 @@ the named gate.
 
 | Claim | Source | Gate |
 |---|---|---|
-| Effect v4 RC works on SDK 58 / RN 0.88 with the same polyfills as on SDK 56, on iOS and Android | research/02 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: 15 checks on iOS and Android with `expo-crypto`, [ADR-0003 Effect v4 as the backbone][ADR-0003]) |
+| Effect v4 works on SDK 58 / RN 0.88 with the same polyfills as on SDK 56, on iOS and Android | research/02 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: 15 checks on iOS and Android with `expo-crypto`, [ADR-0003 Effect v4 as the backbone][ADR-0003]) |
 | expo-crypto or react-native-quick-crypto can supply `crypto.subtle.digest` for Workflow | research/02 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: `expo-crypto` on `globalThis.crypto`; without it `workflow memory` fails, [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]) |
 | What "iOS 27 required" in SDK 58 means (deployment target or build SDK) | research/05 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: build SDK; run used Xcode 26.6 and iOS 26.5, [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]) |
 | op-sqlite 17 works on RN 0.88 New Architecture on iOS and Android; peer conflict with op-sqlite 18 | research/02 | [P02 SQLite drivers][P02] (measured 2026-09-20: 17.x does not compile; pin is 18.2.5, [ADR-0005 SQLite drivers][ADR-0005]) |
