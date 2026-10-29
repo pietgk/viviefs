@@ -4,7 +4,7 @@ Status: ready-for-human
 
 Category: enhancement
 
-Decide when: [I26 Glossary links on words that are not our terms][I26] is decided
+Decide when: map 4 looks at the docs site, or the build time or the number of links on a page becomes a problem again
 
 Found: 2026-10-04
 
@@ -52,8 +52,11 @@ Let a reader point at any word on a docs page and get an explanation when one ex
 
 2026-10-27: map 3 started. [I94 Words in another project's sense][I94] Words in another project's sense decides [I26 Glossary links on words that are not our terms][I26] and comments here on this issue's trigger.
 
+2026-10-29: the trigger fired: [I26 Glossary links on words that are not our terms][I26] is decided and built ([D204 Words in another project's sense][D204]). A marked passage now links nothing at build time, so the wrong-sense problem this issue lists under "Words in another sense" is answered without a reader in the loop. The idea itself, explaining a word when the reader asks in the browser, is untouched and stays parked. Decide when: map 4 looks at the docs site, or the build time or the number of links on a page becomes a problem again.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D204]: ../plan/bootstrap/02-decision-log.md#d204
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D90]: ../plan/bootstrap/02-decision-log.md#d90
 [D94]: ../plan/bootstrap/02-decision-log.md#d94

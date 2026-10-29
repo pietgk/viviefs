@@ -26,3 +26,5 @@ export {
   referenceProblems,
   rewriteDocument,
 } from './rewrite.ts'
+export type { TheirWords, TheirWordsMarker } from './their-words.ts'
+export { commentsIn, isQuotedLine, theirWords, theirWordsMarker } from './their-words.ts'

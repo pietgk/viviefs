@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I94: Words in another project's sense (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .cr-wrong { text-decoration: underline wavy var(--color-error); text-underline-offset: 3px; }
+  .cr-ok { text-decoration: underline var(--color-success); text-underline-offset: 3px; }
+  .mermaid { background: var(--color-base-200); border-radius: 0.5rem; padding: 1rem; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 3, Vocabulary - I94 with I95</span>
+    <span class="badge badge-outline">2026-10-29, one round, answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Words in another project's sense</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0094-words-in-another-projects-sense.md">I94 Words in another project's sense</a> decides how a page says that a passage's words are not our terms, so the docs site links a word to the glossary only where the page means our sense (<a class="cr-link" href="../issues/0026-glossary-links-on-words-that-are-not-our-terms.md">I26 Glossary links on words that are not our terms</a>). <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d198">D198 Map 3 finishes lean</a> set the defaults for you to confirm in one round, then <a class="cr-link" href="../issues/0095-build-the-glossary-linker-as-decided.md">I95 Build the glossary linker as decided</a> builds them test first in this session.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 1 (2026-10-29): Q1-Q5 all A, as recommended. The comment pair names whose words they are; a mark and a block quote resolve nothing against this repository, while reference-style links still resolve; every block quote is a mark; <code class="cr-inline">verify</code> fails a retired word only in the code-font form its <code class="cr-inline">_Avoid_</code> line writes; sections 4 and 5 as written. Recorded as D204 and D180'; built the same day in <a class="cr-link" href="../issues/0095-build-the-glossary-linker-as-decided.md">I95</a>. See <a class="cr-link" href="../issues/0094-words-in-another-projects-sense.md">I94's Answer</a>.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>The compounds of I89-I92 removed 2 of I26's 10 wrong links (both Cursor). The other 8 still link wrong today, and <code class="cr-inline">P95</code> still fails the build. A mark is still needed (section 1).</li>
+      <li>The mark, as D198 has it: a block quote, or one comment pair around a passage, a table or a phrase. Inside it nothing is resolved against this repository: no glossary links, no bare ids, no repository paths. A link the author wrote is kept (section 2).</li>
+      <li>One finding changes a default. D198 and <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d180">D180 Diagram labels are prose</a> say a retired word fails <code class="cr-inline">verify</code> outside a mark. Measured: about 230 uses of the eight retired words in living documents. Nearly all are correct: plain English ("deferred to map 4"), another project's sense ("Cursor and Codex", "an OPFS worker"), or one of our own compounds ("acknowledged cursor"). Only a handful mean the retired sense (section 3).</li>
+      <li>Recommended instead: <code class="cr-inline">verify</code> fails a retired word in the form its <code class="cr-inline">_Avoid_</code> line writes it. Today that is <code class="cr-inline">node</code> in code font (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d199">D199 Sync node</a>). A retired word in plain text stays with review, as D180 already decided for <code class="cr-inline">_Avoid_</code> words. This is a D180 amendment (D180').</li>
+      <li>The rest of I26's questions: no front-matter or folder mark, no detection beyond block quotes, no report of ambiguous senses, no more <code class="cr-inline">EVERYDAY_TERMS</code> (section 4).</li>
+      <li>Found on the way: three living documents still use a retired word in our sense (ADR-0013, ADR-0016, the architecture page). They get fixed in the same commit (section 5).</li>
+    </ul>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. I26's cases through today's linker</h2>
+  <p>Each line below was run through the real linker (<code class="cr-inline">referenceLinks</code> over this repository's glossary, at <code class="cr-inline">0d88a0120</code>). A wavy underline means the word links to our entry in a sense the page does not mean.</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Text (I26's table, then I26's comments and I94's added cases)</th><th>Meant</th><th>Today</th><th>With the mark</th></tr></thead>
+    <tbody>
+      <tr><td>archify draws architecture, <span class="cr-wrong">workflow</span>, sequence diagrams</td><td>a kind of diagram</td><td>links Workflow</td><td>no link</td></tr>
+      <tr><td>Cursor's index; shared cursors</td><td>the editor; mouse pointers</td><td><b>no link</b>: the term is Sync cursor (D193)</td><td>-</td></tr>
+      <tr><td>The diagram editor Bausteinsicht <span class="cr-wrong">builds on</span></td><td>uses</td><td>links Builds on</td><td>no link</td></tr>
+      <tr><td>Desktop <span class="cr-wrong">app</span>, web app</td><td>a program</td><td>links App</td><td>no link</td></tr>
+      <tr><td>joined (names, ids, <span class="cr-wrong">attributes</span>)</td><td>keys on OTel spans</td><td>links Attribute</td><td>no link</td></tr>
+      <tr><td>plays a <span class="cr-wrong">pattern</span> or a <span class="cr-wrong">gate step</span> by step</td><td>one step at a time</td><td>links Pattern and Gate step</td><td>no link</td></tr>
+      <tr><td>vivief's Vision View <span class="cr-wrong">Effect</span></td><td>vivief's effect</td><td>links Effect, the library</td><td>no link</td></tr>
+      <tr><td>HTTP, <span class="cr-wrong">actors</span>, state machines (a vivief quote)</td><td>the actor model</td><td>links actor</td><td>no link (a block quote)</td></tr>
+      <tr><td><code class="cr-inline">[ADR 0027](https://github.com/pietgk/vivief/...)</code></td><td>vivief's ADR</td><td>becomes a link to our ADR-0027</td><td>link kept as written</td></tr>
+      <tr><td>Pinot answers in 10ms <span class="cr-wrong">P95</span> (I26, 2026-10-04)</td><td>the 95th percentile</td><td><b>the build fails</b>: not a known gate</td><td>plain text</td></tr>
+      <tr><td>"constrain them only to good <span class="cr-wrong">decisions</span>" (Matt Pocock, I33)</td><td>choices</td><td>links Decision</td><td>no link (a block quote)</td></tr>
+      <tr><td>an animation frame, a stack frame, an iframe (D201)</td><td>other frames</td><td><b>no link</b>: Frame is in <code class="cr-inline">EVERYDAY_TERMS</code>, lowercase does not link</td><td>-</td></tr>
+      <tr><td>a JavaScript engine; a database cursor; the web <span class="cr-wrong">app</span> manifest (I94, from D186-D197)</td><td>other projects' words</td><td>engine and cursor no longer link; <b>app</b> links</td><td>no link</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>So, on I94's question "do the compounds remove most of the need for a mark?"</b> No. They removed the cases where the clash was a word we gave up (Cursor, Engine, Worker). The rest are words we keep on purpose (Workflow, App, Attribute, Pattern, Decision, actor). Those words keep clashing wherever a page talks about another project. Each case above becomes one test in I95.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. The mark</h2>
+  <p>D198's defaults: a block quote, and one explicit mark around a passage or table in another project's words, switch off glossary links and ids inside them. Here is the form I recommend, worked on I25's archify table:</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <h3 class="font-semibold">Source (<code class="cr-inline">.md</code>)</h3>
+<pre class="cr-code">archify's diagram kinds, as its README lists them:
+
+&lt;!-- their words: archify --&gt;
+
+| Kind | What it draws |
+| --- | --- |
+| architecture | boxes and arrows |
+| workflow | steps of a process |
+| sequence | messages over time |
+
+&lt;!-- /their words --&gt;
+
+Our Workflow is durable work on the workflow engine.</pre>
+      <p class="cr-src">In a guide (<code class="cr-inline">.mdx</code>) the same pair is written as JSX comments, <code class="cr-inline">{/* their words: archify */}</code> and <code class="cr-inline">{/* /their words */}</code>. That follows the <code class="cr-inline">References:</code> marker, which already has both forms. The pair also works inside one sentence or one table cell, around a phrase.</p>
+    </div>
+    <div class="space-y-2">
+      <h3 class="font-semibold">What the site renders</h3>
+      <div class="card bg-base-200"><div class="card-body p-4 space-y-2 text-sm">
+        <p>archify's diagram kinds, as its README lists them:</p>
+        <table class="table table-xs"><thead><tr><th>Kind</th><th>What it draws</th></tr></thead><tbody><tr><td>architecture</td><td>boxes and arrows</td></tr><tr><td>workflow</td><td>steps of a process</td></tr><tr><td>sequence</td><td>messages over time</td></tr></tbody></table>
+        <p>Our <span class="cr-ok">Workflow</span> is durable work on the <span class="cr-ok">workflow engine</span>.</p>
+      </div></div>
+      <p class="cr-src">The comments do not show on the site or on GitHub. The first use after the mark still links, because the words inside the mark do not count as a first use.</p>
+    </div>
+  </div>
+
+  <h3 class="text-lg font-semibold">Inside a mark or a block quote</h3>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>What</th><th>Outside</th><th>Inside</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>A glossary term</td><td>first use links</td><td><b>not linked</b>, and not counted as the first use</td><td>the point of the mark</td></tr>
+      <tr><td>A bare id (<code class="cr-inline">P95</code>, <code class="cr-inline">ADR 0027</code>, <code class="cr-inline">D12</code>)</td><td>becomes a named link; an unknown id fails the build; <code class="cr-inline">pnpm refs fix</code> writes it as a reference link</td><td><b>plain text</b>: never linked, never fails, <code class="cr-inline">refs fix</code> leaves it</td><td>another repository's ids are not ours (I26's last row)</td></tr>
+      <tr><td>A repository path in code font</td><td>links; a missing one fails</td><td><b>plain code</b>, never fails</td><td>vivief's <code class="cr-inline">docs/contract/foundation.md</code> is not our path</td></tr>
+      <tr><td>A URL link whose label is an id</td><td>gets our ADR's name and target</td><td><b>kept as written</b></td><td>vivief's <code class="cr-inline">ADR 0027</code></td></tr>
+      <tr><td>A reference-style link (<code class="cr-inline">[D1 A reference stack][D1]</code>)</td><td>resolved, name checked</td><td><b>resolved, name checked</b></td><td>only we write these, and the block quotes in our own plan pages carry them</td></tr>
+      <tr><td>A retired word (section 3)</td><td>checked</td><td>not checked</td><td>D180</td></tr>
+      <tr><td>An unclosed or stray marker</td><td colspan="2"><b>fails the build and <code class="cr-inline">verify</code></b>, naming the file and the marker</td><td>a mark that silently runs to the end of the page would hide every link after it</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-lg font-semibold">The block quotes in living documents today</h3>
+  <p>Five block quotes. Three quote other people: Karpathy in <a class="cr-link" href="../issues/0024-ideas-batch-andrej-karpathy-understanding.md">I24</a>, Matt Pocock in <a class="cr-link" href="../issues/0033-ideas-batch-abstractions-that-constrain-agents.md">I33</a>, and the vision line in <a class="cr-link" href="../issues/0034-vivief-as-the-source-of-viviefs-concepts.md">I34</a>. Two are our own words: the session prompt in <code class="cr-inline">next-session.md</code> and the History note in <code class="cr-inline">00-next-session.md</code>. Both of those already write every id as a reference-style link, so under the table above they lose only glossary links. If a block quote were not a mark, the I24 and I33 quotes would need a comment pair around each, because a quote cannot be reworded.</p>
+
+  <div class="mermaid">
+flowchart LR
+  T["a text node"] --> Q{"inside a block quote, or between their-words markers?"}
+  Q -- yes --> K["kept as written: no glossary link, no bare id, no path, no retired-word check"]
+  Q -- no --> L["linked as today: first use of a term, every id, every path"]
+  R["a reference-style link"] --> N["always resolved and its name checked"]
+  </div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. Which retired words <code class="cr-inline">verify</code> fails</h2>
+  <p>The retired words are the <code class="cr-inline">_Avoid_</code> entries that say "our word until [Dnnn]" (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d175">D175 A retired word names its decision</a>). There are eight. D180 and D198 say each one fails <code class="cr-inline">verify</code> outside a mark. To test that, I counted every use in the living documents that is outside code, outside link text and outside the word's own compound:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Retired word (<code class="cr-inline">_Avoid_</code> line)</th><th>Uses</th><th>What they are, sampled</th><th>Our retired sense</th></tr></thead>
+    <tbody>
+      <tr><td>deferred (alone, D187)</td><td>64</td><td>"deferred to map 4", "Decide when", "deferred (I60)": plain English</td><td>ADR-0013 "deferreds"; the architecture page "deferreds"</td></tr>
+      <tr><td>cursor (alone, D193)</td><td>68</td><td>Acknowledged cursor and Trace cursor (our own compounds), Cursor the editor, "cursor streaming" in the log store's suite</td><td>none found</td></tr>
+      <tr><td>engine (alone, D186)</td><td>43</td><td>"memory engine", "DataFrame engines", "read-sync engine (Zero, PowerSync)"; P17's claim (renamed in I99)</td><td>ADR-0016 "One write path for app and engine"; ADR-0013 "several engines"</td></tr>
+      <tr><td>worker (D186)</td><td>43</td><td>OPFS worker, the sqlite-wasm worker, Cloudflare Workers, Effect's <code class="cr-inline">DurableQueue</code> worker</td><td>none outside records</td></tr>
+      <tr><td>surface (alone, D200)</td><td>19</td><td>"public surfaces", "conflicts surface", "a review surface"; D199 already said bare surface is never checked</td><td>I34's dated comment (kept as written)</td></tr>
+      <tr><td>manifest (alone, D192)</td><td>9</td><td>the iOS manifest, the glossary seed's history, a column name</td><td>none found</td></tr>
+      <tr><td>registry (alone, D197)</td><td>5</td><td>the npm registry, "Ownership registry" in a sources table</td><td>none found</td></tr>
+      <tr><td><code class="cr-inline">node</code> (code font, D199)</td><td>4</td><td>all four quote the rule itself, in I94 and next-session; both are rewritten this session</td><td>0</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cr-src">Counted 2026-10-29 at <code class="cr-inline">0d88a0120</code> over the living documents (<code class="cr-inline">inReferenceScope</code>, less resolved issues and the decision log). It is line-based: fenced code, inline code and link text are left out.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">A. The form the <code class="cr-inline">_Avoid_</code> line writes (recommended)</h3>
+      <p>A retired word whose <code class="cr-inline">_Avoid_</code> entry is in code font fails <code class="cr-inline">verify</code> in code font, outside a mark: today only <code class="cr-inline">node</code>. Code font was the only way the old sense was written (D103's stopgap), so a match is drift every time. A retired word in plain text is not checked, for the same reason D180 gave for not failing <code class="cr-inline">_Avoid_</code> words: they are everyday words, wrong in only one sense. The rule is read from the glossary, so a later retirement in code font is checked without code changes. Recorded as D180'.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">B. Every retired word, as D180 says</h3>
+      <p>About 230 uses fail now. Almost all are correct, so they would have to be reworded or marked. Marking them would wrap our own plain English ("deferred to map 4") in a "their words" mark, which turns the mark into a way to switch off the check. It also contradicts <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d199">D199</a>, which already said bare node and bare surface are never checked.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">C. A phrase list per word</h3>
+      <p>Each <code class="cr-inline">_Avoid_</code> line would name the phrases our old sense used ("the engine", "deferreds"). Tried on today's text: about 30 matches, and most of them are still other senses ("the worker's <code class="cr-inline">onerror</code>", Effect's "the engine re-runs"). The list would be hand-kept, it would catch little, and it would need marks again.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. The rest of I26's questions</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>I26 asks</th><th>Proposed</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>A directive, a comment, front matter, or a folder rule like <code class="cr-inline">KEPT_AS_WRITTEN</code>?</td><td>A comment pair only, plus block quotes. No front matter and no folder rule.</td><td>A comment shows nothing on GitHub, where issues and ADRs are read raw. A directive (<code class="cr-inline">:::their-words</code>) shows as text there. A page entirely in another project's words is a research record, and those are already kept as written for paths.</td></tr>
+      <tr><td>Glossary links only, or ids of another repo too?</td><td>Both, and repository paths (section 2). Reference-style links stay resolved.</td><td>I26's last row and the <code class="cr-inline">P95</code> failure are the same problem as the glossary links.</td></tr>
+      <tr><td>Name every new term with its context (<code class="cr-inline">Sibling Repo</code>)?</td><td>Already decided: <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d170">D170 One word only where it matches</a>.</td><td>-</td></tr>
+      <tr><td>Detect a quote or source table without a mark?</td><td>Block quotes, yes. Tables, no.</td><td>Most of our tables are ours, but every block quote in another project's words quotes someone.</td></tr>
+      <tr><td>Should <code class="cr-inline">verify</code> report linked terms in a marked passage, or ambiguous senses?</td><td>No.</td><td>Inside a mark nothing links. Telling an ambiguous sense apart is meaning, which stays with a reader (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d96">D96 Two verifications</a>, D180).</td></tr>
+      <tr><td>Add workflow, cursor, attribute and app to <code class="cr-inline">EVERYDAY_TERMS</code>?</td><td>No.</td><td>Cursor is gone. Workflow, Attribute and App are ours lowercase in almost every use, and capitals-only linking would drop those correct links. The mark covers the rest.</td></tr>
+      <tr><td>I32's trigger (explain any word on demand)</td><td>A comment: the trigger has fired. The mark is the build-time answer. I32's in-browser idea is unchanged and stays parked for map 4's look at the docs site.</td><td>-</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. What the session then builds and edits (I95)</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>The linker</b> (<code class="cr-inline">apps/docs/src/lib/reference-links.ts</code>): skips text inside a block quote or a their-words pair for glossary links, bare ids and paths; keeps URL links as written there; fails on an unclosed or stray marker. Tests come first, one per row of section 1, plus a stray marker and a reference-style link inside a quote.</li>
+    <li><b><code class="cr-inline">pnpm refs</code></b> (<code class="cr-inline">libs/references</code>): leaves bare ids inside a block quote or a their-words pair, so <code class="cr-inline">verify</code>'s references step agrees with the site.</li>
+    <li><b><code class="cr-inline">verify</code></b>: a step that reads the code-font retired words from the <code class="cr-inline">_Avoid_</code> lines and fails one in a living document outside a mark (A), with tests. Diagram labels join it in <a class="cr-link" href="../issues/0098-diagram-labels-and-named-identifiers-get-the-checks-prose-gets.md">I98 Diagram labels and named identifiers get the checks prose gets</a>, as D180 planned.</li>
+    <li><b>The documentation</b>: <code class="cr-inline">docs/agents/domain.md</code> says how to mark a passage. The I24, I25 and I33 pages get their marks where their workarounds bent the prose.</li>
+    <li><b>Drift found by the count</b>, rewritten in the same commit: ADR-0016 "app and engine" becomes "app and workflow engine"; ADR-0013 "several engines" becomes "several workflow engines" and "deferreds" becomes "durable deferreds"; the architecture page's "deferreds" becomes "durable deferreds". Decision and issue names that hold the old word ("Actors or the engine", "Human steps as deferreds") are records and stay.</li>
+    <li><b>Records</b>: D204 (the mark) and D180' (the retired-word form); I94 and I26 resolved with an Answer, I95 when it is built; a comment in I32; map 3's Decisions so far; next-session.</li>
+  </ul>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">6. Questions, one round</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 The mark')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. How an author marks a passage</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: a comment pair, <!-- their words: whose --> and <!-- /their words -->, JSX comments in MDX; works around a passage, a table or a phrase"> <span><b>A. A comment pair</b> (recommended): <code class="cr-inline">&lt;!-- their words: archify --&gt;</code> ... <code class="cr-inline">&lt;!-- /their words --&gt;</code>. It names whose words they are and shows nothing on GitHub.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: a directive, :::their-words archify ... :::"> <span><b>B. A directive</b>, <code class="cr-inline">:::their-words</code>. Shows as text on GitHub.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: the comment pair, with a different name (in the notes)"> <span><b>C. The comment pair with another name</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 What a mark switches off')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. What a mark and a block quote switch off</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: glossary links, bare ids, repository paths and the retired-word check; URL links kept as written; reference-style links still resolved; an unclosed marker fails"> <span><b>A. Everything resolved against this repository</b> (recommended), as in section 2's table. Reference-style links stay resolved.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: glossary links and bare ids only; paths still checked"> <span><b>B. Glossary links and bare ids only</b>; paths are still checked.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="C: glossary links only"> <span><b>C. Glossary links only</b>; <code class="cr-inline">P95</code> still needs rewording.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Block quotes')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. Is every block quote a mark?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: yes, every block quote, as D198 has it; our own two block quotes lose only glossary links"> <span><b>A. Yes</b> (recommended, D198's default). Our own two block quotes lose only their glossary links.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: no, only the explicit comment pair; quotes get one each"> <span><b>B. No</b>, only the comment pair; each quote gets one.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 Retired words in verify')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. Which retired words <code class="cr-inline">verify</code> fails (amends D180)</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: the form the _Avoid_ line writes: a code-font retired word fails in code font outside a mark (today node); plain-text retired words stay with review; recorded as D180'"> <span><b>A. The form the <code class="cr-inline">_Avoid_</code> line writes</b> (recommended): code font is checked (<code class="cr-inline">node</code> today), plain text stays with review. D180'.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: every retired word as D180 says; about 230 uses reworded or marked"> <span><b>B. Every retired word</b>, as D180 says: about 230 uses to reword or mark.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="C: a phrase list per word on its _Avoid_ line"> <span><b>C. A phrase list per word</b>.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 The rest')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. Sections 4 and 5: the other answers, the build and the edits</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="A: as written"> <span><b>A. As written</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="B: with changes in the notes"> <span><b>B. With changes</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<footer class="cr-src">Sources: <code class="cr-inline">GLOSSARY.md</code>; the decision log (D96, D103, D170, D174, D175, D180, D186-D201); I24, I25, I26, I32, I33, I34, I94, I95, I98; <code class="cr-inline">apps/docs/src/lib/reference-links.ts</code> and <code class="cr-inline">references.ts</code>; <code class="cr-inline">libs/references/src/rewrite.ts</code>; <code class="cr-inline">tools/verify/src/glossary-report.ts</code>. Section 1 was rendered through the real linker with <code class="cr-inline">satteri@0.10.5</code>. A probe confirmed that its mdast plugin visits HTML comments in document order, both as blocks and inside a table cell or paragraph, so a comment pair can be read without source positions. JSX comments in MDX were not probed yet; the build checks that first. Counts at <code class="cr-inline">0d88a0120</code>, 2026-10-29.</footer>
+
+</div>
+</body>
+</html>

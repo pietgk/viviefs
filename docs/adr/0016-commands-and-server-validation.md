@@ -30,7 +30,7 @@ the whole changeset with a typed error. On rejection the client rebuilds read
 models from confirmed datoms, reapplies its remaining outbox, and traces the
 rejection.
 
-One write path for app and engine.
+One write path for app and workflow engine.
 
 **What the server checks, as built** (amendment 2026-10-09, [D36' Shared commands, as built][D36'], [I50 Contracts checked as data or by commands][I50]). The
 server does not re-execute the command (Observed below), so "invariants such

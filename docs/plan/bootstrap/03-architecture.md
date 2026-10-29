@@ -110,7 +110,7 @@ correctedClock():
 - **Defining attribute**: one per entity type. Asserted = exists, retracted = deleted (subtree hidden), re-asserted =
   restored with its other attributes.
 - **Parent in id** only for strict composition: `O{org}/` root, list -> todo, order -> line,
-  `O{org}/W{exec}/A{activity}#{attempt}` journal entries, `O{org}/W{exec}/D{name}` deferreds.
+  `O{org}/W{exec}/A{activity}#{attempt}` journal entries, `O{org}/W{exec}/D{name}` durable deferreds.
 - **References** (attributes) for anything that can move or is many-to-many.
 - **Projection rule**: an entity is visible iff its defining attribute is asserted and its owner (id parent or owner
   reference) is visible.

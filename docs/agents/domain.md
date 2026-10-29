@@ -36,6 +36,41 @@ The glossary has its own entry shape; it overrides the vendored
   speaks of both levels writes changeset or commit ([D202 Change stays plain English](../plan/bootstrap/02-decision-log.md#d202)).
 - A new term goes in the group of the foundation concept it serves ([D177 Groups follow the one turn](../plan/bootstrap/02-decision-log.md#d177)).
 
+## Another project's words
+
+The docs site links the first use of a glossary term on a page, and turns a
+bare id into a link. Where a page quotes or describes another project in that
+project's words, mark the passage instead of rewording it around the linker
+([D204 Words in another project's sense](../plan/bootstrap/02-decision-log.md#d204)):
+
+- A block quote is always another's words.
+- Around a passage, a table or a phrase, write a comment pair that names whose
+  words they are:
+
+  ```md
+  <!-- their words: archify -->
+
+  | Kind | What it draws |
+  | --- | --- |
+  | workflow | steps of a process |
+
+  <!-- /their words -->
+  ```
+
+  In an MDX guide, the same pair as JSX comments:
+  `{/* their words: archify */}` and `{/* /their words */}`.
+
+Inside either, no glossary term links, a bare id (`P95`, vivief's `ADR 0027`)
+stays text, a path in code font is not checked, and a link keeps its target.
+A reference-style link such as `[D1 A reference stack][D1]` still resolves.
+A mark without a name, one opened inside another, a stray close and a mark
+left open fail the build and `verify`.
+
+A word the glossary retired in code font, `node` today, fails `verify`
+outside such a passage; write the term its `_Avoid_` line belongs to
+([D180' Retired words in code font](../plan/bootstrap/02-decision-log.md#d180p)). A retired word in
+plain text is not checked: a review catches it.
+
 ## Where decisions go
 
 - A grilling records its answers in the decision log first, numbered on from the

@@ -14,6 +14,7 @@ import {
   type Catalog,
   type Token,
 } from './catalog.ts'
+import { isQuotedLine, theirWords, type TheirWords } from './their-words.ts'
 
 export const REFERENCES_MARKER = '<!-- References: written by pnpm refs fix; do not edit by hand. -->'
 
@@ -124,7 +125,13 @@ type Scope = {
   readonly used: Set<string>
   readonly note: Note
   readonly catalog: Catalog
+  /** The their-words marks read so far in the document (D204). */
+  readonly marks: TheirWords
+  /** Whether the text is a block quote, another's words (D204). */
+  readonly quoted: boolean
 }
+
+type Shared = Pick<Scope, 'used' | 'note' | 'catalog' | 'marks'>
 
 const linkFor = (label: string, key: string): string => `[${label}][${key}]`
 
@@ -232,9 +239,12 @@ const tokenAt = (text: string, index: number): Token | undefined => {
 const rewriteInline = (text: string, scope: Scope): string => {
   let out = ''
   for (let index = 0; index < text.length; ) {
-    if (text.startsWith('<!--', index)) {
-      const end = text.indexOf('-->', index + 4)
-      const to = end === -1 ? text.length : end + 3
+    const closing = text.startsWith('<!--', index) ? '-->' : text.startsWith('{/*', index) ? '*/}' : undefined
+    if (closing !== undefined) {
+      const end = text.indexOf(closing, index + 3)
+      const to = end === -1 ? text.length : end + closing.length
+      const problem = scope.marks.read(text.slice(index, to))
+      if (problem !== undefined) scope.note(problem)
       out += text.slice(index, to)
       index = to
       continue
@@ -270,6 +280,12 @@ const rewriteInline = (text: string, scope: Scope): string => {
       continue
     }
     const token = tokenAt(text, index)
+    // In another project's words an id is theirs, kept as written (D204).
+    if (token !== undefined && (scope.quoted || scope.marks.inside())) {
+      out += text.slice(index, index + token.end)
+      index += token.end
+      continue
+    }
     if (token?.kind === 'range') {
       out += mentionRange(scope, token.from, token.to)
       index += token.end
@@ -286,9 +302,10 @@ const rewriteInline = (text: string, scope: Scope): string => {
   return out
 }
 
-const freshScope = (shared: Pick<Scope, 'used' | 'note' | 'catalog'>): Scope => ({
+const freshScope = (shared: Shared, quoted = false): Scope => ({
   namedIds: new Set(),
   namedRanges: new Set(),
+  quoted,
   ...shared,
 })
 
@@ -327,7 +344,7 @@ const placeGateAnchor = (cell: string, rewrite: (cell: string) => string): strin
     : `${lead}<a id="${id.toLowerCase()}"></a>${rest}`
 }
 
-const rewriteRow = (row: string, file: string, shared: Pick<Scope, 'used' | 'note' | 'catalog'>): string => {
+const rewriteRow = (row: string, file: string, shared: Shared): string => {
   const parts = splitRow(row)
   return parts
     .map((part, index) => {
@@ -352,13 +369,14 @@ const sectionAnchor = (line: string, file: string, catalog: Catalog): string | u
 const rewriteProse = (
   lines: ReadonlyArray<string>,
   file: string,
-  shared: Pick<Scope, 'used' | 'note' | 'catalog'>,
+  shared: Shared,
 ): string[] => {
   const out: string[] = []
   let buffer: string[] = []
+  let quoted = false
   const flush = () => {
     if (buffer.length === 0) return
-    out.push(rewriteInline(buffer.join('\n'), freshScope(shared)))
+    out.push(rewriteInline(buffer.join('\n'), freshScope(shared, quoted)))
     buffer = []
   }
   for (let index = 0; index < lines.length; index++) {
@@ -371,14 +389,15 @@ const rewriteProse = (
       out.push(line)
       continue
     }
-    if (/^\s*(?:[-*+]|\d+\.) /.test(line)) flush()
+    if (/^\s*(?:[-*+]|\d+\.) /.test(line) || isQuotedLine(line) !== quoted) flush()
+    quoted = isQuotedLine(line)
     buffer.push(line)
   }
   flush()
   return out
 }
 
-const rewriteBody = (body: string, file: string, shared: Pick<Scope, 'used' | 'note' | 'catalog'>): string => {
+const rewriteBody = (body: string, file: string, shared: Shared): string => {
   const endsWithNewline = body.endsWith('\n')
   const lines = body.split('\n')
   if (endsWithNewline) lines.pop()
@@ -451,9 +470,12 @@ export const rewriteDocument = (source: string, file: string, catalog: Catalog):
     problems.push(`${file}: ${problem}`)
   }
   const used = new Set<string>()
+  const marks = theirWords()
   const stripped = stripBlock(source)
   const { frontmatter, body } = splitFrontmatter(stripped)
-  const rewritten = `${frontmatter}${rewriteBody(body, file, { used, note, catalog })}`
+  const rewritten = `${frontmatter}${rewriteBody(body, file, { used, note, catalog, marks })}`
+  const unclosed = marks.end()
+  if (unclosed !== undefined) note(unclosed)
   const block = definitionsBlock(file, used, catalog)
   const text = block === '' ? rewritten : `${rewritten.endsWith('\n') ? rewritten : `${rewritten}\n`}${block}`
   return { text, problems }

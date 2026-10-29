@@ -13,7 +13,7 @@ Related: [D3 Resume on next launch][D3], [D24 Durable clocks and notifications][
 ## Problem
 
 iOS does not guarantee code on a schedule while the app is closed. Several
-browser tabs on one OPFS database would be several engines. "Resume on next
+browser tabs on one OPFS database would be several workflow engines. "Resume on next
 launch" needs a mechanism, not a slogan.
 
 ## Design
@@ -54,7 +54,7 @@ workflow engines are detected. [P17][P17] is follow-on, not foundation closure.
 ### Expected
 
 Force-quit mid-workflow resumes on next launch. Notifications complete
-deferreds. One workflow engine per browser profile.
+durable deferreds. One workflow engine per browser profile.
 
 ### Observed
 
