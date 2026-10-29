@@ -205,7 +205,7 @@
       "apps/docs/src/lib/claims.ts": {
         "branches": "33/40",
         "functions": "18/18",
-        "lines": "38/38",
+        "lines": "39/39",
         "statements": "44/44"
       },
       "apps/docs/src/lib/guides.ts": {
@@ -223,8 +223,8 @@
       "apps/docs/src/lib/references.ts": {
         "branches": "112/116",
         "functions": "41/41",
-        "lines": "158/158",
-        "statements": "202/202"
+        "lines": "159/159",
+        "statements": "203/203"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
@@ -245,10 +245,10 @@
         "statements": "39/45"
       },
       "apps/docs/src/lib/repo.ts": {
-        "branches": "34/39",
-        "functions": "7/7",
-        "lines": "41/45",
-        "statements": "46/50"
+        "branches": "58/63",
+        "functions": "9/9",
+        "lines": "53/57",
+        "statements": "61/65"
       },
       "apps/docs/src/lib/site-pages.ts": {
         "branches": "33/43",

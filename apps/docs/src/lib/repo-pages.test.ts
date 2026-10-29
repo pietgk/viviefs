@@ -80,7 +80,7 @@ describe('sidebarItems', () => {
   it('links HTML research records by their title', () => {
     expect(sidebarItems(root, 'docs/research')).toEqual([
       { label: 'Index', slug: 'research' },
-      { label: 'A note', link: '/research/2026-01-01-note.html' },
+      { label: 'A note', link: '/research/2026-01-01-note%2Ehtml' },
     ])
   })
 })

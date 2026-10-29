@@ -115,7 +115,12 @@ export const sidebarItems = (
   const records = filesIn(root, directory, '.html').map((path): SidebarItem => {
     const link = siteUrlFor(path)
     if (link === null) throw new Error(`${path} has no site URL.`)
-    return { label: htmlTitle(path, readFileSync(join(root, path), 'utf8')), link }
+    // Starlight's sidebar formatter removes a trailing `.html`, which misses
+    // the file. An encoded dot stays a file URL after Starlight adds the base.
+    return {
+      label: htmlTitle(path, readFileSync(join(root, path), 'utf8')),
+      link: link.replace(/\.html$/, '%2Ehtml'),
+    }
   })
   return [...pages, ...records]
 }

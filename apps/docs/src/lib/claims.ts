@@ -8,7 +8,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { GATE_TABLE, GATE_TABLE_DOC, parseGateClaims, type GateClaim } from '@viviefs/references'
-import { siteUrlFor } from './repo.ts'
+import { siteUrlFor, withBase } from './repo.ts'
 
 export { GATE_TABLE, GATE_TABLE_DOC, parseGateClaims }
 export type { GateClaim }
@@ -37,7 +37,8 @@ export const claimAnchor = (claim: Pick<GateClaim, 'id' | 'name'>): string =>
     .replace(/ /g, '-')
 
 /** Where a gate reference points: its claim on the Claims page. */
-export const claimHref = (claim: Pick<GateClaim, 'id' | 'name'>): string => `/${CLAIMS_ROUTE}/#${claimAnchor(claim)}`
+export const claimHref = (claim: Pick<GateClaim, 'id' | 'name'>): string =>
+  withBase(`/${CLAIMS_ROUTE}/#${claimAnchor(claim)}`)
 
 const titleOf = (source: string, fallback: string) => /^# (.+)$/m.exec(source)?.[1]?.replace(/`/g, '').trim() ?? fallback
 
