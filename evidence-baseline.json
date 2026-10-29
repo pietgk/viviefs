@@ -223,8 +223,8 @@
       "apps/docs/src/lib/references.ts": {
         "branches": "112/116",
         "functions": "41/41",
-        "lines": "156/156",
-        "statements": "201/201"
+        "lines": "158/158",
+        "statements": "202/202"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
@@ -706,6 +706,12 @@
         "lines": "16/16",
         "statements": "20/20"
       },
+      "tools/verify/src/research-index.ts": {
+        "branches": "21/22",
+        "functions": "12/12",
+        "lines": "31/31",
+        "statements": "37/37"
+      },
       "tools/verify/src/retired-words.ts": {
         "branches": "21/25",
         "functions": "8/8",
@@ -744,5 +750,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "f20bc78dda4a3ceecefce22ba165329ef6ff88153d560046a7e857d1225f7b1f"
+  "registryDigest": "3134ea1303d2402d6e32c7c15ee4103bd0a44a4ec227ed803aaefea170af33bc"
 }

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I96: Accept the vocabulary (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .cr-pass { color: var(--color-success); font-weight: 600; }
+  .cr-warn { color: var(--color-warning); font-weight: 600; }
+  .cr-entry { background: var(--color-base-200); border-radius: 0.5rem; padding: 0.9rem 1.1rem; }
+  .cr-entry .cr-hover { font-weight: 600; }
+  .cr-entry p { margin: 0.25rem 0; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Map 3, Vocabulary - I96</span>
+    <span class="badge badge-outline">2026-10-29, two rounds, answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Accept the vocabulary</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0096-accept-the-vocabulary.md">I96 Accept the vocabulary</a> checks that map 3 reached <a class="cr-link" href="../plan/vocabulary/map.md">its destination</a>: a glossary where each term means one thing. Then you accept the glossary as it stands. Map 3 finishes lean (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d198">D198 Map 3 finishes lean</a>), so every recommendation below is the smallest edit that closes a gap. Anything bigger gets a <code class="cr-inline">Decide when:</code>.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 2 (2026-10-29): Q7 A, the human accepted the glossary as it stands; map 3 is done. See <a class="cr-link" href="../issues/0096-accept-the-vocabulary.md">I96's Answer</a>.</p>
+    <p>Round 1 (2026-10-29): Q1-Q6, all A, as recommended. Recorded as D205-D208; the glossary, I21, I80 and I96 are edited. Found while checking the edits on the docs site: a compound term that wraps across a source line ("a sync" at a line's end, "node" on the next) did not link as the compound. With Sync added, it linked "sync" alone to Sync. The linker now matches a compound's words across any whitespace, test first (<code class="cr-inline">apps/docs/src/lib/references.ts</code>). The research index also lacked I90's, I91's and I92's review pages; they are listed now.</p>
+  </div></div>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>The ticket's checks pass, with two gaps. The two gaps are the waiting words <b>trust level</b> and <b>encryption level</b>. No Answer disposes of either, and Encryption level's entry still says "The word waits for map 3" (section 1, Q1).</li>
+      <li>Words used as terms but with no entry: <b>authority</b> (242 uses, a foundation concept in Start here), <b>the log</b> (400 uses), <b>sync</b> (a foundation concept) and <b>accept</b> (76 uses of "at accept"). Recommended: add <b>Authority</b> and <b>Sync</b>. Let <b>Log store</b> define the log, with a <code class="cr-inline">_Not_</code> line. Write accept inside Authority, and give Accepted a <code class="cr-inline">_Not_</code> line (section 2, Q2 and Q3).</li>
+      <li>"Log" alone fails <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d170">D170 One word only where it matches</a> in our own text: the decision log, OpenTelemetry's logs, <code class="cr-inline">Effect.log</code>. "Accept" has two meanings in our own text: authority accepts a change, and a person accepts an ADR. The linker already keeps those two apart.</li>
+      <li><b>Lease</b> and <b>Lease epoch</b> are defined as current, although <a class="cr-link" href="../adr/0036-the-journal-is-the-fence.md">ADR-0036 The journal is the fence</a> removes the lease. Recommended: one line on each now, and the rewrite in <a class="cr-link" href="../issues/0080-build-the-journal-fence.md">I80 Build the journal fence</a> (section 3, Q4).</li>
+      <li><code class="cr-inline">verify</code>'s glossary report: 129 terms, and the same two unused terms as on 2026-10-28, <b>Token verifier</b> and <b>Bearer authentication</b>. Both name parts of the identity code. Recommended: keep them, with the reason recorded (section 4, Q5).</li>
+      <li>Five small fixes, including two hover lines (section 5, Q6). Once you answer, the edits go in, and round 2 asks you to accept the glossary as edited.</li>
+    </ul>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. The destination, check by check</h2>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Check (I96's What and its comment)</th><th>Result</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td>Every map-3 row of the vivief inventory has a disposition</td><td><span class="cr-pass">pass</span>: 18 ids in 15 rows. 16 are disposed in an Answer; 2 are deferred with I93 (<code class="cr-inline">vivief:past-tense-fact-naming</code>, <code class="cr-inline">vivief:cross-domain-references</code>), with a <code class="cr-inline">Decide when:</code> (a consumer app is about to pin its first attribute names)</td><td>I88: 5 rows, I89: 5, I90: 4 (the rows' ids), I93 deferred by D198</td></tr>
+      <tr><td>I78's questions 1-11</td><td><span class="cr-pass">pass</span>: Q1 D194, Q2 D168, Q3 D166, Q4 D188, Q5 D169 and Decision's <code class="cr-inline">_Not_</code> line, Q6 D195, Q7 D196, Q8 D186, Q9 D187, Q10 D197, Q11 D199. Q12 goes to map 6 through I29</td><td>I88, I91, I92</td></tr>
+      <tr><td>Every waiting word in the map's list</td><td><span class="cr-warn">two gaps</span>. I92 listed <b>trust level</b> in its What, but its Answer says nothing about it. <b>Encryption level</b> is not in the list, but its entry says "The word waits for map 3". Every other word is disposed of; see the table below</td><td>Q1</td></tr>
+      <tr><td>Every term has passed the single-word rule (D171)</td><td><span class="cr-pass">pass</span>. I89 swept 67 single words. Since then: Concept (D181, linked only as written), Screen (D200, <code class="cr-inline">_Like_</code> line) and Tool (D194, <code class="cr-inline">_Not_</code> line). The other 9 new terms are compounds</td><td>I89, I90, I91, I92</td></tr>
+      <tr><td>Where another project uses the word otherwise, the entry says so</td><td><span class="cr-pass">pass</span> for the 129 terms. <span class="cr-warn">Not checked until now</span> for words used as terms that have no entry (section 2)</td><td>Q2, Q3</td></tr>
+      <tr><td>No living document uses a retired word in its retired sense</td><td><span class="cr-pass">pass</span>. <code class="cr-inline">retired-words</code>: "1 retired in code font, none in use". I94's sweep fixed the three plain-text uses it found</td><td><code class="cr-inline">tools/verify/src/check-retired-words.ts</code></td></tr>
+      <tr><td>The site links each term only in our sense</td><td><span class="cr-pass">pass</span> as decided (D204, built in I95, a test per I26 case). Adding Authority and Sync widens what links (section 2)</td><td>I95</td></tr>
+      <tr><td>I26, I30, I33, I77 resolved or narrowed</td><td><span class="cr-pass">pass</span>. I26 and I77 are resolved. I30 is narrowed to its fourth form, triggered by I21's reader test. I33 is narrowed to map 4</td><td>each issue's header</td></tr>
+      <tr><td>Map 3's terms against <code class="cr-inline">verify</code>'s glossary report (D178)</td><td><span class="cr-warn">2 unused</span>: Token verifier, Bearer authentication. Map 3 did not add them</td><td>Q5</td></tr>
+    </tbody>
+  </table></div>
+
+  <details class="collapse collapse-arrow bg-base-200"><summary class="collapse-title font-semibold">The waiting words, one by one</summary><div class="collapse-content">
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>Disposition</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">Contract</code></td><td>Contract keeps its word, with a <code class="cr-inline">_Not_</code> line for vivief's (D183)</td></tr>
+      <tr><td><code class="cr-inline">effectHandler</code></td><td>Effect handler, a compound with no formula (D165, D166)</td></tr>
+      <tr><td>intent, effect</td><td>D167, D190; D163, D164</td></tr>
+      <tr><td>Vision, View and Effects</td><td>one entry (D168)</td></tr>
+      <tr><td>the formula's names (I30)</td><td>no formula with names of its own (D166)</td></tr>
+      <tr><td>foundation concept, abstraction or pattern (I33)</td><td>D181, D182; "abstraction" is plain English</td></tr>
+      <tr><td>node, surface, frame</td><td>Sync node (D199), Presentation surface and Screen (D200), Frame (D201)</td></tr>
+      <tr><td class="cr-warn">trust level</td><td class="cr-warn">none (Q1)</td></tr>
+      <tr><td>the lab qualifier, hot / frontier / warm / cold, the kinds of intent</td><td>deferred, each with a <code class="cr-inline">Decide when:</code> (D203)</td></tr>
+      <tr><td>change</td><td>plain English (I77 resolved)</td></tr>
+      <tr><td>Tool, Envelope, Journal, Entity, Decision, Prompt</td><td>D194, D188, D188, D196, D169, D195</td></tr>
+      <tr><td>Worker and runner, Deferred</td><td>Workflow runner (D186), Durable deferred (D187)</td></tr>
+      <tr><td><code class="cr-inline">tx</code>, Command, session, model, Service</td><td>D197 (lines on Datom, Command, Sign-in session; "model" plain English; Service says key)</td></tr>
+      <tr><td>a "like X, except Y" line per term where it helps</td><td>D174; 17 entries have one. I21's reader test judges the rest (map 4)</td></tr>
+    </tbody>
+  </table></div>
+  </div></details>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. Words used as terms, with no entry</h2>
+  <p>D171 put every <i>term</i> through the single-word rule. It never looked at words the glossary leans on but never defines. I counted uses in living documents (the glossary, AGENTS.md, ADRs, plan pages, issues, agent docs, guides) at <code class="cr-inline">93e119784</code>:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Word</th><th>Uses</th><th>Where it matters</th><th>Against D170</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr><td><b>authority</b></td><td>242</td><td>Start here's fourth foundation concept, "Authority and accepting a change", has no Authority entry. A newcomer who hovers it gets nothing</td><td>matches the plain word. No library we use names something else "authority" in our text. A certificate authority is the one near clash, and it becomes close once signing comes (D155)</td><td class="cr-pass">add Authority</td></tr>
+      <tr><td><b>sync</b></td><td>a foundation concept</td><td>Start here's ninth row; Sync node and Sync cursor exist, sync itself does not</td><td>matches offline-first sync. <code class="cr-inline">nx sync</code> (6 uses) is another sense</td><td class="cr-pass">add Sync</td></tr>
+      <tr><td><b>the log</b></td><td>400</td><td>"Datom and the one log". Log store says "where the facts are kept" but never names the log</td><td><b>fails in our own text</b>: "the decision log" (another log of ours), OpenTelemetry's logs and <code class="cr-inline">/v1/logs</code>, <code class="cr-inline">Effect.log</code>, "Metro logs". A bare Log entry would link all of them</td><td class="cr-pass">Log store defines "the log", with a <code class="cr-inline">_Not_</code> line; no Log entry</td></tr>
+      <tr><td><b>accept</b></td><td>76 "at accept", 153 "accepted"</td><td>authority's step, named in ADR-0035's title and the group "Changes and accept"</td><td><b>two meanings in our own text</b>: authority accepts a change; a person accepts an ADR, a guide or this glossary (Accepted, D63, D65'; issue titles I2, I55, I96). The linker already keeps them apart: Accepted links only as written, so "the server accepted" does not link to it</td><td class="cr-pass">no accept entry. Authority's entry defines accept, and Accepted gets a <code class="cr-inline">_Not_</code> line (Q3)</td></tr>
+      <tr><td>consumer app</td><td>79</td><td>ADR-0002, D55', D159</td><td>matches</td><td rowspan="5">wait for I21's reader test (map 4), named on I21 as candidates. Not needed for the app shell</td></tr>
+      <tr><td>living document</td><td>42</td><td>the rewrite rule (D173), the glossary report</td><td>matches</td></tr>
+      <tr><td>lab</td><td>101</td><td>D101; only its qualifier waits (D203)</td><td>matches</td></tr>
+      <tr><td>grilling, review page, map (a wayfinder map)</td><td>97, 81, many</td><td>how decisions get made</td><td>"map" clashes (a JavaScript <code class="cr-inline">Map</code>, Effect's <code class="cr-inline">HashMap</code>, a map on a screen)</td></tr>
+      <tr><td>journal fence, takeover, a run's head</td><td>46, 11, 16</td><td>ADR-0036's words, not built yet</td><td>-</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 class="text-xl font-semibold">Drafts</h3>
+  <p>Each hover line passes the build's rule: one sentence, at most 120 characters, no code font, no reference.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="cr-entry text-sm space-y-1">
+      <p><b>Authority</b>: <span class="cr-hover">The right to decide which changes count for an organization, held today by the server.</span></p>
+      <p>Its duties: accept or reject every change, order the accepted ones, grant membership, and fence each workflow run's writers (D103 Nodes and authority). <b>Accept</b> is the step that asks three questions: may this writer do this, is it well formed, and does the data stay valid. It then decides a conflict by its policy (D124 One checkpoint, ADR-0035 Accepting a change). Authority accepts a change; a person accepts an ADR or a guide (Accepted). Today one sync node, the server, holds authority for every organization. It could later be split across sync nodes or shared by all (D104 The server-independent goal, I60).</p>
+      <p><i>Not</i>: a certificate authority, which vouches for a key.</p>
+      <p class="cr-src">Group: Changes and accept, first. Start here's row links it. Server's entry keeps "a sync node that holds authority" and loses the list of duties, which now lives here.</p>
+    </div>
+    <div class="cr-entry text-sm space-y-1">
+      <p><b>Sync</b>: <span class="cr-hover">How devices and the server exchange changes: each sends what it wrote and receives what it missed.</span></p>
+      <p>A device pushes its outbox and pulls from its sync cursor (ADR-0017). Accept decides each change. Sync's filter sends each device only the part of the organization its access decision allows (D151 The access pattern). It is in the foundation on purpose (D142 Sync from the start).</p>
+      <p><i>Like</i>: an offline-first sync engine, except that authority decides each change at accept and a clash between people becomes a fact a person resolves.</p>
+      <p><i>Not</i>: <code class="cr-inline">nx sync</code>, which updates the workspace's project references.</p>
+      <p class="cr-src">Group: Sync, first.</p>
+    </div>
+    <div class="cr-entry text-sm space-y-1">
+      <p><b>Log store</b>: <span class="cr-hover">Where the log is kept: every fact an organization has, on every device and on the server.</span></p>
+      <p><b>The log</b> is an organization's datoms in the order authority accepted them. It is only ever added to; the journal is part of it. The log store is the pattern that keeps the log and its read models (SQLite native, SQLite wasm, SQLite Node, Postgres).</p>
+      <p><i>Like</i>: an event store in event sourcing, except that each entry is one fact, not an event.</p>
+      <p><i>Not</i>: the decision log, nor the logs code writes while it runs (<code class="cr-inline">Effect.log</code>, OpenTelemetry's logs).</p>
+      <p class="cr-src">Replaces today's entry (hover: "Where the facts are kept, on every device and on the server.").</p>
+    </div>
+    <div class="cr-entry text-sm space-y-1">
+      <p><b>Accepted</b>: <span class="cr-hover">An ADR or a guide that a person has reviewed and agreed to.</span></p>
+      <p>Its gates passed on that commit first. An ADR is accepted on its pattern's guide. One that records intent, with no pattern and no gate, is accepted directly (D65' Intent records accepted directly).</p>
+      <p><i>Not</i>: a change authority accepted (Authority): authority accepts a change, a person a record.</p>
+      <p class="cr-src">The hover line moves "after its gates passed" into the precise part. Today it is wrong for an intent record, which has no gate.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. The lease, which ADR-0036 removes</h2>
+  <p>ADR-0036 (Proposed, unverified) says a run's journal fences its own writers, "so a takeover is always allowed and no lease is needed". Once <a class="cr-link" href="../issues/0080-build-the-journal-fence.md">I80 Build the journal fence</a> builds it, <code class="cr-inline">viviefs/lease/holder</code> and the envelope's <code class="cr-inline">leaseEpoch</code> are no longer written. The glossary still teaches the lease as current, in seven places:</p>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Lease</b> ("so two devices never run it at once") and <b>Lease epoch</b>, both defined as current;</li>
+    <li>Server: "grants membership and fences leases"; Journal: "clocks, leases and result"; Envelope: "lease epoch";</li>
+    <li>Causing span: "lease handoff"; Quarantine: <code class="cr-inline">_Avoid_: lost lease</code> (P14 is named "Quarantine after a lost lease").</li>
+  </ul>
+  <p>The code still uses leases today, and ADR-0036 is not built, so retiring the words now would make the glossary describe code that does not exist yet. The glossary already marks words that are decided but not built ("Not built yet." on Agent account, "not built yet" on Tamper-evidence). Recommended: the same kind of line on Lease and Lease epoch now, and a comment on I80 that its build retires both under D173's three checks and adds the fence's words.</p>
+  <div class="cr-entry text-sm">
+    <p><b>Lease</b>: <span class="cr-hover">The right of one device to run a given workflow run, so two devices never run it at once.</span></p>
+    <p>Fenced, and renewed while active. Decided to go: a run's journal fences its own writers instead (ADR-0036 The journal is the fence), built in I80 Build the journal fence.</p>
+  </div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">4. The two unused terms</h2>
+  <p>D178 asks this review to remove or justify each term no living document uses. Both are in the Identity and access group, from P11, so map 3 did not add them:</p>
+  <div class="cr-table-wrap"><table class="table table-sm">
+    <thead><tr><th>Term</th><th>Where it lives instead</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr><td>Token verifier</td><td>the service <code class="cr-inline">TokenVerifier</code> (<code class="cr-inline">viviefs/identity/TokenVerifier</code>), <code class="cr-inline">makeTokenVerifier</code> and <code class="cr-inline">oidcTokenVerifier</code>, and the suite <code class="cr-inline">identity/token-verifier</code> in <code class="cr-inline">libs/identity</code></td><td rowspan="2">keep, justified: each names a part of the identity pattern's contract that the code uses, and the identity guide (map 4) will teach both. The report keeps naming them until that guide exists. Removing them would force the guide to add them back</td></tr>
+      <tr><td>Bearer authentication</td><td>the server's middleware, named in <code class="cr-inline">libs/identity</code>'s <code class="cr-inline">caller.ts</code> JSDoc</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cr-src">The report reads Markdown living documents only. Code comments are text a word change rewrites (D173), but the report does not read them. Making it read them would hide exactly this kind of entry: a term the code names that no page explains yet. That is why I recommend keeping the report as it is.</p>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">5. Small fixes</h2>
+  <ol class="list-decimal pl-6 space-y-1">
+    <li><b>Encryption level</b>: "The word waits for map 3." goes. <b>Trust level</b> and Encryption level keep their words (Q1).</li>
+    <li><b>Qualify</b>'s hover line names a phone where any device is meant (D179 A definition names the general thing): "on simulated phones too" becomes "on simulated devices too".</li>
+    <li><b>Accepted</b>'s hover line, as drafted in section 2.</li>
+    <li><b>I96</b>: "Blocked by" still names I93, which D198 deferred. I93 comes off the list, and the Answer says why.</li>
+    <li><b>Map 3</b>: the waiting-words list gains trust level's and encryption level's dispositions, and its Decisions so far gains I96. <code class="cr-inline">next-session.md</code> moves to phase 3.</li>
+  </ol>
+  <p class="cr-src">Checked and left as they are. <b>Execution</b> against "workflow run": Effect's workflow module uses both (<code class="cr-inline">executionId</code>, and "workflow run" in its prose), so "run" stays plain English for one execution. <b>Server-only attribute</b> against Membership's "whoever granted it as the actor" (D154): the server writes the change, and the actor is whoever granted it. The two agree.</p>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">Round 1</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 Trust level and encryption level')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. Trust level and encryption level</h3>
+    <p class="text-sm">Neither clashes with Effect or a platform we use. GnuPG's owner trust levels share the core, but GnuPG is not in the stack. Encryption level already avoids vivief's words (aperture, seal).</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: both keep their words; Encryption level loses 'The word waits for map 3.'; dispositions recorded in I96's Answer and the map"> <span><b>A. Both keep their words</b> (recommended). The leftover sentence goes.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: keep, and add a _Like_ line to each (in the notes)"> <span><b>B. Keep, each with a <code class="cr-inline">_Like_</code> line</b> (notes).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: another word for one of them (in the notes)"> <span><b>C. Another word</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 Words with no entry')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. Words used as terms with no entry (section 2's table)</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: add Authority and Sync as drafted; Log store defines the log with a _Not_ line, no Log entry; consumer app, living document, lab, the process words and the journal fence's words wait, named on I21 (and I80 for the fence)"> <span><b>A. Authority and Sync, and the log inside Log store</b> (recommended), as drafted. The other words are named as candidates on I21 (map 4); the fence's words go to I80.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: A, and also Consumer app, Living document and Lab now"> <span><b>B. A, and also Consumer app, Living document and Lab now</b>.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="C: none now; all to I21's reader test"> <span><b>C. None now</b>; all go to I21's reader test.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes (changes to a draft)">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Accept')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. Accept, the two meanings</h3>
+    <p class="text-sm">Authority accepts a change; a person accepts an ADR, a guide or this glossary. Both senses are standard in their own fields (event sourcing; Nygard's ADR status). The object tells them apart, and the linker already does.</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: keep both senses; no accept entry; Authority's entry defines accept; Accepted gets a _Not_ line; the hover line drops 'after its gates passed'"> <span><b>A. Keep both, told apart by their object</b> (recommended). Authority defines accept; Accepted gets a <code class="cr-inline">_Not_</code> line.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: an accept entry of its own (lower case, like effect), beside Accepted"> <span><b>B. An accept entry of its own</b>, lower case, beside Accepted. "Accept the vocabulary" would then link to authority's step.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="C: a person's sense gets another verb (in the notes); issue titles and the ADR status rewritten"> <span><b>C. Another verb for a person's sense</b> (notes). Rewrites the ADR statuses and issue titles.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 The lease')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. Lease and Lease epoch</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: a 'decided to go' line on Lease and Lease epoch now; Server says 'fences each workflow run's writers'; a comment on I80 that its build retires both under D173's checks and adds the fence's words"> <span><b>A. Mark them now; I80 retires them</b> (recommended), as in section 3.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: leave the glossary as is; I80 does all of it"> <span><b>B. Leave them</b>; I80 does all of it.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="C: retire them now and add Journal fence now"> <span><b>C. Retire them now</b> and add Journal fence. The glossary would then describe code that is not built yet.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q5', 'Q5 Unused terms')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q5. Token verifier and Bearer authentication</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="A: keep both, justified in I96's Answer: they name the identity contract's parts in code and the identity guide will teach them; the report stays as it is"> <span><b>A. Keep, justified</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="B: remove both; the identity guide adds them back"> <span><b>B. Remove both</b>; the identity guide adds them back.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q5" value="C: fold them into Identity provider and Access token"> <span><b>C. Fold them</b> into Identity provider and Access token.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q6', 'Q6 Small fixes')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q6. Section 5's small fixes</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="A: as written"> <span><b>A. As written</b> (recommended).</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q6" value="B: with changes in the notes"> <span><b>B. With changes</b> (notes).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <h2 class="text-2xl font-bold pt-6">Round 2</h2>
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q7', 'Q7 Accept the glossary')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q7. Do you accept the glossary as it stands?</h3>
+    <p class="text-sm">Read it on the docs site (<code class="cr-inline">/reference/glossary/</code>); the new and changed entries are Authority, Sync, Log store, Accepted, Server, Lease, Lease epoch, Encryption level and Qualify. Accepting it resolves I96 and closes map 3; I21's reader test then tests it with a reader in map 4, and phase 3 starts.</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="A: accepted as it stands"> <span><b>A. Accepted</b> as it stands.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q7" value="B: not yet; what stops it is in the notes"> <span><b>B. Not yet</b> (notes: what stops it).</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<footer class="cr-src">Sources: <code class="cr-inline">GLOSSARY.md</code> at <code class="cr-inline">93e119784</code>; I21, I26, I30, I33, I77, I78 and its record, I80, I88-I96; the vivief inventory, section "Map 3: Vocabulary (15)"; the decision log (D63, D65', D101, D103, D104, D124, D142, D151, D154, D170-D204); ADR-0017, ADR-0035, ADR-0036; <code class="cr-inline">apps/docs/src/lib/references.ts</code> (<code class="cr-inline">EVERYDAY_TERMS</code>, <code class="cr-inline">termFinder</code>); <code class="cr-inline">tools/verify/src/glossary-report.ts</code>; <code class="cr-inline">libs/identity</code>; <code class="cr-inline">repos/effect</code>'s <code class="cr-inline">eventlog</code> and <code class="cr-inline">unstable/workflow</code>. <code class="cr-inline">verify</code>'s <code class="cr-inline">glossary</code> and <code class="cr-inline">retired-words</code> steps were run on 2026-10-29. Counts are whole-word matches, case-insensitive, over the glossary, AGENTS.md, <code class="cr-inline">docs/adr</code>, <code class="cr-inline">docs/plan</code>, <code class="cr-inline">docs/issues</code>, <code class="cr-inline">docs/agents</code> and the guides.</footer>
+
+</div>
+</body>
+</html>

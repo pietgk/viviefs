@@ -489,6 +489,18 @@ Decided with the human in [I94](../../issues/0094-words-in-another-projects-sens
 |---|---|---|---|
 | <a id="d204"></a>D204 | Words in another project's sense | A block quote, and a passage, table or phrase between `<!-- their words: whose -->` and `<!-- /their words -->` (in MDX, `{/* their words: whose */}` and `{/* /their words */}`), are in another project's words. Inside one nothing is resolved against this repository: no glossary term links and none counts as a page's first use, a bare id stays text and never fails ([D87 References resolved when rendered][D87]), `pnpm refs fix` leaves it ([D86' Named references in every living document][D86']), a path in code font is not checked, a URL link keeps its target, and a retired word is not failed ([D180' Retired words in code font][D180']). A reference-style link still resolves, since only we write those. The mark names whose words they are; a mark without a name, one opened inside another, a stray close and a mark left open fail the build and `verify`. The site, `pnpm refs` and `verify` read the marks with one module of `@viviefs/references`. Answers [I26 Glossary links on words that are not our terms][I26]'s questions: no front-matter or folder mark, no detection of other passages than block quotes, no report of ambiguous senses (meaning stays with a reader, [D96 Two verifications][D96]), and no more `EVERYDAY_TERMS` (Workflow, Attribute and App are ours lowercase in almost every use). The compounds of [I89 How a word is chosen and written][I89]-[I92 Map 2's new words][I92] removed 2 of [I26][I26]'s 10 wrong links (Cursor); the rest are words we keep, which clash wherever a page describes another project. Not chosen: a directive (`:::their-words`), which shows as text on GitHub where issues and ADRs are read raw; marks that switch off glossary links only, which leave another repository's ids failing the build (`P95`) or linking to ours (vivief's `ADR 0027`); and block quotes left unmarked, which needs a pair around every quote. | Authors bent prose around the linker, and a quote cannot be reworded; a comment shows nothing on GitHub or the site, and naming the source tells a reader of the raw text whose words they are. Of five block quotes in the living documents, three quote other people and two are our own prompts, which write every id as a reference-style link. |
 
+<a id="d205-d208"></a>
+## Accepting the vocabulary (2026-10-29)
+
+Decided with the human in [I96](../../issues/0096-accept-the-vocabulary.md), on [the review page](../../research/2026-10-29-accept-the-vocabulary-review.html), under [D198 Map 3 finishes lean][D198]: the smallest edit that closes each gap the destination's checks found.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d205"></a>D205 | Trust level and encryption level keep their words | Trust level ([D116 Trust levels and who sets them][D116]) and Encryption level ([D149 Encryption levels][D149]) keep their words, with no `_Like_` line; Encryption level's entry no longer says its word waits for map 3. Not chosen: a `_Like_` line on each, another word. | Neither clashes with Effect or a platform the code uses ([D170 One word only where it matches][D170]); GnuPG's trust levels share the core but are not in the stack. [I92 Map 2's new words][I92] listed trust level and its Answer gave it no disposition. |
+| <a id="d206"></a>D206 | Authority, sync and the log | Words the glossary leaned on without an entry. Authority and Sync become entries: Authority holds [D103 Nodes and authority][D103]'s duties and says what accept is, Server keeps only "a sync node that holds authority", and Authority is not a certificate authority; Sync is the push and pull between sync nodes, not `nx sync`. The log gets no entry of its own: Log store's entry defines it, as an organization's datoms in the order authority accepted them, with a `_Like_` line (an event store) and a `_Not_` line (the decision log, `Effect.log`, OpenTelemetry's logs). Consumer app, living document, lab, grilling, review page and map are candidates for [I21 Test the glossary with a reader outside software][I21]'s reader test; the journal fence's words go to [I80 Build the journal fence][I80]. Not chosen: those six entries now; no entries until the reader test. | Authority (242 uses) and sync are foundation concepts in Start here, and a newcomer hovering them got nothing. Bare log fails [D170 One word only where it matches][D170] in our own text, where the decision log and the telemetry logs are other logs, so an entry would link them wrong. |
+| <a id="d207"></a>D207 | Accept, told apart by what is accepted | Accept keeps both its senses: authority accepts a change ([ADR-0035 Accepting a change][ADR-0035]), and a person accepts an ADR, a guide or the glossary (Accepted, [D63 Acceptance on the guide][D63], [D65' Intent records accepted directly][D65']). There is no accept entry: Authority's entry defines authority's step, and Accepted's gains a `_Not_` line. Accepted's hover line no longer says its gates passed, which an intent record has none of. Not chosen: an accept entry of its own beside Accepted (a person's "accept the vocabulary" would link to authority's step); another verb for a person's sense (ADR statuses and issue titles rewritten). | Each sense is the standard one in its field (event sourcing; an ADR's status), the object always says which is meant, and the linker already links Accepted only as written. |
+| <a id="d208"></a>D208 | The lease is marked, and goes with the journal fence | Lease and Lease epoch stay defined, each with a line that it is decided to go ([ADR-0036 The journal is the fence][ADR-0036]); Authority's duty reads "fence each workflow run's writers". [I80 Build the journal fence][I80]'s build retires both under [D173 What a word change rewrites, and where it is written][D173]'s three checks, rewrites the lease in Journal, Envelope, Causing span and Quarantine, and names the fence's words (journal fence, takeover, a run's head). Not chosen: leave the glossary as it is until [I80][I80]; retire them now and add Journal fence. | The code still uses the lease, so retiring it now would describe code that is not built; leaving it unmarked teaches a newcomer what is decided to go. The glossary already marks a decided word not yet built (Agent account, Tamper-evidence). |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -508,6 +520,7 @@ Decided with the human in [I94](../../issues/0094-words-in-another-projects-sens
 [ADR-0026]: ../../adr/0026-verify-qualify-teach.md
 [ADR-0032]: ../../adr/0032-what-viviefs-is-about.md
 [ADR-0033]: ../../adr/0033-the-presenter-pattern.md
+[ADR-0035]: ../../adr/0035-accepting-a-change.md
 [ADR-0036]: ../../adr/0036-the-journal-is-the-fence.md
 [ADR-0037]: ../../adr/0037-access.md
 [ADR-0038]: ../../adr/0038-tamper-evidence-and-proof-of-authorship.md
@@ -629,7 +642,9 @@ Decided with the human in [I94](../../issues/0094-words-in-another-projects-sens
 [D60]: #d60
 [D61]: #d61
 [D62]: #d62
+[D63]: #d63
 [D65]: #d65
+[D65']: #d65p
 [D67]: #d67
 [D68]: #d68
 [D69]: #d69

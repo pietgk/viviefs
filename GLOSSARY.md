@@ -38,12 +38,12 @@ reference ([D178 Growth watched, not capped][D178]).
 | **Pattern** | A part built once with one promise, several ways to keep it, and a check every way must pass. | [Concept](#concept), [Pattern](#pattern), [Contract](#contract), [Implementation](#implementation), [Suite](#suite) |
 | **Datom and the one log** | Every fact is one small record, kept forever in one log per organization. | [Datom](#datom), [Log store](#log-store), [Organization](#organization) |
 | **Command and changeset** | A command decides what should change and returns it as one batch, without writing it. | [Intent](#intent), [Command](#command), [Changeset](#changeset), [Effect handler](#effect-handler) |
-| **Authority and accepting a change** | One place decides whether a batch counts: may this writer do it, is it well formed, does the data stay valid. | [Server](#server), [Acceptance rule](#acceptance-rule), [Conflict policy](#conflict-policy) |
+| **Authority and accepting a change** | One place decides whether a batch counts: may this writer do it, is it well formed, does the data stay valid. | [Authority](#authority), [Server](#server), [Acceptance rule](#acceptance-rule), [Conflict policy](#conflict-policy) |
 | **Origin and origin trust** | Every batch says where it came from, and how far we trust that source can change at once. | [Origin](#origin), [Origin trust](#origin-trust), [Trust level](#trust-level) |
 | **Identity and access** | Every change is accountable to someone, and one decision says what they may write and receive. | [Identity](#identity), [Membership](#membership), [Access decision](#access-decision) |
 | **Encryption that narrows** | Locking a value limits who can open it, and never gives anyone access. | [Encryption level](#encryption-level), [Crypto-shredding](#crypto-shredding) |
 | **Tamper-evident history** | Each organization's history is a chain in which any change to the past shows. | [Tamper-evidence](#tamper-evidence) |
-| **Sync** | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | [Outbox](#outbox), [Sync cursor](#sync-cursor), [Conflict datom](#conflict-datom) |
+| **Sync** | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | [Sync](#sync), [Outbox](#outbox), [Sync cursor](#sync-cursor), [Conflict datom](#conflict-datom) |
 | **Read model and projector** | What the facts mean is worked out from the log and can be thrown away and rebuilt. | [Read model](#read-model), [Projector](#projector) |
 | **Presenter, frame and presentation surface** | A screen, or a speaker, asks for data and keeps receiving the latest answer. | [Presenter](#presenter), [Frame](#frame), [Frame subscription](#frame-subscription), [Presentation surface](#presentation-surface), [Screen](#screen) |
 | **Durable workflow and its journal** | Work that must not lose progress writes down each step, so it resumes where it stopped. | [Workflow](#workflow), [Activity](#activity), [Journal](#journal) |
@@ -172,14 +172,9 @@ _Avoid_: application package, shell
 
 **Server**:
 The program that decides which changes count for an organization.
-It accepts or rejects every change, orders the accepted ones, grants membership
-and fences leases; together these duties are its authority
-([D103 Nodes and authority][D103]). To accept a change it asks may this writer
-do this, is it well formed, and does the data stay valid
-([D124 One checkpoint][D124]). It is a sync node like a device, one that holds
-authority. Today one server holds all of these duties for every organization;
-they could later be split across sync nodes or shared by all
-([D104 The server-independent goal][D104], [I60 Server-independent mode][I60]).
+It is a sync node like a device, one that holds authority
+([D103 Nodes and authority][D103]). Today one server holds authority for every
+organization.
 
 **Feature**:
 One piece of what the app does for its users, such as collecting evidence, kept together from screen to server.
@@ -283,9 +278,15 @@ against the sync node holding authority (today the server,
 _Avoid_: timestamp, version
 
 **Log store**:
-Where the facts are kept, on every device and on the server.
-The pattern storing datoms and read models (SQLite native, SQLite wasm, SQLite
-Node, Postgres).
+Where the log is kept: every fact an organization has, on every device and on the server.
+The log is an organization's datoms in the order authority accepted them, only
+ever added to; the journal is part of it ([D206 Authority, sync and the log][D206]). The log
+store is the pattern that keeps the log and its read models (SQLite native,
+SQLite wasm, SQLite Node, Postgres).
+_Like_: an event store in event sourcing, except that each entry is one fact, not
+an event.
+_Not_: the decision log, nor the logs code writes while it runs (`Effect.log`,
+OpenTelemetry's logs).
 
 **Organization**:
 A company or team whose data is kept separate from every other one.
@@ -300,6 +301,20 @@ _Like_: the web's `Blob`, except that ours is stored by its content hash and
 pointed to by a fact.
 
 ## Changes and accept
+
+**Authority**:
+The right to decide which changes count for an organization, held today by the server.
+Its duties: accept or reject every change, order the accepted ones, grant
+membership, and fence each workflow run's writers
+([D103 Nodes and authority][D103]). Accept is the step that asks may this writer
+do this, is it well formed, and does the data stay valid, then decides a
+conflict by its policy ([D124 One checkpoint][D124],
+[ADR-0035 Accepting a change][ADR-0035]); authority accepts a change, a person
+accepts an ADR or a guide ([D207 Accept, told apart by what is accepted][D207]). Today one sync node, the server, holds
+authority for every organization; it could later be split across sync nodes or
+shared by all ([D104 The server-independent goal][D104],
+[I60 Server-independent mode][I60]).
+_Not_: a certificate authority, which vouches for a key.
 
 **effect**:
 Something that happens and makes a difference: a fact written, a message sent, a screen redrawn, a model asked.
@@ -579,7 +594,7 @@ encryption level.
 How far a kind of fact is locked, by who holds the key that opens its values.
 Open, subject (one key per person, for erasure), group (members only, not the
 operator) or role. Chosen per attribute; it narrows who can read and never
-grants access ([D149 Encryption levels][D149]). The word waits for map 3.
+grants access ([D149 Encryption levels][D149]).
 _Avoid_: aperture, seal, trust level
 
 **Crypto-shredding**:
@@ -594,6 +609,17 @@ a rewrite is caught ([D155 A hash chain per organization][D155]); not built yet.
 _Avoid_: tamper-proof, immutable storage
 
 ## Sync
+
+**Sync**:
+How devices and the server exchange changes: each sends what it wrote and receives what it missed.
+A device pushes its outbox and pulls from its sync cursor
+([ADR-0017 Sync: outbox and sync cursor stream over Effect RPC][ADR-0017]);
+accept decides each change, and sync's filter sends each device only the part of
+the organization its access decision allows ([D151 The access pattern][D151]). It
+is in the foundation on purpose ([D142 Sync from the start][D142]).
+_Like_: an offline-first sync engine, except that authority decides each change
+at accept and a clash between people becomes a fact a person resolves.
+_Not_: `nx sync`, which updates the workspace's project references.
 
 **Sync node**:
 One installation of an app that keeps an organization's data and sends its changes: a device or the server.
@@ -755,11 +781,14 @@ datom.
 
 **Lease**:
 The right of one device to run a given workflow run, so two devices never run it at once.
-Fenced, and renewed while active.
+Fenced, and renewed while active. Decided to go: a run's journal fences its own
+writers instead ([ADR-0036 The journal is the fence][ADR-0036]), built in
+[I80 Build the journal fence][I80] ([D208 The lease is marked, and goes with the journal fence][D208]).
 
 **Lease epoch**:
 The counter that tells an old lease from a newer one.
 The fencing counter on a lease; journal writes under a stale epoch are rejected.
+Decided to go with the lease ([D208 The lease is marked, and goes with the journal fence][D208]).
 
 **Workflow engine**:
 The part that runs workflows and keeps their journals, the same on every device and on the server.
@@ -869,10 +898,12 @@ An ADR whose claims its gates have proven, with the evidence linked.
 Not yet accepted.
 
 **Accepted**:
-An ADR or a guide that a person has reviewed and agreed to, after its gates passed on that commit.
-An ADR is accepted on its pattern's guide; one that records intent, with no
-pattern and no gate, is accepted directly
+An ADR or a guide that a person has reviewed and agreed to.
+Its gates passed on that commit first. An ADR is accepted on its pattern's
+guide; one that records intent, with no pattern and no gate, is accepted directly
 ([D65' Intent records accepted directly][D65']).
+_Not_: a change authority accepted: authority accepts a change, a person a record
+([D207 Accept, told apart by what is accepted][D207]).
 
 **Delivered**:
 A pattern that is finished: its claims are proven, its exemplar passes verify, and a person has accepted its guide.
@@ -894,7 +925,7 @@ _Not_: GitHub's "Verified" badge, which means a signed commit.
 _Avoid_: passing tree, code changeset, merged commit
 
 **Qualify**:
-Proving claims about the stack by running gates, on simulated phones too, and recording each run in the ledger.
+Proving claims about the stack by running gates, on simulated devices too, and recording each run in the ledger.
 Device runs (an iOS simulator, an Android emulator) and lab runs happen only
 here; separated from verify by what a check needs and produces, not by speed.
 _Avoid_: slow tests, the heavy suite
@@ -977,6 +1008,7 @@ A stub, a failing test and a reference solution that passes in verify.
 [ADR-0002]: docs/adr/0002-purpose-scope-and-exemplar.md
 [ADR-0003]: docs/adr/0003-effect-v4-as-backbone.md
 [ADR-0012]: docs/adr/0012-datom-backed-workflow-engine.md
+[ADR-0017]: docs/adr/0017-sync-outbox-and-cursor-stream.md
 [ADR-0032]: docs/adr/0032-what-viviefs-is-about.md
 [ADR-0033]: docs/adr/0033-the-presenter-pattern.md
 [ADR-0034]: docs/adr/0034-origin-trust.md
@@ -1004,6 +1036,7 @@ A stub, a failing test and a reference solution that passes in verify.
 [D134]: docs/plan/bootstrap/02-decision-log.md#d134
 [D136]: docs/plan/bootstrap/02-decision-log.md#d136
 [D137]: docs/plan/bootstrap/02-decision-log.md#d137
+[D142]: docs/plan/bootstrap/02-decision-log.md#d142
 [D144]: docs/plan/bootstrap/02-decision-log.md#d144
 [D148]: docs/plan/bootstrap/02-decision-log.md#d148
 [D149]: docs/plan/bootstrap/02-decision-log.md#d149
@@ -1042,6 +1075,9 @@ A stub, a failing test and a reference solution that passes in verify.
 [D199]: docs/plan/bootstrap/02-decision-log.md#d199
 [D200]: docs/plan/bootstrap/02-decision-log.md#d200
 [D201]: docs/plan/bootstrap/02-decision-log.md#d201
+[D206]: docs/plan/bootstrap/02-decision-log.md#d206
+[D207]: docs/plan/bootstrap/02-decision-log.md#d207
+[D208]: docs/plan/bootstrap/02-decision-log.md#d208
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D52]: docs/plan/bootstrap/02-decision-log.md#d52
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
@@ -1056,4 +1092,5 @@ A stub, a failing test and a reference solution that passes in verify.
 [D98']: docs/plan/bootstrap/02-decision-log.md#d98p
 [I60]: docs/issues/0060-server-independent-mode.md
 [I8]: docs/issues/0008-engine-scale-out.md
+[I80]: docs/issues/0080-build-the-journal-fence.md
 [P04]: docs/plan/bootstrap/06-qualification-gates.md#p04

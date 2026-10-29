@@ -3,6 +3,7 @@
 Wayfinder map 3 of [I34: vivief as the source of ViViEfs's concepts](../../issues/0034-vivief-as-the-source-of-viviefs-concepts.md).
 Charted on 2026-10-27; the charting review is
 [2026-10-27 Charting map 3: the words](../../research/2026-10-27-the-words-charting.html).
+Done on 2026-10-29: the human accepted the glossary ([I96 Accept the vocabulary][I96]).
 Tickets are the issues with `Effort: docs/plan/vocabulary/`
 ([issue tracker](../../agents/issue-tracker.md), Wayfinding operations).
 
@@ -53,7 +54,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
   page with worked examples before deciding.
 - **The words waiting** (from map 2 and [I78 Research: Effect's vocabulary against ours][I78]): `Contract`, `effectHandler`,
   intent, effect, Vision, View and Effects, the formula's names ([I30 Ideas batch: glossary entries written as effects][I30]), foundation
-  concept, abstraction or pattern ([I33 Ideas batch: abstractions that constrain agents][I33]), node (now Sync node, [D199 Sync node][D199]), surface (now Presentation surface, [D200 Presentation surface and screen][D200]), frame, trust level, the
+  concept, abstraction or pattern ([I33 Ideas batch: abstractions that constrain agents][I33]), node (now Sync node, [D199 Sync node][D199]), surface (now Presentation surface, [D200 Presentation surface and screen][D200]), frame, trust level (keeps its word, with encryption level, [D205 Trust level and encryption level keep their words][D205]), the
   lab qualifier, hot, frontier, warm and cold, the kinds of intent, change ([I77 The word change has two meanings][I77]),
   Tool, Envelope, Journal, Entity, Decision, Prompt, Worker and runner, Deferred,
   `tx`, Command, session, model, Service, and a "like X, except Y" line per term
@@ -72,6 +73,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 - [D198 Map 3 finishes lean][D198] (2026-10-28): map 3 finishes lean: [I92 Map 2's new words][I92] only the app shell's words, [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] in one session, [I96 Accept the vocabulary][I96]; [I93 Naming facts][I93] deferred; [I97 A preview on every link in a page's text][I97] to phase 3; a grilling opens a new issue only for build work its decisions force.
 - [I92 Map 2's new words][I92] (2026-10-28): Sync node, bare node left to Node.js; Presentation surface and Screen, [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] amended; Frame keeps its word with a `_Not_` line; change stays plain English, [I77 The word change has two meanings][I77] resolved; the lab qualifier, the four states and the kinds of intent wait ([D199 Sync node][D199]-[D203 The lab qualifier, the four states and the kinds of intent wait][D203]).
 - [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] (2026-10-29): a block quote, and a passage, table or phrase between `<!-- their words: whose -->` and `<!-- /their words -->`, resolve nothing against this repository (no glossary link, bare id or path check; a reference-style link still resolves); `verify` fails a retired word only in the code-font form its `_Avoid_` line writes (one word today, Sync node's), since the count found about 230 correct plain uses of the retired words; built with a test per case of [I26 Glossary links on words that are not our terms][I26] ([D204 Words in another project's sense][D204], [D180' Retired words in code font][D180']).
+- [I96 Accept the vocabulary][I96] (2026-10-29), the destination reached and the glossary accepted as it stands: trust level and encryption level keep their words; Authority and Sync get entries, Log store defines the log and bare log has no entry; accept keeps both senses, told apart by what is accepted, with a `_Not_` line on Accepted; Lease and Lease epoch are marked as decided to go, and [I80 Build the journal fence][I80] retires them; the two unused terms are kept, justified; the linker now finds a compound across a line break ([D205 Trust level and encryption level keep their words][D205]-[D208 The lease is marked, and goes with the journal fence][D208]).
 
 ## Not yet specified
 
@@ -118,6 +120,8 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D200]: ../bootstrap/02-decision-log.md#d200
 [D203]: ../bootstrap/02-decision-log.md#d203
 [D204]: ../bootstrap/02-decision-log.md#d204
+[D205]: ../bootstrap/02-decision-log.md#d205
+[D208]: ../bootstrap/02-decision-log.md#d208
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D94']: ../bootstrap/02-decision-log.md#d94p
@@ -133,6 +137,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [I77]: ../../issues/0077-change-has-two-meanings.md
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I8]: ../../issues/0008-engine-scale-out.md
+[I80]: ../../issues/0080-build-the-journal-fence.md
 [I88]: ../../issues/0088-effect-and-the-effect-handler.md
 [I89]: ../../issues/0089-how-a-word-is-chosen-and-written.md
 [I90]: ../../issues/0090-pattern-concept-contract-abstraction.md

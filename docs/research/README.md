@@ -6,8 +6,9 @@ guide's claim: what a guide needs from a record is rewritten into a guide
 page that cites gate evidence. Claims come from gates
 ([ADR-0026](../adr/0026-verify-qualify-teach.md)).
 
-Name a record `YYYY-MM-DD-<topic>` with `.md` or `.html`. The `research`
-skill writes its Markdown findings here. The docs site renders Markdown
+Name a record `YYYY-MM-DD-<topic>` with `.md` or `.html`, and give it a row
+below in the same change; `verify`'s `research-index` step fails a record
+without one. The `research` skill writes its Markdown findings here. The docs site renders Markdown
 records as pages and serves HTML records as they are.
 
 | Record | What it is |
@@ -52,4 +53,8 @@ records as pages and serves HTML records as they are.
 | [2026-10-27 Accept the foundation concepts](2026-10-27-accept-the-foundation-concepts-review.html) | I55's design review: map 2's rows disposed of, the twelve foundation concepts in one table read as one turn, libs one per pattern, and portability's two halves (D160-D162, D65') |
 | [2026-10-27 Effect and the effect handler](2026-10-27-effect-and-the-effect-handler-review.html) | I88's design review: the word effect from four sources, vivief's effectHandler, four worked examples, and three rounds settling effect by phase, Effect and effect by case, the effect handler, intent and decide (D163-D169) |
 | [2026-10-28 How a word is chosen and written](2026-10-28-how-a-word-is-chosen-and-written-review.html) | I89's design review: vivief's quick reference beside the glossary, the single-word rule run on all 67 single-word terms, compounds in prose, entry lines, the opening and groups, the hover line found cut mid-sentence, and growth (D170-D178, D94') |
+| [2026-10-28 Pattern, concept, contract, abstraction](2026-10-28-pattern-concept-contract-abstraction-review.html) | I90's design review: concept as the wider word, a pattern as the kind with a contract, a suite and a gate, vivief's `Contract` against ours, "abstraction" as plain English, and Feature (D181-D185) |
+| [2026-10-28 Effect's names against ours](2026-10-28-effects-names-against-ours-review.html) | I91's design review: the single-word rule run on each clash with its uses counted, the compounds (Workflow engine, Workflow runner, Durable deferred, Changeset manifest, Sync cursor, Evidence registry), the words kept with their lines, and the code names left to I99 (D186-D197) |
+| [2026-10-28 Map 2's new words](2026-10-28-map-2s-new-words-review.html) | I92's design review: the words the app shell meets, Sync node, Presentation surface and Screen, Frame, change, and what waits (D199-D203) |
 | [2026-10-29 Words in another project's sense](2026-10-29-words-in-another-projects-sense-review.html) | I94's design review: I26's cases run through the real linker, the their-words mark and what it switches off, the retired words counted in the living documents, and I26's other questions (D204, D180') |
+| [2026-10-29 Accept the vocabulary](2026-10-29-accept-the-vocabulary-review.html) | I96's design review: map 3's destination checked row by row, words used as terms with no entry counted (authority, sync, the log, accept), the lease ADR-0036 removes, and the glossary report's two unused terms (D205-D208) |

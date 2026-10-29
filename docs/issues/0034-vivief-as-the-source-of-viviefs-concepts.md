@@ -140,6 +140,8 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 
 2026-10-27: map 3 charted as **Vocabulary** ([the map](../plan/vocabulary/map.md), [the charting review](../research/2026-10-27-the-words-charting.html)). Destination: a glossary where each term means one thing, accepted by the human. A single-word term only where its meaning matches our use and the libraries we use, else a compound; tickets change the words in living documents, not only decide them, and the linker is built in the map. Tickets I88-[I96 Accept the vocabulary][I96], starting with [I88 Effect and the effect handler][I88] Effect and the effect handler; the attribute-naming rows stay in map 3.
 
+2026-10-29: map 3 is done. [I96 Accept the vocabulary][I96] checked map 3's destination: every map-3 row of the inventory and every waiting word has a disposition, every term passed the single-word rule, and the docs site links each term only in our sense; the human accepted the glossary as it stands ([D205 Trust level and encryption level keep their words][D205]-[D208 The lease is marked, and goes with the journal fence][D208]). Map 4 judges it with a reader ([I21 Test the glossary with a reader outside software][I21]). The Schedule resumes with phase 3; maps 4-6 are not charted.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0019]: ../adr/0019-ui-state-ownership-and-query-atoms.md
@@ -155,6 +157,8 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 [D117]: ../plan/bootstrap/02-decision-log.md#d117
 [D160]: ../plan/bootstrap/02-decision-log.md#d160
 [D162]: ../plan/bootstrap/02-decision-log.md#d162
+[D205]: ../plan/bootstrap/02-decision-log.md#d205
+[D208]: ../plan/bootstrap/02-decision-log.md#d208
 [D29]: ../plan/bootstrap/02-decision-log.md#d29
 [D31]: ../plan/bootstrap/02-decision-log.md#d31
 [D32]: ../plan/bootstrap/02-decision-log.md#d32
