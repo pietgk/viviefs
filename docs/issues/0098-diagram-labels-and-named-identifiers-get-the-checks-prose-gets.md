@@ -18,12 +18,17 @@ Build, test first, each with a failing case taken from that page:
 
 ## Comments
 
+2026-10-29: from [I94 Words in another project's sense][I94] ([D180' Retired words in code font][D180']): the retired-word check is `verify`'s `retired-words` step (`tools/verify/src/retired-words.ts`). It reads prose and skips fenced code, so a Mermaid label is not read yet; this issue adds diagram labels to it, as to the other prose checks. A label in another project's words is marked as prose is ([D204 Words in another project's sense][D204]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D180]: ../plan/bootstrap/02-decision-log.md#d180
+[D180']: ../plan/bootstrap/02-decision-log.md#d180p
+[D204]: ../plan/bootstrap/02-decision-log.md#d204
 [D84]: ../plan/bootstrap/02-decision-log.md#d84
 [D86']: ../plan/bootstrap/02-decision-log.md#d86p
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I21]: 0021-test-the-glossary-with-a-reader.md
 [I89]: 0089-how-a-word-is-chosen-and-written.md
+[I94]: 0094-words-in-another-projects-sense.md

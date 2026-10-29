@@ -1,6 +1,6 @@
 # I26: Glossary links on words that are not our terms
 
-Status: ready-for-human
+Status: resolved
 
 Category: bug
 
@@ -53,6 +53,10 @@ This repo has the problem waiting already: the plans call vivief, complyj and we
 - Should `verify` report terms linked in a marked passage, or a term whose sense is ambiguous, so a human decides?
 - Is a short list of words with more than one sense in our own docs (workflow, cursor, attribute, app) worth adding to the `EVERYDAY_TERMS` rule, or is a mark enough?
 
+## Answer
+
+Decided in [I94 Words in another project's sense][I94] on 2026-10-29 ([D204 Words in another project's sense][D204], [D180' Retired words in code font][D180']) and built in [I95 Build the glossary linker as decided][I95]. A block quote, or a passage between `<!-- their words: whose -->` and `<!-- /their words -->`, resolves nothing against this repository: no glossary link, no bare id (`P95`, vivief's `ADR 0027`), no path check, and a URL link keeps its target; a reference-style link still resolves. Each row of Observed, and this issue's comments, is a test in `apps/docs/src/lib/reference-links.test.ts`. Questions: a comment pair, not a directive or front matter; ids and paths too, not glossary links only; names that carry their context are [D170 One word only where it matches][D170]'s rule; block quotes are detected without a mark, tables are not; `verify` reports no ambiguous sense; `EVERYDAY_TERMS` gains no words.
+
 ## Comments
 
 2026-10-04: The same happens to ids. Pinot's latency figure `10ms P95` (the
@@ -74,6 +78,9 @@ to stay as he wrote it.
 [ADR-0027]: ../adr/0027-developer-experience-planes.md
 [D134]: ../plan/bootstrap/02-decision-log.md#d134
 [D135]: ../plan/bootstrap/02-decision-log.md#d135
+[D170]: ../plan/bootstrap/02-decision-log.md#d170
+[D180']: ../plan/bootstrap/02-decision-log.md#d180p
+[D204]: ../plan/bootstrap/02-decision-log.md#d204
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
 [I24]: 0024-ideas-batch-andrej-karpathy-understanding.md

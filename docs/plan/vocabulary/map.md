@@ -71,6 +71,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 
 - [D198 Map 3 finishes lean][D198] (2026-10-28): map 3 finishes lean: [I92 Map 2's new words][I92] only the app shell's words, [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] in one session, [I96 Accept the vocabulary][I96]; [I93 Naming facts][I93] deferred; [I97 A preview on every link in a page's text][I97] to phase 3; a grilling opens a new issue only for build work its decisions force.
 - [I92 Map 2's new words][I92] (2026-10-28): Sync node, bare node left to Node.js; Presentation surface and Screen, [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] amended; Frame keeps its word with a `_Not_` line; change stays plain English, [I77 The word change has two meanings][I77] resolved; the lab qualifier, the four states and the kinds of intent wait ([D199 Sync node][D199]-[D203 The lab qualifier, the four states and the kinds of intent wait][D203]).
+- [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] (2026-10-29): a block quote, and a passage, table or phrase between `<!-- their words: whose -->` and `<!-- /their words -->`, resolve nothing against this repository (no glossary link, bare id or path check; a reference-style link still resolves); `verify` fails a retired word only in the code-font form its `_Avoid_` line writes (one word today, Sync node's), since the count found about 230 correct plain uses of the retired words; built with a test per case of [I26 Glossary links on words that are not our terms][I26] ([D204 Words in another project's sense][D204], [D180' Retired words in code font][D180']).
 
 ## Not yet specified
 
@@ -106,6 +107,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D175]: ../bootstrap/02-decision-log.md#d175
 [D177]: ../bootstrap/02-decision-log.md#d177
 [D180]: ../bootstrap/02-decision-log.md#d180
+[D180']: ../bootstrap/02-decision-log.md#d180p
 [D181]: ../bootstrap/02-decision-log.md#d181
 [D185]: ../bootstrap/02-decision-log.md#d185
 [D186]: ../bootstrap/02-decision-log.md#d186
@@ -115,6 +117,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D199]: ../bootstrap/02-decision-log.md#d199
 [D200]: ../bootstrap/02-decision-log.md#d200
 [D203]: ../bootstrap/02-decision-log.md#d203
+[D204]: ../bootstrap/02-decision-log.md#d204
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D94']: ../bootstrap/02-decision-log.md#d94p

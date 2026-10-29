@@ -13,10 +13,16 @@
  * Headings, code and text already inside a link are left alone. An unknown
  * id fails the build, and so does a missing path under a checked root,
  * except in evidence notes and research records, which are kept as written.
+ *
+ * A block quote, or a passage between `<!-- their words: whose -->` and
+ * `<!-- /their words -->`, is in another project's words (D204): no glossary
+ * term, bare id or path in it is resolved, and a link keeps its target. A
+ * reference-style link still resolves. A mark without a name, one inside
+ * another, a stray close and a mark left open fail the build.
  */
 import { relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { findReferenceTokens, type Catalog } from '@viviefs/references'
+import { findReferenceTokens, theirWords, type Catalog } from '@viviefs/references'
 import type { HastPluginEntry, MdastPluginEntry } from 'satteri'
 import {
   codePath,
@@ -197,9 +203,31 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
     // One set per page; on the glossary page, one per entry (D94).
     const pageTerms: TermLinking = { find, linked: new Set() }
     const entryTerms = new Map<string, TermLinking>()
+    // Visitors run in document order, so the marks read so far say whether a node is inside one.
+    const marks = theirWords()
+    const readMarker = (comment: string) => {
+      const problem = marks.read(comment)
+      if (problem !== undefined) throw new Error(`${repositoryPath}: ${problem}`)
+    }
+    const inTheirWords = (node: unknown, tree: Tree): boolean =>
+      marks.inside() || ancestorsOf(node, tree).some(({ type }) => type === 'blockquote')
     return {
       name: 'viviefs-reference-links',
+      html(node) {
+        readMarker(node.value)
+      },
+      mdxFlowExpression(node) {
+        readMarker(node.value)
+      },
+      mdxTextExpression(node) {
+        readMarker(node.value)
+      },
+      after() {
+        const problem = marks.end()
+        if (problem !== undefined) throw new Error(`${repositoryPath}: ${problem}`)
+      },
       text(node, context) {
+        if (inTheirWords(node, context)) return
         for (const { type, index } of ancestorsOf(node, context)) {
           if (['heading', 'link', 'linkReference', 'definition'].includes(type)) return
           // The id column of the decision log is the anchor, not a reference.
@@ -223,6 +251,7 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
         if (parts !== null) context.replaceNode(node, [...parts])
       },
       link(node, context) {
+        if (inTheirWords(node, context)) return
         const reference = linkedReference(textOf(node), catalog, repositoryPath, false)
         if (reference === undefined) return
         context.replaceNode(node, referenceLink(reference, reference.label))
@@ -233,6 +262,7 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
         context.replaceNode(node, referenceLink(reference, reference.label))
       },
       inlineCode(node, context) {
+        if (inTheirWords(node, context)) return
         if (ancestorsOf(node, context).some(({ type }) => ['heading', 'link', 'linkReference'].includes(type))) return
         const path = codePath(repositoryRoot, node.value)
         if (path._tag === 'NotAPath') return

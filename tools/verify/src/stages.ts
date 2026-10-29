@@ -252,6 +252,16 @@ export const STAGES: Stage[] = [
         ],
       },
       {
+        name: 'retired-words',
+        blurb: 'a word the glossary retired in code font appears only in another project\'s words',
+        invocations: [
+          {
+            command: 'node',
+            args: ['--experimental-strip-types', 'tools/verify/src/check-retired-words.ts'],
+          },
+        ],
+      },
+      {
         name: 'evidence',
         blurb: 'coverage, suites and stories of this run hold against the registry and the lockfile',
         invocations: [

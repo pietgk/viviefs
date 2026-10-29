@@ -2,8 +2,8 @@
   "bundle": {
     "apps/evidence-mobile": {
       "android": {
-        "hbcBytes": 7628793,
-        "jsBytes": 4676156,
+        "hbcBytes": 7628412,
+        "jsBytes": 4676179,
         "packages": {
           "(unmapped)": 204862,
           "@babel/runtime": 2100,
@@ -35,12 +35,12 @@
           "expo": 95139,
           "expo-application": 2806,
           "expo-asset": 6772,
-          "expo-auth-session": 24942,
+          "expo-auth-session": 24959,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 6900,
           "expo-modules-core": 15296,
-          "expo-notifications": 36273,
+          "expo-notifications": 36279,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -73,11 +73,11 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41774
         },
-        "recordedAt": "2026-10-28"
+        "recordedAt": "2026-10-29"
       },
       "ios": {
-        "hbcBytes": 5522846,
-        "jsBytes": 2582222,
+        "hbcBytes": 5522464,
+        "jsBytes": 2582245,
         "packages": {
           "(unmapped)": 203177,
           "@babel/runtime": 2100,
@@ -102,12 +102,12 @@
           "expo": 94920,
           "expo-application": 2843,
           "expo-asset": 6691,
-          "expo-auth-session": 24942,
+          "expo-auth-session": 24959,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 7036,
           "expo-modules-core": 15065,
-          "expo-notifications": 33901,
+          "expo-notifications": 33907,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -140,7 +140,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41774
         },
-        "recordedAt": "2026-10-28"
+        "recordedAt": "2026-10-29"
       }
     }
   },
@@ -215,10 +215,10 @@
         "statements": "34/38"
       },
       "apps/docs/src/lib/reference-links.ts": {
-        "branches": "137/150",
-        "functions": "31/31",
-        "lines": "141/141",
-        "statements": "181/187"
+        "branches": "149/162",
+        "functions": "38/38",
+        "lines": "155/155",
+        "statements": "201/207"
       },
       "apps/docs/src/lib/references.ts": {
         "branches": "112/116",
@@ -461,10 +461,16 @@
         "statements": "147/156"
       },
       "libs/references/src/rewrite.ts": {
-        "branches": "202/276",
+        "branches": "220/292",
         "functions": "39/40",
-        "lines": "275/298",
-        "statements": "324/362"
+        "lines": "288/311",
+        "statements": "340/377"
+      },
+      "libs/references/src/their-words.ts": {
+        "branches": "46/48",
+        "functions": "8/8",
+        "lines": "56/56",
+        "statements": "66/66"
       },
       "libs/sync/client/src/client.ts": {
         "branches": "30/34",
@@ -700,6 +706,12 @@
         "lines": "16/16",
         "statements": "20/20"
       },
+      "tools/verify/src/retired-words.ts": {
+        "branches": "21/25",
+        "functions": "8/8",
+        "lines": "28/28",
+        "statements": "35/35"
+      },
       "tools/verify/src/skills-tree.ts": {
         "branches": "43/50",
         "functions": "8/8",
@@ -732,5 +744,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "ce8c0f6b7c63be85ec77e684fd660562825bd1ac224a930a055f0f99ec879174"
+  "registryDigest": "f20bc78dda4a3ceecefce22ba165329ef6ff88153d560046a7e857d1225f7b1f"
 }

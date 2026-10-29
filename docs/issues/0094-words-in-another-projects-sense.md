@@ -1,6 +1,6 @@
 # I94: Words in another project's sense
 
-Status: ready-for-human
+Status: resolved
 
 Category: enhancement
 
@@ -23,6 +23,18 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 
 [I32 Ideas batch: explain any word on demand][I32]'s trigger is this decision: a comment there confirms or narrows it; nothing of it is built here. The linker change is built in [I95 Build the glossary linker as decided][I95].
 
+## Answer
+
+Decided with the human on 2026-10-29 in one round, on [the review page](../research/2026-10-29-words-in-another-projects-sense-review.html), confirming [D198 Map 3 finishes lean][D198]'s defaults; all five questions as recommended. The page ran [I26 Glossary links on words that are not our terms][I26]'s cases, and the ones this issue added, through the real linker, and counted the retired words in the living documents.
+
+- **The compounds did not remove the need for a mark.** They removed 2 of [I26 Glossary links on words that are not our terms][I26]'s 10 wrong links (Cursor, now Sync cursor). The other 8 are words we keep on purpose (Workflow, Builds on, App, Attribute, Pattern, Gate step, Effect, actor, Decision), and `P95` still failed the build.
+- **The mark** ([D204 Words in another project's sense][D204]): every block quote, and a comment pair around a passage, a table or a phrase, `<!-- their words: whose -->` and `<!-- /their words -->` (JSX comments in MDX). Inside, nothing is resolved against this repository: no glossary link, no bare id, no path check, URL links kept as written; a reference-style link still resolves. A mark without a name, nested, stray or left open fails the build and `verify`.
+- **Retired words** ([D180' Retired words in code font][D180']): `verify` fails a retired word only in the form its `_Avoid_` line writes it, in code font; today `node`. The count found about 230 uses of the eight retired words outside their compounds, nearly all correct; three meant the retired sense ([ADR-0013 Device durability][ADR-0013] twice, [ADR-0016 Commands, server validation and rejection][ADR-0016], the architecture page) and were rewritten.
+- **[I26 Glossary links on words that are not our terms][I26]'s other questions**: no front-matter or folder mark, no detection beyond block quotes, no report of ambiguous senses, no more `EVERYDAY_TERMS`. Node from Node.js and Effects from Effect were settled by [D199 Sync node][D199] and [D164 Effect and effect, told apart by case][D164].
+- **[I32 Ideas batch: explain any word on demand][I32]**: its trigger fired; a comment there narrows it.
+
+Built in [I95 Build the glossary linker as decided][I95] in the same session.
+
 ## Comments
 
 2026-10-28: [I88 Effect and the effect handler][I88] settled one of the two: the linker tells Effects in Vision - View - Effects from Effect by the phrase's own entry (the longest term wins), and Effect from effect by case ([D164 Effect and effect, told apart by case][D164]).
@@ -35,7 +47,10 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0013]: ../adr/0013-device-durability.md
+[ADR-0016]: ../adr/0016-commands-and-server-validation.md
 [D164]: ../plan/bootstrap/02-decision-log.md#d164
+[D180']: ../plan/bootstrap/02-decision-log.md#d180p
 [D186]: ../plan/bootstrap/02-decision-log.md#d186
 [D193]: ../plan/bootstrap/02-decision-log.md#d193
 [D194]: ../plan/bootstrap/02-decision-log.md#d194
@@ -44,6 +59,7 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 [D199]: ../plan/bootstrap/02-decision-log.md#d199
 [D200]: ../plan/bootstrap/02-decision-log.md#d200
 [D201]: ../plan/bootstrap/02-decision-log.md#d201
+[D204]: ../plan/bootstrap/02-decision-log.md#d204
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I32]: 0032-ideas-batch-explain-any-word-on-demand.md
 [I34]: 0034-vivief-as-the-source-of-viviefs-concepts.md

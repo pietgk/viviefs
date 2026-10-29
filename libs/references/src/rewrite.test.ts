@@ -194,6 +194,43 @@ describe('pnpm refs fix', () => {
     ])
   })
 
+  it('leaves bare ids in a block quote or a their-words passage as written (D204)', () => {
+    const quoted = '> Pinot answers in 10ms P95, as ADR 0027 says.\n'
+    expect(rewritten(quoted)).toEqual({ text: quoted, problems: [] })
+    const inList = '- > Pinot answers in 10ms P95.\n'
+    expect(rewritten(inList)).toEqual({ text: inList, problems: [] })
+    const lazy = '> Pinot answers\nin 10ms P95, like D107.\n'
+    expect(rewritten(lazy)).toEqual({ text: lazy, problems: [] })
+    const marked = 'Before.\n\n<!-- their words: vivief -->\n\n| Id | Says |\n| --- | --- |\n| D12 | P95 |\n\n<!-- /their words -->\n'
+    expect(rewritten(marked)).toEqual({ text: marked, problems: [] })
+    const phrase = 'vivief calls it <!-- their words: vivief -->D12<!-- /their words --> and we call it D107.\n'
+    expect(rewritten(phrase).text).toBe(
+      'vivief calls it <!-- their words: vivief -->D12<!-- /their words --> and we call it [D107 The Presenter pattern][D107].\n' +
+        block(['[D107]: ../plan/bootstrap/02-decision-log.md#d107']),
+    )
+    const mdx = '{/* their words: vivief */}\n\nD12 here.\n\n{/* /their words */}\n'
+    expect(rewritten(mdx, 'apps/docs/src/content/docs/guides/x/index.mdx')).toEqual({ text: mdx, problems: [] })
+  })
+
+  it('still names a reference-style link in a block quote, as only we write those', () => {
+    const quoted = '> Treat [D107][D107] as accepted.\n'
+    expect(rewritten(quoted).text).toBe(
+      '> Treat [D107 The Presenter pattern][D107] as accepted.\n' + block(['[D107]: ../plan/bootstrap/02-decision-log.md#d107']),
+    )
+  })
+
+  it('reports a their-words mark left open or closed twice, and ignores one shown as code', () => {
+    expect(rewritten('<!-- their words: vivief -->\n\nD12.\n').problems).toEqual([
+      `${FILE}: a "their words" mark is not closed; end it with <!-- /their words --> (D204)`,
+    ])
+    expect(rewritten('D107.\n\n<!-- /their words -->\n').problems).toEqual([
+      `${FILE}: <!-- /their words --> closes no open mark (D204)`,
+    ])
+    const shown = 'Write `<!-- their words: vivief -->`:\n\n```md\n<!-- their words: vivief -->\n```\n\nD107.\n'
+    expect(rewritten(shown).problems).toEqual([])
+    expect(rewritten(shown).text).toContain('[D107 The Presenter pattern][D107].')
+  })
+
   it('keeps dated records and inventory rows out of scope', () => {
     expect(inReferenceScope('docs/adr/0099-the-presenter-pattern.md')).toBe(true)
     expect(inReferenceScope('docs/plan/bootstrap/99-not-a-page.md')).toBe(true)
