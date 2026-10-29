@@ -28,8 +28,8 @@ import {
 } from '@viviefs/datom'
 import { awaitedExit } from './awaited.ts'
 import { CrashHook } from './crash-hook.ts'
-import { EngineConfig } from './config.ts'
-import { EngineSweep } from './sweep.ts'
+import { WorkflowEngineConfig } from './config.ts'
+import { WorkflowEngineSweep } from './sweep.ts'
 import {
   callerContext,
   durableContext,
@@ -114,14 +114,14 @@ const sleepUntil = (wakeAtMs: number) =>
   )
 
 export const engineLayer: Layer.Layer<
-  WorkflowEngine.WorkflowEngine | Leases | EngineSweep,
+  WorkflowEngine.WorkflowEngine | Leases | WorkflowEngineSweep,
   never,
-  LogStore | HlcDevice | EngineConfig | CrashHook | WakeScheduler
+  LogStore | HlcDevice | WorkflowEngineConfig | CrashHook | WakeScheduler
 > = Layer.effectContext(
   Effect.gen(function* () {
     const store = yield* LogStore
     const device = yield* HlcDevice
-    const config = yield* EngineConfig
+    const config = yield* WorkflowEngineConfig
     const hook = yield* CrashHook
     const scheduler = yield* WakeScheduler
     const scope = yield* Effect.scope
@@ -288,7 +288,7 @@ export const engineLayer: Layer.Layer<
       )
     }
 
-    const completeDeferred = (
+    const completeDurableDeferred = (
       options: {
         readonly workflowName: string
         readonly executionId: string
@@ -348,7 +348,7 @@ export const engineLayer: Layer.Layer<
         `${exec}/${clock.name}`,
         sleepUntil(clock.wakeAtMs).pipe(
           Effect.andThen(
-            completeDeferred(
+            completeDurableDeferred(
               {
                 workflowName: workflow._tag,
                 executionId: exec,
@@ -652,7 +652,7 @@ export const engineLayer: Layer.Layer<
         readonly executionId: string
         readonly deferredName: string
         readonly exit: Exit.Exit<unknown, unknown>
-      }) => die(completeDeferred(options, 'caller')),
+      }) => die(completeDurableDeferred(options, 'caller')),
       scheduleClock: (
         workflow: Workflow.Any,
         options: {
@@ -759,8 +759,8 @@ export const engineLayer: Layer.Layer<
     return Context.make(WorkflowEngine.WorkflowEngine, engine).pipe(
       Context.add(Leases, leases),
       Context.add(
-        EngineSweep,
-        EngineSweep.of({
+        WorkflowEngineSweep,
+        WorkflowEngineSweep.of({
           pending,
           sweep,
         }),

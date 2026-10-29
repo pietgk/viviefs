@@ -18,7 +18,7 @@ import { deviceLayer, HlcClock, LogStore, sha256Hex } from '@viviefs/datom'
 import {
   armedCrashHook,
   CrashHook,
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
   Leases,
   noopCrashHook,
@@ -147,7 +147,7 @@ const env = (
   probeLayer(tracker).pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(deviceId)),
-    Layer.provide(engineConfigLayer({ org: ORG, actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(deviceId)),
     Layer.provide(hook),
     Layer.provide(noopWakeScheduler),

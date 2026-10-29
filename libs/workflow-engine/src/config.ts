@@ -1,8 +1,8 @@
 import * as Context from 'effect/Context'
 import * as Layer from 'effect/Layer'
 
-export class EngineConfig extends Context.Service<
-  EngineConfig,
+export class WorkflowEngineConfig extends Context.Service<
+  WorkflowEngineConfig,
   {
     readonly org: string
     /**
@@ -12,9 +12,9 @@ export class EngineConfig extends Context.Service<
      */
     readonly actor: string
   }
->()('viviefs/workflow-engine/EngineConfig') {}
+>()('viviefs/workflow-engine/WorkflowEngineConfig') {}
 
-export const engineConfigLayer = (options: {
+export const workflowEngineConfigLayer = (options: {
   readonly org: string
   readonly actor: string
-}) => Layer.succeed(EngineConfig, EngineConfig.of(options))
+}) => Layer.succeed(WorkflowEngineConfig, WorkflowEngineConfig.of(options))

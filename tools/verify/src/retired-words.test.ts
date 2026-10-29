@@ -47,6 +47,14 @@ describe('retired words in code font', () => {
     expect(retiredWordUses('docs/plan/x.md', text, words)).toEqual([])
   })
 
+  it('reads a diagram label as prose: one in code font there fails, the diagram structure does not (D180)', () => {
+    const diagram = (label: string) => `Before.\n\n\`\`\`mermaid\nflowchart TB\n  node --> B["${label}"]\n\`\`\`\n`
+    expect(retiredWordUses('docs/adr/0099-x.md', diagram('each `node` keeps the log'), words)).toEqual([
+      'docs/adr/0099-x.md:5: `node` is retired by D199; write Sync node, or mark the passage as their words (D204)',
+    ])
+    expect(retiredWordUses('docs/adr/0099-x.md', diagram('each sync node keeps the log'), words)).toEqual([])
+  })
+
   it('leaves one in a block quote or a their-words passage alone', () => {
     const text = [
       '> Each `node` keeps the log.',

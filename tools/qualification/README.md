@@ -29,7 +29,7 @@ and PGlite; memory-engine durability positive control; pinned
 `viviefs/workflow/*`, `viviefs/activity/exit`, `viviefs/deferred/exit`,
 `viviefs/clock/wake-at` and `viviefs/lease/holder`). P07 is implemented
 (device force-quit mid-upload and mid-wait on iOS simulator and Android
-emulator; launch `EngineSweep` resumes; without sweep the workflow stays
+emulator; launch `WorkflowEngineSweep` resumes; without sweep the workflow stays
 parked; motel `p07.park` / `p07.resume`; `expo-notifications` 58.1.6).
 P08 is implemented (IntentComposer three ways: effect-machine is the copy
 target, XState v5 + `fromPromise` and Effect + Atom stay retained probes;

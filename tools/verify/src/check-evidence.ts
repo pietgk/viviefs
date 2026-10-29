@@ -3,10 +3,10 @@
  * against the evidence registry and the evidence lockfile (`evidence.ts`).
  */
 import { SUITES } from '@viviefs/testing'
-import { REGISTRY } from './evidence-registry.ts'
+import { EVIDENCE_REGISTRY } from './evidence-registry.ts'
 import { loadRuns, readLockfile } from './evidence-artifacts.ts'
 import { judgeEvidence } from './evidence.ts'
-import { registryDigest } from './lockfile.ts'
+import { evidenceRegistryDigest } from './lockfile.ts'
 
 const run = process.env.VIVIEFS_VERIFY_RUN
 if (!run) {
@@ -15,8 +15,8 @@ if (!run) {
 
 const runs = loadRuns(run)
 const { issues, tuples } = judgeEvidence({
-  registry: REGISTRY,
-  digest: registryDigest(REGISTRY),
+  evidenceRegistry: EVIDENCE_REGISTRY,
+  digest: evidenceRegistryDigest(EVIDENCE_REGISTRY),
   suites: SUITES,
   runs,
   lockfile: readLockfile(),
@@ -31,6 +31,6 @@ if (issues.length > 0) {
 
 const exact = Object.values(tuples).reduce((sum, files) => sum + Object.keys(files).length, 0)
 console.log(
-  `Evidence: ${REGISTRY.length} files judged; ${exact} exact coverage tuples match the lockfile; ` +
+  `Evidence: ${EVIDENCE_REGISTRY.length} files judged; ${exact} exact coverage tuples match the lockfile; ` +
     `${SUITES.filter((suite) => !suite.labOnly).length} suites ran.`,
 )

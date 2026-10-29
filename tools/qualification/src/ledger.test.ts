@@ -5,6 +5,8 @@ import { expect, it } from '@effect/vitest'
 import { beginGate, ledgerState, recordGate } from './ledger.ts'
 import { checked } from './process.ts'
 
+// About 0.6 s alone, but a dozen git processes; under the parallel unit run it
+// passed vitest's default 5 s, so the budget is explicit.
 it('invalidates imported, dependency, added and in-flight inputs while preserving ledger history', async () => {
   const root = await mkdtemp(join(tmpdir(), 'viviefs-ledger-'))
   const at = (path: string) => join(root, path)
@@ -71,4 +73,4 @@ it('invalidates imported, dependency, added and in-flight inputs while preservin
   } finally {
     await rm(root, { recursive: true, force: true })
   }
-})
+}, 30_000)

@@ -82,7 +82,7 @@ export type {
   EntityTypeSpec,
 } from './catalog.ts'
 export {
-  CommitManifest,
+  ChangesetManifest,
   ConflictPayload,
   DigestError,
   changesetMembers,

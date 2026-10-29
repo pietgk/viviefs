@@ -15,7 +15,7 @@
  */
 import type { Suite } from '@viviefs/testing'
 import { COVERAGE_PRODUCERS, type CoverageProducer } from '@viviefs/testing/vitest'
-import { hasExactCoverage, owningProducer, type RegistryEntry } from './file-treatments.ts'
+import { hasExactCoverage, owningProducer, type EvidenceRegistryEntry } from './file-treatments.ts'
 import {
   METRICS,
   covered,
@@ -48,7 +48,7 @@ export type ProducerRun = {
 }
 
 export type EvidenceInput = {
-  readonly registry: ReadonlyArray<RegistryEntry>
+  readonly evidenceRegistry: ReadonlyArray<EvidenceRegistryEntry>
   readonly digest: string
   readonly suites: ReadonlyArray<Suite>
   /** Keyed by repository-relative path. */
@@ -95,7 +95,7 @@ export const judgeEvidence = (input: EvidenceInput): Evidence => {
   const tuples: Partial<Record<CoverageProducer, Record<string, Tuple>>> = {}
 
   const needed = new Set(
-    input.registry.map(owningProducer).filter((producer): producer is CoverageProducer => producer !== undefined),
+    input.evidenceRegistry.map(owningProducer).filter((producer): producer is CoverageProducer => producer !== undefined),
   )
   for (const producer of COVERAGE_PRODUCERS) {
     if (needed.has(producer) && !input.runs[producer]) {
@@ -107,7 +107,7 @@ export const judgeEvidence = (input: EvidenceInput): Evidence => {
     issues.push(`No evidence lockfile; ${BASELINE}.`)
   } else {
     if (input.lockfile.registryDigest !== input.digest) {
-      issues.push(`The registry changed since the lockfile was written; ${BASELINE}.`)
+      issues.push(`The evidence registry changed since the lockfile was written; ${BASELINE}.`)
     }
     for (const producer of COVERAGE_PRODUCERS) {
       const run = input.runs[producer]
@@ -121,7 +121,7 @@ export const judgeEvidence = (input: EvidenceInput): Evidence => {
     }
   }
 
-  for (const entry of input.registry) {
+  for (const entry of input.evidenceRegistry) {
     const producer = owningProducer(entry)
     if (producer === undefined) {
       if (entry.treatment === 'process-entry' && 'test' in entry.runBy && input.runs.unit) {

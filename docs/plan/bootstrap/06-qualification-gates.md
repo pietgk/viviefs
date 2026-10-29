@@ -7,7 +7,7 @@ docs site shows each claim with its evidence under Reference > Claims.
 
 [D46 Spikes are gates][D46] named six foundation **themes**: platform, log store, workflow engine + crash matrix, UI prototype, sync, trace
 projection. [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] are those themes split so each fact can fail independently (platform → [P01][P01]-[P03 OTLP and motel][P03], log store →
-[P04 Log store conformance][P04]-[P05 Changesets and projections][P05], workflow engine → [P06 Workflow engine crash matrix][P06]-[P07 Device resume E2E][P07]). [P11 Identity][P11]-[P17 Browser engine leader][P17] are follow-on (identity, UI on every platform, links and routing, quarantine
+[P04 Log store conformance][P04]-[P05 Changesets and projections][P05], workflow engine → [P06 Workflow engine crash matrix][P06]-[P07 Device resume E2E][P07]). [P11 Identity][P11]-[P17 Workflow engine leader in a browser][P17] are follow-on (identity, UI on every platform, links and routing, quarantine
 after a lost lease, encrypted store, crypto-shredding, browser leader), not foundation closure.
 
 iOS, Android and web are first-class. [P01 Platform on SDK 58][P01], [P02 SQLite drivers][P02] and [P07 Device resume E2E][P07] fail if the Android emulator fails.
@@ -30,9 +30,9 @@ iOS, Android and web are first-class. [P01 Platform on SDK 58][P01], [P02 SQLite
 | <a id="p14"></a>**P14** Quarantine after a lost lease | User content stranded by a lost lease is never dropped and is resolved by a human | Set by its grilling and design review. Direction agreed 2026-09-27: a human-conflict entry ([D34 Per-attribute conflict policies][D34]) names the stranded content, and a command resolves it (attach to the execution, keep as standalone evidence, or discard) | Set by its grilling | [D15 Server authority after a lost lease][D15], [D34 Per-attribute conflict policies][D34] |
 | <a id="p15"></a>**P15** Encrypted store | SQLCipher store passes the log store conformance suite | [P04 Log store conformance][P04] + [P05 Changesets and projections][P05] suites green on SQLCipher with keys in Keychain/Keystore | Wrong key cannot open the database | [D50 Data at rest on device][D50] |
 | <a id="p16"></a>**P16** Crypto-shredding | Erased subjects are unreadable everywhere | After key destruction, personal attributes are unreadable on every replica, projection and export; the log stays intact and syncable | Non-erased subject stays readable | [D51 Crypto-shredding][D51] |
-| <a id="p17"></a>**P17** Browser engine leader | Only one tab runs the engine | Two tabs, one workflow engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two workflow engines are detected running | [D25 Browser engine leader][D25] |
+| <a id="p17"></a>**P17** Workflow engine leader in a browser | Only one tab runs the workflow engine | Two tabs, one workflow engine (Web Locks); killing the leader promotes the other tab, which resumes; followers render and forward events over BroadcastChannel | Without the lock, two workflow engines are detected running | [D25 Browser engine leader][D25] |
 
-Closure of the foundation stage: one sequential full run of [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] on an unchanged committed tree. [P11 Identity][P11]-[P17 Browser engine leader][P17] close
+Closure of the foundation stage: one sequential full run of [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] on an unchanged committed tree. [P11 Identity][P11]-[P17 Workflow engine leader in a browser][P17] close
 before the first consumer app relies on them. [P11][P11] closed on 2026-09-28 with one sequential run of [P01][P01]-[P11][P11]
 ([2026-09-28-p01-p11-closure.md](../../evidence/2026-09-28-p01-p11-closure.md)).
 
@@ -53,12 +53,12 @@ run before quarantine. Notes use the numbers of their date:
 
 | Gate | Earlier on 2026-09-29 | Before 2026-09-29 |
 | --- | --- | --- |
-| [P12 UI on every platform][P12] UI on every platform | not a gate | not a gate |
-| [P13 Links and routing][P13] Links and routing | not a gate | not a gate |
-| [P14 Quarantine after a lost lease][P14] Quarantine after a lost lease | [P12 UI on every platform][P12] | not a gate |
-| [P15 Encrypted store][P15] Encrypted store | [P13 Links and routing][P13] | [P12 UI on every platform][P12] |
-| [P16 Crypto-shredding][P16] Crypto-shredding | [P14 Quarantine after a lost lease][P14] | [P13 Links and routing][P13] |
-| [P17 Browser engine leader][P17] Browser engine leader | [P15 Encrypted store][P15] | [P14 Quarantine after a lost lease][P14] |
+| [P12 UI on every platform][P12] | not a gate | not a gate |
+| [P13 Links and routing][P13] | not a gate | not a gate |
+| [P14 Quarantine after a lost lease][P14] | [P12 UI on every platform][P12] | not a gate |
+| [P15 Encrypted store][P15] | [P13 Links and routing][P13] | [P12 UI on every platform][P12] |
+| [P16 Crypto-shredding][P16] | [P14 Quarantine after a lost lease][P14] | [P13 Links and routing][P13] |
+| [P17 Workflow engine leader in a browser][P17] | [P15 Encrypted store][P15] | [P14 Quarantine after a lost lease][P14] |
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 

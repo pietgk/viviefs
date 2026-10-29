@@ -2,8 +2,8 @@
   "bundle": {
     "apps/evidence-client": {
       "android": {
-        "hbcBytes": 7628412,
-        "jsBytes": 4676179,
+        "hbcBytes": 7628498,
+        "jsBytes": 4676392,
         "packages": {
           "(unmapped)": 204862,
           "@babel/runtime": 2100,
@@ -61,23 +61,23 @@
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-client": 48307,
+          "workspace:apps/evidence-client": 48330,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 63715,
+          "workspace:libs/datom": 63724,
           "workspace:libs/identity": 10550,
-          "workspace:libs/platform-native": 7267,
+          "workspace:libs/platform-native": 7288,
           "workspace:libs/store-sqlite-native": 1253,
           "workspace:libs/sync/client": 8148,
           "workspace:libs/sync/protocol": 5414,
           "workspace:libs/telemetry": 8968,
-          "workspace:libs/workflow-engine": 41774
+          "workspace:libs/workflow-engine": 41934
         },
         "recordedAt": "2026-10-29"
       },
       "ios": {
-        "hbcBytes": 5522466,
-        "jsBytes": 2582245,
+        "hbcBytes": 5522498,
+        "jsBytes": 2582458,
         "packages": {
           "(unmapped)": 203177,
           "@babel/runtime": 2100,
@@ -128,17 +128,17 @@
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-client": 48293,
+          "workspace:apps/evidence-client": 48316,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 63715,
+          "workspace:libs/datom": 63724,
           "workspace:libs/identity": 10550,
-          "workspace:libs/platform-native": 7225,
+          "workspace:libs/platform-native": 7246,
           "workspace:libs/store-sqlite-native": 1253,
           "workspace:libs/sync/client": 8148,
           "workspace:libs/sync/protocol": 5414,
           "workspace:libs/telemetry": 8968,
-          "workspace:libs/workflow-engine": 41774
+          "workspace:libs/workflow-engine": 41934
         },
         "recordedAt": "2026-10-29"
       }
@@ -203,7 +203,7 @@
     },
     "unit": {
       "apps/docs/src/lib/claims.ts": {
-        "branches": "30/40",
+        "branches": "33/40",
         "functions": "18/18",
         "lines": "39/39",
         "statements": "44/44"
@@ -215,10 +215,10 @@
         "statements": "34/38"
       },
       "apps/docs/src/lib/reference-links.ts": {
-        "branches": "149/162",
-        "functions": "38/38",
-        "lines": "155/155",
-        "statements": "201/207"
+        "branches": "176/188",
+        "functions": "44/44",
+        "lines": "184/184",
+        "statements": "236/241"
       },
       "apps/docs/src/lib/references.ts": {
         "branches": "112/116",
@@ -239,16 +239,22 @@
         "statements": "11/25"
       },
       "apps/docs/src/lib/repo-pages.ts": {
-        "branches": "32/36",
-        "functions": "10/13",
-        "lines": "36/38",
-        "statements": "37/43"
+        "branches": "34/38",
+        "functions": "11/14",
+        "lines": "37/39",
+        "statements": "39/45"
       },
       "apps/docs/src/lib/repo.ts": {
-        "branches": "58/63",
-        "functions": "9/9",
-        "lines": "53/57",
-        "statements": "61/65"
+        "branches": "68/73",
+        "functions": "10/10",
+        "lines": "57/61",
+        "statements": "66/70"
+      },
+      "apps/docs/src/lib/site-pages.ts": {
+        "branches": "33/43",
+        "functions": "21/21",
+        "lines": "68/68",
+        "statements": "77/80"
       },
       "features/evidence/client/src/index.ts": {
         "branches": "0/0",
@@ -460,11 +466,17 @@
         "lines": "131/135",
         "statements": "147/156"
       },
+      "libs/references/src/diagram-labels.ts": {
+        "branches": "81/88",
+        "functions": "16/16",
+        "lines": "103/103",
+        "statements": "126/126"
+      },
       "libs/references/src/rewrite.ts": {
-        "branches": "220/292",
-        "functions": "39/40",
-        "lines": "288/311",
-        "statements": "340/377"
+        "branches": "230/302",
+        "functions": "40/41",
+        "lines": "298/321",
+        "statements": "351/388"
       },
       "libs/references/src/their-words.ts": {
         "branches": "46/48",
@@ -694,11 +706,17 @@
         "lines": "23/23",
         "statements": "29/29"
       },
+      "tools/verify/src/named-identifiers.ts": {
+        "branches": "48/56",
+        "functions": "21/21",
+        "lines": "57/57",
+        "statements": "70/71"
+      },
       "tools/verify/src/ownership.ts": {
         "branches": "54/72",
         "functions": "7/7",
-        "lines": "53/62",
-        "statements": "60/72"
+        "lines": "55/64",
+        "statements": "62/74"
       },
       "tools/verify/src/producers.ts": {
         "branches": "4/8",
@@ -713,10 +731,10 @@
         "statements": "37/37"
       },
       "tools/verify/src/retired-words.ts": {
-        "branches": "21/25",
-        "functions": "8/8",
-        "lines": "28/28",
-        "statements": "35/35"
+        "branches": "11/15",
+        "functions": "7/7",
+        "lines": "23/23",
+        "statements": "27/27"
       },
       "tools/verify/src/skills-tree.ts": {
         "branches": "43/50",
@@ -750,5 +768,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "95e7bd6b82973ae233ba08f3e3087dd51e3b22369d69c4e3a4afe20a81c909a2"
+  "registryDigest": "f61ca98402a480cb08cfc0a29e47c182475d98eb95c78d30cf509aaf217fe464"
 }

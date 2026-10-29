@@ -29,8 +29,11 @@ export const RENDERED_DIRECTORIES: ReadonlyArray<RenderedDirectory> = [
 export const RENDERED_FILES: ReadonlyArray<{
   readonly file: string
   readonly route: string
+  /** The page's title on the site, where the file's heading names something else. */
+  readonly title?: string
 }> = [
-  { file: 'GLOSSARY.md', route: 'reference/glossary' },
+  // The glossary's heading is its context's name, ViViEfs, as the domain-modeling format writes it.
+  { file: 'GLOSSARY.md', route: 'reference/glossary', title: 'Glossary' },
   // Decisions are reference (D89); the rest of docs/plan stays on GitHub.
   { file: 'docs/plan/bootstrap/02-decision-log.md', route: 'reference/decisions' },
 ]
@@ -98,6 +101,13 @@ export const withBase = (href: string, base: string = docsBase()): string => {
   const prefix = base === '/' ? '' : base
   if (prefix === '' || href === prefix || href.startsWith(`${prefix}/`)) return href
   return `${prefix}${href}`
+}
+
+/** The site path of an href written with the publish base: the inverse of `withBase`. */
+export const withoutBase = (href: string, base: string = docsBase()): string => {
+  const prefix = base === '/' ? '' : base
+  if (prefix === '' || (href !== prefix && !href.startsWith(`${prefix}/`))) return href
+  return href.slice(prefix.length) || '/'
 }
 
 export type LinkTarget =

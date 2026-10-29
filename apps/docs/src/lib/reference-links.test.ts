@@ -20,8 +20,12 @@ const files: Record<string, string> = {
   'docs/evidence/2026-09-20-p04.md': '# P04\n',
   'docs/adr/0005-sqlite-drivers.md': '# ADR-0005: SQLite drivers\n\nSummary: Official drivers.\n\nStatus: Qualified\n',
   'docs/plan/bootstrap/02-decision-log.md':
-    "| # | Name | Decision | Why |\n|---|---|---|---|\n| D37 | Log store tables | One datom table. | Speed. |\n| D38 | Reader's view | A screen. | Clarity. |\n",
+    "# Decision log\n\n| # | Name | Decision | Why |\n|---|---|---|---|\n| D37 | Log store tables | One datom table. | Speed. |\n| D38 | Reader's view | A screen. | Clarity. |\n",
   'libs/datom/src/index.ts': 'export {}\n',
+  'docs/adr/README.md': '# Architectural decision records\n\nADRs preserve why consequential choices were made. The plan describes the stack.\n',
+  'apps/docs/src/content/docs/guides/index.mdx': '---\ntitle: Guides\ndescription: One guide per pattern, for people and agents.\n---\n\nBody.\n',
+  'docs/research/2026-09-29-delivery-model.html':
+    '<html><head><title>How a pattern is delivered</title></head><body><h1>Delivery</h1><p>This page shows how <b>everything</b> fits together. More.</p></body></html>',
   'GLOSSARY.md':
     '# Glossary\n\n**Note** the order.\n\n**Pattern**:\nA proven way to build one part of an app, with a guide.\nOne contract, several implementations.\n_Like_: a library, except that every way of keeping it passes one suite.\n_Not_: a design pattern from a guide book.\n_Avoid_: guide template\n\n**Guide**:\nEverything about one pattern.\n\n**Lesson**:\nOne page that teaches one idea.\n_Not_: a page about a pattern.\n',
 }
@@ -98,6 +102,59 @@ describe('references resolved when rendered', () => {
   it('fails on an unknown id and on a stale path', () => {
     expect(() => render('As D4 said.')).toThrow(/"D4" is not a known gate, ADR, decision or issue/)
     expect(() => render('In `libs/gone/x.ts`.')).toThrow(/libs\/gone\/x\.ts` names a repository path that does not exist/)
+  })
+
+  it('reads a diagram label as prose: an unknown id or a stale path fails, and the diagram stays as written (D180)', () => {
+    const diagram = (label: string) => `\`\`\`mermaid\nflowchart TB\n  EX -. "${label}" .-> GUIDE\n\`\`\`\n`
+    expect(render(diagram('libs/datom (D37)'))).toContain('libs/datom (D37)')
+    expect(() => render(diagram("accepted directly (D65')"))).toThrow(/"D65'" in a diagram label is not a known gate, ADR, decision or issue/)
+    expect(() => render(diagram('libs/gone/x.ts'))).toThrow(/libs\/gone\/x\.ts" in a diagram label names a repository path that does not exist/)
+    expect(render(diagram('libs/gone/x.ts'), 'docs/evidence/2026-09-20-p04.md')).toContain('libs/gone/x.ts')
+  })
+
+  it('gives a link to a site page the preview of a page: its title and first sentence (D90\')', () => {
+    const page = (label: string, summary: string) =>
+      `class="ref-link" data-ref-kind="Page" data-ref-label="${label}" data-ref-summary="${summary}" data-ref-meta="">`
+    expect(render('Each status is shown under [ADRs](/reference/adr/).')).toContain(
+      `<a href="/reference/adr/" ${page('Architectural decision records', 'ADRs preserve why consequential choices were made.')}ADRs</a>`,
+    )
+    expect(render('See [the SQLite ADR](/reference/adr/0005-sqlite-drivers/#status).')).toContain(page('ADR-0005: SQLite drivers', 'Official drivers.'))
+    expect(render('Read the [guides](/guides/).')).toContain(page('Guides', 'One guide per pattern, for people and agents.'))
+    expect(render('The [delivery model](/research/2026-09-29-delivery-model.html).')).toContain(
+      page('How a pattern is delivered', 'This page shows how everything fits together.'),
+    )
+  })
+
+  it('gives a page link its preview on the published site too, where every site link carries the base', () => {
+    const previous = process.env['DOCS_BASE']
+    process.env['DOCS_BASE'] = '/viviefs'
+    try {
+      const html = render('Each status is shown under [ADRs](/viviefs/reference/adr/), listed in `docs/adr/README.md`.')
+      expect(html).toContain('<a href="/viviefs/reference/adr/" class="ref-link" data-ref-kind="Page" data-ref-label="Architectural decision records"')
+      expect(html.match(/data-ref-kind="Page"/g)).toHaveLength(2)
+    } finally {
+      if (previous === undefined) delete process.env['DOCS_BASE']
+      else process.env['DOCS_BASE'] = previous
+    }
+  })
+
+  it('gives a reference-style link to a site page the same preview', () => {
+    expect(render('Read the [guides][all guides].\n\n[all guides]: /guides/\n')).toContain(
+      '<a href="/guides/" class="ref-link" data-ref-kind="Page" data-ref-label="Guides" data-ref-summary="One guide per pattern, for people and agents." data-ref-meta="">guides</a>',
+    )
+    expect(render('See [Effect][effect].\n\n[effect]: https://effect.website/\n')).not.toContain('ref-link')
+  })
+
+  it('gives a repository path that is a site page the same preview', () => {
+    expect(render('Listed in `docs/adr/README.md`.')).toContain(
+      '<a href="/reference/adr/" class="ref-link" data-ref-kind="Page" data-ref-label="Architectural decision records"',
+    )
+    expect(render('In `libs/datom/src/index.ts`.')).not.toContain('ref-link')
+  })
+
+  it('leaves a link to another site, to a section of this page or to a file that is not a page plain', () => {
+    const html = render('See [Effect](https://effect.website/), [below](#map) and [the index](/llms.txt).')
+    expect(html).not.toContain('ref-link')
   })
 
   it('keeps a stale path in an evidence note as written', () => {

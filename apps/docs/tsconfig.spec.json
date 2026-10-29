@@ -11,6 +11,7 @@
   },
   "include": [
     "src/**/*.test.ts",
+    "e2e/**/*.test.ts",
     "vitest*.config.ts"
   ],
   "references": [

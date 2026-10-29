@@ -12,7 +12,7 @@ import { makeMutableClock } from '@viviefs/datom/suites'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
 import { withTempDirectory } from '@viviefs/testing/node'
 import {
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
   noopCrashHook,
   noopWakeScheduler,
@@ -40,7 +40,7 @@ const session = (directory: string, bodyRuns: { count: number }) =>
     Layer.provideMerge(
       sqliteNodeLogStore({ filename: join(directory, 'log.sqlite'), deviceId: DEVICE }),
     ),
-    Layer.provide(engineConfigLayer({ org: 'engine', actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: 'engine', actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(noopCrashHook),
     Layer.provide(noopWakeScheduler),

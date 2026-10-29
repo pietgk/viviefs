@@ -46,7 +46,7 @@ is a passing verify, with a mechanical path rule for docs-only diffs.
 probes, positive controls, fingerprinted append-only ledger, sequential full
 run. Gate table is code. Unknown gate ids fail. The ledger is a plain file,
 not datoms. [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] are the foundation stage ([D46 Spikes are gates][D46]'s six themes split so each
-fact can fail independently). [P11 Identity][P11]-[P17 Browser engine leader][P17] are follow-on, not foundation closure.
+fact can fail independently). [P11 Identity][P11]-[P17 Workflow engine leader in a browser][P17] are follow-on, not foundation closure.
 A stage closes only with one sequential full run on unchanged committed
 inputs.
 

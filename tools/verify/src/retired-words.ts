@@ -8,7 +8,7 @@
  * retirement in code font is checked without a change here.
  */
 
-import { DECISION_LOG, inlineItems, quotedLines, theirWords } from '@viviefs/references'
+import { DECISION_LOG, inlineItems, proseLines, quotedLines, theirWords } from '@viviefs/references'
 import { isLivingDocument } from './glossary-report.ts'
 
 export type RetiredWord = {
@@ -41,19 +41,13 @@ export const isCheckedForRetiredWords = (path: string, content: string): boolean
 /**
  * Each line where a retired word is written in code font outside another
  * project's words. The document is read whole, so a comment or a code span
- * may cross a line break; fenced code is left out and a comment is not prose.
+ * may cross a line break; fenced code is left out except a diagram's labels
+ * (D180), and a comment is not prose.
  */
 export const retiredWordUses = (path: string, content: string, words: ReadonlyArray<RetiredWord>): ReadonlyArray<string> => {
   const byWord = new Map(words.map((word) => [word.word, word]))
-  // Fenced code becomes blank lines, so offsets still give the source line.
-  let fence: string | undefined
-  const lines = content.split('\n').map((line) => {
-    const opener = /^\s*(`{3,}|~{3,})/.exec(line)?.[1]
-    if (fence === undefined && opener !== undefined) fence = opener
-    else if (fence !== undefined && line.trim().startsWith(fence)) fence = undefined
-    else if (fence === undefined) return line
-    return ''
-  })
+  // Fenced code is blank and a diagram line holds its labels, so offsets still give the source line.
+  const lines = proseLines(content)
   const quoted = quotedLines(lines)
   const text = lines.join('\n')
   const lineAt = (offset: number) => text.slice(0, offset).split('\n').length

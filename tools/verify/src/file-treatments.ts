@@ -77,7 +77,7 @@ type Entry<T extends FileTreatment, Extra = unknown> = {
   readonly rationale: string
 } & Extra
 
-export type RegistryEntry =
+export type EvidenceRegistryEntry =
   | Entry<'node-unit' | 'node-integration', { readonly suites?: ReadonlyArray<SuiteId> }>
   | Entry<'rendered-ui', { readonly stories: string }>
   | Entry<'process-entry', { readonly runBy: { readonly test: string } | { readonly step: string } }>
@@ -87,7 +87,7 @@ export type RegistryEntry =
   | Entry<'re-export' | 'type-only' | 'named-slot'>
 
 /** The coverage producer whose map holds a file's evidence, if any. */
-export const owningProducer = (entry: RegistryEntry): CoverageProducer | undefined => {
+export const owningProducer = (entry: EvidenceRegistryEntry): CoverageProducer | undefined => {
   switch (entry.treatment) {
     case 'node-unit':
       return 'unit'
@@ -103,7 +103,7 @@ export const owningProducer = (entry: RegistryEntry): CoverageProducer | undefin
 }
 
 /** Whether the owning producer's tuple is judged exactly against the lockfile. */
-export const hasExactCoverage = (entry: RegistryEntry) =>
+export const hasExactCoverage = (entry: EvidenceRegistryEntry) =>
   entry.treatment === 'node-unit' || entry.treatment === 'node-integration'
 
 const statementsOf = (source: string, path = 'file.ts') =>

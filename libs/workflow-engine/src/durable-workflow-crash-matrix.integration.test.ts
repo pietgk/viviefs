@@ -36,8 +36,10 @@ describe('datom-backed engine', () => {
         Effect.gen(function* () {
           const directory = yield* withTempDirectory('viviefs-p06-tiny-')
           const result = yield* runUnscoped(
+            // A hang guard inside the test's budget: PGlite takes about 2 s alone
+            // and over 6 s on a loaded machine, so 8 s flaked in a full run.
             runHappyPath(store.open(directory), makeMutableClock(WALL)).pipe(
-              Effect.timeout('8 seconds'),
+              Effect.timeout('15 seconds'),
             ),
           )
           expect(result.hash.startsWith('blob:')).toBe(true)

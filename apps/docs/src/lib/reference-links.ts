@@ -8,11 +8,16 @@
  *   id but is not the catalog name fails the build (D86');
  * - a link whose label is only an id keeps its target and gets the name;
  * - an inline-code repository path becomes a link to its site page or to
- *   GitHub.
+ *   GitHub;
+ * - any other link to a site page carries that page's preview: the kind Page,
+ *   its title and its first sentence (D90').
  *
  * Headings, code and text already inside a link are left alone. An unknown
  * id fails the build, and so does a missing path under a checked root,
  * except in evidence notes and research records, which are kept as written.
+ *
+ * A Mermaid label is prose (D180) but cannot hold a link: the diagram stays
+ * as written, and an unknown id or a missing path in a label fails the build.
  *
  * A block quote, or a passage between `<!-- their words: whose -->` and
  * `<!-- /their words -->`, is in another project's words (D204): no glossary
@@ -22,7 +27,7 @@
  */
 import { relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { findReferenceTokens, theirWords, type Catalog } from '@viviefs/references'
+import { findReferenceTokens, mermaidLabels, theirWords, type Catalog } from '@viviefs/references'
 import type { HastPluginEntry, MdastPluginEntry } from 'satteri'
 import { withBase } from './repo.ts'
 import {
@@ -42,6 +47,7 @@ import {
   type GlossaryTerm,
   type Reference,
 } from './references.ts'
+import { pageAt } from './site-pages.ts'
 
 /** Where a glossary term links: its entry on the glossary page. */
 export const GLOSSARY_PAGE = '/reference/glossary/'
@@ -70,6 +76,14 @@ export const previewProperties = (reference: Reference) => ({
   'data-ref-summary': reference.summary,
   'data-ref-meta': reference.meta,
 })
+
+/** The preview data of a link to a site page (D90'), or undefined for any other link. */
+const pagePreview = (root: string, url: string) => {
+  const page = pageAt(root, url)
+  return page === undefined
+    ? undefined
+    : previewProperties({ id: url, kind: 'Page', label: page.title, href: url, summary: page.summary, meta: '' })
+}
 
 /** A glossary term as a reference: its entry, its plain first sentence (D94). */
 export const termReference = (term: GlossaryTerm): Reference => ({
@@ -174,6 +188,21 @@ const linkedReference = (label: string, catalog: Catalog, where: string, owned: 
   return reference
 }
 
+type Definition = { readonly type: string; readonly identifier?: string; readonly url?: string; readonly children?: ReadonlyArray<Definition> }
+
+/** The URL of the definition `identifier` names in a tree, or '' where it has none. */
+const definitionUrl = (identifier: string, at: Definition): string =>
+  at.type === 'definition' && at.identifier === identifier
+    ? String(at.url)
+    : ((at.children ?? []).map((child) => definitionUrl(identifier, child)).find((url) => url !== '') ?? '')
+
+/** The root of the tree a node is in: definitions usually close the document, after the link. */
+const rootOf = (node: unknown, tree: Tree): Definition => {
+  let root = node
+  for (let parent = tree.parent(root as never); parent !== undefined; parent = tree.parent(parent as never)) root = parent
+  return root as Definition
+}
+
 /** Whether a text node follows a `_Not_` or `_Avoid_` label in its paragraph (D174). */
 const afterOtherSense = (node: unknown, tree: Tree): boolean => {
   const parent = tree.parent(node as never) as Phrasing | undefined
@@ -254,13 +283,41 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
       link(node, context) {
         if (inTheirWords(node, context)) return
         const reference = linkedReference(textOf(node), catalog, repositoryPath, false)
-        if (reference === undefined) return
-        context.replaceNode(node, referenceLink(reference, reference.label))
+        if (reference !== undefined) {
+          context.replaceNode(node, referenceLink(reference, reference.label))
+          return
+        }
+        const preview = pagePreview(repositoryRoot, node.url)
+        if (preview === undefined) return
+        context.replaceNode(node, { ...node, data: { hProperties: preview } })
       },
       linkReference(node, context) {
         const reference = linkedReference(textOf(node), catalog, repositoryPath, true)
-        if (reference === undefined) return
-        context.replaceNode(node, referenceLink(reference, reference.label))
+        if (reference !== undefined) {
+          context.replaceNode(node, referenceLink(reference, reference.label))
+          return
+        }
+        // The converter resolves the link's target and title; the preview needs only the page.
+        const preview = pagePreview(repositoryRoot, definitionUrl(node.identifier, rootOf(node, context)))
+        if (preview === undefined) return
+        context.replaceNode(node, { ...node, data: { hProperties: preview } })
+      },
+      code(node, context) {
+        if (node.lang !== 'mermaid' || inTheirWords(node, context)) return
+        for (const { text } of mermaidLabels(node.value)) {
+          for (const { id } of findReferences(text)) {
+            if (!index.has(id)) {
+              throw new Error(`${repositoryPath}: "${id}" in a diagram label is not a known gate, ADR, decision or issue (D180).`)
+            }
+          }
+          if (KEPT_AS_WRITTEN.test(repositoryPath)) continue
+          for (const word of text.split(/[\s,;:()"'`]+/)) {
+            const path = codePath(repositoryRoot, word.replace(/[.?!]+$/, ''))
+            if (path._tag === 'Missing') {
+              throw new Error(`${repositoryPath}: "${path.path}" in a diagram label names a repository path that does not exist (D180).`)
+            }
+          }
+        }
       },
       inlineCode(node, context) {
         if (inTheirWords(node, context)) return
@@ -271,11 +328,13 @@ export const referenceLinks = (repositoryRoot: string): MdastPluginEntry => {
           if (KEPT_AS_WRITTEN.test(repositoryPath)) return
           throw new Error(`${repositoryPath}: \`${path.path}\` names a repository path that does not exist (D87).`)
         }
+        const preview = pagePreview(repositoryRoot, path.href)
         context.replaceNode(node, {
           type: 'link',
           url: path.href,
           title: null,
           children: [{ type: 'inlineCode', value: node.value }],
+          ...(preview === undefined ? {} : { data: { hProperties: preview } }),
         })
       },
     }
