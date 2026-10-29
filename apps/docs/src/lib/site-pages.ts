@@ -10,7 +10,7 @@ import { firstSentence, plainText } from '@viviefs/references'
 import { CLAIMS_ROUTE, claimsMarkdown } from './claims.ts'
 import { TEMPLATE_ROUTE } from './guides.ts'
 import { parseRepositoryPage } from './repo-pages.ts'
-import { RAW_HTML_DIRECTORY, RENDERED_DIRECTORIES, RENDERED_FILES, siteUrlFor } from './repo.ts'
+import { RAW_HTML_DIRECTORY, RENDERED_DIRECTORIES, RENDERED_FILES, siteUrlFor, withoutBase } from './repo.ts'
 
 export type SitePage = {
   readonly title: string
@@ -125,10 +125,13 @@ export const sitePages = (root: string): ReadonlyMap<string, SitePage> => {
   return pages
 }
 
-/** The page a site link opens, ignoring its section and query; undefined for anything else. */
+/**
+ * The page a site link opens, ignoring its section and query; undefined for
+ * anything else. On the published site a link carries the base (D61'').
+ */
 export const pageAt = (root: string, url: string): SitePage | undefined => {
   if (!url.startsWith('/') || url.startsWith('//')) return undefined
-  const path = url.replace(/[?#].*$/, '')
+  const path = withoutBase(url.replace(/[?#].*$/, ''))
   const pages = sitePages(root)
   return pages.get(path) ?? pages.get(path.endsWith('/') || path.endsWith('.html') ? path : `${path}/`)
 }

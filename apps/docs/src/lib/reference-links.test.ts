@@ -125,6 +125,19 @@ describe('references resolved when rendered', () => {
     )
   })
 
+  it('gives a page link its preview on the published site too, where every site link carries the base', () => {
+    const previous = process.env['DOCS_BASE']
+    process.env['DOCS_BASE'] = '/viviefs'
+    try {
+      const html = render('Each status is shown under [ADRs](/viviefs/reference/adr/), listed in `docs/adr/README.md`.')
+      expect(html).toContain('<a href="/viviefs/reference/adr/" class="ref-link" data-ref-kind="Page" data-ref-label="Architectural decision records"')
+      expect(html.match(/data-ref-kind="Page"/g)).toHaveLength(2)
+    } finally {
+      if (previous === undefined) delete process.env['DOCS_BASE']
+      else process.env['DOCS_BASE'] = previous
+    }
+  })
+
   it('gives a reference-style link to a site page the same preview', () => {
     expect(render('Read the [guides][all guides].\n\n[all guides]: /guides/\n')).toContain(
       '<a href="/guides/" class="ref-link" data-ref-kind="Page" data-ref-label="Guides" data-ref-summary="One guide per pattern, for people and agents." data-ref-meta="">guides</a>',

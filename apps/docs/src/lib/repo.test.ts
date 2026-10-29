@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterAll, describe, expect, it } from '@effect/vitest'
 import { rewriteHtmlLinks, rewriteLink } from './repo-links.ts'
-import { docsBase, RENDERED_FILES, resolveLink, routeFor, siteUrlFor, withBase } from './repo.ts'
+import { docsBase, RENDERED_FILES, resolveLink, routeFor, siteUrlFor, withBase, withoutBase } from './repo.ts'
 
 const root = mkdtempSync(join(tmpdir(), 'viviefs-docs-'))
 afterAll(() => rmSync(root, { recursive: true, force: true }))
@@ -114,6 +114,10 @@ describe('resolveLink', () => {
 
   it('rejects a base that is not a site path, and strips one trailing slash', () => {
     expect(withBase('/viviefs', '/viviefs')).toBe('/viviefs')
+    expect(withoutBase('/viviefs/guides/', '/viviefs')).toBe('/guides/')
+    expect(withoutBase('/viviefs', '/viviefs')).toBe('/')
+    expect(withoutBase('/viviefsx/guides/', '/viviefs')).toBe('/viviefsx/guides/')
+    expect(withoutBase('/guides/', '/')).toBe('/guides/')
     expect(withBase('/guides/', '/')).toBe('/guides/')
     const previous = process.env['DOCS_BASE']
     process.env['DOCS_BASE'] = 'viviefs'

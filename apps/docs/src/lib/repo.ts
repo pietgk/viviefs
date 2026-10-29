@@ -103,6 +103,13 @@ export const withBase = (href: string, base: string = docsBase()): string => {
   return `${prefix}${href}`
 }
 
+/** The site path of an href written with the publish base: the inverse of `withBase`. */
+export const withoutBase = (href: string, base: string = docsBase()): string => {
+  const prefix = base === '/' ? '' : base
+  if (prefix === '' || (href !== prefix && !href.startsWith(`${prefix}/`))) return href
+  return href.slice(prefix.length) || '/'
+}
+
 export type LinkTarget =
   | { readonly _tag: 'Untouched' }
   | { readonly _tag: 'Rewritten'; readonly href: string }

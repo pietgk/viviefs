@@ -245,10 +245,10 @@
         "statements": "39/45"
       },
       "apps/docs/src/lib/repo.ts": {
-        "branches": "58/63",
-        "functions": "9/9",
-        "lines": "53/57",
-        "statements": "61/65"
+        "branches": "68/73",
+        "functions": "10/10",
+        "lines": "57/61",
+        "statements": "66/70"
       },
       "apps/docs/src/lib/site-pages.ts": {
         "branches": "33/43",
