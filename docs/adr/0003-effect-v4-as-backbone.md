@@ -93,7 +93,7 @@ change, with `repos/effect` pulled from the `effect@4.0.5` tag. The trade-off
 above held in a patch release: 4.0.3-4.0.5 changed the `effect/workflow`
 internals the datom workflow engine mirrors (durable deferred waits counted per run, a wake that
 preempts a run), and on PGlite the workflow engine then replayed for ever: on each replay
-`scheduleClock` re-fired the clock that was already due, `completeDeferred` woke
+`scheduleClock` re-fired the clock that was already due, `completeDurableDeferred` woke
 the run although the durable deferred was already recorded, and the wake preempted the
 replay that had just read the stored exit. The crash matrix and both tracing
 suites timed out. A repeated completion now writes nothing and wakes nothing,

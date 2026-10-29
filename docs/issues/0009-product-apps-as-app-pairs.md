@@ -12,7 +12,7 @@ Whether BirVana, ERP and GRC live in this repository as `<product>-mobile` and `
 
 ## Direction
 
-Decide after [P11 Identity][P11]-[P17 Browser engine leader][P17].
+Decide after [P11 Identity][P11]-[P17 Workflow engine leader in a browser][P17].
 
 ## Answer
 

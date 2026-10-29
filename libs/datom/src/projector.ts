@@ -20,7 +20,7 @@ import {
   decodeCommit,
   encodeConflict,
   hashMembers,
-  type CommitManifest,
+  type ChangesetManifest,
 } from './manifest.ts'
 import { migrateReadModels } from './read-models.ts'
 import type { Datom, StoredDatom } from './schema.ts'
@@ -440,7 +440,7 @@ const makeProjector = (catalog: Catalog) =>
           if (ptOf(commitDatom.tx) > firstPt + CHANGESET_TTL_MS) {
             return { kind: 'expired', actor }
           }
-          const manifest: CommitManifest | null = decodeCommit(commitDatom.v)
+          const manifest: ChangesetManifest | null = decodeCommit(commitDatom.v)
           if (!manifest) return { kind: 'rejected', actor }
           if (members.length !== manifest.n) {
             return expiredByClock

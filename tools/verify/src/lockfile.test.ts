@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import { registryDigest, sameTuple, stableJson, tupleOf } from './lockfile.ts'
+import { evidenceRegistryDigest, sameTuple, stableJson, tupleOf } from './lockfile.ts'
 
 describe('lockfile', () => {
   it('counts covered and total statements, branches, functions and lines', () => {
@@ -14,11 +14,11 @@ describe('lockfile', () => {
     expect(sameTuple(tuple, { ...tuple, lines: '2/2' })).toBe(false)
   })
 
-  it('writes keys in a stable order and digests the registry by path', () => {
+  it('writes keys in a stable order and digests the evidence registry by path', () => {
     expect(stableJson({ b: 1, a: { d: 2, c: 3 } })).toBe('{\n  "a": {\n    "c": 3,\n    "d": 2\n  },\n  "b": 1\n}\n')
     const one = { path: 'b', treatment: 'node-unit', rationale: 'r' } as const
     const two = { path: 'a', treatment: 'node-unit', rationale: 'r' } as const
-    expect(registryDigest([one, two])).toBe(registryDigest([two, one]))
-    expect(registryDigest([one])).not.toBe(registryDigest([{ ...one, rationale: 'other' }]))
+    expect(evidenceRegistryDigest([one, two])).toBe(evidenceRegistryDigest([two, one]))
+    expect(evidenceRegistryDigest([one])).not.toBe(evidenceRegistryDigest([{ ...one, rationale: 'other' }]))
   })
 })

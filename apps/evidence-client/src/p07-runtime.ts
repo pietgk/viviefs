@@ -25,17 +25,17 @@ import {
   expoWakeScheduler,
   lastNotificationData,
   requestNotificationPermission,
-  scheduleDeferredNotification,
+  scheduleDurableDeferredNotification,
   subscribeNotificationResponses,
-  type DeferredNotificationData,
+  type DurableDeferredNotificationData,
 } from '@viviefs/platform-native'
 import { otlpJsonLayer } from '@viviefs/telemetry'
 import type { CheckResult } from '@viviefs/testing'
 import { LAB_PERSON, P07_PARKED_ATTR } from '@viviefs/workflow-engine/suites'
 import {
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
-  EngineSweep,
+  WorkflowEngineSweep,
   noopCrashHook,
 } from '@viviefs/workflow-engine'
 import type { p07LogStore } from './p07-official.ts'
@@ -249,7 +249,7 @@ export const runP07Session = (
     Layer.provide(upload),
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore),
-    Layer.provide(engineConfigLayer({ org: P07_ORG, actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: P07_ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(deviceId)),
     Layer.provide(noopCrashHook),
     Layer.provide(expoWakeScheduler),
@@ -274,7 +274,7 @@ export const runP07Session = (
         extra: { ...latest.extra, executionId, phase: 'starting' },
       })
 
-      const applyNotification = (data: DeferredNotificationData) => {
+      const applyNotification = (data: DurableDeferredNotificationData) => {
         if (data.executionId !== executionId) return
         if (data.kind === 'deferred' && data.deferredName === APPROVAL) {
           void Effect.runPromise(
@@ -302,7 +302,7 @@ export const runP07Session = (
       const unsubscribe = subscribeNotificationResponses(applyNotification)
       yield* Effect.addFinalizer(() => Effect.sync(unsubscribe))
 
-      const sweepSvc = yield* use(EngineSweep)
+      const sweepSvc = yield* use(WorkflowEngineSweep)
       const pendingIds = yield* use(sweepSvc.pending())
       const hadPending = pendingIds.includes(executionId)
 
@@ -382,7 +382,7 @@ export const runP07Session = (
           announcedWait = true
           if (scenario === 'mid-wait' && !hadPending) {
             yield* Effect.promise(() =>
-              scheduleDeferredNotification({
+              scheduleDurableDeferredNotification({
                 executionId,
                 workflowName: 'DeviceResume.v1',
                 deferredName: APPROVAL,

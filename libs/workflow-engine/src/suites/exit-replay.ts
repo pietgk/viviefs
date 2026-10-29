@@ -21,7 +21,7 @@ import * as DurableDeferred from 'effect/workflow/DurableDeferred'
 import * as Workflow from 'effect/workflow/Workflow'
 import { deviceLayer, HlcClock } from '@viviefs/datom'
 import {
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
   noopCrashHook,
   noopWakeScheduler,
@@ -73,7 +73,7 @@ const session = (openStore: StoreFactory, clock: MutableClock) =>
   exitsLayer.pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer({ org: 'p06', actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: 'p06', actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(noopCrashHook),
     Layer.provide(noopWakeScheduler),

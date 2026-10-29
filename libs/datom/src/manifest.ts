@@ -4,13 +4,13 @@ import * as Schema from 'effect/Schema'
 import { isSystemAttr } from './vocabulary.ts'
 import type { Datom } from './schema.ts'
 
-export const CommitManifest = Schema.Struct({
+export const ChangesetManifest = Schema.Struct({
   n: Schema.Number,
   hash: Schema.String,
   basis: Schema.Number,
   files: Schema.Array(Schema.String),
 })
-export type CommitManifest = typeof CommitManifest.Type
+export type ChangesetManifest = typeof ChangesetManifest.Type
 
 export const ConflictPayload = Schema.Struct({
   e: Schema.String,
@@ -89,10 +89,10 @@ export const hashMembers = (
 ): Effect.Effect<string, DigestError> =>
   sha256Hex(changesetMembers(datoms).map(memberCanonical).join('\n'))
 
-const CommitJson = Schema.fromJsonString(CommitManifest)
+const ChangesetManifestJson = Schema.fromJsonString(ChangesetManifest)
 
-export const encodeCommit = (manifest: CommitManifest): string =>
-  Schema.encodeSync(CommitJson)(manifest)
+export const encodeCommit = (manifest: ChangesetManifest): string =>
+  Schema.encodeSync(ChangesetManifestJson)(manifest)
 
-export const decodeCommit = (value: string): CommitManifest | null =>
-  Option.getOrNull(Schema.decodeUnknownOption(CommitJson)(value))
+export const decodeCommit = (value: string): ChangesetManifest | null =>
+  Option.getOrNull(Schema.decodeUnknownOption(ChangesetManifestJson)(value))

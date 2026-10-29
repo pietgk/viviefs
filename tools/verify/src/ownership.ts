@@ -10,7 +10,7 @@ import {
   isNamedSlot,
   isReExportOnly,
   isTypeOnly,
-  type RegistryEntry,
+  type EvidenceRegistryEntry,
 } from './file-treatments.ts'
 
 const KIND_TAGS = ['kind:app', 'kind:feature', 'kind:lib', 'kind:tool'] as const
@@ -52,13 +52,13 @@ export const projectProblems = (
       problems.push(`${path} has no kind: tag (need one of ${KIND_TAGS.join(', ')}).`)
     }
     if (parsed.metadata && 'evidenceOwner' in parsed.metadata) {
-      problems.push(`${path} declares metadata.evidenceOwner; evidence is owned per file in the registry (D76).`)
+      problems.push(`${path} declares metadata.evidenceOwner; evidence is owned per file in the evidence registry (D76).`)
     }
   }
   return problems
 }
 
-export type RegistryContext = {
+export type EvidenceRegistryContext = {
   readonly productionFiles: ReadonlyArray<string>
   /** Contents of a repository file, or undefined when it does not exist. */
   readonly source: (path: string) => string | undefined
@@ -76,7 +76,7 @@ const TARGET_FOR_BUILD_STEP: Record<(typeof BUILD_STEPS)[number], string> = {
   'bundle-size': 'bundle-size',
 }
 
-const shapeProblem = (entry: RegistryEntry, context: RegistryContext): string | undefined => {
+const shapeProblem = (entry: EvidenceRegistryEntry, context: EvidenceRegistryContext): string | undefined => {
   const source = context.source(entry.path) ?? ''
   switch (entry.treatment) {
     case 're-export':
@@ -117,25 +117,25 @@ const shapeProblem = (entry: RegistryEntry, context: RegistryContext): string | 
   }
 }
 
-export const registryProblems = (
-  registry: ReadonlyArray<RegistryEntry>,
-  context: RegistryContext,
+export const evidenceRegistryProblems = (
+  evidenceRegistry: ReadonlyArray<EvidenceRegistryEntry>,
+  context: EvidenceRegistryContext,
 ): ReadonlyArray<string> => {
   const problems: string[] = []
   const seen = new Map<string, number>()
-  for (const { path } of registry) seen.set(path, (seen.get(path) ?? 0) + 1)
+  for (const { path } of evidenceRegistry) seen.set(path, (seen.get(path) ?? 0) + 1)
   for (const [path, count] of seen) {
-    if (count > 1) problems.push(`${path}: ${count} registry entries; a file has exactly one`)
+    if (count > 1) problems.push(`${path}: ${count} evidence registry entries; a file has exactly one`)
   }
   const files = new Set(context.productionFiles)
   for (const path of context.productionFiles) {
     if (!seen.has(path)) {
-      problems.push(`${path}: no registry entry. Classify it in tools/verify/src/evidence-registry.ts`)
+      problems.push(`${path}: no evidence registry entry. Classify it in tools/verify/src/evidence-registry.ts`)
     }
   }
-  for (const entry of registry) {
+  for (const entry of evidenceRegistry) {
     if (!files.has(entry.path)) {
-      problems.push(`${entry.path}: registry entry has no production file`)
+      problems.push(`${entry.path}: evidence registry entry has no production file`)
       continue
     }
     if (!(entry.treatment in FILE_TREATMENTS)) {

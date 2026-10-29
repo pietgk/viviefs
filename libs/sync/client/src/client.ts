@@ -57,7 +57,7 @@ import {
   type PullPage,
 } from '@viviefs/sync-protocol'
 
-const CursorRow = Schema.Struct({
+const SyncCursorRow = Schema.Struct({
   cursor: SqlNumber,
 })
 const OrgRow = Schema.Struct({
@@ -339,15 +339,15 @@ const makeClient = Effect.gen(function* () {
   yield* migrate
   const noteDevice = Effect.annotateCurrentSpan('sync.device', device.id)
 
-  const readCursor = (org: string) =>
+  const readSyncCursor = (org: string) =>
     Effect.gen(function* () {
       const rows = yield* sql`
         SELECT cursor FROM sync_cursor WHERE org = ${org}
-      `.pipe(rowsOf(CursorRow))
+      `.pipe(rowsOf(SyncCursorRow))
       return rows[0] ? Number(rows[0].cursor) : 0
     })
 
-  const writeCursor = (org: string, cursor: number) =>
+  const writeSyncCursor = (org: string, cursor: number) =>
     sql`
       INSERT INTO sync_cursor (org, cursor) VALUES (${org}, ${cursor})
       ON CONFLICT (org) DO UPDATE SET cursor = ${cursor}
@@ -445,7 +445,7 @@ const makeClient = Effect.gen(function* () {
 
   const pull = Effect.fn('SyncClient.pull')(function* (org: string) {
     yield* noteDevice
-    const cursor = yield* readCursor(org)
+    const cursor = yield* readSyncCursor(org)
     const page = yield* rpc.pull({ org, cursor }).pipe(
       Effect.tapError((error) =>
         error._tag === 'MembershipMissing' ? markRevoked(org) : Effect.void,
@@ -475,7 +475,7 @@ const makeClient = Effect.gen(function* () {
         envelope,
       )
     }
-    yield* writeCursor(org, page.cursor)
+    yield* writeSyncCursor(org, page.cursor)
     yield* projector.project()
     return page.cursor
   })

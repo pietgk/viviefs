@@ -6,7 +6,7 @@ sequential run on a clean tree (step 8). This page stays as the record of how
 [tools/qualification/README.md](../../tools/qualification/README.md)
 (2026-10-01), the one place for them.
 
-Next: Docs and teaching, then the follow-on gates ([P12 UI on every platform][P12]-[P17 Browser engine leader][P17] since the Docs and
+Next: Docs and teaching, then the follow-on gates ([P12 UI on every platform][P12]-[P17 Workflow engine leader in a browser][P17] since the Docs and
 teaching grilling). The current handover is [next-session.md](next-session.md).
 Step numbers below are [P11 Identity][P11]'s build steps ([P11][P11].1-[P11][P11].8 in today's naming).
 
@@ -93,7 +93,7 @@ Moved to [tools/qualification/README.md](../../tools/qualification/README.md#lab
   long-term home (they moved to `docs/research/`, [D68 Research records][D68]).
 - Deferred and recorded: identity, keys and trust step (Q15 merged, Q23, Q24);
   trace projector on devices with the first consumer app (Q13);
-  `EngineConfig.actor` from the statement when a consumer app runs the workflow engine
+  `WorkflowEngineConfig.actor` from the statement when a consumer app runs the workflow engine
   and sync together (design review section 9).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->

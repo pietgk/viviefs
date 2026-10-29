@@ -6,10 +6,10 @@ import type * as Effect from 'effect/Effect'
  * result and resumes them, then fires due clocks. The app calls this; the
  * workflow engine does not sweep by itself. P07's positive control skips the call.
  */
-export class EngineSweep extends Context.Service<
-  EngineSweep,
+export class WorkflowEngineSweep extends Context.Service<
+  WorkflowEngineSweep,
   {
     readonly pending: () => Effect.Effect<ReadonlyArray<string>>
     readonly sweep: () => Effect.Effect<void>
   }
->()('viviefs/workflow-engine/EngineSweep') {}
+>()('viviefs/workflow-engine/WorkflowEngineSweep') {}

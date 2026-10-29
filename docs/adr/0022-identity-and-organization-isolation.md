@@ -118,7 +118,7 @@ membership verifies, and its caller has no person. Every handler then answers
 `MembershipMissing`; nothing is minted.
 
 **Device.** The workflow engine writes its journal on behalf of the signed-in
-person (`EngineConfig.actor`), so a pushed journal write passes the actor
+person (`WorkflowEngineConfig.actor`), so a pushed journal write passes the actor
 check. Lab runs that never reach a server use a fixed lab person. One local
 replica per provider account; signing out closes it. Refresh
 token in `expo-secure-store` with `offline_access` on iOS and Android; in
@@ -248,7 +248,7 @@ run `2026-09-28T22-40-46.395Z-cfafc842`, [closure note](../evidence/2026-09-28-p
 so [P11][P11]'s changes to the log, the protocol and the evidence app left every
 earlier gate passing, [P02 SQLite drivers][P02], [P04 Log store conformance][P04] and [P05 Changesets and projections][P05] on web included.
 
-Not measured: physical devices, TLS, `EngineConfig.actor` from the
+Not measured: physical devices, TLS, `WorkflowEngineConfig.actor` from the
 statement, and the limitations above (stored history, device identity,
 lease authorization).
 

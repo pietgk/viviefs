@@ -42,7 +42,7 @@ Decided with the human from 2026-10-24 to 2026-10-26, over three rounds on [the 
 | `viviefs:lease-and-fencing` | keep ours, changed: the journal head replaces the lease as the fence ([D14' The journal is the fence][D14'], [ADR-0036 The journal is the fence][ADR-0036]), built by [I80 Build the journal fence][I80] |
 | `viviefs:drain-before-close` | keep ours: a rule for owned resources; a workflow needs no drain, because an interrupted run resumes ([D138 A workflow, or a cursor][D138]) |
 | `viviefs:resume-on-next-launch` | stands: the device's restart policy, the holder's own sweep under [D14' The journal is the fence][D14'] |
-| `viviefs:browser-engine-leader` | stands: one engine per local database ([D25 Browser engine leader][D25]); vivief's failure modes go to [P17 Browser engine leader][P17]'s grilling |
+| `viviefs:browser-engine-leader` | stands: one engine per local database ([D25 Browser engine leader][D25]); vivief's failure modes go to [P17 Workflow engine leader in a browser][P17]'s grilling |
 | `viviefs:service-and-layer` | stands: a loop that is not a workflow is a scoped Layer ([D138 A workflow, or a cursor][D138]) |
 | `viviefs:quarantine-after-lost-lease` | stands: [I53 Sync and conflict][I53] reviews [I11 Quarantine of user content after a lost lease][I11]; under [D14' The journal is the fence][D14'] the stranded content is an offline history that was refused |
 

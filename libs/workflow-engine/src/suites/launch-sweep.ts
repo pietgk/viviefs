@@ -14,9 +14,9 @@ import { deviceLayer, HlcClock } from '@viviefs/datom'
 import {
   armedCrashHook,
   CrashHook,
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
-  EngineSweep,
+  WorkflowEngineSweep,
   noopCrashHook,
   noopWakeScheduler,
 } from '../index.ts'
@@ -92,7 +92,7 @@ const env = (
   probeLayer(calls).pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer({ org: ORG, actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(hook),
     Layer.provide(noopWakeScheduler),
@@ -180,7 +180,7 @@ const sweepResumes = (openStore: StoreFactory, clock: MutableClock) =>
     yield* Effect.scoped(
       Effect.gen(function* () {
         const ctx = yield* Layer.build(resumed)
-        yield* EngineSweep.pipe(
+        yield* WorkflowEngineSweep.pipe(
           Effect.flatMap((sweep) => sweep.sweep()),
           Effect.provide(ctx),
         )

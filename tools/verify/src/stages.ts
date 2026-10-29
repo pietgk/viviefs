@@ -273,7 +273,7 @@ export const STAGES: Stage[] = [
       },
       {
         name: 'evidence',
-        blurb: 'coverage, suites and stories of this run hold against the registry and the lockfile',
+        blurb: 'coverage, suites and stories of this run hold against the evidence registry and the evidence lockfile',
         invocations: [
           {
             command: 'node',

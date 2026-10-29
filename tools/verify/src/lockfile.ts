@@ -5,7 +5,7 @@
  */
 import { createHash } from 'node:crypto'
 import type { CoverageProducer } from '@viviefs/testing/vitest'
-import type { RegistryEntry } from './file-treatments.ts'
+import type { EvidenceRegistryEntry } from './file-treatments.ts'
 
 export const LOCKFILE = 'evidence-baseline.json'
 
@@ -77,9 +77,9 @@ export const formatTuple = (tuple: Tuple) =>
   METRICS.map((metric) => `${metric} ${tuple[metric]}`).join(', ')
 
 /** A digest of the evidence registry: changing a file treatment is a reviewed change. */
-export const registryDigest = (registry: ReadonlyArray<RegistryEntry>) =>
+export const evidenceRegistryDigest = (evidenceRegistry: ReadonlyArray<EvidenceRegistryEntry>) =>
   createHash('sha256')
-    .update(JSON.stringify([...registry].sort((left, right) => left.path.localeCompare(right.path))))
+    .update(JSON.stringify([...evidenceRegistry].sort((left, right) => left.path.localeCompare(right.path))))
     .digest('hex')
 
 /** Stable JSON: object keys sorted, so the lockfile diffs cleanly. */

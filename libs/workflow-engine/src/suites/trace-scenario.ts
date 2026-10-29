@@ -36,9 +36,9 @@ import {
 import {
   armedCrashHook,
   durableContext,
-  engineConfigLayer,
+  workflowEngineConfigLayer,
   engineLayer,
-  EngineSweep,
+  WorkflowEngineSweep,
   noopCrashHook,
   noopWakeScheduler,
   spanIdFor,
@@ -118,7 +118,7 @@ const session = (
   probeLayer(clock, runs).pipe(
     Layer.provideMerge(engineLayer),
     Layer.provideMerge(openStore(DEVICE)),
-    Layer.provide(engineConfigLayer({ org: P10_ORG, actor: LAB_PERSON })),
+    Layer.provide(workflowEngineConfigLayer({ org: P10_ORG, actor: LAB_PERSON })),
     Layer.provideMerge(deviceLayer(DEVICE)),
     Layer.provide(hook),
     Layer.provide(noopWakeScheduler),
@@ -224,7 +224,7 @@ const scenario = (
         const ctx = yield* Layer.build(second)
         const use = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
           effect.pipe(Effect.provide(ctx))
-        yield* use(EngineSweep.use((sweep) => sweep.sweep()))
+        yield* use(WorkflowEngineSweep.use((sweep) => sweep.sweep()))
         yield* use(
           pollUntil(executionId, (r) => r._tag === 'Suspended', 'approval wait'),
         )
