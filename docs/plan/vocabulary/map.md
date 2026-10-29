@@ -53,7 +53,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
   page with worked examples before deciding.
 - **The words waiting** (from map 2 and [I78 Research: Effect's vocabulary against ours][I78]): `Contract`, `effectHandler`,
   intent, effect, Vision, View and Effects, the formula's names ([I30 Ideas batch: glossary entries written as effects][I30]), foundation
-  concept, abstraction or pattern ([I33 Ideas batch: abstractions that constrain agents][I33]), `node`, surface, frame, trust level, the
+  concept, abstraction or pattern ([I33 Ideas batch: abstractions that constrain agents][I33]), node (now Sync node, [D199 Sync node][D199]), surface (now Presentation surface, [D200 Presentation surface and screen][D200]), frame, trust level, the
   lab qualifier, hot, frontier, warm and cold, the kinds of intent, change ([I77 The word change has two meanings][I77]),
   Tool, Envelope, Journal, Entity, Decision, Prompt, Worker and runner, Deferred,
   `tx`, Command, session, model, Service, and a "like X, except Y" line per term
@@ -70,6 +70,7 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 - [I91 Effect's names against ours][I91] (2026-10-28): Workflow engine and Workflow runner, Worker retired; Durable deferred; Changeset manifest; Sync cursor; Evidence registry; Journal and Envelope keep their words with `_Not_` lines; Origin, Intent and actor with `_Like_` lines; Tool is [D102 Tools are apps][D102]'s app; "prompt" is not a term; entity type and entity id in Effect's sense; code names and [P17 Browser engine leader][P17]'s name in [I99 Code names for map 3's retired words][I99] ([D186 Workflow engine and workflow runner][D186]-[D197 Evidence registry, and the code names follow in one issue][D197]).
 
 - [D198 Map 3 finishes lean][D198] (2026-10-28): map 3 finishes lean: [I92 Map 2's new words][I92] only the app shell's words, [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] in one session, [I96 Accept the vocabulary][I96]; [I93 Naming facts][I93] deferred; [I97 A preview on every link in a page's text][I97] to phase 3; a grilling opens a new issue only for build work its decisions force.
+- [I92 Map 2's new words][I92] (2026-10-28): Sync node, bare node left to Node.js; Presentation surface and Screen, [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] amended; Frame keeps its word with a `_Not_` line; change stays plain English, [I77 The word change has two meanings][I77] resolved; the lab qualifier, the four states and the kinds of intent wait ([D199 Sync node][D199]-[D203 The lab qualifier, the four states and the kinds of intent wait][D203]).
 
 ## Not yet specified
 
@@ -78,6 +79,9 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 ## Out of scope
 
 - [I93 Naming facts][I93]: deferred until a consumer app is about to pin its first attribute names ([D198 Map 3 finishes lean][D198]).
+- The lab qualifier ([D101 Lab and production][D101]): named when [I58 Several servers in the lab][I58] or [I8 Workflow engine scale-out and more workflow runners on the server][I8] is picked up ([D203 The lab qualifier, the four states and the kinds of intent wait][D203]).
+- Hot, frontier, warm and cold ([D132 Four states at every level][D132]): `Decide when:` a page, tool or gate shows a thing's state by name ([D203 The lab qualifier, the four states and the kinds of intent wait][D203]).
+- The kinds of intent ([D132 Four states at every level][D132]): named when a tool records an intent's kind or map 6 is charted, without the bare word "prompt" ([D195 Prompt is not a term][D195], [D203 The lab qualifier, the four states and the kinds of intent wait][D203]).
 
 - Alchemy's names ([I28 Alchemy: infrastructure as Effects][I28]): with [I7 Production hosting, deployment and telemetry backend][I7].
 - The reader test ([I21 Test the glossary with a reader outside software][I21]): map 4, which judges this map's result.
@@ -86,7 +90,10 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[ADR-0032]: ../../adr/0032-what-viviefs-is-about.md
+[D101]: ../bootstrap/02-decision-log.md#d101
 [D102]: ../bootstrap/02-decision-log.md#d102
+[D132]: ../bootstrap/02-decision-log.md#d132
 [D135]: ../bootstrap/02-decision-log.md#d135
 [D137]: ../bootstrap/02-decision-log.md#d137
 [D162]: ../bootstrap/02-decision-log.md#d162
@@ -102,8 +109,12 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [D181]: ../bootstrap/02-decision-log.md#d181
 [D185]: ../bootstrap/02-decision-log.md#d185
 [D186]: ../bootstrap/02-decision-log.md#d186
+[D195]: ../bootstrap/02-decision-log.md#d195
 [D197]: ../bootstrap/02-decision-log.md#d197
 [D198]: ../bootstrap/02-decision-log.md#d198
+[D199]: ../bootstrap/02-decision-log.md#d199
+[D200]: ../bootstrap/02-decision-log.md#d200
+[D203]: ../bootstrap/02-decision-log.md#d203
 [D44]: ../bootstrap/02-decision-log.md#d44
 [D44']: ../bootstrap/02-decision-log.md#d44p
 [D94']: ../bootstrap/02-decision-log.md#d94p
@@ -114,9 +125,11 @@ and built; and the human has accepted the glossary as it stands ([I96 Accept the
 [I30]: ../../issues/0030-ideas-batch-glossary-entries-written-as-effects.md
 [I32]: ../../issues/0032-ideas-batch-explain-any-word-on-demand.md
 [I33]: ../../issues/0033-ideas-batch-abstractions-that-constrain-agents.md
+[I58]: ../../issues/0058-several-servers-in-the-lab.md
 [I7]: ../../issues/0007-production-hosting-and-telemetry-backend.md
 [I77]: ../../issues/0077-change-has-two-meanings.md
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
+[I8]: ../../issues/0008-engine-scale-out.md
 [I88]: ../../issues/0088-effect-and-the-effect-handler.md
 [I89]: ../../issues/0089-how-a-word-is-chosen-and-written.md
 [I90]: ../../issues/0090-pattern-concept-contract-abstraction.md

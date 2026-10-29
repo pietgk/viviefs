@@ -47,7 +47,7 @@ the data alone ("a title is not blank") is an acceptance rule.
 
 **Acceptance rules ([D125 Acceptance rules][D125]).** Code declared beside the catalog: the value
 Schema ([D121 Attribute value types][D121]), uniqueness ([D122 External identifiers][D122]), required attributes, allowed transitions of
-a value, and entity rules written against a read model so any `node` could
+a value, and entity rules written against a read model so any sync node could
 run them ([D105 What must stay possible][D105] (2)). Commands call the same rules. They are a concept of the
 changesets pattern, checked by `changesets/acceptance`; a rule without a
 positive control fails `verify`. A warning rule is deferred.
@@ -105,7 +105,7 @@ proof that a changeset is exactly what its command makes.
 - **Commands for screens only** would leave the envelope's `command` a free
   label and request rules without a home.
 - **Out-of-scope items ([D100 Out of scope means not yet][D100], [I57 Out-of-scope items in an ADR's trade-offs][I57]).** Rules are written against a read model
-  so any `node` holding authority can run them ([D105 What must stay possible][D105] (2)); with several `node`s
+  so any sync node holding authority can run them ([D105 What must stay possible][D105] (2)); with several sync nodes
   an access check must not read permissions older than the change it guards
   (Zanzibar's new enemy problem; noted on [I60 Server-independent mode][I60]).
 
@@ -122,7 +122,7 @@ proof that a changeset is exactly what its command makes.
 
 A changeset that breaks an acceptance rule, comes from an unknown command, or
 writes outside its command's declared writes is rejected with a typed error,
-on every `node` that runs the rules; the blank-title changeset accepted today
+on every sync node that runs the rules; the blank-title changeset accepted today
 is rejected.
 
 ### Observed

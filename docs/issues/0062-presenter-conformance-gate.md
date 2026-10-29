@@ -16,6 +16,8 @@ From [I49](0049-projection-one-concept-or-several-patterns.md) ([D107 The Presen
 
 ## Comments
 
+2026-10-28: [I92 Map 2's new words][I92]: what a Presenter answers is a presentation surface, of any modality, and a screen is its visual kind ([D200 Presentation surface and screen][D200]); a frame keeps its word ([D201 Frame keeps its word][D201]). The gate's claim names no modality.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0019]: ../adr/0019-ui-state-ownership-and-query-atoms.md
@@ -23,6 +25,9 @@ From [I49](0049-projection-one-concept-or-several-patterns.md) ([D107 The Presen
 [D108]: ../plan/bootstrap/02-decision-log.md#d108
 [D110]: ../plan/bootstrap/02-decision-log.md#d110
 [D113]: ../plan/bootstrap/02-decision-log.md#d113
+[D200]: ../plan/bootstrap/02-decision-log.md#d200
+[D201]: ../plan/bootstrap/02-decision-log.md#d201
 [I63]: 0063-the-columnar-copy.md
+[I92]: 0092-map-2s-new-words.md
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P08]: ../plan/bootstrap/06-qualification-gates.md#p08

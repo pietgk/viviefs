@@ -466,6 +466,19 @@ From the human's check on whether map 3 still converges, after [I91](../../issue
 |---|---|---|---|
 | <a id="d198"></a>D198 | Map 3 finishes lean | From the human's check of 2026-10-28, after [I91 Effect's names against ours][I91]: in 23 days since [I34 vivief as the source of ViViEfs's concepts][I34] paused the Schedule, 103 decisions and no product code; map 3's four tickets opened three issues, all build work, but each word ticket now sweeps the repository. Map 3 finishes in three sessions, then phase 3 starts. [I92 Map 2's new words][I92] names only the words the app shell meets and defers the rest with a `Decide when:`. [I94 Words in another project's sense][I94] and [I95 Build the glossary linker as decided][I95] are one session: the human confirms defaults in one round (a block quote, and one explicit mark around a passage or table in another project's words, switch off glossary links and ids inside it; a word retired under [D175 A retired word names its decision][D175] fails `verify` outside such a passage; a test per case of [I26 Glossary links on words that are not our terms][I26]'s table), then it is built. [I96 Accept the vocabulary][I96] accepts the vocabulary as it stands. [I93 Naming facts][I93] is deferred: `Decide when:` a consumer app is about to pin its first attribute names. [I97 A preview on every link in a page's text][I97] joins phase 3's first batch with [I98 Diagram labels and named identifiers get the checks prose gets][I98] and [I99 Code names for map 3's retired words][I99]. From here on a grilling opens a new issue only for build work its own decisions force; any other question it finds is parked with a `Decide when:`. Not chosen: parking [I94][I94] and [I95][I95] too (wrong hovers on pages about other projects stay, and nothing keeps a retired word from coming back), and map 3 as charted. | Decisions are tested only when a gate runs on what they decided; the reader's benefits of the linker are kept at the size of one session. |
 
+<a id="d199-d203"></a>
+## Map 2's new words (2026-10-28)
+
+Decided with the human in [I92](../../issues/0092-map-2s-new-words.md), on [the review page](../../research/2026-10-28-map-2s-new-words-review.html), under [D198 Map 3 finishes lean][D198]: only the words the app shell meets are named.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d199"></a>D199 | Sync node | A sync node is one installation of an app that keeps all or part of an organization's data and writes changesets to it ([D103 Nodes and authority][D103]): a device is the sync node a person uses, and the server is the sync node that holds authority; a tool is an app but not a sync node. The compound replaces `node`, [D103][D103]'s code-font stopgap. Bare "node" is left to Node.js, as in Effect (`@effect/platform-node`, `NodeRuntime`) and in our package names (`store-sqlite-node`, `@viviefs/testing/node`), which keep their names. `verify` fails `node` in code font outside a passage marked as another project's words ([D198 Map 3 finishes lean][D198]'s default, built in [I95 Build the glossary linker as decided][I95]); bare "node" is never checked. Not chosen: a bare Node term with Node.js written `node-js` in our package names (the hint in [D103][D103]; Effect's packages beside ours would still say node), and deferring the word. | `node` fails [D170 One word only where it matches][D170]'s test four times in the libraries we use: Node.js, the DOM's `Node`, React's `ReactNode` and a Kubernetes node; [D193 Sync cursor][D193] and [D195 Prompt is not a term][D195] chose a compound or no term for fewer. No identifier uses [D103 Nodes and authority][D103]'s sense, so no code is renamed. |
+| <a id="d200"></a>D200 | Presentation surface and screen | A presentation surface is where a frame reaches a person, in any modality: a screen, a speaker, haptics, or ways not known yet ([D134 Presenting in any modality][D134]). A screen is one full view of an app that a person moves to, what a link or a route opens ([D73 Links and routing][D73]), in React Navigation's and Expo Router's sense; it is the visual kind of presentation surface. The foundation concept is named Presenter, frame and presentation surface; [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] is amended. Bare "surface" is left to React Native's surface (a running React root in a host view), Android's and Material's `Surface`, and an API or attack surface. Not chosen: Screen now and the general word deferred until something other than a screen presents a frame (recommended on the review page), and a bare Surface term with `_Not_` lines. | The human chose to name the general idea now, so the foundation concept's name carries no undefined word, with a compound that cannot be read as React Native's own surface. |
+| <a id="d201"></a>D201 | Frame keeps its word | Frame keeps its word with a `_Not_` line: an animation frame or a frame rate, a web `<iframe>`, a stack frame, or a WebSocket frame. Frame subscription and Trust level stand as written. Not chosen: Presenter frame and Presenter frame subscription. | Effect has no public `Frame`; the other senses nearly always come with their qualifier, and every bare "frame" in the living documents is ours. A compound would lengthen frame subscription too ([D172 The compound, every time][D172]). |
+| <a id="d202"></a>D202 | Change stays plain English | "Change" is plain English, for a changeset at the data level and for a commit at the code level ([D132 Four states at every level][D132], [D133 Verified commit][D133]); a page that speaks of both levels writes changeset or commit. The glossary's Verify entry says "every change to the code". Resolves [I77 The word change has two meanings][I77]. Not chosen: change for data only and commit everywhere for code, and a Change entry. | The two are parallel steps, and almost every use reads correctly from its page; the glossary is the one place where both meet. |
+| <a id="d203"></a>D203 | The lab qualifier, the four states and the kinds of intent wait | Not named yet, each with a `Decide when:`. The lab qualifier ([D101 Lab and production][D101]): when [I58 Several servers in the lab][I58] or [I8 Workflow engine scale-out and more workflow runners on the server][I8] is picked up; until then "lab" stays plain English, the local containers a gate runs in. Hot, frontier, warm and cold ([D132 Four states at every level][D132]): when a page, tool or gate shows a thing's state by name. The kinds of intent, among them the person's request to an agent ([D132][D132]): when a tool records an intent's kind or map 6 is charted, without the bare word "prompt" ([D195 Prompt is not a term][D195]). | [D198 Map 3 finishes lean][D198]: the app shell meets none of them, and it meets hot reload and cold start in their platform sense first. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -521,6 +534,7 @@ From the human's check on whether map 3 still converges, after [I91](../../issue
 [D130-D135]: #d130-d135
 [D131]: #d131
 [D132]: #d132
+[D133]: #d133
 [D134]: #d134
 [D135]: #d135
 [D136]: #d136
@@ -557,7 +571,10 @@ From the human's check on whether map 3 still converges, after [I91](../../issue
 [D178]: #d178
 [D18]: #d18
 [D181]: #d181
+[D193]: #d193
+[D195]: #d195
 [D197]: #d197
+[D198]: #d198
 [D2]: #d2
 [D22]: #d22
 [D24]: #d24
@@ -661,6 +678,7 @@ From the human's check on whether map 3 still converges, after [I91](../../issue
 [I70]: ../../issues/0070-research-access-from-membership-to-enterprise.md
 [I71]: ../../issues/0071-an-append-can-land-after-a-revocation.md
 [I76]: ../../issues/0076-verify-verdict-not-kept-per-commit.md
+[I77]: ../../issues/0077-change-has-two-meanings.md
 [I78]: ../../issues/0078-research-effect-vocabulary-against-ours.md
 [I8]: ../../issues/0008-engine-scale-out.md
 [I80]: ../../issues/0080-build-the-journal-fence.md

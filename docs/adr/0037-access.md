@@ -30,7 +30,7 @@ identity provider's realm roles, the same in every organization.
 
 ## Design
 
-**Where** ([D150 Access around sync and commands][D150]). Access is decided on the `node` holding authority at
+**Where** ([D150 Access around sync and commands][D150]). Access is decided on the sync node holding authority at
 two points: accept, for what may be written, and sync's filter, for what a
 replica receives. A device runs the same decision early as advice. A read
 carries no access rule; a replica holds only what its reader may see.

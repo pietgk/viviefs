@@ -1,6 +1,6 @@
 # ADR-0032: What ViViEfs is about and its foundation concepts
 
-Summary: ViViEfs is about app creation: people and AI agents building apps and their proven parts in one shared language, checked by gates for what we built and by learning for the language. Its foundation is twelve concepts read as one turn, from a command deciding a changeset to a Presenter answering a surface, each a pattern that can be done another way under the same suite.
+Summary: ViViEfs is about app creation: people and AI agents building apps and their proven parts in one shared language, checked by gates for what we built and by learning for the language. Its foundation is twelve concepts read as one turn, from a command deciding a changeset to a Presenter answering a presentation surface, each a pattern that can be done another way under the same suite.
 
 Status: Accepted (2026-10-27, directly, [D65' Intent records accepted directly][D65'])
 
@@ -10,7 +10,7 @@ Qualifying gate: none (intent). Each foundation concept names the gate that
 shows it, or the issue that will, in the table under Foundation concepts.
 
 Related: [D95 App creation][D95], [D96 Two verifications][D96], [D97 Our languages by type][D97], [D98 Vision - View - Effects][D98], [D99 Facts kept, meaning derived][D99], [D100 Out of scope means not yet][D100], [D101 Lab and production][D101], [D102 Tools are apps][D102], [D55' Consumer apps live here][D55'], [D103 Nodes and authority][D103], [D104 The server-independent goal][D104], [D105 What must stay possible][D105],
-[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [D149-D157 Trust, encryption and who may sign in][D149-D157], [D158 The out-of-scope list, item by item][D158], [D159 Product choices stay with the consumer app][D159], [D160 The foundation concepts][D160], [D161 Libs stay one per pattern and implementation][D161], [D162 Portability, two halves][D162], [D65' Intent records accepted directly][D65']. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
+[D106 Consumer app shape][D106], [D107-D117 Presenters and origin trust][D107-D117], [D118-D123 The datom and its store][D118-D123], [D124-D129 Accepting a change][D124-D129], [D36' Shared commands, as built][D36'], [D44' Never rename, never migrate, the RPC too][D44'], [D130-D135 One shape at every level][D130-D135], [D98' Vision - View - Effects, at every level][D98'], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [D39' One engine, one journal, one fence][D39'], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'], [D149-D157 Trust, encryption and who may sign in][D149-D157], [D158 The out-of-scope list, item by item][D158], [D159 Product choices stay with the consumer app][D159], [D160 The foundation concepts][D160], [D161 Libs stay one per pattern and implementation][D161], [D162 Portability, two halves][D162], [D65' Intent records accepted directly][D65'], [D199 Sync node][D199], [D200 Presentation surface and screen][D200]. [ADR-0033 The Presenter pattern][ADR-0033] (the Presenter pattern) and [ADR-0034 Origin trust][ADR-0034] (origin trust),
 from [I49 Projection: one concept or several patterns][I49]; [ADR-0035 Accepting a change][ADR-0035] (accepting a change), from [I50 Contracts checked as data or by commands][I50]; [ADR-0036 The journal is the fence][ADR-0036] (the journal is the fence), from [I51 Actors or the engine][I51]; [ADR-0037 Access][ADR-0037] (access) and [ADR-0038 Tamper-evidence and proof of authorship][ADR-0038] (tamper-evidence and proof of authorship), from [I54 Trust, encryption and who may sign in][I54]. [ADR-0002 ViViEfs purpose, scope and the evidence-collection exemplar][ADR-0002] (what ViViEfs builds), [ADR-0026 Verify - Qualify - Teach][ADR-0026] (Verify - Qualify - Teach), [D93 Claims in front][D93]
 (claims). Opened by [I47 What ViViEfs is about][I47]; completed by I48-[I54][I54] and [I56 One shape at every level?][I56]; accepted in [I55 Accept the foundation concepts][I55].
 [The foundation concepts map](../plan/foundation-concepts/map.md).
@@ -86,7 +86,7 @@ product choices are not on it, because they stay with that app for good ([D159 P
 [P01 Platform on SDK 58][P01]-[P10 Trace projection][P10] stage built on. There are twelve, read top to bottom as one turn: a
 command decides a changeset of datoms naming its origin, authority accepts it
 having asked access and chains it, sync carries it, the projector builds read
-models, and a Presenter answers a surface with a frame; long work runs as a
+models, and a Presenter answers a presentation surface with a frame; long work runs as a
 workflow whose journal is in the same log; each is a pattern or a concept one
 pattern owns, so each can be done another way that passes the same suite
 (amendment 2026-10-28, [D181 Concept is the wider word][D181]: a pattern is the kind of concept with a contract, a
@@ -102,7 +102,7 @@ sub-types). The paragraphs after the table are the detail.
 | 3 | Command and changeset | A command decides what should change and returns it as one batch, without writing it. | `effectHandler`, the function | [D36' Shared commands, as built][D36'], [D130 One shape at the data level][D130], [D131 The changeset is the step][D131] | changesets | [P05 Changesets and projections][P05] |
 | 4 | Authority and accepting a change | One place decides whether a batch counts: may this writer do it, is it well formed, does the data stay valid. | `Contract`, its placement | [D103 Nodes and authority][D103], [D124-D129 Accepting a change][D124-D129], [ADR-0035 Accepting a change][ADR-0035] | changesets (acceptance rules) | [P09 Sync][P09]; every rule: [P09][P09] extended ([I69 Accept checks every change][I69]) |
 | 5 | Read model and projector | What the facts mean is worked out from the log and can be thrown away and rebuilt. | - | [D37 Log store tables][D37], [D99 Facts kept, meaning derived][D99] | changesets | [P05 Changesets and projections][P05] |
-| 6 | Presenter, frame and surface | A screen, or a speaker, asks for data and keeps receiving the latest answer. | `Projection`, its read side; `Surface` | [D107 The Presenter pattern][D107]-[D114 Partial sync on demand][D114], [D134 Presenting in any modality][D134], [ADR-0033 The Presenter pattern][ADR-0033] | Presenter | [P05 Changesets and projections][P05], [P08 UI three-way prototype][P08] in part; the Presenter gate ([I62 The Presenter conformance gate][I62]) |
+| 6 | Presenter, frame and presentation surface | A screen, or a speaker, asks for data and keeps receiving the latest answer. | `Projection`, its read side; `Surface` | [D107 The Presenter pattern][D107]-[D114 Partial sync on demand][D114], [D134 Presenting in any modality][D134], [ADR-0033 The Presenter pattern][ADR-0033] | Presenter | [P05 Changesets and projections][P05], [P08 UI three-way prototype][P08] in part; the Presenter gate ([I62 The Presenter conformance gate][I62]) |
 | 7 | Origin and origin trust | Every batch says where it came from, and how far we trust that source can change at once. | `Projection`, its trust scope | [D58' Envelope names the origin][D58'], [D115 Origin trust][D115]-[D117 Trust strategies as commit paths][D117], [ADR-0034 Origin trust][ADR-0034] | origin trust | named when built ([I64 Build origin trust][I64]) |
 | 8 | Durable workflow and its journal | Work that must not lose progress writes down each step, so it resumes where it stopped. | `effectHandler`, the actor | [ADR-0012 Durable execution over one datom-backed workflow engine][ADR-0012], [D136-D141 Actors or the engine][D136-D141], [D14' The journal is the fence][D14'], [ADR-0036 The journal is the fence][ADR-0036] | durable workflow | [P06 Workflow engine crash matrix][P06], [P07 Device resume E2E][P07]; the fence: [P06][P06], [P09 Sync][P09] again ([I80 Build the journal fence][I80]) |
 | 9 | Sync | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | Sync Contract | [ADR-0017 Sync: outbox and sync cursor stream over Effect RPC][ADR-0017], [D142-D148 Sync and conflict][D142-D148], [D34' Per-attribute conflict policies, decided at accept][D34'] | sync | [P09 Sync][P09]; conflicts: [P05 Changesets and projections][P05], [P09][P09] again ([I81 Build conflicts decided at accept][I81]) |
@@ -117,24 +117,24 @@ is one pattern's core or one of its implementations, and names its pattern in
 `metadata.guides` once the guide exists ([D161 Libs stay one per pattern and implementation][D161], [D84 Exemplar of several guides][D84]). The newcomer's question,
 "what is this like where I come from", is answered in the glossary, not here
 ([D162 Portability, two halves][D162]). Foundation concept and Contract keep their words: concept is the wider word,
-and vivief's `Contract` is accepting a change ([D181 Concept is the wider word][D181], [D184 Contract keeps its word][D184]); surface and `node` wait
-for map 3; `effectHandler` is the effect handler ([D165 The effect handler][D165]).
+and vivief's `Contract` is accepting a change ([D181 Concept is the wider word][D181], [D184 Contract keeps its word][D184]); presentation surface and sync node are
+named ([D199 Sync node][D199], [D200 Presentation surface and screen][D200]); `effectHandler` is the effect handler ([D165 The effect handler][D165]).
 
-**Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a `node` is
+**Nodes and authority ([D103-D106 What an app is to a device and a node][D103-D106], [I48 The server-independent goal, and what an app is to a device and a node][I48]).** An app is the program; a sync node is
 one installation of an app that keeps all or part of an organization's data
-and writes changes to it; a device is the `node` a person uses. Authority is a
+and writes changes to it; a device is the sync node a person uses. Authority is a
 set of duties for an organization: accept or reject each change, order the
-accepted ones, grant membership, fence each run's journal ([D14' The journal is the fence][D14']). Today one `node`, the server,
+accepted ones, grant membership, fence each run's journal ([D14' The journal is the fence][D14']). Today one sync node, the server,
 holds all of them: client-server is the one authority model, read as a
-peer-to-peer system in which one `node` carries the server's authority. The
+peer-to-peer system in which one sync node carries the server's authority. The
 server already writes into the log the way a device does; what sets it apart
-is authority, not data. Tools are apps but not `node`s. [P09 Sync][P09] (sync with
+is authority, not data. Tools are apps but not sync nodes. [P09 Sync][P09] (sync with
 server authority) and [P11 Identity][P11] (identity and organization isolation) show the one
 model today; the server-independent mode ([I60 Server-independent mode][I60]) names its own gate when it is picked up: a
 paired exemplar doing the same operation in both modes. Until then, [D105 What must stay possible][D105] lists
 what must stay possible. A consumer app is `<product>-client` +
-`<product>-server` ([D106 Consumer app shape][D106]). `node` waits for map 3 for its glossary entry,
-because it clashes with Node.js.
+`<product>-server` ([D106 Consumer app shape][D106]). The word is sync node, because bare node
+is Node.js's ([D199 Sync node][D199]).
 
 **Presenters and origin trust ([D107-D117 Presenters and origin trust][D107-D117], [I49 Projection: one concept or several patterns][I49]).** A screen asks a Presenter
 for data with a query written as data, gets a frame and keeps a frame
@@ -149,7 +149,7 @@ vivief's `Projection` read side and trust are adopted in this form;
 
 **The datom and its store ([D118-D123 The datom and its store][D118-D123], [I52 The datom and its store][I52]).** The log store contract is what
 a datom needs from storage; provenance, the schema as data and a read as of a
-`tx` are left out on purpose. `tx` is an HLC corrected against the `node`
+`tx` are left out on purpose. `tx` is an HLC corrected against the sync node
 holding authority, entity ids keep their path with minted or derived segments,
 every attribute carries a value Schema so implementations get real column
 types, and an external identifier is an ordinary attribute. A final choice is
@@ -188,7 +188,7 @@ and turns cold as net truth others build on. Something cold that someone reads
 becomes a hot intent at another level. Intent comes in kinds from a WayFinder
 map down to a button press, and the more abstract the intent, the longer its
 turn. A verified commit, a commit on which `pnpm verify` is green, is the code
-level's crossing. A frame reaches a person through a surface of any modality,
+level's crossing. A frame reaches a person through a presentation surface of any modality,
 a screen being one. vivief's fractal factory is adopted as this lens; datoms
 for development artifacts and "velocity compounds" are not. Where Effect
 already names a concept, ViViEfs uses Effect's name and meaning.
@@ -198,7 +198,7 @@ the durable workflow: each execution is one actor, its state the journal, its
 mailbox the outside inputs, one writer at a time, restarted by resuming from
 its journal. There is no actor runtime and no supervision tree: work that must
 not lose progress is a workflow, anything else rebuilds from its cursor. There
-is no event bus: Reactivity in process, the sync cursor stream between `node`s,
+is no event bus: Reactivity in process, the sync cursor stream between sync nodes,
 push only a hint. Commands and the workflow engine are the handler runtime; a model
 call is an activity. An entity is a thing with an identity that facts are
 about, and some entity types act; the execution is one. The envelope's actor
@@ -213,7 +213,7 @@ switch devices, and the workflow engine, domain data and sync share one log; viv
 sync possible from its first phase too and deferred only the build. vivief's
 Sync Contract is three parts ViViEfs has: the conflict policy, the organization
 as scope with partial sync on demand later, and the journal fence as the claim.
-The `node` holding authority decides a human conflict when it accepts a change,
+The sync node holding authority decides a human conflict when it accepts a change,
 against the sync cursor its writer had pulled, and writes the conflict as a fact a
 command resolves. An attribute holds one value; a set is entities, one per
 member. Text has no CRDT until two people type in one text at once. One
@@ -296,6 +296,10 @@ Amended on 2026-10-28 by [I90 Pattern, concept, contract, abstraction][I90] ([D1
 patterns or concepts one pattern owns, as the table's Owning pattern column
 already said; the text had called each a pattern.
 
+Amended on 2026-10-28 by [I92 Map 2's new words][I92] ([D199 Sync node][D199], [D200 Presentation surface and screen][D200]): the sixth foundation concept
+is named Presenter, frame and presentation surface, and what [D103 Nodes and authority][D103] called a
+node is the sync node; both words had waited for map 3.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: 0002-purpose-scope-and-exemplar.md
@@ -353,7 +357,9 @@ already said; the text had called each a pattern.
 [D165]: ../plan/bootstrap/02-decision-log.md#d165
 [D181]: ../plan/bootstrap/02-decision-log.md#d181
 [D184]: ../plan/bootstrap/02-decision-log.md#d184
+[D199]: ../plan/bootstrap/02-decision-log.md#d199
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
+[D200]: ../plan/bootstrap/02-decision-log.md#d200
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [D36']: ../plan/bootstrap/02-decision-log.md#d36p
@@ -400,6 +406,7 @@ already said; the text had called each a pattern.
 [I84]: ../issues/0084-build-the-access-pattern.md
 [I85]: ../issues/0085-build-the-hash-chain.md
 [I90]: ../issues/0090-pattern-concept-contract-abstraction.md
+[I92]: ../issues/0092-map-2s-new-words.md
 [P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P04]: ../plan/bootstrap/06-qualification-gates.md#p04
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05

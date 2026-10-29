@@ -17,9 +17,9 @@ From [I52](0052-the-datom-and-its-store.md) ([D120 Minted and derived id segment
 ### What to build
 
 1. **A declaration per entity type** in the catalog: `segment: 'minted' | 'derived'`.
-2. **Minting** by the HLC's encoder (`libs/datom/src/hlc.ts`): the device fingerprint keeps two `node`s apart and segments sort by creation, as `tx` does. One clock, one mechanism to test.
+2. **Minting** by the HLC's encoder (`libs/datom/src/hlc.ts`): the device fingerprint keeps two sync nodes apart and segments sort by creation, as `tx` does. One clock, one mechanism to test.
 3. **Derived segments** stay as they are (membership `M{person}`, the account `A{sha256(iss, sub)}`, journal entries), now declared.
-4. A conformance case: two `node`s minting offline in the same millisecond never collide, and a derived id is the same on every copy.
+4. A conformance case: two sync nodes minting offline in the same millisecond never collide, and a derived id is the same on every copy.
 
 ## Comments
 

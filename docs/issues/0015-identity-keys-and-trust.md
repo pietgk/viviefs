@@ -4,7 +4,7 @@ Status: ready-for-human
 
 Category: enhancement
 
-Decide when: an app needs proof of who wrote what (the first consumer app that makes audit claims), or a `node` accepts from a peer ([I60 Server-independent mode][I60])
+Decide when: an app needs proof of who wrote what (the first consumer app that makes audit claims), or a sync node accepts from a peer ([I60 Server-independent mode][I60])
 
 ## What
 

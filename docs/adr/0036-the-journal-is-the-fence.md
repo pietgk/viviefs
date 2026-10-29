@@ -79,7 +79,7 @@ routing in memory.
   qualifying [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09] again and a per-run head read at accept.
 - **Out-of-scope items**: none made harder. The head check is a duty of
   authority, so the server-independent mode ([I60 Server-independent mode][I60], [D105 What must stay possible][D105]) can hold it on any
-  `node` that holds authority.
+  sync node that holds authority.
 
 ## Failure-handling
 
