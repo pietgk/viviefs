@@ -58,21 +58,54 @@ export const theirWords = (): TheirWords => {
   }
 }
 
-/** A line of a block quote, also inside a list item. Every block quote is another's words (D204). */
-export const isQuotedLine = (line: string): boolean => /^\s*>/.test(line)
+const QUOTE_START = /^\s*(?:(?:[-*+]|\d+[.)])\s+)*>/
+const NEW_BLOCK = /^\s*(?:[-*+]\s|\d+[.)]\s|#{1,6}\s|`{3,}|~{3,}|\||<!--|\{\/\*)/
 
 /**
- * The comments in a line of Markdown or MDX source, in order, with where each
- * starts and ends, outside inline code. For readers that work on the source
- * text (`pnpm refs`, `verify`).
+ * Which lines of a run of source lines are in a block quote, also one that
+ * starts a list item (`- > ...`). A quote goes on through lazy continuation
+ * lines, as Markdown reads them, until a blank line or a line that starts a
+ * new block. Every block quote is another's words (D204).
  */
-export const commentsIn = (text: string): ReadonlyArray<{ readonly start: number; readonly end: number; readonly comment: string }> => {
-  const found: Array<{ readonly start: number; readonly end: number; readonly comment: string }> = []
+export const quotedLines = (lines: ReadonlyArray<string>): ReadonlyArray<boolean> => {
+  let quoted = false
+  return lines.map((line) => {
+    if (line.trim() === '') quoted = false
+    else if (QUOTE_START.test(line)) quoted = true
+    else if (NEW_BLOCK.test(line)) quoted = false
+    return quoted
+  })
+}
+
+export type InlineItem = {
+  readonly kind: 'comment' | 'code'
+  readonly start: number
+  readonly end: number
+  /** A comment's source, or a code span's content as it renders: line breaks as spaces, trimmed. */
+  readonly text: string
+}
+
+/**
+ * The comments and code spans in Markdown or MDX source text, in order, with
+ * where each starts and ends. Either may cross a line break; a code span ends
+ * at a blank line, and a code span inside a comment is part of the comment.
+ * For readers that work on the source text (`pnpm refs`, `verify`); fenced
+ * code is theirs to leave out.
+ */
+export const inlineItems = (text: string): ReadonlyArray<InlineItem> => {
+  const found: InlineItem[] = []
   for (let index = 0; index < text.length; ) {
     if (text[index] === '`') {
       const ticks = /^`+/.exec(text.slice(index))?.[0] ?? '`'
       const close = text.indexOf(ticks, index + ticks.length)
-      index = close === -1 ? index + ticks.length : close + ticks.length
+      const inner = close === -1 ? '' : text.slice(index + ticks.length, close)
+      if (close === -1 || /\n[ \t]*\n/.test(inner)) {
+        index += ticks.length
+        continue
+      }
+      const end = close + ticks.length
+      found.push({ kind: 'code', start: index, end, text: inner.replace(/\n/g, ' ').trim() })
+      index = end
       continue
     }
     const closing = text.startsWith('<!--', index) ? '-->' : text.startsWith('{/*', index) ? '*/}' : undefined
@@ -82,7 +115,7 @@ export const commentsIn = (text: string): ReadonlyArray<{ readonly start: number
     }
     const at = text.indexOf(closing, index + 3)
     const end = at === -1 ? text.length : at + closing.length
-    found.push({ start: index, end, comment: text.slice(index, end) })
+    found.push({ kind: 'comment', start: index, end, text: text.slice(index, end) })
     index = end
   }
   return found

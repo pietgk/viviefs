@@ -16,6 +16,9 @@ const glossary = [
   'What runs the workflows of one engine.',
   '_Avoid_: worker (our word until [D186 Workflow engine and workflow runner][D186]), runner (alone)',
   '',
+  '**Sync**:',
+  'Copying changesets between sync nodes.',
+  '',
   '**Sync cursor**:',
   'How far a sync node has read.',
   '_Avoid_: `cursor` (alone, our word until [D193][D193])',
@@ -63,6 +66,19 @@ describe('retired words in code font', () => {
       '{/* /their words */}',
     ].join('\n')
     expect(retiredWordUses('docs/plan/x.md', text, words)).toEqual([])
+  })
+
+  it('leaves one in a comment alone, since a comment is not prose', () => {
+    expect(retiredWordUses('docs/plan/x.md', 'Text <!-- a `node` note --> here.\n', words)).toEqual([])
+  })
+
+  it('reads a marker or a code span across a line break, and names the line the span starts on', () => {
+    const wrapped = '<!-- their words: vivief\n-->\n\nA `node`.\n\n<!-- /their words -->\n'
+    expect(retiredWordUses('docs/plan/x.md', wrapped, words)).toEqual([])
+    expect(retiredWordUses('docs/plan/x.md', 'Intro.\n\nA `\nnode\n` here.\n', words)).toEqual([
+      'docs/plan/x.md:3: `node` is retired by D199; write Sync node, or mark the passage as their words (D204)',
+    ])
+    expect(retiredWordUses('docs/plan/x.md', '> A quote\nwith a `node` lazily.\n', words)).toEqual([])
   })
 
   it('checks living documents, not the glossary, the decision log or a resolved issue', () => {

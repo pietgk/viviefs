@@ -463,14 +463,14 @@
       "libs/references/src/rewrite.ts": {
         "branches": "220/292",
         "functions": "39/40",
-        "lines": "287/310",
-        "statements": "339/376"
+        "lines": "288/311",
+        "statements": "340/377"
       },
       "libs/references/src/their-words.ts": {
-        "branches": "33/36",
-        "functions": "7/7",
-        "lines": "41/41",
-        "statements": "49/49"
+        "branches": "44/46",
+        "functions": "8/8",
+        "lines": "55/55",
+        "statements": "65/65"
       },
       "libs/sync/client/src/client.ts": {
         "branches": "30/34",
@@ -707,9 +707,9 @@
         "statements": "20/20"
       },
       "tools/verify/src/retired-words.ts": {
-        "branches": "23/29",
-        "functions": "9/9",
-        "lines": "26/26",
+        "branches": "21/25",
+        "functions": "8/8",
+        "lines": "28/28",
         "statements": "35/35"
       },
       "tools/verify/src/skills-tree.ts": {

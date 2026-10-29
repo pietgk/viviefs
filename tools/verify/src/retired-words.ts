@@ -8,7 +8,7 @@
  * retirement in code font is checked without a change here.
  */
 
-import { commentsIn, DECISION_LOG, isQuotedLine, theirWords } from '@viviefs/references'
+import { DECISION_LOG, inlineItems, quotedLines, theirWords } from '@viviefs/references'
 import { isLivingDocument } from './glossary-report.ts'
 
 export type RetiredWord = {
@@ -38,32 +38,38 @@ export const retiredCodeWords = (glossary: string): ReadonlyArray<RetiredWord> =
 export const isCheckedForRetiredWords = (path: string, content: string): boolean =>
   path !== DECISION_LOG && isLivingDocument(path, content)
 
-/** Each line where a retired word is written in code font outside another project's words. */
+/**
+ * Each line where a retired word is written in code font outside another
+ * project's words. The document is read whole, so a comment or a code span
+ * may cross a line break; fenced code is left out and a comment is not prose.
+ */
 export const retiredWordUses = (path: string, content: string, words: ReadonlyArray<RetiredWord>): ReadonlyArray<string> => {
   const byWord = new Map(words.map((word) => [word.word, word]))
-  const marks = theirWords()
-  const problems: string[] = []
+  // Fenced code becomes blank lines, so offsets still give the source line.
   let fence: string | undefined
-  for (const [index, line] of content.split('\n').entries()) {
+  const lines = content.split('\n').map((line) => {
     const opener = /^\s*(`{3,}|~{3,})/.exec(line)?.[1]
     if (fence === undefined && opener !== undefined) fence = opener
     else if (fence !== undefined && line.trim().startsWith(fence)) fence = undefined
-    if (fence !== undefined || opener !== undefined) continue
-    const quoted = isQuotedLine(line)
-    // Comments and code spans in the order they stand, so each span is read with the marks before it.
-    const spans = [...line.matchAll(/(`+)([^`]+?)\1/g)].map((span) => ({ at: span.index, code: span[2]?.trim() ?? '' }))
-    const marked = commentsIn(line).map(({ start, comment }) => ({ at: start, comment }))
-    for (const item of [...spans, ...marked].sort((left, right) => left.at - right.at)) {
-      if ('comment' in item) {
-        marks.read(item.comment)
-        continue
-      }
-      const retired = byWord.get(item.code)
-      if (retired === undefined || quoted || marks.inside()) continue
-      problems.push(
-        `${path}:${index + 1}: \`${retired.word}\` is retired by ${retired.decision}; write ${retired.term}, or mark the passage as their words (D204)`,
-      )
+    else if (fence === undefined) return line
+    return ''
+  })
+  const quoted = quotedLines(lines)
+  const text = lines.join('\n')
+  const lineAt = (offset: number) => text.slice(0, offset).split('\n').length
+  const marks = theirWords()
+  const problems: string[] = []
+  for (const item of inlineItems(text)) {
+    if (item.kind === 'comment') {
+      marks.read(item.text)
+      continue
     }
+    const retired = byWord.get(item.text)
+    const line = lineAt(item.start)
+    if (retired === undefined || quoted[line - 1] === true || marks.inside()) continue
+    problems.push(
+      `${path}:${line}: \`${retired.word}\` is retired by ${retired.decision}; write ${retired.term}, or mark the passage as their words (D204)`,
+    )
   }
   return problems
 }

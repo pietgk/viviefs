@@ -14,7 +14,7 @@ import {
   type Catalog,
   type Token,
 } from './catalog.ts'
-import { isQuotedLine, theirWords, type TheirWords } from './their-words.ts'
+import { quotedLines, theirWords, type TheirWords } from './their-words.ts'
 
 export const REFERENCES_MARKER = '<!-- References: written by pnpm refs fix; do not edit by hand. -->'
 
@@ -379,6 +379,7 @@ const rewriteProse = (
     out.push(rewriteInline(buffer.join('\n'), freshScope(shared, quoted)))
     buffer = []
   }
+  const quotes = quotedLines(lines)
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index] ?? ''
     if (/^<a id="[^"]+"><\/a>$/.test(line) && /^## /.test(lines[index + 1] ?? '')) continue
@@ -389,8 +390,8 @@ const rewriteProse = (
       out.push(line)
       continue
     }
-    if (/^\s*(?:[-*+]|\d+\.) /.test(line) || isQuotedLine(line) !== quoted) flush()
-    quoted = isQuotedLine(line)
+    if (/^\s*(?:[-*+]|\d+\.) /.test(line) || (quotes[index] === true) !== quoted) flush()
+    quoted = quotes[index] === true
     buffer.push(line)
   }
   flush()
