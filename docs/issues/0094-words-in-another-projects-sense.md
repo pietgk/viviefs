@@ -18,7 +18,7 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 
 [I26 Glossary links on words that are not our terms][I26] holds the observed cases and the questions: how a passage is marked, whether a mark stops glossary links only or ids of another repository too, whether quotes are detected without a mark, and what `verify` reports. Add:
 
-- how the linker tells `node` from Node.js, and Effects from Effect ([I78 Research: Effect's vocabulary against ours][I78], question 2), once [I88 Effect and the effect handler][I88] and [I92 Map 2's new words][I92] have named them;
+- how the linker tells node from Node.js, and Effects from Effect ([I78 Research: Effect's vocabulary against ours][I78], question 2), once [I88 Effect and the effect handler][I88] and [I92 Map 2's new words][I92] have named them;
 - whether [I89 How a word is chosen and written][I89]'s compound terms remove most of the need for a mark.
 
 [I32 Ideas batch: explain any word on demand][I32]'s trigger is this decision: a comment there confirms or narrows it; nothing of it is built here. The linker change is built in [I95 Build the glossary linker as decided][I95].
@@ -31,6 +31,8 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 
 2026-10-28: [D198 Map 3 finishes lean][D198]: decided and built with [I95 Build the glossary linker as decided][I95] in one session. The human confirms defaults in one round: a block quote, and one explicit mark around a passage or table in another project's words, switch off glossary links and ids inside it; a retired word fails `verify` outside such a passage; a test per case of [I26 Glossary links on words that are not our terms][I26]'s table.
 
+2026-10-28: [I92 Map 2's new words][I92] named the words this issue was waiting on. The case of node against Node.js is gone: the term is Sync node, and bare node is left to Node.js, the DOM's `Node`, React's `ReactNode` and a Kubernetes node ([D199 Sync node][D199]). Bare surface is left to React Native's surface, Android's and Material's `Surface`, and an API or attack surface; the term is Presentation surface ([D200 Presentation surface and screen][D200]). Frame keeps its word, so a passage about animation frames, iframes, stack frames or WebSocket frames is a case to mark ([D201 Frame keeps its word][D201]). The one retired form `verify` fails is `node` in code font, outside a marked passage; bare node and bare surface are never checked ([D199][D199]). Dated comments in open issues that quote the old words ([I26 Glossary links on words that are not our terms][I26], [I34 vivief as the source of ViViEfs's concepts][I34]) are records, kept as written.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D164]: ../plan/bootstrap/02-decision-log.md#d164
@@ -39,8 +41,12 @@ Decide how a page, a quote or a table says that its words are not our terms, so 
 [D194]: ../plan/bootstrap/02-decision-log.md#d194
 [D197]: ../plan/bootstrap/02-decision-log.md#d197
 [D198]: ../plan/bootstrap/02-decision-log.md#d198
+[D199]: ../plan/bootstrap/02-decision-log.md#d199
+[D200]: ../plan/bootstrap/02-decision-log.md#d200
+[D201]: ../plan/bootstrap/02-decision-log.md#d201
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
 [I32]: 0032-ideas-batch-explain-any-word-on-demand.md
+[I34]: 0034-vivief-as-the-source-of-viviefs-concepts.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
 [I88]: 0088-effect-and-the-effect-handler.md
 [I89]: 0089-how-a-word-is-chosen-and-written.md

@@ -20,7 +20,7 @@ conflict order.
 ## Design
 
 `tx` is an HLC `(pt, c)`. `pt` is corrected time: a monotonic clock anchored,
-within a boot session, to the offset from the `node` that holds the duty to
+within a boot session, to the offset from the sync node that holds the duty to
 order changes (today the server); wall clock plus persisted
 offset after a reboot; never below the last persisted HLC. `c` is a tie-break
 counter used only when `pt` would not advance.
@@ -30,12 +30,12 @@ Receive: `last = max(last, received)`. Never mint below anything seen.
 
 Encoded ULID-shaped: 48-bit ms, 16-bit counter, remaining bits random plus
 device id. Lexicographically sortable. Offset and last HLC persist in SQLite.
-The `node` holding authority rejects future skew and flags measured gaps. [P04 Log store conformance][P04] picks the actual skew
+The sync node holding authority rejects future skew and flags measured gaps. [P04 Log store conformance][P04] picks the actual skew
 bound (web-interview used 5s; that number is indicative).
 
-**Worded for any `node`** (amendment 2026-10-08, [D119 Time corrected by authority][D119], [I52 The datom and its store][I52]). The clock never
-depended on a server process: time is corrected against whichever `node` holds
-the duty to order changes, and that `node` refuses a `tx` too far ahead
+**Worded for any sync node** (amendment 2026-10-08, [D119 Time corrected by authority][D119], [I52 The datom and its store][I52]). The clock never
+depended on a server process: time is corrected against whichever sync node holds
+the duty to order changes, and that sync node refuses a `tx` too far ahead
 ([D105 What must stay possible][D105] (1)). The device fingerprint in every `tx` is what catch-up by
 each writer's progress would use ([D105][D105] (4)). vivief's ULID from the device's own
 clock is not adopted for `tx`, for the reason in Problem; the same encoder

@@ -38,7 +38,7 @@ Plus: crash and resume (force-quit mid-workflow), handoff to another device ([D1
 
 - Expo SDK 58 app (iOS, Android, web) and a Node Effect server.
 - Durable execution on device (resume on next launch) and server, one workflow engine, one journal format ([D39' One engine, one journal, one fence][D39']).
-- Offline-first data synced with the `node` that holds authority, today the server ([D103 Nodes and authority][D103], [D142 Sync from the start][D142]).
+- Offline-first data synced with the sync node that holds authority, today the server ([D103 Nodes and authority][D103], [D142 Sync from the start][D142]).
 - Tracing derived from the log, local-first telemetry sinks.
 - Docs site, exercises and lessons as part of delivery.
 - Verify and qualification tooling.
@@ -68,17 +68,17 @@ Trade-offs names the items it makes harder ([I57 Out-of-scope items in an ADR's 
   backend (the [P10 Trace projection][P10] sinks are the lab's), and identity is any OIDC provider behind the `Identity` service ([D47 Identity via OIDC][D47]).
   Production only, learnable in the lab.
 - Several servers, with organizations spread across them ([I58 Several servers in the lab][I58]). Today one server holds authority for every
-  organization ([D103 Nodes and authority][D103]). Must stay possible: authority is held per organization, so which `node` holds an
+  organization ([D103 Nodes and authority][D103]). Must stay possible: authority is held per organization, so which sync node holds an
   organization's authority can differ between organizations; every request and changeset names its organization
-  and the server never trusts a client's ([D18 Organization isolation on the server][D18]); `tx` is corrected against the `node` holding authority, not
+  and the server never trusts a client's ([D18 Organization isolation on the server][D18]); `tx` is corrected against the sync node holding authority, not
   "the server" ([D118-D123 The datom and its store][D118-D123]). Production only, learnable in the lab.
 - Horizontal scale-out of the server's workflow engine: more workflow runners writing on each run's journal head ([D39' One engine, one journal, one fence][D39'],
   [I8 Workflow engine scale-out and more workflow runners on the server][I8]). Must stay possible: the head check is made in one step with the append ([D14' The journal is the fence][D14']), a workflow runner claims a
   step before acting, and `WorkflowEngine` stays the one interface, so Effect Cluster stays possible behind it.
   Production only, learnable in the lab.
 - A server-independent mode: a group keeps working without its original operator, with authority moved
-  to another `node` or shared by all ([D104 The server-independent goal][D104], [I60 Server-independent mode][I60]). Must stay possible: authority as duties a `node` holds,
-  acceptance rules any `node` could run, partial data per `node`, catch-up by each writer's progress, signed
+  to another sync node or shared by all ([D104 The server-independent goal][D104], [I60 Server-independent mode][I60]). Must stay possible: authority as duties a sync node holds,
+  acceptance rules any sync node could run, partial data per sync node, catch-up by each writer's progress, signed
   authorship, membership any member can check, and connectivity apart from acceptance ([D105 What must stay possible][D105]). Learnable in
   the lab ([D101 Lab and production][D101]).
 

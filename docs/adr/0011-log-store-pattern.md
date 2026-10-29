@@ -1,6 +1,6 @@
 # ADR-0011: Log store pattern, read models, compaction and analytics
 
-Summary: One LogStore contract over SQL, many stores, one conformance suite; read models are disposable and the log of the `node` holding authority is never compacted.
+Summary: One LogStore contract over SQL, many stores, one conformance suite; read models are disposable and the log of the sync node holding authority is never compacted.
 
 Status: Qualified
 
@@ -38,8 +38,8 @@ refuses unknown attributes with a typed upgrade error.
 Snapshots and compaction only past a horizon every device has acknowledged.
 Finished workflow journals archive to the server.
 
-The log of the `node` holding authority, today the server, is never compacted
-([P11 Identity][P11] grilling, 2026-09-27; worded for any `node` by [D119 Time corrected by authority][D119], 2026-10-08). It is the
+The log of the sync node holding authority, today the server, is never compacted
+([P11 Identity][P11] grilling, 2026-09-27; worded for any sync node by [D119 Time corrected by authority][D119], 2026-10-08). It is the
 audit trail, and a future hash chain over accepted changesets must be able to
 cover all of it. This holds until tamper-evidence is decided, before the first
 consumer app that makes audit claims ([ADR-0022](0022-identity-and-organization-isolation.md)).

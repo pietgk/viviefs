@@ -45,7 +45,7 @@ reference ([D178 Growth watched, not capped][D178]).
 | **Tamper-evident history** | Each organization's history is a chain in which any change to the past shows. | [Tamper-evidence](#tamper-evidence) |
 | **Sync** | Each device sends what it wrote and reads what it missed, and a clash between people is decided once, at accept. | [Outbox](#outbox), [Sync cursor](#sync-cursor), [Conflict datom](#conflict-datom) |
 | **Read model and projector** | What the facts mean is worked out from the log and can be thrown away and rebuilt. | [Read model](#read-model), [Projector](#projector) |
-| **Presenter, frame and surface** | A screen, or a speaker, asks for data and keeps receiving the latest answer. | [Presenter](#presenter), [Frame](#frame), [Frame subscription](#frame-subscription) |
+| **Presenter, frame and presentation surface** | A screen, or a speaker, asks for data and keeps receiving the latest answer. | [Presenter](#presenter), [Frame](#frame), [Frame subscription](#frame-subscription), [Presentation surface](#presentation-surface), [Screen](#screen) |
 | **Durable workflow and its journal** | Work that must not lose progress writes down each step, so it resumes where it stopped. | [Workflow](#workflow), [Activity](#activity), [Journal](#journal) |
 
 ## The project
@@ -176,9 +176,9 @@ It accepts or rejects every change, orders the accepted ones, grants membership
 and fences leases; together these duties are its authority
 ([D103 Nodes and authority][D103]). To accept a change it asks may this writer
 do this, is it well formed, and does the data stay valid
-([D124 One checkpoint][D124]). It is a `node` like a device, one that holds
+([D124 One checkpoint][D124]). It is a sync node like a device, one that holds
 authority. Today one server holds all of these duties for every organization;
-they could later be split across `node`s or shared by all
+they could later be split across sync nodes or shared by all
 ([D104 The server-independent goal][D104], [I60 Server-independent mode][I60]).
 
 **Feature**:
@@ -198,7 +198,7 @@ An app for the people and agents who build apps, such as the checks run before e
 An app whose users are the people and agents building apps, often run from the
 command line or in CI: `verify`, `qualify`, the generators, `exercise`
 ([D102 Tools are apps][D102]). It lives in `tools/`, a project kind no product
-app depends on ([D52 Four project kinds][D52]); it is an app but not a `node`
+app depends on ([D52 Four project kinds][D52]); it is an app but not a sync node
 ([D103 Nodes and authority][D103], [D194 Tool is an app for those who build apps][D194]).
 _Not_: Effect's `Tool`, an operation a model may call, written "a model's tool";
 `verify` offered to an agent over MCP is both.
@@ -278,7 +278,7 @@ accepted ([D122 External identifiers][D122]).
 **HLC**:
 The clock that puts every fact in order, even on devices that are offline or have the wrong time.
 A hybrid logical clock `(pt, c)` that mints every `tx`: physical time corrected
-against the `node` holding authority (today the server,
+against the sync node holding authority (today the server,
 [D119 Time corrected by authority][D119]) plus a tie-break counter.
 _Avoid_: timestamp, version
 
@@ -595,9 +595,20 @@ _Avoid_: tamper-proof, immutable storage
 
 ## Sync
 
+**Sync node**:
+One installation of an app that keeps an organization's data and sends its changes: a device or the server.
+It keeps all or part of an organization's data and writes changesets to it
+([D103 Nodes and authority][D103], [D199 Sync node][D199]); a device is the sync node a person uses, and the
+server is the sync node that holds authority. A tool is an app but not a sync
+node: it keeps no replica and writes no changesets.
+_Like_: a node in a peer-to-peer network, except that today one sync node, the
+server, holds authority for every organization.
+_Not_: Node.js, the web's DOM `Node`, React's `ReactNode`, or a Kubernetes node.
+_Avoid_: `node` (our word until [D199][D199]), peer
+
 **Device**:
 One installation of an app that a person uses, such as on a phone or in a browser on a laptop.
-It is the `node` a person uses ([D103 Nodes and authority][D103]), and it keeps
+It is the sync node a person uses ([D103 Nodes and authority][D103]), and it keeps
 one local replica per provider account that signed in on it; its id is chosen by
 the device and not authenticated.
 _Avoid_: client, peer
@@ -662,6 +673,8 @@ _Avoid_: projection (deriving a store from the log), view
 The rows a screen shows, with typed columns, where each value came from and how fresh it is.
 A Presenter's result; one entity is a one-row frame, and its status says fresh,
 gathering, remote or failed ([D109 Frame and frame subscription][D109]).
+_Not_: an animation frame or a frame rate, a web `<iframe>`, a stack frame, or a
+WebSocket frame ([D201 Frame keeps its word][D201]).
 _Avoid_: data frame, result set
 
 **Frame subscription**:
@@ -670,6 +683,27 @@ Work that gathers data for the frame is a durable activity and goes on committin
 after the screen closes; a one-off read is a snapshot, not a subscription
 ([D109 Frame and frame subscription][D109]).
 _Avoid_: subscription (alone), live query
+
+**Presentation surface**:
+Where what an app shows reaches a person: a screen, a speaker, or a vibration.
+Any modality: a screen (text, diagrams, pictures), a speaker (speech, music),
+haptics, or ways not known yet; the Presenter's contract names none
+([D134 Presenting in any modality][D134], [D200 Presentation surface and screen][D200]). A screen is one kind. An agent
+reads a frame through a model's tool, not a presentation surface.
+_Like_: a CSS media type (screen, print, speech), except that it is where a
+Presenter's frame arrives, not what a style targets.
+_Not_: React Native's surface (a running React root in a host view), Android's
+`Surface`, Material's `Surface` component, or an API or attack surface.
+_Avoid_: surface (alone, our word until [D200][D200]), output, display
+
+**Screen**:
+One full view of an app that a person moves to, such as a list or one item's details.
+What a link or a route opens ([D73 Links and routing][D73]); it asks a
+Presenter for frames and renders them. It is the visual kind of presentation
+surface ([D200 Presentation surface and screen][D200]).
+_Like_: a screen in React Navigation or Expo Router, the component a route
+renders, except that it gets its data only as frames from a Presenter.
+_Avoid_: page, view (the View of Vision - View - Effects is wider)
 
 **Screen-view selector**:
 The step that decides exactly what one screen shows, from the data and what the user is doing.
@@ -846,7 +880,7 @@ A pattern that is finished: its claims are proven, its exemplar passes verify, a
 ## Validation
 
 **Verify**:
-The full set of checks every change must pass before it is done.
+The full set of checks every change to the code must pass before it is done.
 Staged; it proves the code keeps its contract, runs only checks that need
 nothing but the host, and changes no file. Done means verify passes.
 
@@ -967,6 +1001,7 @@ A stub, a failing test and a reference solution that passes in verify.
 [D127]: docs/plan/bootstrap/02-decision-log.md#d127
 [D130]: docs/plan/bootstrap/02-decision-log.md#d130
 [D133]: docs/plan/bootstrap/02-decision-log.md#d133
+[D134]: docs/plan/bootstrap/02-decision-log.md#d134
 [D136]: docs/plan/bootstrap/02-decision-log.md#d136
 [D137]: docs/plan/bootstrap/02-decision-log.md#d137
 [D144]: docs/plan/bootstrap/02-decision-log.md#d144
@@ -1004,11 +1039,15 @@ A stub, a failing test and a reference solution that passes in verify.
 [D194]: docs/plan/bootstrap/02-decision-log.md#d194
 [D196]: docs/plan/bootstrap/02-decision-log.md#d196
 [D197]: docs/plan/bootstrap/02-decision-log.md#d197
+[D199]: docs/plan/bootstrap/02-decision-log.md#d199
+[D200]: docs/plan/bootstrap/02-decision-log.md#d200
+[D201]: docs/plan/bootstrap/02-decision-log.md#d201
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D52]: docs/plan/bootstrap/02-decision-log.md#d52
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p
 [D58']: docs/plan/bootstrap/02-decision-log.md#d58p
 [D65']: docs/plan/bootstrap/02-decision-log.md#d65p
+[D73]: docs/plan/bootstrap/02-decision-log.md#d73
 [D82]: docs/plan/bootstrap/02-decision-log.md#d82
 [D94']: docs/plan/bootstrap/02-decision-log.md#d94p
 [D95]: docs/plan/bootstrap/02-decision-log.md#d95

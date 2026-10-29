@@ -57,8 +57,8 @@ organization.
 **Minted and derived segments** (amendment 2026-10-08, [D120 Minted and derived id segments][D120], [I52 The datom and its store][I52]; built with
 [I67 Minting entity id segments][I67]). Each segment of an id is minted or derived, declared per entity type in
 the catalog. A minted segment comes from the HLC's encoder
-([ADR-0007](0007-hybrid-logical-clock.md)): any `node` mints offline, the device fingerprint keeps
-two `node`s apart, and segments sort by creation, as `tx` does
+([ADR-0007](0007-hybrid-logical-clock.md)): any sync node mints offline, the device fingerprint keeps
+two sync nodes apart, and segments sort by creation, as `tx` does
 (`Oacme/L01JC8Z4K7M0001A3F9QX2B7KDE`). A derived segment is computed from what
 identifies the thing, wherever every copy must compute the same id: membership
 `M{person}`, the account `A{sha256(iss, sub)}`, journal entries. vivief's flat

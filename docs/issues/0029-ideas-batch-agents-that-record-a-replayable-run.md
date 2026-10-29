@@ -73,11 +73,16 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 
 2026-10-27: [I78 Research: Effect's vocabulary against ours][I78] found Effect ideas for this batch ([the record](../research/2026-10-27-effect-vocabulary-against-ours.md), question 12): `LanguageModel` can leave tool calls unresolved so each runs as an activity or a registered command; a model's tool can require approval, which could be a durable deferred; `Persistable`, `Persistence` and `PersistedCache` store a request's `Exit` and reuse it instead of rerunning, Effect's name for replay without the model outside a workflow; `ai/Model`'s `ProviderName` and `ModelName` and `ai/Telemetry`'s `gen_ai.*` attributes can name a model's origin and its spans. Map 6 decides which, if any, it takes.
 
+2026-10-28: [I92 Map 2's new words][I92]: the kinds of intent ([D132 Four states at every level][D132]), among them the person's request to an agent, are named when a tool records which kind an intent is or map 6 is charted, without the bare word "prompt" ([D195 Prompt is not a term][D195], [D203 The lab qualifier, the four states and the kinds of intent wait][D203]).
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D132]: ../plan/bootstrap/02-decision-log.md#d132
 [D136]: ../plan/bootstrap/02-decision-log.md#d136
 [D140]: ../plan/bootstrap/02-decision-log.md#d140
+[D195]: ../plan/bootstrap/02-decision-log.md#d195
 [D2]: ../plan/bootstrap/02-decision-log.md#d2
+[D203]: ../plan/bootstrap/02-decision-log.md#d203
 [D45']: ../plan/bootstrap/02-decision-log.md#d45p
 [D48']: ../plan/bootstrap/02-decision-log.md#d48p
 [I13]: 0013-ui-on-every-platform.md
@@ -85,5 +90,6 @@ From [Caching agent steps](https://github.com/tester-army/e2e/blob/main/docs/cac
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I51]: 0051-actors-or-the-engine.md
 [I78]: 0078-research-effect-vocabulary-against-ours.md
+[I92]: 0092-map-2s-new-words.md
 [P12]: ../plan/bootstrap/06-qualification-gates.md#p12
 [P13]: ../plan/bootstrap/06-qualification-gates.md#p13

@@ -32,6 +32,8 @@ The glossary has its own entry shape; it overrides the vendored
   general thing: a device, not a phone. A platform appears only as an example,
   "such as a phone or a browser", or where the fact is about that platform
   ([D179 A definition names the general thing](../plan/bootstrap/02-decision-log.md#d179)).
+- "Change" is plain English, for a changeset or for a commit; a page that
+  speaks of both levels writes changeset or commit ([D202 Change stays plain English](../plan/bootstrap/02-decision-log.md#d202)).
 - A new term goes in the group of the foundation concept it serves ([D177 Groups follow the one turn](../plan/bootstrap/02-decision-log.md#d177)).
 
 ## Where decisions go

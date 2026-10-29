@@ -30,11 +30,11 @@ The conflict-datom attribute name is `viviefs/conflict`. [P05 Changesets and pro
 conflicts in `projection_conflicts`; authority writes them as log datoms ([D34' Per-attribute conflict policies, decided at accept][D34']).
 
 **Decided at accept** (amendment 2026-10-26, [D34' Per-attribute conflict policies, decided at accept][D34'], [D144 A set is entities][D144], [I53 Sync and conflict][I53]). A commit's basis
-is the sync cursor its writer had pulled when the command ran. The `node`
+is the sync cursor its writer had pulled when the command ran. The sync node
 holding authority decides a human conflict at accept: a fact for the same
 entity and attribute accepted after the basis from another device is a
 conflict (the writer's own earlier outbox is not), and authority appends a
-`viviefs/conflict` fact in the same step as the changeset, so every `node`
+`viviefs/conflict` fact in the same step as the changeset, so every sync node
 shows the same conflict. Projectors read conflicts from the log; a device may
 show a preview. An orphan (user content whose owner is not visible) is decided
 at accept too, with [I69 Accept checks every change][I69]'s read model. Per value, the later of its assert and
@@ -55,7 +55,7 @@ keeps the user content of a rejected changeset on the device ([D148 Quarantine i
 conflict datom, because the content never reached the log.
 
 Deciding at accept puts one more read (facts for the touched attributes after
-the basis) into accept. Out-of-scope items: none made harder; any `node`
+the basis) into accept. Out-of-scope items: none made harder; any sync node
 holding authority decides ([D105 What must stay possible][D105]).
 
 ## Failure-handling
@@ -77,7 +77,7 @@ second; human-conflict kept both file values and raised `viviefs/conflict`.
 Evidence: [2026-09-20-p05.md](../evidence/2026-09-20-p05.md).
 
 2026-10-26, found in [I53 Sync and conflict][I53] by reading the code. [P05 Changesets and projections][P05] showed the three policies in
-one projector on one store. Across `node`s, human conflict is not built as
+one projector on one store. Across sync nodes, human conflict is not built as
 decided: the basis is a `seq` in whichever log projects it, and every
 changeset outside [P05][P05] sends `0`; a conflict is a `projection_conflicts` row
 each projector derives and a rebuild deletes, never a log datom; the server

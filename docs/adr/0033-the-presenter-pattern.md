@@ -47,7 +47,7 @@ screen ── query ──► Presenter ──► frame ──► frame subscrip
 
 **The query is data ([D108 The query is data][D108]).** A typed expression written in code, translated
 by each implementation: to SQL for SQLite, Postgres and DuckDB, to Polars, or
-to parameters for a remote `node` or an outside source. vivief's L1 idea
+to parameters for a remote sync node or an outside source. vivief's L1 idea
 (queries in code an LLM can write) is this decision, and its entity operations
 (`entity`, `pull` with depth) are part of the vocabulary; an entity with its
 children is a frame per level, linked by id. An implementation may be plain
@@ -82,8 +82,8 @@ organization only, erasable, gone with the local replica at sign-out.
 **Who chooses ([D113 Who chooses the implementation][D113]).** The app builder declares an implementation per
 Presenter and swaps it without touching the screen.
 
-**Partial sync on demand ([D114 Partial sync on demand][D114]).** A Presenter's query can say what a partial
-`node` fetches; the facts land in its log and the projector builds the read
+**Partial sync on demand ([D114 Partial sync on demand][D114]).** A Presenter's query can say what a sync node
+holding part of the data fetches; the facts land in its log and the projector builds the read
 model. Built under [I12 Partial sync, history consolidation and client data access][I12], with [I53 Sync and conflict][I53].
 
 Revisit when a screen needs output finer than a committed batch ([D109 Frame and frame subscription][D109]), when
@@ -108,7 +108,7 @@ a screen a frame does not fit.
   planner; it can grow out of declared choice, not the reverse.
 - **Out-of-scope items ([D100 Out of scope means not yet][D100], [I57 Out-of-scope items in an ADR's trade-offs][I57]).** Partial sync on demand ([D114 Partial sync on demand][D114]) is [D105 What must stay possible][D105]
   (3) in practice and makes the server-independent mode ([I60 Server-independent mode][I60]) no harder.
-  Nothing here assumes one server: a Presenter's remote source is any `node`.
+  Nothing here assumes one server: a Presenter's remote source is any sync node.
 
 ## Failure-handling
 

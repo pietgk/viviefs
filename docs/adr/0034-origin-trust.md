@@ -85,7 +85,7 @@ Revisit when a consumer app needs trust finer than five levels, or when the
   agent and screen sees, closer to granting membership than to editing a
   title.
 - **Out-of-scope items ([D100 Out of scope means not yet][D100], [I57 Out-of-scope items in an ADR's trade-offs][I57]).** Authority writes trust overrides; under
-  [D105 What must stay possible][D105] (1) that is a duty a `node` holds, not a server process. Signed origins
+  [D105 What must stay possible][D105] (1) that is a duty a sync node holds, not a server process. Signed origins
   fit the envelope without changing datoms ([D105][D105] (5), [I15 Identity, keys and trust][I15]).
 
 ## Failure-handling
