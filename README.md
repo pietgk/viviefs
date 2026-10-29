@@ -1,5 +1,7 @@
 # ViViEfs
 
+The docs site is [https://pietgk.github.io/viviefs/](https://pietgk.github.io/viviefs/), the same site as `pnpm docs:prod`.
+
 **Vision - View - Effects.** A reference stack for building modern Expo apps together with their backend, in a
 development environment designed to be robust for AI-assisted work: typesafe end to end, composed from explicit
 patterns, and documented so that humans and LLMs learn it the same way.

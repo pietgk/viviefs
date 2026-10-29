@@ -31,7 +31,9 @@
         "{workspaceRoot}/apps/**/*",
         "{workspaceRoot}/features/**/*",
         "{workspaceRoot}/libs/**/*",
-        "{workspaceRoot}/tools/**/*"
+        "{workspaceRoot}/tools/**/*",
+        { "env": "DOCS_BASE" },
+        { "env": "DOCS_SITE" }
       ],
       "outputs": ["{projectRoot}/dist"],
       "options": {
