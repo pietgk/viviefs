@@ -56,7 +56,7 @@ the 12 Node checks and their span review (`p11-spans.ts`, drift-checked against
 the six device checks on iOS, Android and web; and three device controls on web.
 
 The controls are lab-only defects in the evidence app
-(`apps/evidence-mobile/src/p11-control.ts`, `EXPO_PUBLIC_P11_CONTROL`, shown on
+(`apps/evidence-client/src/p11-control.ts`, `EXPO_PUBLIC_P11_CONTROL`, shown on
 the screen): `ignore-invalid-grant`, `shared-replica`, `persistent-web-vault`.
 The probe requires each to fail exactly its check first. They run in every
 qualification (about 2 minutes), like [P07 Device resume E2E][P07]'s no-sweep control. Run one alone:

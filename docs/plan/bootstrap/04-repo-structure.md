@@ -5,7 +5,7 @@
 ```
 viviefs/
 ├─ apps/                          composition roots: pick features, provide the context as Layers
-│  ├─ evidence-mobile/            Expo SDK 58 (iOS, Android, web): the exemplar app
+│  ├─ evidence-client/            Expo SDK 58 (iOS, Android, web): the exemplar app
 │  ├─ evidence-server/            Node Effect server for the exemplar
 │  └─ docs/                       docs site (concepts, guides, ADRs, API reference, llms.txt)
 ├─ features/                      vertical slices of business capability
@@ -49,7 +49,7 @@ A feature's effects declare their requirements in the type: `Effect<A, E, LogSto
 app provides implementations, by composing Layers at its root:
 
 ```ts
-// apps/evidence-mobile/src/runtime.ts (illustrative)
+// apps/evidence-client/src/runtime.ts (illustrative)
 const AppLive = Layer.mergeAll(
   EvidenceClient.layer,
   LogStore.sqliteNative,

@@ -65,7 +65,7 @@ describe('findQemu', () => {
 
 describe('linuxHermesc', () => {
   it('resolves the binary hermes-compiler ships for the evidence app', () => {
-    const path = linuxHermesc(join(ROOT, 'apps/evidence-mobile'))
+    const path = linuxHermesc(join(ROOT, 'apps/evidence-client'))
     expect(path).toMatch(/hermes-compiler[/\\]hermesc[/\\]linux64-bin[/\\]hermesc$/)
     expect(statSync(path).isFile()).toBe(true)
   })

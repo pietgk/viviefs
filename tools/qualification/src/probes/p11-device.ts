@@ -40,7 +40,7 @@ import { startP11Lab, WEB_ORIGIN, type P11Lab } from './p11-lab.ts'
 import { launchChrome, startExpoWeb } from './web-client.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
-const APP = join(ROOT, 'apps/evidence-mobile')
+const APP = join(ROOT, 'apps/evidence-client')
 const QUAL = join(ROOT, 'tools/qualification')
 
 export const P11_SLOT = '__viviefsP11'
@@ -58,7 +58,7 @@ export type P11DeviceCheckName = (typeof P11_DEVICE_CHECK_NAMES)[number]
 
 /**
  * The positive controls the evidence app can be built with
- * (`apps/evidence-mobile/src/p11-control.ts`), each with the one device
+ * (`apps/evidence-client/src/p11-control.ts`), each with the one device
  * check it must fail. The checks before it must still pass, so the control
  * shows that check failing for its own reason.
  */
@@ -101,7 +101,7 @@ export const judgeControl = (
 
 type Counts = { pending: number; acked: number; rejected: number; waiting: number }
 
-/** The report `apps/evidence-mobile/src/p11-runtime.ts` publishes. */
+/** The report `apps/evidence-client/src/p11-runtime.ts` publishes. */
 export type P11DeviceReport = {
   gate: 'P11'
   platform: 'ios' | 'android' | 'web'

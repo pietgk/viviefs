@@ -35,7 +35,7 @@ the named gate.
 
 | Claim | Source | Gate |
 |---|---|---|
-| Effect v4 RC works on SDK 58 / RN 0.88 with the same polyfills as on SDK 56, on iOS and Android | research/02 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: 15 checks on iOS and Android with `expo-crypto`, [ADR-0003 Effect v4 as the backbone][ADR-0003]) |
+| Effect v4 works on SDK 58 / RN 0.88 with the same polyfills as on SDK 56, on iOS and Android | research/02 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: 15 checks on iOS and Android with `expo-crypto`, [ADR-0003 Effect v4 as the backbone][ADR-0003]) |
 | expo-crypto or react-native-quick-crypto can supply `crypto.subtle.digest` for Workflow | research/02 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: `expo-crypto` on `globalThis.crypto`; without it `workflow memory` fails, [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]) |
 | What "iOS 27 required" in SDK 58 means (deployment target or build SDK) | research/05 | [P01 Platform on SDK 58][P01] (measured 2026-09-20: build SDK; run used Xcode 26.6 and iOS 26.5, [ADR-0004 Expo SDK 58 and Hermes platform baseline][ADR-0004]) |
 | op-sqlite 17 works on RN 0.88 New Architecture on iOS and Android; peer conflict with op-sqlite 18 | research/02 | [P02 SQLite drivers][P02] (measured 2026-09-20: 17.x does not compile; pin is 18.2.5, [ADR-0005 SQLite drivers][ADR-0005]) |
@@ -117,7 +117,7 @@ the docs site. Open questions for the human ([I1 Advisories that fail audit with
 |---|---|---|
 | Effect modules marked `@stability unstable` (workflow, sql, rpc, http, cli, reactivity, observability; under `effect/*` since 4.0) change in minor releases | Breakage on upgrade | Exact version pin; upgrades as their own change with full verify and gate rerun (ledger goes stale on dependency change) |
 | Effect Workflow has no versioning API | In-flight executions break on code changes | Version by workflow name, stable activity names, old versions ship until drained, lint on activity-name changes |
-| Metro Migrator dynamic `import()` (Effect-TS/effect#6347, closed by Effect-TS/effect#9157 on `v4/next-minor`; still in 4.0.5 on 2026-10-22) | Build failure when importing SQL modules | Babel stub plugin (`apps/evidence-mobile/babel.config.js`) until the Effect release with the fix is pinned |
+| Metro Migrator dynamic `import()` (Effect-TS/effect#6347, closed by Effect-TS/effect#9157 on `v4/next-minor`; still in 4.0.5 on 2026-10-22) | Build failure when importing SQL modules | Babel stub plugin (`apps/evidence-client/babel.config.js`) until the Effect release with the fix is pinned |
 | Basis checks on long-lived changesets are subtle | Wrong conflict outcomes | Dedicated [P05 Changesets and projections][P05] cases, a lesson and an exercise |
 | Clock skew beyond HLC tolerance on long-offline devices | Wrong LWW winners | Server-side skew detection, flagged in trace; human-conflict policy for important attributes |
 | Scope size: many patterns at once | Slow progress | Gate order, delivery definition, one exemplar |

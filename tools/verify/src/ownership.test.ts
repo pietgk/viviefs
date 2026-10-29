@@ -21,7 +21,7 @@ const unit = (path: string): RegistryEntry => ({ path, treatment: 'node-unit', r
 describe('production files', () => {
   it('are source under apps, features, libs and tools, minus evidence', () => {
     expect(isProductionFile('libs/datom/src/hlc.ts')).toBe(true)
-    expect(isProductionFile('apps/evidence-mobile/metro.config.js')).toBe(true)
+    expect(isProductionFile('apps/evidence-client/metro.config.js')).toBe(true)
     expect(isProductionFile('libs/datom/src/hlc.test.ts')).toBe(false)
     expect(isProductionFile('libs/a/src/x.integration.test.ts')).toBe(false)
     expect(isProductionFile('features/c/src/X.stories.test.tsx')).toBe(false)

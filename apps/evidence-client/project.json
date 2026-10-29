@@ -1,7 +1,7 @@
 {
-  "name": "evidence-mobile",
+  "name": "evidence-client",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/evidence-mobile/src",
+  "sourceRoot": "apps/evidence-client/src",
   "projectType": "application",
   "tags": [
     "kind:app",
@@ -19,18 +19,18 @@
         "^production"
       ],
       "outputs": [
-        "{workspaceRoot}/.artifacts/verify/evidence-mobile"
+        "{workspaceRoot}/.artifacts/verify/evidence-client"
       ],
       "options": {
-        "cwd": "apps/evidence-mobile",
+        "cwd": "apps/evidence-client",
         "env": {
           "CI": "1",
           "EXPO_NO_TELEMETRY": "1"
         },
         "parallel": false,
         "commands": [
-          "pnpm exec expo export --platform ios --output-dir ../../.artifacts/verify/evidence-mobile/ios",
-          "pnpm exec expo export --platform android --output-dir ../../.artifacts/verify/evidence-mobile/android"
+          "pnpm exec expo export --platform ios --output-dir ../../.artifacts/verify/evidence-client/ios",
+          "pnpm exec expo export --platform android --output-dir ../../.artifacts/verify/evidence-client/android"
         ]
       }
     },
@@ -48,21 +48,21 @@
         "{workspaceRoot}/tools/verify/src/bundle-report.ts"
       ],
       "outputs": [
-        "{workspaceRoot}/.artifacts/verify/evidence-mobile/ios-js",
-        "{workspaceRoot}/.artifacts/verify/evidence-mobile/android-js",
-        "{workspaceRoot}/.artifacts/verify/evidence-mobile/bundle-report.json"
+        "{workspaceRoot}/.artifacts/verify/evidence-client/ios-js",
+        "{workspaceRoot}/.artifacts/verify/evidence-client/android-js",
+        "{workspaceRoot}/.artifacts/verify/evidence-client/bundle-report.json"
       ],
       "options": {
-        "cwd": "apps/evidence-mobile",
+        "cwd": "apps/evidence-client",
         "env": {
           "CI": "1",
           "EXPO_NO_TELEMETRY": "1"
         },
         "parallel": false,
         "commands": [
-          "pnpm exec expo export --platform ios --no-bytecode --source-maps --output-dir ../../.artifacts/verify/evidence-mobile/ios-js",
-          "pnpm exec expo export --platform android --no-bytecode --source-maps --output-dir ../../.artifacts/verify/evidence-mobile/android-js",
-          "node --experimental-strip-types ../../tools/verify/src/bundle-size.ts apps/evidence-mobile"
+          "pnpm exec expo export --platform ios --no-bytecode --source-maps --output-dir ../../.artifacts/verify/evidence-client/ios-js",
+          "pnpm exec expo export --platform android --no-bytecode --source-maps --output-dir ../../.artifacts/verify/evidence-client/android-js",
+          "node --experimental-strip-types ../../tools/verify/src/bundle-size.ts apps/evidence-client"
         ]
       }
     }

@@ -230,14 +230,14 @@ describe('code spans as repository paths', () => {
       for (const [path, content] of Object.entries({
         '.gitignore': 'dist/\n.artifacts/\n',
         'apps/docs/dist/index.html': '<html></html>',
-        '.artifacts/verify/evidence-mobile/ios/main.jsbundle': '',
+        '.artifacts/verify/evidence-client/ios/main.jsbundle': '',
         'apps/docs/src/index.ts': '',
       })) {
         mkdirSync(dirname(join(repository, path)), { recursive: true })
         writeFileSync(join(repository, path), content)
       }
       expect(codePath(repository, 'apps/docs/dist')).toEqual({ _tag: 'NotAPath' })
-      expect(codePath(repository, '.artifacts/verify/evidence-mobile')).toEqual({ _tag: 'NotAPath' })
+      expect(codePath(repository, '.artifacts/verify/evidence-client')).toEqual({ _tag: 'NotAPath' })
       // Before the first build: `dist/` matches only a directory, and Git
       // cannot tell that a path that does not exist would be one.
       expect(codePath(repository, 'apps/web/dist')).toEqual({ _tag: 'NotAPath' })

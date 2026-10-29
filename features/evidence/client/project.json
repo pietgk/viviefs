@@ -1,5 +1,5 @@
 {
-  "name": "evidence-client",
+  "name": "evidence-client-feature",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "features/evidence/client/src",
   "projectType": "library",

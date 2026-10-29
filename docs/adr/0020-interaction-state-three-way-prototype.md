@@ -82,7 +82,7 @@ effect-machine 200, XState 113, Atom 77. XState and Atom remain retained
 probes. Query atoms stay Atom.
 
 2026-09-29, Docs and teaching grilling ([D72 UI on every platform][D72]). Drift: `IntentComposerView`
-renders DOM elements through `react-dom`, and `apps/evidence-mobile` does not
+renders DOM elements through `react-dom`, and `apps/evidence-client` does not
 use it, so the qualified pattern never ran on iOS or Android; its "stories"
 are jsdom tests. The state machine, selector and query atoms stand. The view
 is rewritten in React Native primitives under gate [P12 UI on every platform][P12], and [P08 UI three-way prototype][P08] re-runs.

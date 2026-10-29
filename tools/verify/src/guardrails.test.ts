@@ -233,7 +233,7 @@ describe('D80: test-support stays out of production code', () => {
       await testSupport('libs/telemetry/src/suites/guardrail.ts', "import '@viviefs/workflow-engine/suites'\n"),
     ).toEqual([])
     expect(
-      await testSupport('apps/evidence-mobile/src/guardrail.ts', "import '@viviefs/datom/suites'\n"),
+      await testSupport('apps/evidence-client/src/guardrail.ts', "import '@viviefs/datom/suites'\n"),
     ).toEqual([])
   })
 })

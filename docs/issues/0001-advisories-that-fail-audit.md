@@ -25,7 +25,7 @@ This is the one issue for security advisories that fail verify's audit step (`pn
 
 1. Read the advisory: affected versions, and that no patched version exists.
 2. `pnpm why -r <package>`: every parent, and whether any of them is something the apps ship or a server runs.
-3. Search the shipped output for the package: the mobile exports in `.artifacts/verify/evidence-mobile` and the built docs site in `apps/docs/dist`.
+3. Search the shipped output for the package: the mobile exports in `.artifacts/verify/evidence-client` and the built docs site in `apps/docs/dist`.
 4. Ask the human. If accepted: a row here and an `ignoreGhsas` entry whose comment names [I1 Advisories that fail audit with no fix released][I1], the reason and the trigger. `pnpm audit` then prints it as ignored.
 
 When a trigger fires: delete the `ignoreGhsas` entry, update the lockfile, run verify, and move the row to the comments with the commit that removed it. Close this issue only when the table is empty.
@@ -38,7 +38,7 @@ removal condition; `pnpm audit` still prints it as `1 ignored: 1 high`.
 `--ignore-unfixable` was not used, because it would also hide every later
 unfixable advisory. Checked: `pnpm why node-forge` has only `@expo/cli` and
 `@expo/code-signing-certificates` as parents, and the iOS and Android exports
-in `.artifacts/verify/evidence-mobile` contain no `node-forge`. Left to do:
+in `.artifacts/verify/evidence-client` contain no `node-forge`. Left to do:
 when the trigger above fires, delete the ignore entry, update the lockfile and
 resolve this issue.
 
@@ -58,7 +58,7 @@ zod 3.25.76. zod 4 has a fix and is overridden to 4.6.6 in
 `pnpm-workspace.yaml`; zod 3 has none, since 3.25.76 is the newest 3.x. Checked as above:
 `pnpm why -r zod@3` has only `@expo/cli` 58.1.14 as its parent (58.1.15, the
 newest, still wants `^3.25.76`), and the iOS and Android exports in
-`.artifacts/verify/evidence-mobile` contain no `zod`. The human accepted it;
+`.artifacts/verify/evidence-client` contain no `zod`. The human accepted it;
 it is a row above and an entry in `ignoreGhsas`.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->

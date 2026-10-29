@@ -24,6 +24,8 @@ newest and still pins `effect` 4.0.0-beta.59. A second peer warning,
 
 2026-10-22: Unchanged with Effect 4.0.5: `effect-solutions` 0.5.3 is still the newest and still depends on `effect` 4.0.0-beta.59.
 
+2026-10-29: from [I23 effect-machine still requires the Effect release candidate][I23]. The install warning is gone, by a scoped override in `pnpm-workspace.yaml`, not by a release: `effect-solutions` 0.5.3 is still the newest and still pins `effect` 4.0.0-beta.59, but its `@effect/platform-bun` beta.59 had resolved `@effect/platform-node-shared` rc.116, whose Effect peer did not match. The override keeps that dependency on beta.59, the tool's own Effect line; `pnpm peers check` reports nothing, and `pnpm exec effect-solutions list` still runs. The human kept the override over the accepted warning. The `Decide when:` still applies: when a release peers `effect` ^4, move to it and remove the override.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [I23]: 0023-effect-machine-on-stable-effect.md

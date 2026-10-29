@@ -59,4 +59,4 @@ Moving `fromFileSystem` (the only Node-only loader) into its own module, for exa
 `import()` use `fromRecord` and `fromGlob`.
 
 We stub the call with a Babel plugin in the app until then
-([`apps/evidence-mobile/babel.config.js`](../../apps/evidence-mobile/babel.config.js)).
+([`apps/evidence-client/babel.config.js`](../../apps/evidence-client/babel.config.js)).
