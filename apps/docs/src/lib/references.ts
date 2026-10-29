@@ -403,10 +403,15 @@ export const termFinder = (terms: ReadonlyArray<GlossaryTerm>) => {
   // A form as written wins over the same letters in another case: `Effect` and `effect` are two terms.
   const asWritten = new Map(forms.map(({ form, term }) => [form, term]))
   const anyCase = new Map(forms.filter(({ term }) => !isExact(term.term)).map(({ form, term }) => [form.toLowerCase(), term]))
-  const pattern = new RegExp(`(?<![\\w-])(?:${forms.map(({ form }) => escapeRegExp(form)).join('|')})(?![\\w-])`, 'gi')
+  // A compound may wrap across a source line, so its words are apart by any whitespace.
+  const pattern = new RegExp(
+    `(?<![\\w-])(?:${forms.map(({ form }) => form.split(' ').map(escapeRegExp).join('\\s+')).join('|')})(?![\\w-])`,
+    'gi',
+  )
   return (text: string): ReadonlyArray<FoundTerm> =>
     [...text.matchAll(pattern)].flatMap((match) => {
-      const term = asWritten.get(match[0]) ?? anyCase.get(match[0].toLowerCase())
+      const written = match[0].replace(/\s+/g, ' ')
+      const term = asWritten.get(written) ?? anyCase.get(written.toLowerCase())
       if (term === undefined) return []
       // At the start of a sentence any word is capitalised, so it says nothing.
       if (EVERYDAY_TERMS.includes(term.term) && /(?:^|[.!?:]\s*)$/.test(text.slice(0, match.index).trimEnd())) return []

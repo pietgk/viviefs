@@ -36,6 +36,8 @@ From [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-a
 
 2026-10-27: From [I54 Trust, encryption and who may sign in][I54] ([the review page](../research/2026-10-26-trust-encryption-and-sign-in-review.html)), finding F1: the lease check compares `envelope.device`, which the device chooses (`libs/sync/server/src/server.ts`:577, :596). The journal fence reads the chain, never `envelope.device`, and [P06 Workflow engine crash matrix][P06] and [P09 Sync][P09] include a writer that names another device. [I85 Build the hash chain][I85] follows this issue, since both change accept.
 
+2026-10-29: from [I96 Accept the vocabulary][I96] ([D208 The lease is marked, and goes with the journal fence][D208]). The glossary marks Lease and Lease epoch as decided to go. This build retires both words under [D173 What a word change rewrites, and where it is written][D173]'s three checks (`viviefs/lease/holder` and `leaseEpoch` stay pinned and decode), rewrites the lease in the Journal, Envelope, Causing span ("lease handoff") and Quarantine (`_Avoid_: lost lease`) entries, and gives the fence's words their entries where a newcomer needs them: journal fence, takeover, a run's head. [P14 Quarantine after a lost lease][P14]'s name is reviewed in the same commit.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0014]: ../adr/0014-leases-fencing-and-server-authority.md
@@ -43,6 +45,8 @@ From [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-a
 [D14']: ../plan/bootstrap/02-decision-log.md#d14p
 [D147]: ../plan/bootstrap/02-decision-log.md#d147
 [D148]: ../plan/bootstrap/02-decision-log.md#d148
+[D173]: ../plan/bootstrap/02-decision-log.md#d173
+[D208]: ../plan/bootstrap/02-decision-log.md#d208
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
 [I51]: 0051-actors-or-the-engine.md
 [I53]: 0053-sync-and-conflict.md
@@ -50,5 +54,7 @@ From [I51 Actors or the engine][I51] ([the review page](../research/2026-10-24-a
 [I71]: 0071-an-append-can-land-after-a-revocation.md
 [I81]: 0081-build-conflicts-decided-at-accept.md
 [I85]: 0085-build-the-hash-chain.md
+[I96]: 0096-accept-the-vocabulary.md
 [P06]: ../plan/bootstrap/06-qualification-gates.md#p06
 [P09]: ../plan/bootstrap/06-qualification-gates.md#p09
+[P14]: ../plan/bootstrap/06-qualification-gates.md#p14

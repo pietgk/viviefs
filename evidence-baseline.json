@@ -223,8 +223,8 @@
       "apps/docs/src/lib/references.ts": {
         "branches": "112/116",
         "functions": "41/41",
-        "lines": "156/156",
-        "statements": "201/201"
+        "lines": "158/158",
+        "statements": "202/202"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",

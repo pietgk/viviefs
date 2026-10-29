@@ -367,6 +367,17 @@ describe('glossary terms in prose (D94)', () => {
     ])
   })
 
+  it('finds a compound term across a line break, never its first word alone', () => {
+    // "a sync\nnode" in a wrapped source line is one Sync node, not Sync and a stray word.
+    const withSync = parseGlossary('**Sync**:\nHow changes are exchanged.\n\n**Sync node**:\nOne installation that keeps the data.\n')
+    const spans = (text: string) => termFinder(withSync)(text).map(({ start, end, term }) => [text.slice(start, end), term.term])
+    expect(spans('not a sync\nnode: it keeps no replica; first sync')).toEqual([
+      ['sync\nnode', 'Sync node'],
+      ['sync', 'Sync'],
+    ])
+    expect(found('the guide\n  template and a guide')).toEqual(['guide\n  template', 'guide'])
+  })
+
   it('links an everyday word only as the glossary writes it, mid-sentence', () => {
     expect(found('the CLI command runs; it sends a Command. Command at the start is not one')).toEqual(['Command'])
     expect(found('Vision - View - Effects, built with Effect')).toEqual(['Vision - View - Effects', 'Effect'])
