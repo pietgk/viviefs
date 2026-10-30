@@ -1,6 +1,6 @@
 # I66: Attribute value types and the typed reference read model
 
-Status: ready-for-agent
+Status: resolved
 
 Category: enhancement
 
@@ -42,7 +42,9 @@ One table per entity type, [D37 Log store tables][D37] as written ([D210 The row
 
 2026-10-30: decided with the human, from [the review page](../research/2026-10-29-attribute-value-types-review.html): [D209 The value is an Effect Schema][D209]-[D212 Required comes with its check][D212]. The challenge's column store per organization was measured: it holds in a columnar engine and not in a row store, so it stays [I63 The columnar copy as a Presenter implementation][I63]'s. The build is test first.
 
-2026-10-30: Built test first, not yet committed or qualified. `libs/datom/src/values.ts` holds the text and column forms of a value, `libs/datom/src/typed-rows.ts` the tables (`rm_<entity type>`), and `Projector.rows` reads them, committed or draft. `changesets/conformance` gains six checks ([P05 Changesets and projections][P05] goes from 14 to 20) on SQLite and Postgres. Still open: item 4, the [P05][P05] and [P08 UI three-way prototype][P08] runs, which also prove the code on the device and web stores; the suite has not run there. Left to the Presenter: filters and limits (a query today has a prefix and an `orderBy`) and rows typed at compile time (`values` is a record of decoded values, and the `Schema.Struct` per entity type on the review page is not built). `projected_facts` stays as the fact versions the projector reduces. The projector still reads every fact per run, so [D210 The row store and the columnar copy differ][D210]'s measured tables say nothing yet about projecting at that volume. A changed catalog replays the log when the projector starts.
+2026-10-30: Built test first. `libs/datom/src/values.ts` holds the text and column forms of a value, `libs/datom/src/typed-rows.ts` the tables (`rm_<entity type>`), and `Projector.rows` reads them, committed or draft. `changesets/conformance` gains seven checks ([P05 Changesets and projections][P05] goes from 14 to 21). Left to the Presenter: filters and limits (a query today has a prefix and an `orderBy`) and rows typed at compile time (`values` is a record of decoded values, and the `Schema.Struct` per entity type on the review page is not built). `projected_facts` stays as the fact versions the projector reduces. The projector still reads every fact per run, so [D210 The row store and the columnar copy differ][D210]'s measured tables say nothing yet about projecting at that volume. A changed catalog replays the log when the projector starts.
+
+2026-10-30: Resolved. [P05 Changesets and projections][P05] passes its 21 checks on `sqlite-node`, Postgres (PGlite), iOS, Android and web, and [P08 UI three-way prototype][P08] passes, both in the ledger on `f2c0f0586`. That commit's message says 20 checks; it is 21. The change to `libs/datom` makes the ledger's other gates stale, as any change to it does; the next sequential run qualifies them again. The Hermes run of `Schema.toRepresentation` and the typed tables is [P05][P05]'s iOS and Android runs.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
