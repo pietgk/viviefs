@@ -75,70 +75,97 @@ export const reduceAll = (
   return reduced
 }
 
-const definingAsserted = (
-  entity: string,
-  reduced: ReadonlyArray<StoredFact>,
-  catalog: Catalog,
-): boolean => {
-  const { byDefining } = indexCatalog(catalog)
-  return reduced.some(
-    (fact) =>
-      fact.e === entity &&
-      fact.op === 'assert' &&
-      byDefining.has(fact.a),
-  )
+/** Everything visibility asks of the reduced facts, indexed by entity. */
+export type VisibilityIndex = {
+  readonly factsOf: (entity: string) => ReadonlyArray<StoredFact>
+  readonly isVisible: (entity: string) => boolean
+  /** The entities given and every entity whose visibility depends on one. */
+  readonly withDependents: (
+    entities: ReadonlyArray<string>,
+  ) => ReadonlySet<string>
 }
 
-const ownerOf = (
-  entity: string,
+export const visibilityIndex = (
   reduced: ReadonlyArray<StoredFact>,
   catalog: Catalog,
-): ReadonlyArray<string> => {
+): VisibilityIndex => {
   const { byDefining } = indexCatalog(catalog)
-  const type = reduced
-    .filter((fact) => fact.e === entity && byDefining.has(fact.a))
-    .map((fact) => byDefining.get(fact.a))
-    .find((value) => value !== undefined)
-  if (!type) {
+  const byEntity = new Map<string, StoredFact[]>()
+  for (const fact of reduced) {
+    const list = byEntity.get(fact.e)
+    if (list) list.push(fact)
+    else byEntity.set(fact.e, [fact])
+  }
+  const factsOf = (entity: string): ReadonlyArray<StoredFact> =>
+    byEntity.get(entity) ?? []
+
+  const ownersOf = (entity: string): ReadonlyArray<string> => {
+    const facts = factsOf(entity)
+    const type = facts
+      .map((fact) => byDefining.get(fact.a))
+      .find((value) => value !== undefined)
+    if (type?.composition === 'reference' && type.ownerAttribute) {
+      return facts
+        .filter((fact) => fact.a === type.ownerAttribute && fact.op === 'assert')
+        .map((fact) => fact.v)
+    }
+    if (type && type.composition !== 'prefix') return []
     const parent = parentId(entity)
     return parent ? [parent] : []
   }
-  if (type.composition === 'prefix') {
-    const parent = parentId(entity)
-    return parent ? [parent] : []
+
+  const visible = (entity: string, seen: Set<string>): boolean => {
+    if (parentId(entity) === null) return true
+    if (seen.has(entity)) return false
+    seen.add(entity)
+    const asserted = factsOf(entity).some(
+      (fact) => fact.op === 'assert' && byDefining.has(fact.a),
+    )
+    if (!asserted) return false
+    const owners = ownersOf(entity)
+    if (owners.length === 0) return true
+    return owners.some((owner) => visible(owner, seen))
   }
-  if (type.composition === 'reference' && type.ownerAttribute) {
-    return reduced
-      .filter(
-        (fact) =>
-          fact.e === entity &&
-          fact.a === type.ownerAttribute &&
-          fact.op === 'assert',
-      )
-      .map((fact) => fact.v)
+
+  const withDependents = (entities: ReadonlyArray<string>) => {
+    const dependents = new Map<string, string[]>()
+    const linked = new Set<string>()
+    const link = (entity: string) => {
+      if (linked.has(entity)) return
+      linked.add(entity)
+      for (const owner of ownersOf(entity)) {
+        const list = dependents.get(owner)
+        if (list) list.push(entity)
+        else dependents.set(owner, [entity])
+        link(owner)
+      }
+    }
+    for (const entity of byEntity.keys()) link(entity)
+    const found = new Set(entities)
+    for (const entity of found) {
+      for (const dependent of dependents.get(entity) ?? []) found.add(dependent)
+    }
+    return found
   }
-  return []
+
+  return {
+    factsOf,
+    isVisible: (entity) => visible(entity, new Set()),
+    withDependents,
+  }
 }
 
 export const isVisible = (
   entity: string,
   reduced: ReadonlyArray<StoredFact>,
   catalog: Catalog,
-  seen: Set<string> = new Set(),
-): boolean => {
-  if (parentId(entity) === null) return true
-  if (seen.has(entity)) return false
-  seen.add(entity)
-  if (!definingAsserted(entity, reduced, catalog)) return false
-  const owners = ownerOf(entity, reduced, catalog)
-  if (owners.length === 0) return true
-  return owners.some((owner) => isVisible(owner, reduced, catalog, seen))
-}
+): boolean => visibilityIndex(reduced, catalog).isVisible(entity)
 
 export const visibleFacts = (
   facts: ReadonlyArray<StoredFact>,
   catalog: Catalog,
 ): ReadonlyArray<StoredFact> => {
   const reduced = reduceAll(facts, catalog)
-  return reduced.filter((fact) => isVisible(fact.e, reduced, catalog))
+  const index = visibilityIndex(reduced, catalog)
+  return reduced.filter((fact) => index.isVisible(fact.e))
 }

@@ -204,6 +204,8 @@ export const EVIDENCE_REGISTRY: ReadonlyArray<EvidenceRegistryEntry> = [
   unit('libs/datom/src/migrate.ts', 'Schema migrations for the log tables; run by every store the unit suites open.'),
   unit('libs/datom/src/projector.ts', 'The projector folds datoms into read models; the sync suites project in unit.', ['sync/protocol']),
   unit('libs/datom/src/read-models.ts', 'Read-model queries over the projection; reached by the sync suites in unit.'),
+  unit('libs/datom/src/typed-rows.ts', 'The typed reference read model; the projector drives it, so the sync suites reach it in unit.', ['sync/protocol']),
+  unit('libs/datom/src/values.ts', 'Text and column forms of a value; pure, with unit tests.'),
   unit('libs/datom/src/rows.ts', 'Row Schemas and rowsOf (D79); every store query in the unit suites decodes through it.'),
   unit('libs/datom/src/schema.ts', 'The datom Schemas; pure definitions.'),
   support('libs/datom/src/suites/changesets.ts', 'integration', 'The changesets/conformance suite, run by each store.'),

@@ -33,7 +33,7 @@ Every other SQL table is one of three kinds:
 | Kind | Examples | Rebuilt from the log? |
 | --- | --- | --- |
 | The log itself | `datoms`, `changesets` (envelopes) | It is the source |
-| Read models | `projected_facts`, `projection_conflicts`, `changeset_status` | Yes: disposable, never migrated |
+| Read models | `projected_facts`, `projection_conflicts`, `changeset_status`, one `rm_<entity type>` table per entity type ([D210 The row store and the columnar copy differ][D210]) | Yes: disposable, never migrated |
 | Operational state of one replica | `hlc_state`, acknowledged cursors, `outbox`, `sync_cursor` | No, and it holds no domain facts |
 
 A fact that fits none of these goes into the log. [P11 Identity][P11] applied this to the
@@ -74,6 +74,7 @@ inserted. Evidence: [2026-09-20-p04.md](../evidence/2026-09-20-p04.md).
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
+[D210]: ../plan/bootstrap/02-decision-log.md#d210
 [D31]: ../plan/bootstrap/02-decision-log.md#d31
 [P04]: ../plan/bootstrap/06-qualification-gates.md#p04
 [P11]: ../plan/bootstrap/06-qualification-gates.md#p11

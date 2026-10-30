@@ -2,10 +2,10 @@
   "bundle": {
     "apps/evidence-client": {
       "android": {
-        "hbcBytes": 7628498,
-        "jsBytes": 4676392,
+        "hbcBytes": 7741381,
+        "jsBytes": 4693574,
         "packages": {
-          "(unmapped)": 204862,
+          "(unmapped)": 205885,
           "@babel/runtime": 2100,
           "@effect/sql-sqlite-react-native": 2931,
           "@expo/cli": 2348,
@@ -35,12 +35,12 @@
           "expo": 95139,
           "expo-application": 2806,
           "expo-asset": 6772,
-          "expo-auth-session": 24959,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 6900,
           "expo-modules-core": 15296,
-          "expo-notifications": 36279,
+          "expo-notifications": 36273,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -64,7 +64,7 @@
           "workspace:apps/evidence-client": 48330,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 63724,
+          "workspace:libs/datom": 79906,
           "workspace:libs/identity": 10550,
           "workspace:libs/platform-native": 7288,
           "workspace:libs/store-sqlite-native": 1253,
@@ -73,13 +73,13 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41934
         },
-        "recordedAt": "2026-10-29"
+        "recordedAt": "2026-10-30"
       },
       "ios": {
-        "hbcBytes": 5522498,
-        "jsBytes": 2582458,
+        "hbcBytes": 5634618,
+        "jsBytes": 2599640,
         "packages": {
-          "(unmapped)": 203177,
+          "(unmapped)": 204200,
           "@babel/runtime": 2100,
           "@effect/sql-sqlite-react-native": 2931,
           "@expo/cli": 2348,
@@ -102,12 +102,12 @@
           "expo": 94920,
           "expo-application": 2843,
           "expo-asset": 6691,
-          "expo-auth-session": 24959,
+          "expo-auth-session": 24942,
           "expo-constants": 3143,
           "expo-crypto": 5502,
           "expo-linking": 7036,
           "expo-modules-core": 15065,
-          "expo-notifications": 33907,
+          "expo-notifications": 33901,
           "expo-secure-store": 2235,
           "expo-sqlite": 22091,
           "expo-status-bar": 2224,
@@ -131,7 +131,7 @@
           "workspace:apps/evidence-client": 48316,
           "workspace:features/evidence/model": 3878,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 63724,
+          "workspace:libs/datom": 79906,
           "workspace:libs/identity": 10550,
           "workspace:libs/platform-native": 7246,
           "workspace:libs/store-sqlite-native": 1253,
@@ -140,7 +140,7 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41934
         },
-        "recordedAt": "2026-10-29"
+        "recordedAt": "2026-10-30"
       }
     }
   },
@@ -336,9 +336,9 @@
       },
       "libs/datom/src/catalog.ts": {
         "branches": "0/0",
-        "functions": "1/1",
-        "lines": "11/11",
-        "statements": "11/11"
+        "functions": "3/3",
+        "lines": "14/14",
+        "statements": "15/15"
       },
       "libs/datom/src/clock-live.ts": {
         "branches": "0/0",
@@ -359,10 +359,10 @@
         "statements": "100/107"
       },
       "libs/datom/src/ids.ts": {
-        "branches": "10/12",
+        "branches": "11/12",
         "functions": "17/17",
         "lines": "54/54",
-        "statements": "59/60"
+        "statements": "60/60"
       },
       "libs/datom/src/keys.ts": {
         "branches": "0/0",
@@ -378,9 +378,9 @@
       },
       "libs/datom/src/manifest.ts": {
         "branches": "4/14",
-        "functions": "10/13",
-        "lines": "28/31",
-        "statements": "29/32"
+        "functions": "11/13",
+        "lines": "29/31",
+        "statements": "30/32"
       },
       "libs/datom/src/migrate.ts": {
         "branches": "1/2",
@@ -389,16 +389,16 @@
         "statements": "18/30"
       },
       "libs/datom/src/projector.ts": {
-        "branches": "105/163",
-        "functions": "52/60",
-        "lines": "212/237",
-        "statements": "226/259"
+        "branches": "153/195",
+        "functions": "66/69",
+        "lines": "283/292",
+        "statements": "302/320"
       },
       "libs/datom/src/read-models.ts": {
         "branches": "0/0",
         "functions": "3/6",
-        "lines": "12/20",
-        "statements": "12/20"
+        "lines": "13/21",
+        "statements": "13/21"
       },
       "libs/datom/src/rows.ts": {
         "branches": "0/0",
@@ -412,11 +412,23 @@
         "lines": "5/6",
         "statements": "5/6"
       },
+      "libs/datom/src/typed-rows.ts": {
+        "branches": "36/52",
+        "functions": "23/25",
+        "lines": "88/91",
+        "statements": "98/104"
+      },
+      "libs/datom/src/values.ts": {
+        "branches": "59/61",
+        "functions": "24/24",
+        "lines": "77/77",
+        "statements": "80/80"
+      },
       "libs/datom/src/visibility.ts": {
-        "branches": "42/57",
-        "functions": "17/18",
-        "lines": "60/64",
-        "statements": "68/75"
+        "branches": "51/60",
+        "functions": "22/22",
+        "lines": "87/87",
+        "statements": "100/104"
       },
       "libs/datom/src/vocabulary.ts": {
         "branches": "0/0",
@@ -768,5 +780,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "f61ca98402a480cb08cfc0a29e47c182475d98eb95c78d30cf509aaf217fe464"
+  "registryDigest": "01c0d10f259bbab040833ccdd5a055566719bcef28bc341b181d3fb5aab8f26b"
 }

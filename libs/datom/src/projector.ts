@@ -2,6 +2,7 @@ import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 import * as Layer from 'effect/Layer'
+import * as Option from 'effect/Option'
 import * as Reactivity from 'effect/reactivity/Reactivity'
 import * as SqlClient from 'effect/sql/SqlClient'
 import type { SqlError } from 'effect/sql/SqlError'
@@ -9,6 +10,7 @@ import { HlcClock } from './clock.ts'
 import {
   indexCatalog,
   type Catalog,
+  type EntityTypeSpec,
 } from './catalog.ts'
 import { CHANGESET_TTL_MS, Attr, isSystemAttr } from './vocabulary.ts'
 import { decodeHlc } from './hlc.ts'
@@ -25,12 +27,20 @@ import {
 import { migrateReadModels } from './read-models.ts'
 import type { Datom, StoredDatom } from './schema.ts'
 import {
+  makeTypedTables,
+  type EntityRow,
+  type RowRead,
+  type RowTexts,
+} from './typed-rows.ts'
+import {
   isVisible,
   reduceAll,
   visibleFacts,
+  visibilityIndex,
   type StoredFact,
 } from './visibility.ts'
 import { DatomRow, SqlNumber, rowsOf } from './rows.ts'
+import { decodeText } from './values.ts'
 
 const ActorRow = Schema.Struct({
   actor: Schema.String,
@@ -104,6 +114,11 @@ export type FactQuery = {
   readonly view: 'committed' | 'draft'
   readonly actor?: string
   readonly prefix?: string
+}
+
+export type RowQuery = RowRead & {
+  readonly view: 'committed' | 'draft'
+  readonly actor?: string
 }
 
 const asSeq = (value: unknown): number => Number(value)
@@ -214,6 +229,10 @@ export class Projector extends Context.Service<
     readonly facts: (
       query: FactQuery,
     ) => Effect.Effect<ReadonlyArray<ProjectedFact>, SqlError>
+    /** Decoded rows of one entity type: the reference read model (D110). */
+    readonly rows: (
+      query: RowQuery,
+    ) => Effect.Effect<ReadonlyArray<EntityRow>, SqlError>
     readonly conflicts: () => Effect.Effect<ReadonlyArray<ConflictRow>, SqlError>
     readonly statuses: () => Effect.Effect<ReadonlyArray<StatusRow>, SqlError>
     readonly snapshot: () => Effect.Effect<string, SqlError>
@@ -228,6 +247,7 @@ const makeProjector = (catalog: Catalog) =>
     const clock = yield* HlcClock
     const reactivity = yield* Reactivity.Reactivity
     yield* migrateReadModels
+    const typed = yield* makeTypedTables(catalog)
     const indexed = indexCatalog(catalog)
     let lastKeys: ReactivityKeys = []
 
@@ -376,7 +396,69 @@ const makeProjector = (catalog: Catalog) =>
       yield* sql`DELETE FROM projection_conflicts`
       yield* sql`DELETE FROM changeset_status`
       yield* sql`DELETE FROM projection_cursor`
+      yield* typed.clear
     })
+
+
+    /** The canonical text per attribute: the value committed last (D211). */
+    const rowTexts = (
+      entity: string,
+      facts: ReadonlyArray<StoredFact>,
+      conflicts: ReadonlyArray<string>,
+    ): RowTexts => {
+      const texts: Record<string, string> = {}
+      const latest = new Map<string, StoredFact>()
+      for (const fact of facts) {
+        const held = latest.get(fact.a)
+        if (
+          !held ||
+          held.commitTx < fact.commitTx ||
+          (held.commitTx === fact.commitTx && held.memberTx < fact.memberTx)
+        ) {
+          latest.set(fact.a, fact)
+        }
+      }
+      for (const [attribute, fact] of latest) texts[attribute] = fact.v
+      return { e: entity, conflicts, texts }
+    }
+
+    /** The attributes in conflict per entity (D211). */
+    const conflictsByEntity = Effect.map(
+      Effect.suspend(() => loadConflicts()),
+      (rows) => {
+        const held = new Map<string, Set<string>>()
+        for (const row of rows) {
+          const attributes = held.get(row.e)
+          if (attributes) attributes.add(row.a)
+          else held.set(row.e, new Set([row.a]))
+        }
+        return (entity: string): ReadonlyArray<string> =>
+          [...(held.get(entity) ?? [])].sort()
+      },
+    )
+
+    const refreshRows = (touched: ReadonlyArray<string>) =>
+      Effect.gen(function* () {
+        const all = yield* loadAllFacts()
+        const index = visibilityIndex(reduceAll(all, catalog), catalog)
+        const typeOf = new Map<string, EntityTypeSpec>()
+        for (const fact of all) {
+          const type = indexed.byAttr.get(fact.a)?.type
+          if (type) typeOf.set(fact.e, type)
+        }
+        const inConflict = yield* conflictsByEntity
+        for (const entity of index.withDependents(touched)) {
+          const type = typeOf.get(entity)
+          if (!type) continue
+          yield* typed.replace(
+            type,
+            entity,
+            index.isVisible(entity)
+              ? rowTexts(entity, index.factsOf(entity), inConflict(entity))
+              : null,
+          )
+        }
+      })
 
     type Ready = {
       readonly cs: string
@@ -478,6 +560,12 @@ const makeProjector = (catalog: Catalog) =>
         for (const member of ready.members) {
           const lookup = indexed.byAttr.get(member.a)
           if (!lookup) return 'rejected' as const
+          if (
+            member.op === 'assert' &&
+            Option.isNone(decodeText(lookup.spec.value, member.v))
+          ) {
+            return 'rejected' as const
+          }
           touchedEntities.push(member.e)
           touchedAttrs.push(member.a)
 
@@ -594,6 +682,7 @@ const makeProjector = (catalog: Catalog) =>
       const readyList: Ready[] = []
       const entities: string[] = []
       const attributes: string[] = []
+      const applied: string[] = []
 
       for (const cs of csIds) {
         const current = yield* loadStatus(cs)
@@ -656,8 +745,8 @@ const makeProjector = (catalog: Catalog) =>
       yield* sql.withTransaction(
         Effect.gen(function* () {
           for (const ready of readyList) {
-            const applied = yield* applyReady(ready)
-            if (applied === 'rejected') {
+            const outcome = yield* applyReady(ready)
+            if (outcome === 'rejected') {
               yield* upsertStatus({
                 cs: ready.cs,
                 status: 'rejected',
@@ -676,9 +765,11 @@ const makeProjector = (catalog: Catalog) =>
               actor: ready.actor,
             })
             counts.applied += 1
-            entities.push(...applied.touchedEntities)
-            attributes.push(...applied.touchedAttrs)
+            entities.push(...outcome.touchedEntities)
+            attributes.push(...outcome.touchedAttrs)
+            applied.push(...outcome.touchedEntities)
           }
+          yield* refreshRows(applied)
           yield* saveCursor(maxSeq)
         }),
       )
@@ -696,27 +787,51 @@ const makeProjector = (catalog: Catalog) =>
       return yield* project()
     })
 
+    const factsFor = (view: 'committed' | 'draft', actor?: string) =>
+      Effect.gen(function* () {
+        const committed = yield* loadAllFacts()
+        if (view !== 'draft' || !actor) return committed
+        const statuses = yield* loadStatuses()
+        const mine = statuses.filter(
+          (row) => row.status === 'open' && row.actor === actor,
+        )
+        const members: Datom[] = []
+        for (const row of mine) {
+          const datoms = yield* loadDatomsForCs(row.cs)
+          members.push(...changesetMembers(datoms))
+        }
+        return overlayDraft(committed, members, catalog)
+      })
+
     const facts = Effect.fn('Projector.facts')(function* (query: FactQuery) {
-      const committed = yield* loadAllFacts()
-      const raw =
-        query.view === 'draft' && query.actor
-          ? yield* Effect.gen(function* () {
-              const statuses = yield* loadStatuses()
-              const mine = statuses.filter(
-                (row) => row.status === 'open' && row.actor === query.actor,
-              )
-              const members: Datom[] = []
-              for (const row of mine) {
-                const datoms = yield* loadDatomsForCs(row.cs)
-                members.push(...changesetMembers(datoms))
-              }
-              return overlayDraft(committed, members, catalog)
-            })
-          : committed
+      const raw = yield* factsFor(query.view, query.actor)
       const visible = visibleFacts(raw, catalog)
       const prefix = query.prefix
       if (!prefix) return visible
       return visible.filter((fact) => underPrefix(fact.e, prefix))
+    })
+
+    const rows = Effect.fn('Projector.rows')(function* (query: RowQuery) {
+      if (query.view !== 'draft' || !query.actor) return yield* typed.read(query)
+      const raw = yield* factsFor('draft', query.actor)
+      const index = visibilityIndex(reduceAll(raw, catalog), catalog)
+      const inConflict = yield* conflictsByEntity
+      const entities = new Set<string>()
+      for (const fact of raw) {
+        if (
+          indexed.byAttr.get(fact.a)?.type.name === query.type &&
+          (!query.prefix || underPrefix(fact.e, query.prefix)) &&
+          index.isVisible(fact.e)
+        ) {
+          entities.add(fact.e)
+        }
+      }
+      return typed.fromTexts(
+        query,
+        [...entities].map((entity) =>
+          rowTexts(entity, index.factsOf(entity), inConflict(entity)),
+        ),
+      )
     })
 
     const snapshot = Effect.fn(function* () {
@@ -727,10 +842,17 @@ const makeProjector = (catalog: Catalog) =>
       )
     })
 
+    // A changed catalog means new tables: replay the log, never migrate (D44).
+    if (yield* typed.ensure) {
+      yield* clearReadModels
+      yield* project()
+    }
+
     return Projector.of({
       project,
       rebuild,
       facts,
+      rows,
       conflicts: loadConflicts,
       statuses: loadStatuses,
       snapshot,

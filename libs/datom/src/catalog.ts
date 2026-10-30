@@ -1,3 +1,5 @@
+import * as Schema from 'effect/Schema'
+import type { ValueSchema } from './values.ts'
 import { Attr } from './vocabulary.ts'
 
 export type ConflictPolicy = 'lww' | 'write-once' | 'human-conflict'
@@ -6,6 +8,8 @@ export type Composition = 'root' | 'prefix' | 'reference'
 
 export type AttributeSpec = {
   readonly name: string
+  /** What a value is: its type, range and description (D209). */
+  readonly value: ValueSchema
   readonly policy: ConflictPolicy
   readonly defining?: boolean
   /** `server`: only server-authored changesets may write it (P11). */
@@ -29,6 +33,14 @@ export type AttributeLookup = {
   readonly type: EntityTypeSpec
   readonly spec: AttributeSpec
 }
+
+const text = (description: string) => Schema.String.annotate({ description })
+
+/** A file by content hash (D43). */
+const blobHash = (description: string) =>
+  Schema.String.check(Schema.isPattern(/^blob:[0-9a-f]{64}$/)).annotate({
+    description,
+  })
 
 export const indexCatalog = (
   catalog: Catalog,
@@ -59,8 +71,8 @@ export const evidenceCatalog: Catalog = {
       composition: 'prefix',
       userContent: false,
       attributes: [
-        { name: Attr.list, policy: 'lww', defining: true },
-        { name: Attr.listTitle, policy: 'lww' },
+        { name: Attr.list, value: text('A list exists while this is asserted.'), policy: 'lww', defining: true },
+        { name: Attr.listTitle, value: text('The name of the list.'), policy: 'lww' },
       ],
     },
     {
@@ -69,9 +81,9 @@ export const evidenceCatalog: Catalog = {
       composition: 'prefix',
       userContent: false,
       attributes: [
-        { name: Attr.item, policy: 'lww', defining: true },
-        { name: Attr.itemTitle, policy: 'lww' },
-        { name: Attr.itemSeal, policy: 'write-once' },
+        { name: Attr.item, value: text('An item exists in its list while this is asserted.'), policy: 'lww', defining: true },
+        { name: Attr.itemTitle, value: text('What the item asks for.'), policy: 'lww' },
+        { name: Attr.itemSeal, value: text('A seal on the item, written once.'), policy: 'write-once' },
       ],
     },
     {
@@ -81,10 +93,10 @@ export const evidenceCatalog: Catalog = {
       ownerAttribute: Attr.evidenceOwner,
       userContent: true,
       attributes: [
-        { name: Attr.captured, policy: 'lww', defining: true },
-        { name: Attr.evidenceTitle, policy: 'lww' },
-        { name: Attr.evidenceFile, policy: 'human-conflict' },
-        { name: Attr.evidenceOwner, policy: 'human-conflict' },
+        { name: Attr.captured, value: text('A piece of evidence exists while this is asserted.'), policy: 'lww', defining: true },
+        { name: Attr.evidenceTitle, value: text('The title of the evidence.'), policy: 'lww' },
+        { name: Attr.evidenceFile, value: blobHash('The content hash of the evidence file.'), policy: 'human-conflict' },
+        { name: Attr.evidenceOwner, value: text('The entity that owns the evidence.'), policy: 'human-conflict' },
       ],
     },
   ],
@@ -104,9 +116,9 @@ export const engineCatalog: Catalog = {
       composition: 'prefix',
       userContent: false,
       attributes: [
-        { name: Attr.workflowStarted, policy: 'write-once', defining: true },
-        { name: Attr.workflowResult, policy: 'write-once' },
-        { name: Attr.leaseHolder, policy: 'lww' },
+        { name: Attr.workflowStarted, value: text('The workflow name and payload, as JSON text from the engine.'), policy: 'write-once', defining: true },
+        { name: Attr.workflowResult, value: text('The workflow exit, as JSON text from the engine.'), policy: 'write-once' },
+        { name: Attr.leaseHolder, value: text('The lease holder, as JSON text from the engine.'), policy: 'lww' },
       ],
     },
     {
@@ -115,8 +127,8 @@ export const engineCatalog: Catalog = {
       composition: 'prefix',
       userContent: false,
       attributes: [
-        { name: Attr.activityExit, policy: 'write-once', defining: true },
-        { name: Attr.activityStarted, policy: 'write-once' },
+        { name: Attr.activityExit, value: text('The activity exit, as JSON text from the engine.'), policy: 'write-once', defining: true },
+        { name: Attr.activityStarted, value: text('The activity name and attempt, as JSON text from the engine.'), policy: 'write-once' },
       ],
     },
     {
@@ -125,7 +137,7 @@ export const engineCatalog: Catalog = {
       composition: 'prefix',
       userContent: false,
       attributes: [
-        { name: Attr.deferredExit, policy: 'write-once', defining: true },
+        { name: Attr.deferredExit, value: text('The durable deferred exit, as JSON text from the engine.'), policy: 'write-once', defining: true },
       ],
     },
     {
@@ -134,7 +146,7 @@ export const engineCatalog: Catalog = {
       composition: 'prefix',
       userContent: false,
       attributes: [
-        { name: Attr.clockWakeAt, policy: 'write-once', defining: true },
+        { name: Attr.clockWakeAt, value: text('The durable clock, as JSON text from the engine.'), policy: 'write-once', defining: true },
       ],
     },
   ],
@@ -157,12 +169,13 @@ export const identityCatalog: Catalog = {
       attributes: [
         {
           name: Attr.accountPerson,
+          value: text('The person this account signs in as.'),
           policy: 'write-once',
           defining: true,
           authority: 'server',
         },
-        { name: Attr.accountIssuer, policy: 'write-once', authority: 'server' },
-        { name: Attr.accountSubject, policy: 'write-once', authority: 'server' },
+        { name: Attr.accountIssuer, value: text('The identity provider that issued this account.'), policy: 'write-once', authority: 'server' },
+        { name: Attr.accountSubject, value: text('The subject the identity provider gives this account.'), policy: 'write-once', authority: 'server' },
       ],
     },
     {
@@ -173,6 +186,7 @@ export const identityCatalog: Catalog = {
       attributes: [
         {
           name: Attr.membershipGranted,
+          value: text('The person holding this membership.'),
           policy: 'lww',
           defining: true,
           authority: 'server',
