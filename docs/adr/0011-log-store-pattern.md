@@ -65,6 +65,13 @@ typed columns derived from the catalog; the layout (one table per entity type,
 or one table for all with an `entity_type` column under a checked cap below
 Postgres's 1600 columns) is [I66 Attribute value types and the typed reference read model][I66]'s.
 
+**The layout** (amendment 2026-10-30, [D210 The row store and the columnar copy differ][D210], [I66 Attribute value types and the typed reference read model][I66]).
+The reference read model keeps one table per entity type. One table for all
+types was measured and costs a row store a header byte per column, empty or
+not; the wide table per organization belongs to the columnar copy ([I63 The columnar copy as a Presenter implementation][I63]).
+The value Schema is a plain Effect Schema ([D209 The value is an Effect Schema][D209]), and a typed row
+names the attributes in conflict ([D211 A typed row while an attribute is in conflict][D211]).
+
 ## Trade-offs
 
 Several implementations, one suite, avoids lock-in. Incremental projection is
@@ -117,6 +124,9 @@ closure.
 [D118]: ../plan/bootstrap/02-decision-log.md#d118
 [D119]: ../plan/bootstrap/02-decision-log.md#d119
 [D121]: ../plan/bootstrap/02-decision-log.md#d121
+[D209]: ../plan/bootstrap/02-decision-log.md#d209
+[D210]: ../plan/bootstrap/02-decision-log.md#d210
+[D211]: ../plan/bootstrap/02-decision-log.md#d211
 [D37]: ../plan/bootstrap/02-decision-log.md#d37
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
 [D58]: ../plan/bootstrap/02-decision-log.md#d58

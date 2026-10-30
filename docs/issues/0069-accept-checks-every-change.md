@@ -28,6 +28,8 @@ From [I50 Contracts checked as data or by commands][I50] ([ADR-0035 Accepting a 
 
 2026-10-26: From [I53 Sync and conflict][I53] ([D34' Per-attribute conflict policies, decided at accept][D34'], [I81 Build conflicts decided at accept][I81]): orphans (user content whose owner is not visible, [D38 Entity ids and strict composition][D38]) are decided at accept too, with the read model this issue brings to the server. [I81][I81] builds the rest of conflicts at accept and comes after this issue in phase 3.
 
+2026-10-30: From [I66 Attribute value types and the typed reference read model][I66]: an attribute's "required" is declared here, on `AttributeSpec`, with its positive control ([D212 Required comes with its check][D212]). The value Schema is a plain Effect Schema, and its check is decoding plus the canonical round trip ([D209 The value is an Effect Schema][D209]); until this issue checks it on accept, the projector rejects a changeset whose value fails it.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0016]: ../adr/0016-commands-and-server-validation.md
@@ -37,6 +39,8 @@ From [I50 Contracts checked as data or by commands][I50] ([ADR-0035 Accepting a 
 [D125]: ../plan/bootstrap/02-decision-log.md#d125
 [D126]: ../plan/bootstrap/02-decision-log.md#d126
 [D127]: ../plan/bootstrap/02-decision-log.md#d127
+[D209]: ../plan/bootstrap/02-decision-log.md#d209
+[D212]: ../plan/bootstrap/02-decision-log.md#d212
 [D34']: ../plan/bootstrap/02-decision-log.md#d34p
 [D38]: ../plan/bootstrap/02-decision-log.md#d38
 [I50]: 0050-contracts-checked-as-data-or-by-commands.md
