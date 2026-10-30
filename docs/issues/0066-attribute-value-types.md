@@ -44,7 +44,7 @@ One table per entity type, [D37 Log store tables][D37] as written ([D210 The row
 
 2026-10-30: Built test first. `libs/datom/src/values.ts` holds the text and column forms of a value, `libs/datom/src/typed-rows.ts` the tables (`rm_<entity type>`), and `Projector.rows` reads them, committed or draft. `changesets/conformance` gains seven checks ([P05 Changesets and projections][P05] goes from 14 to 21). Left to the Presenter: filters and limits (a query today has a prefix and an `orderBy`) and rows typed at compile time (`values` is a record of decoded values, and the `Schema.Struct` per entity type on the review page is not built). `projected_facts` stays as the fact versions the projector reduces. The projector still reads every fact per run, so [D210 The row store and the columnar copy differ][D210]'s measured tables say nothing yet about projecting at that volume. A changed catalog replays the log when the projector starts.
 
-2026-10-30: Resolved. [P05 Changesets and projections][P05] passes its 21 checks on `sqlite-node`, Postgres (PGlite), iOS, Android and web, and [P08 UI three-way prototype][P08] passes, both in the ledger on `f2c0f0586`. That commit's message says 20 checks; it is 21. The change to `libs/datom` makes the ledger's other gates stale, as any change to it does; the next sequential run qualifies them again. The Hermes run of `Schema.toRepresentation` and the typed tables is [P05][P05]'s iOS and Android runs.
+2026-10-30: Resolved. [P05 Changesets and projections][P05] passes its 21 checks on `sqlite-node`, Postgres (PGlite), iOS, Android and web, and [P08 UI three-way prototype][P08] passes, both in the ledger on `f2c0f0586`. That commit's message says 20 checks; it is 21. [P01 Platform on SDK 58][P01]-[P11 Identity][P11] then pass in one sequential run on `241635670`, clean tree. The Hermes run of `Schema.toRepresentation` and the typed tables is [P05][P05]'s iOS and Android runs.
 
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
@@ -63,7 +63,9 @@ One table per entity type, [D37 Log store tables][D37] as written ([D210 The row
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
 [I63]: 0063-the-columnar-copy.md
 [I69]: 0069-accept-checks-every-change.md
+[P01]: ../plan/bootstrap/06-qualification-gates.md#p01
 [P05]: ../plan/bootstrap/06-qualification-gates.md#p05
 [P08]: ../plan/bootstrap/06-qualification-gates.md#p08
+[P11]: ../plan/bootstrap/06-qualification-gates.md#p11
 [P12]: ../plan/bootstrap/06-qualification-gates.md#p12
 [P13]: ../plan/bootstrap/06-qualification-gates.md#p13
