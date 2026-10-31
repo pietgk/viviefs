@@ -69,7 +69,7 @@ is one of three kinds:
 | Kind | Examples | Rebuilt from the log? |
 | --- | --- | --- |
 | The log itself | `datoms`, `changesets` (envelopes) | It is the source |
-| Read models | `projected_facts`, `changeset_status` | Yes: disposable, never migrated |
+| Read models | `projected_facts`, `changeset_status`, one `rm_<entity type>` table per entity type | Yes: disposable, never migrated |
 | Operational state of one replica | `hlc_state`, `device_cursors` | No, and it holds no domain facts |
 
 A fact that fits none of them goes into the log. Read models are the log

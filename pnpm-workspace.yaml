@@ -28,7 +28,11 @@ overrides:
   'axios@1': 1.20.0
   # GHSA-q3jh-wrc6-jgq8 and GHSA-8r9p-f939-6h3c (high, found 2026-10-21): axios 1.20.0,
   # through nx, resolved follow-redirects 1.16.0; patched from 1.16.1.
-  'follow-redirects@1': 1.16.1
+  # GHSA-mrwp-f3q8-3g9p (high, found 2026-10-31): patched from 1.16.2.
+  'follow-redirects@1': 1.16.2
+  # GHSA-7wch-p9px-956x and four more (high, found 2026-10-31): @expo/cli resolves
+  # node-forge 1.4.0; patched from 1.4.1.
+  'node-forge@1': 1.4.2
   # GHSA-cg2g-xh64-v4q7 (critical) and GHSA-mrv2-3pqr-j5jr (high, found 2026-10-22):
   # mermaid, which builds the docs site's diagrams, resolved dompurify 3.4.16;
   # patched from 3.4.17.
@@ -57,12 +61,6 @@ auditConfig:
   # that fail audit with no fix released; a human decides each entry, and the
   # row names when it is removed.
   ignoreGhsas:
-    # I1: node-forge RSA signature verification (high). No patched release exists
-    # (1.4.0 is the newest); it comes only through @expo/cli, a development tool,
-    # not through anything the apps ship. Remove when node-forge ships a fix or
-    # @expo/cli drops it; `pnpm audit --ignore-unfixable` would hide every future
-    # unfixable advisory, so this names the one we accepted.
-    - GHSA-86w9-cpqp-85rv
     # I1: http-cache-semantics max-stale cross-user cache disclosure (high). No
     # patched release (4.2.0 is affected); it comes only through astro, which
     # builds the static docs site. Remove when a fix ships or astro drops it.

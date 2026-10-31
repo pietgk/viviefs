@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I66: Attribute value types and the typed reference read model (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre-wrap; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .cr-pass { color: var(--color-success); font-weight: 600; }
+  .cr-warn { color: var(--color-warning); font-weight: 600; }
+  .cr-num { text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-5xl mx-auto px-5 py-10 space-y-14">
+
+<header class="space-y-4">
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-primary">Phase 3 build - I66</span>
+    <span class="badge badge-outline">2026-10-30, three rounds, answered</span>
+    <span class="badge badge-soft badge-info">Design review, not a decision record</span>
+  </div>
+  <h1 class="text-4xl font-bold leading-tight">Attribute value types and the typed reference read model</h1>
+  <p class="text-lg opacity-80"><a class="cr-link" href="../issues/0066-attribute-value-types.md">I66 Attribute value types and the typed reference read model</a> builds <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d121">D121 Attribute value types</a>: every attribute gets a value Schema in the catalog, and the reference read model gets typed columns. Before the build started test first, this page put four things to the human: the layout, what a typed row shows while an attribute is in conflict, whether "required" is declared now, and what declares a value. Your challenge from this morning (the log keeps one table and a text <code class="cr-inline">v</code>; the Schema carries the type, a description, a range and what is required) holds throughout.</p>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">Answered</h2>
+    <p>Round 3 (2026-10-30): Q1-Q4, all A, as recommended. Recorded as <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d209">D209 The value is an Effect Schema</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d210">D210 The row store and the columnar copy differ</a>, <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d211">D211 A typed row while an attribute is in conflict</a> and <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d212">D212 Required comes with its check</a>. The DuckDB and TanStack DB findings are comments on <a class="cr-link" href="../issues/0063-the-columnar-copy.md">I63 The columnar copy as a Presenter implementation</a>.</p>
+  </div></div>
+<div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-2">
+    <h2 class="text-lg font-semibold">The page in six lines</h2>
+    <ul class="list-disc pl-6 space-y-1">
+      <li>The log does not change: one <code class="cr-inline">datoms</code> table, <code class="cr-inline">v</code> as text, no column or table per value type.</li>
+      <li>Each attribute's value is an Effect Schema: its type, range and description. The text in <code class="cr-inline">v</code> and each column type are derived from it with Effect's own tools (section 1, round 2; round 1's nine value types are withdrawn).</li>
+      <li>Measured in SQLite at the planning volume of 10M datoms: one wide table is 3.4x bigger and 3x slower than one table per entity type at 400 attributes, and 20x the size and 20x slower to read by id at 1500 (section 3).</li>
+      <li>So the row store reference and the columnar copy should <b>not</b> make the same choice. A wide row costs SQLite a byte for every empty column; Parquet stores the same empty columns almost for free (Q1).</li>
+      <li>One column holds one value, but under <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d34p">D34' Per-attribute conflict policies, decided at accept</a> an attribute in conflict holds two (Q2).</li>
+      <li>The range is part of the value Schema, so it is checked when the attribute's value is checked. "Required" is an acceptance rule with nothing to check it before <a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a> (Q3).</li>
+    </ul>
+  </div></div>
+</header>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">1. What an attribute declares (round 2: Effect's Schema, nothing of our own)</h2>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Your challenge (round 2)</h3>
+    <p>Effect's Schema already does what round 1's nine value types did, so inventing a second way to declare a type is wrong. Round 1's closed set (<code class="cr-inline">Value.text</code>, <code class="cr-inline">Value.integer</code> and the rest) is withdrawn. Everything below was checked against <code class="cr-inline">effect</code> 4.0.5 in this repo.</p>
+  </div></div>
+  <pre class="cr-code">// libs/datom/src/catalog.ts (round 2)
+export type AttributeSpec = {
+  readonly name: string
+  readonly value: Schema.Top          // an Effect Schema: type, range, description
+  readonly policy: ConflictPolicy     // what Effect has no word for stays here
+  readonly defining?: boolean
+  readonly authority?: 'server'
+}
+
+{ name: Attr.itemTitle, policy: 'lww',
+  value: Schema.String.annotate({ description: 'What the item asks for.' }) },
+
+// a future attribute with a range
+{ name: 'stock/quantity', policy: 'lww',
+  value: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 1_000_000 }))
+    .annotate({ description: 'Units on hand.' }) },</pre>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>What is needed</th><th>Where it comes from</th><th>Checked</th></tr></thead>
+    <tbody>
+      <tr><td>The type</td><td>The Schema itself: <code class="cr-inline">Schema.Int</code>, <code class="cr-inline">Schema.Boolean</code>, <code class="cr-inline">Schema.DateTimeUtc</code>, a <code class="cr-inline">Schema.Struct</code> for a structured value</td><td>-</td></tr>
+      <tr><td>The range</td><td>Effect checks, <code class="cr-inline">Schema.isBetween</code> and the others</td><td>JSON Schema output carries <code class="cr-inline">minimum</code> and <code class="cr-inline">maximum</code></td></tr>
+      <tr><td>The description</td><td>Effect's <code class="cr-inline">description</code> annotation, not a field of ours</td><td>JSON Schema output carries it</td></tr>
+      <tr><td>The text in <code class="cr-inline">v</code></td><td><code class="cr-inline">Schema.toCodecStringTree</code> for a single value (<code class="cr-inline">10</code> to <code class="cr-inline">"10"</code>, <code class="cr-inline">true</code> to <code class="cr-inline">"true"</code>); <code class="cr-inline">Schema.toCodecJson</code> and JSON text for a structured value</td><td>Effect decodes <code class="cr-inline">"010"</code> as 10, so the text is canonical only if decoding and encoding again gives the same text. That one rule rejects <code class="cr-inline">"010"</code> for every type.</td></tr>
+      <tr><td>The column type</td><td>One function per implementation over <code class="cr-inline">Schema.toRepresentation</code>, Effect's stable data description of a Schema</td><td><code class="cr-inline">Number</code> with <code class="cr-inline">effect/schema/isInt</code>, <code class="cr-inline">Boolean</code>, <code class="cr-inline">String</code>, and declarations by id (<code class="cr-inline">effect/schema/DateTimeUtc</code>, <code class="cr-inline">effect/schema/Date</code>)</td></tr>
+      <tr><td>The typed row</td><td>A <code class="cr-inline">Schema.Struct</code> of the entity type's attributes, keyed by attribute name, so a screen reads rows with an Effect type</td><td>-</td></tr>
+      <tr><td>Required</td><td>Q3: with <a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a></td><td>-</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Representation</th><th>SQLite</th><th>Postgres</th><th>Arrow (Parquet, DuckDB, Polars)</th></tr></thead>
+    <tbody>
+      <tr><td><code class="cr-inline">Number</code> + <code class="cr-inline">isInt</code></td><td>INTEGER</td><td>BIGINT</td><td>Int64</td></tr>
+      <tr><td><code class="cr-inline">Number</code></td><td>REAL</td><td>DOUBLE PRECISION</td><td>Float64</td></tr>
+      <tr><td><code class="cr-inline">Boolean</code></td><td>INTEGER 0/1</td><td>BOOLEAN</td><td>Boolean</td></tr>
+      <tr><td><code class="cr-inline">String</code>, a literal, a branded id, a blob hash</td><td>TEXT</td><td>TEXT</td><td>Utf8</td></tr>
+      <tr><td><code class="cr-inline">DateTimeUtc</code>, <code class="cr-inline">Date</code></td><td>INTEGER (epoch ms)</td><td>TIMESTAMPTZ</td><td>Timestamp(ms, UTC)</td></tr>
+      <tr><td>Struct, array, union, anything else</td><td>TEXT (JSON)</td><td>JSONB</td><td>Utf8 (JSON)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The columnar side targets Arrow types instead of one engine's names: Parquet, DuckDB and Polars all read and write Arrow, so one mapping serves whichever <a class="cr-link" href="../issues/0063-the-columnar-copy.md">I63 The columnar copy as a Presenter implementation</a> picks. Two things Effect does not keep: a brand is gone from the representation (a reference is a <code class="cr-inline">String</code>, which is TEXT anyway), and Effect has no calendar-date Schema (a date is a <code class="cr-inline">String</code> with a pattern check, TEXT). Effect's <code class="cr-inline">effect/schema/Model</code> was looked at too: it builds select, insert and update variants for tables an app writes, is marked unstable, and creates no tables, so it does not fit a derived read model.</p>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">A value that does not decode</h3>
+    <p>The projector rejects the changeset, the way it already rejects an unknown attribute or a second write to a write-once attribute. It is deterministic, so every sync node rejects the same changeset. This is the value Schema's positive control in the <code class="cr-inline">changesets</code> suite. Checking on accept, so that the writer hears of it, is <a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a>'s, as already decided (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d125">D125 Acceptance rules</a>).</p>
+  </div></div>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">2. From the log to a typed row</h2>
+  <p>A worked example with the evidence catalog. The log and <code class="cr-inline">projected_facts</code> keep the text; the typed table holds the decoded value, one row per visible entity.</p>
+  <pre class="cr-code">datoms (the log, unchanged)
+ e              a                 v                     op      cs
+ O1/L1/I3       evidence/item         1                 assert  …
+ O1/L1/I3       evidence/item/title   Photo of the meter assert …
+ O1/L1/I3       evidence/item/seal    s-81              assert  …
+
+projected_facts (unchanged: every fact version with its commit order; the projector reduces it)
+
+rm_item (new, one table per entity type, columns from the catalog)
+ e         "evidence/item"  "evidence/item/title"  "evidence/item/seal"
+ O1/L1/I3  1                Photo of the meter     s-81</pre>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Column names</b> are the attribute names, quoted (<code class="cr-inline">"evidence/item/title"</code>), so no second name is invented. SQLite, Postgres and DuckDB all accept a quoted name with <code class="cr-inline">/</code>. The table is <code class="cr-inline">rm_</code> plus the entity type's name.</li>
+    <li><b>Visibility</b> as today (<a class="cr-link" href="../adr/0010-entity-ids-and-defining-attributes.md">ADR-0010 Entity ids, defining attributes and strict-composition prefixes</a>): a row exists only while its entity is visible. Retracting a list's defining attribute removes the rows of its items and of the evidence they own, in the same transaction.</li>
+    <li><b>Updated incrementally</b> in the projector's transaction (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d37">D37 Log store tables</a>). The rows of every entity a changeset touches are rewritten, plus every entity whose visibility depends on a touched one.</li>
+    <li><b>Rebuilt, never migrated</b> (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d44">D44 Never rename, never migrate</a>): the read model stores a fingerprint of the catalog's tables. When an attribute is added, the fingerprint differs on start, so the typed tables are dropped, created again and rebuilt from the log.</li>
+    <li><b>The conformance claim</b> the <code class="cr-inline">changesets</code> suite gains: the typed rows after any sequence of incremental projections equal the rows a full rebuild gives, and equal the rows derived in memory from the visible facts (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d110">D110 The reference implementation</a>). <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p05">P05 Changesets and projections</a> and <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p08">P08 UI three-way prototype</a> are run again on it.</li>
+    <li><b>Reading</b>: the projector gets <code class="cr-inline">rows(type, query)</code>, returning decoded typed rows for the committed or the draft view, filtered by prefix. That is the reference read model a Presenter will read once one is built (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d107">D107 The Presenter pattern</a>, not built yet). <code class="cr-inline">facts(query)</code> stays for the sync probes and the suite.</li>
+  </ul>
+</section>
+
+<section class="space-y-5">
+  <h2 class="text-2xl font-bold">3. The measurement</h2>
+  <p>A throwaway benchmark (Node 22's built-in SQLite 3.51.3, WAL, one transaction per build) with 20 entity types and 8 values set per entity. Layout A is one table per entity type; layout B is one table for all types with an <code class="cr-inline">entity_type</code> column and a partial index per type. A Presenter selects only its type's columns in both. Layout C, one table per organization, has B's row layout, so in SQLite it costs what B costs, per organization.</p>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Attributes in the catalog</th><th>Layout</th><th class="cr-num">Datoms</th><th class="cr-num">File size</th><th class="cr-num">Full rebuild</th><th class="cr-num">Read by id</th><th class="cr-num">50 children, sorted by a number</th><th class="cr-num">Count in a range (scan)</th></tr></thead>
+    <tbody>
+      <tr><td>40</td><td>A per type</td><td class="cr-num">2.5M</td><td class="cr-num">84 MB</td><td class="cr-num">3.2 s</td><td class="cr-num">11 µs</td><td class="cr-num">26 µs</td><td class="cr-num">2.2 ms</td></tr>
+      <tr><td>40</td><td>B one table</td><td class="cr-num">2.5M</td><td class="cr-num">141 MB</td><td class="cr-num">6.5 s</td><td class="cr-num">13 µs</td><td class="cr-num">27 µs</td><td class="cr-num">2.2 ms</td></tr>
+      <tr><td>400</td><td>A per type</td><td class="cr-num">10M</td><td class="cr-num">206 MB</td><td class="cr-num">4.9 s</td><td class="cr-num">25 µs</td><td class="cr-num">150 µs</td><td class="cr-num">2.2 ms</td></tr>
+      <tr class="cr-bad"><td>400</td><td>B one table</td><td class="cr-num">10M</td><td class="cr-num">708 MB</td><td class="cr-num">15.2 s</td><td class="cr-num">69 µs</td><td class="cr-num">436 µs</td><td class="cr-num">73.8 ms</td></tr>
+      <tr><td>1500</td><td>A per type</td><td class="cr-num">10M</td><td class="cr-num">286 MB</td><td class="cr-num">5.8 s</td><td class="cr-num">62 µs</td><td class="cr-num">290 µs</td><td class="cr-num">2.3 ms</td></tr>
+      <tr class="cr-bad" id="b1500"><td>1500</td><td>B one table</td><td class="cr-num">10M</td><td class="cr-num">5,881 MB</td><td class="cr-num">150.4 s</td><td class="cr-num">1,257 µs</td><td class="cr-num">26.4 ms</td><td class="cr-num">7.0 s</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Why: a SQLite record has a header byte for every column, empty or not, so at 400 attributes each row of B carries about 380 bytes of empty columns (500 MB over 1.25M entities, which is the measured gap). A range filter on B scans those wide rows. Postgres keeps a null bitmap, one bit per column, so its cost for B is smaller, but A is no worse there. Parquet stores an empty column chunk almost for free and reads only the columns a query names, which is why <a class="cr-link" href="../issues/0063-the-columnar-copy.md">I63 The columnar copy as a Presenter implementation</a>'s one wide table per organization is right for the columnar copy and wrong for the row store.</p>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Round 2: would Polars DataFrames be the better option?</h3>
+    <p>Agreed first: a column per attribute across all types pays off only in a columnar engine (Parquet, DuckDB and DuckLake, Polars). That is the columnar copy, not the row store reference. Where Polars could sit:</p>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>Not as the reference.</b> The reference must run on every sync node (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d110">D110 The reference implementation</a>), phones on Hermes included. <code class="cr-inline">nodejs-polars</code> (0.26.1, Polars 0.55.2) is a Rust N-API addon; its README says it is "intended to work only with server-side JS/TS (Node, Bun, Deno)" and sends the browser to <code class="cr-inline">js-polars</code>. There is no official iOS or Android build, and Polars' own WebAssembly builds have open issues (for example pola-rs/polars#25857). A DataFrame is also held in memory and rebuilt, not updated in the projector's transaction the way <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d37">D37 Log store tables</a> asks.</li>
+      <li><b>Yes as a candidate for the columnar copy</b>, on the server: <a class="cr-link" href="../issues/0063-the-columnar-copy.md">I63 The columnar copy as a Presenter implementation</a> already lists DuckDB, Polars and Arrow as its engines (merged from <a class="cr-link" href="../issues/0031-ideas-batch-dataframes-as-a-universal-data-format.md">I31 Ideas batch: DataFrames as a universal data format</a>). Polars has a point in its favour there: its lazy expressions are a typed query in code, which is what <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d108">D108 The query is data</a> translates, without going through a SQL string. DuckDB has wider reach (a WebAssembly build, and a community React Native package) and DuckLake's catalog. I63 measures them; I66 only has to give both their column types, which the Arrow column above does.</li>
+    </ul>
+    <p class="cr-src">Read on 2026-10-29: github.com/pola-rs/nodejs-polars (README, releases, Cargo.toml) and the pola-rs/polars WebAssembly issues. npm refused the request.</p>
+  </div></div>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">Round 3: DuckDB on the device, and TanStack DB</h3>
+    <p>You tested <code class="cr-inline">react-native-duckdb</code> in your fork: the suite is green on the iOS simulator (155) and the Android emulator (164, release build), not yet on a physical device, on DuckDB 1.4.5 and React Native 0.82.1. DuckDB 2.0 and Expo SDK 58 are work in progress. Unlike Polars, DuckDB is a database with transactions and a durable file, so a column store per organization could live on the phone. The same data and queries in DuckDB, one wide table with an <code class="cr-inline">entity_type</code> column and a unique index on the id:</p>
+    <div class="cr-table-wrap">
+    <table class="table table-sm">
+      <thead><tr><th>10M datoms, 1.25M entities</th><th class="cr-num">File size</th><th class="cr-num">Full rebuild</th><th class="cr-num">Read by id</th><th class="cr-num">50 children, sorted</th><th class="cr-num">Count in a range</th><th class="cr-num">Update one row</th><th class="cr-num">Group one type (62,500 rows)</th></tr></thead>
+      <tbody>
+        <tr><td>SQLite, per entity type, 400 attributes</td><td class="cr-num">206 MB</td><td class="cr-num">4.9 s</td><td class="cr-num">25 µs</td><td class="cr-num">150 µs</td><td class="cr-num">2.2 ms</td><td class="cr-num">63 µs</td><td class="cr-num">4.6 ms</td></tr>
+        <tr><td>DuckDB, one wide table, 400 attributes</td><td class="cr-num">159 MB</td><td class="cr-num">40 s</td><td class="cr-num">1,292 µs</td><td class="cr-num">7.7 ms</td><td class="cr-num">1.7 ms</td><td class="cr-num">2.6 ms</td><td class="cr-num">2.5 ms</td></tr>
+        <tr><td>DuckDB, one wide table, 1500 attributes</td><td class="cr-num">162 MB</td><td class="cr-num">154 s</td><td class="cr-num">3,117 µs</td><td class="cr-num">17.2 ms</td><td class="cr-num">4.1 ms</td><td class="cr-num">7.7 ms</td><td class="cr-num">2.5 ms</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Your idea holds on storage: the file does not grow with the catalog (162 MB at 1500 attributes, against SQLite's 5,881 MB for one wide table). What a screen and the projector do most is 40 to 50x slower than the SQLite tables: reading by id or by parent, and updating a row. The analytical query is already ahead, on only 62,500 rows; a query over a whole organization should widen the gap, but that was not measured. Measured on this Mac with <code class="cr-inline">@duckdb/node-api</code> 2.0.0-r.1, not on a phone. A throwaway script, not qualification evidence.</p>
+    <p>A single transaction cannot span a SQLite log and a DuckDB file, so <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d37">D37 Log store tables</a>'s "same transaction" cannot hold for DuckDB. As a copy derived from a cursor, which is what <a class="cr-link" href="../issues/0063-the-columnar-copy.md">I63 The columnar copy as a Presenter implementation</a> already says, it needs no such transaction.</p>
+    <p><b>TanStack DB</b> (1.0 RC1 announced 2026-10-29; its README and docs badge still say beta; MIT) is a reactive client store: typed collections in memory, live queries kept up to date incrementally by <code class="cr-inline">d2ts</code>, and optimistic writes. It maps onto what is decided here:</p>
+    <ul class="list-disc pl-6 space-y-1">
+      <li><b>Live queries are a named candidate already.</b> <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d110">D110 The reference implementation</a> and I63 both name <code class="cr-inline">D2TS</code> for keeping answers up to date. TanStack DB is that candidate, packaged.</li>
+      <li><b>A custom collection per entity type</b> fits this layout: its <code class="cr-inline">sync</code> function gets <code class="cr-inline">begin</code>, <code class="cr-inline">write</code>, <code class="cr-inline">commit</code> and <code class="cr-inline">markReady</code>, so the projector's changed rows flow in. The source behind a collection can be the SQLite read model, DuckDB on the device, or another sync node. A frame from another sync node has the status <code class="cr-inline">remote</code> (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d109">D109 Frame and frame subscription</a>); data kept for offline use still lands in the local log (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d114">D114 Partial sync on demand</a>).</li>
+      <li><b>Reads only.</b> Its optimistic writes would be a second write path beside commands and the log, and a second draft view beside "committed plus my open changesets". A collection would have no <code class="cr-inline">onInsert</code>: writes stay commands, changesets and the log, and open changesets reach the collection as rows.</li>
+      <li><b>Memory.</b> Collections live in the JavaScript heap, so a phone can hold what screens use (on-demand mode), not an organization's whole log.</li>
+      <li><b>Beside query atoms, not instead of them.</b> <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d42">D42 Live reads with query atoms</a> is qualified; TanStack DB would be a declared Presenter implementation (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d113">D113 Who chooses the implementation</a>), adopted when a frame subscription's rerun misses its budget. Hermes is not mentioned in its docs, so a run on Hermes comes first.</li>
+      <li><b>One idea to take now.</b> Its "test oracles", an independent small model recomputing each answer, are what section 2's conformance claim does. The <code class="cr-inline">changesets</code> suite can check the typed rows that way.</li>
+    </ul>
+    <p class="cr-src">Read on 2026-10-30: <code class="cr-inline">~/ws/react-native-duckdb</code> (<code class="cr-inline">docs/review/2026-10-30-review-and-status.md</code>); tanstack.com/blog/tanstack-db-1.0-rc1-going-all-in-on-oracles; tanstack.com/db/latest and its overview, custom collection, live queries, SQLite persistence, mutations and migration guides; github.com/TanStack/db.</p>
+  </div></div>
+</section>
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">4. Questions</h2>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 The layout')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. The reference read model's layout</h3>
+    <p class="text-sm">I66 asked the reference and the columnar copy to make the same choice. The measurement says the engines want different layouts, and both still return the same frames: the columnar copy gives a view per entity type, so <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d110">D110 The reference implementation</a>'s check holds.</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: one table per entity type in the row-store reference (D37 as written); the columnar copy keeps I63's wide table per organization; I66's 'same choice' sentence is dropped, recorded in D121 and I63"> <span><b>A. One table per entity type</b> (recommended). <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d37">D37 Log store tables</a> as written, no cap but Postgres's own per type. I63 keeps its wide table per organization in a columnar engine (DuckDB, DuckLake or Polars, chosen there); D121 records that the two differ, and why.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: one table for all types with entity_type, with a checked cap below 1600"> <span><b>B. One table for all types</b>, a cap below 1600 checked by <code class="cr-inline">verify</code>. 3.4x the size at 400 attributes.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: one table per organization, entity rows with entity_type"> <span><b>C. One table per organization</b>. B's row costs in SQLite, and a table created when an organization first syncs.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 An attribute in conflict')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. A typed row while an attribute is in conflict</h3>
+    <p class="text-sm">Two devices replace <code class="cr-inline">evidence/file</code> on the same evidence concurrently; under <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d34p">D34' Per-attribute conflict policies, decided at accept</a> both values stay until a command resolves it. <code class="cr-inline">projected_facts</code> keeps both either way, and the conflict is in <code class="cr-inline">projection_conflicts</code>.</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="A: the column holds the value committed last (the LWW order), and the row has a conflicts column naming the attributes in conflict; the values come from the conflict"> <span><b>A. The value committed last, and the row says it is in conflict</b> (recommended). A <code class="cr-inline">conflicts</code> column lists the attributes in conflict. A screen still shows a value and can show "in conflict" without a second read; the other values come from the conflict.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="B: the column is empty (null) while in conflict"> <span><b>B. Empty while in conflict</b>. Nothing shown until someone resolves it; a required attribute then looks missing.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="C: a side table holds every value of an attribute in conflict"> <span><b>C. A side table of values</b>. The second table and second reduce that <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d144">D144 A set is entities</a> avoided.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q3', 'Q3 Required')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q3. "Required" on the attribute</h3>
+    <p class="text-sm">You listed what is required as part of an attribute's Schema. Required is an acceptance rule (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d125">D125 Acceptance rules</a>), and D125 fails <code class="cr-inline">verify</code> on a rule without a positive control. Nothing can be a positive control for required before <a class="cr-link" href="../issues/0069-accept-checks-every-change.md">I69 Accept checks every change</a>'s rule runner exists. The range is different: it is in the value Schema, so the projector checks it from the start.</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="A: I66 adds value and description; required is declared on the attribute by I69, with its positive control; noted on I69"> <span><b>A. Value and description now; required with I69</b> (recommended). Required is declared on the same <code class="cr-inline">AttributeSpec</code> once I69 can check it. I69 gets a comment.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q3" value="B: declare required now, unchecked until I69"> <span><b>B. Declare it now</b>, unchecked until I69. A declaration that nothing checks.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q4', 'Q4 The value Schema')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q4. An attribute's value is an Effect Schema (section 1, round 2)</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="A: as in section 1 round 2: value is an Effect Schema with Effect's description annotation; v from toCodecStringTree or toCodecJson, canonical by round trip; columns from toRepresentation, Arrow types for the columnar side; policy, defining and authority stay fields"> <span><b>A. As in section 1</b> (recommended). Policy, defining and authority stay plain fields: they say how the catalog treats a fact, not what a value is.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q4" value="B: A, and policy, defining and authority move into custom annotations on the Schema too, so an entity type is one Schema.Struct"> <span><b>B. A, and the rest moves into Schema annotations</b>, so an entity type is one <code class="cr-inline">Schema.Struct</code> and nothing else. Custom annotations are untyped unless declared by module augmentation.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<footer class="cr-src">Sources: <code class="cr-inline">libs/datom/src/catalog.ts</code>, <code class="cr-inline">projector.ts</code>, <code class="cr-inline">read-models.ts</code>, <code class="cr-inline">visibility.ts</code> and <code class="cr-inline">suites/changesets.ts</code> at <code class="cr-inline">f14d0cb9e</code>; the values written by <code class="cr-inline">features/evidence/model</code>, <code class="cr-inline">libs/workflow-engine</code>, <code class="cr-inline">libs/sync/server</code> and <code class="cr-inline">libs/blobs</code>; I63, I66, I69; the decision log (D34', D37, D43, D44, D107, D110, D121, D125, D144); ADR-0010, ADR-0011. The measurement was run on 2026-10-29 on this Mac with a throwaway script outside the repo, so it is not qualification evidence.</footer>
+
+</div>
+</body>
+</html>

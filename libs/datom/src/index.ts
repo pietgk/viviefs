@@ -72,6 +72,18 @@ export {
   identityCatalog,
   indexCatalog,
 } from './catalog.ts'
+export {
+  columnDeclaration,
+  columnSelection,
+  columnType,
+  compareBytes,
+  decodeText,
+  descriptionOf,
+  encodeText,
+  fromColumn,
+  toColumn,
+} from './values.ts'
+export type { ColumnImplementation, ValueSchema } from './values.ts'
 export { accountId } from './account.ts'
 export type {
   AttributeLookup,
@@ -102,9 +114,10 @@ export {
   isVisible,
   reduceAll,
   reduceAttribute,
+  visibilityIndex,
   visibleFacts,
 } from './visibility.ts'
-export type { StoredFact } from './visibility.ts'
+export type { StoredFact, VisibilityIndex } from './visibility.ts'
 export {
   Projector,
   prefixesOf,
@@ -117,5 +130,7 @@ export type {
   FactQuery,
   ProjectResult,
   ProjectedFact,
+  RowQuery,
   StatusRow,
 } from './projector.ts'
+export type { EntityRow } from './typed-rows.ts'

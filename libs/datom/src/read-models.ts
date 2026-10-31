@@ -84,4 +84,8 @@ export const migrateReadModels: Effect.Effect<
     pg: () => migratePg,
     orElse: () => migrateSqlite,
   })
+  yield* sql`CREATE TABLE IF NOT EXISTS read_model_shape (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    statements TEXT NOT NULL
+  )`
 })
