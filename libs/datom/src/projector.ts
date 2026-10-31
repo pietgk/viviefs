@@ -843,10 +843,15 @@ const makeProjector = (catalog: Catalog) =>
     })
 
     // A changed catalog means new tables: replay the log, never migrate (D44).
-    if (yield* typed.ensure) {
-      yield* clearReadModels
-      yield* project()
-    }
+    // One transaction, so a replay that stops leaves the old shape to retry.
+    yield* sql.withTransaction(
+      Effect.gen(function* () {
+        if (yield* typed.ensure) {
+          yield* clearReadModels
+          yield* project()
+        }
+      }),
+    )
 
     return Projector.of({
       project,

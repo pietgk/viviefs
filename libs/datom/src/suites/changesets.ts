@@ -47,6 +47,7 @@ export const P05_CHECK_NAMES = [
   'draft rows',
   'rows match facts',
   'catalog change rebuilds',
+  'stopped replay',
 ] as const
 
 export const P05_CHECK_COUNT = P05_CHECK_NAMES.length
@@ -62,6 +63,7 @@ const Stock = {
   countedAt: 'suite/stock/counted-at',
   bins: 'suite/stock/bins',
   label: 'suite/stock/label',
+  note: 'suite/stock/note',
 } as const
 
 const FILE_A = `blob:${'a'.repeat(64)}`
@@ -110,6 +112,13 @@ const suiteCatalog: Catalog = {
           name: Stock.label,
           value: Schema.String.annotate(described('The printed label.')),
           policy: 'human-conflict',
+        },
+        {
+          name: Stock.note,
+          value: Schema.NullOr(Schema.String).annotate(
+            described('A note, or null when it was cleared.'),
+          ),
+          policy: 'lww',
         },
       ],
     },
@@ -170,6 +179,14 @@ export const runChangesetChecks = (
       Layer.provide(Layer.succeed(HlcClock, clock.service)),
     )
   const layer = layerFor(suiteCatalog)
+  // A log that stops answering, as an app stopped during a replay would.
+  const stoppingLog = Layer.effect(
+    LogStore,
+    Effect.gen(function* () {
+      const store = yield* LogStore
+      return LogStore.of({ ...store, streamFrom: () => Effect.die('stopped') })
+    }),
+  )
   const use = <A, E, R>(body: Effect.Effect<A, E, R>) =>
     body.pipe(Effect.provide(layer), Effect.scoped)
 
@@ -812,6 +829,8 @@ export const runChangesetChecks = (
               '2026-10-30T12:00:00.000Z',
             )
             yield* selfCommit(line('1'), Stock.bins, '["a1","b2"]')
+            yield* selfCommit(line('1'), Stock.note, '"hello"')
+            yield* selfCommit(line('2'), Stock.note, 'null')
             yield* projector.project()
             const rows = yield* projector.rows({
               type: 'stock',
@@ -835,6 +854,15 @@ export const runChangesetChecks = (
             }
             if (rows[0]?.values[Stock.counted] !== undefined) {
               throw new Error(`unset ${JSON.stringify(rows[0])}`)
+            }
+            if (first?.[Stock.note] !== 'hello') {
+              throw new Error(`json string ${JSON.stringify(first)}`)
+            }
+            if (rows[0]?.values[Stock.note] !== null) {
+              throw new Error(`json null ${JSON.stringify(rows[0])}`)
+            }
+            if (rows[2] && Stock.note in rows[2].values) {
+              throw new Error(`no note ${JSON.stringify(rows[2])}`)
             }
             return { order: order.length }
           }),
@@ -987,6 +1015,7 @@ export const runChangesetChecks = (
             yield* selfCommit(line('2'), Stock.stock, '2')
             yield* selfCommit(line('2'), Stock.quantity, '30')
             yield* selfCommit(line('3'), Stock.stock, '3')
+            yield* selfCommit(line('4'), Stock.stock, '4')
             yield* projector.project()
             const cs = yield* store.mint()
             yield* addMember(cs, line('2'), Stock.quantity, '4', 'author-a')
@@ -1001,8 +1030,8 @@ export const runChangesetChecks = (
                   ...(actor ? { actor } : {}),
                 })
                 .pipe(Effect.map((rows) => rows.map((row) => row.e).join()))
-            const before = [line('1'), line('2'), line('3')].join()
-            const after = [line('2'), line('1'), line('3')].join()
+            const before = [line('1'), line('2'), line('3'), line('4')].join()
+            const after = [line('2'), line('1'), line('3'), line('4')].join()
             if ((yield* order('committed')) !== before) {
               throw new Error(`committed ${yield* order('committed')}`)
             }
@@ -1011,6 +1040,36 @@ export const runChangesetChecks = (
             }
             if ((yield* order('draft', 'author-a')) !== after) {
               throw new Error(`author ${yield* order('draft', 'author-a')}`)
+            }
+            // UTF-8 byte order, which differs from UTF-16 code unit order here.
+            yield* selfCommit(line('1'), Stock.label, '\uE000')
+            yield* selfCommit(line('2'), Stock.label, '\u{1F600}')
+            yield* projector.project()
+            const byLabel = (view: 'committed' | 'draft') =>
+              projector
+                .rows({
+                  type: 'stock',
+                  view,
+                  actor: 'author-b',
+                  prefix: list,
+                  orderBy: Stock.label,
+                })
+                .pipe(Effect.map((rows) => rows.map((row) => row.e).join()))
+            const inBytes = [line('1'), line('2'), line('3'), line('4')].join()
+            if ((yield* byLabel('committed')) !== inBytes) {
+              throw new Error(`committed ${yield* byLabel('committed')}`)
+            }
+            if ((yield* byLabel('draft')) !== inBytes) {
+              throw new Error(`draft ${yield* byLabel('draft')}`)
+            }
+            const unsorted = yield* projector.rows({
+              type: 'stock',
+              view: 'draft',
+              actor: 'author-b',
+              prefix: list,
+            })
+            if (unsorted.map((row) => row.e).join() !== inBytes) {
+              throw new Error(`unsorted ${JSON.stringify(unsorted)}`)
             }
             return { draft: 'reordered' }
           }),
@@ -1145,6 +1204,67 @@ export const runChangesetChecks = (
             throw new Error(`added ${JSON.stringify(rows.added)}`)
           }
           return { rebuilt: true }
+        }),
+      ),
+    )
+
+    checks.push(
+      yield* runCheck(
+        'stopped replay',
+        Effect.gen(function* () {
+          const list = yield* use(ensureList('p05v', '1', 'stock room'))
+          const line = `${list}/S1`
+          yield* use(
+            Effect.gen(function* () {
+              const projector = yield* Projector
+              yield* selfCommit(line, Stock.stock, '1')
+              yield* selfCommit(line, Stock.quantity, '5')
+              yield* projector.project()
+            }),
+          )
+          const wider: Catalog = {
+            types: suiteCatalog.types.map((type) =>
+              type.name === 'stock'
+                ? {
+                    ...type,
+                    attributes: [
+                      ...type.attributes,
+                      {
+                        name: 'suite/stock/bay',
+                        value: Schema.Int.annotate(described('The bay.')),
+                        policy: 'lww' as const,
+                      },
+                    ],
+                  }
+                : type,
+            ),
+          }
+          const stopped = projectorLayer(wider).pipe(
+            Layer.provide(stoppingLog),
+            Layer.provideMerge(storeLayer),
+            Layer.provideMerge(Reactivity.layer),
+            Layer.provide(Layer.succeed(HlcClock, clock.service)),
+          )
+          const first = yield* Effect.exit(
+            Effect.gen(function* () {
+              return yield* Projector
+            }).pipe(Effect.provide(stopped), Effect.scoped),
+          )
+          if (first._tag !== 'Failure') {
+            throw new Error('the replay was not stopped')
+          }
+          const rows = yield* Effect.gen(function* () {
+            const projector = yield* Projector
+            return yield* projector.rows({
+              type: 'stock',
+              view: 'committed',
+              prefix: list,
+            })
+          }).pipe(Effect.provide(layerFor(wider)), Effect.scoped)
+          if (rows[0]?.values[Stock.quantity] !== 5) {
+            throw new Error(`rows ${JSON.stringify(rows)}`)
+          }
+          return { resumed: true }
         }),
       ),
     )

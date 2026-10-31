@@ -73,7 +73,10 @@ export {
   indexCatalog,
 } from './catalog.ts'
 export {
+  columnDeclaration,
+  columnSelection,
   columnType,
+  compareBytes,
   decodeText,
   descriptionOf,
   encodeText,

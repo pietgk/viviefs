@@ -17,7 +17,7 @@ describe('P05 changeset picks', () => {
   })
 
   it('names the conformance checks including the incomplete-changeset positive control', () => {
-    expect(P05_CHECK_COUNT).toBe(21)
+    expect(P05_CHECK_COUNT).toBe(22)
     expect(P05_CHECK_NAMES).toContain('incomplete changeset')
     expect(P05_CHECK_NAMES).toContain('basis write-once')
     expect(P05_CHECK_NAMES).toContain('rebuild equals incremental')

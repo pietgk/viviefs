@@ -105,6 +105,50 @@ export const columnType = (
   implementation: ColumnImplementation,
 ): string => COLUMN_TYPES[kindOf(schema)][implementation]
 
+/** A table's column: byte order on Postgres too, as on SQLite (D110). */
+export const columnDeclaration = (
+  schema: ValueSchema,
+  implementation: ColumnImplementation,
+): string => {
+  const type = columnType(schema, implementation)
+  return implementation === 'postgres' && type === 'TEXT'
+    ? 'TEXT COLLATE "C"'
+    : type
+}
+
+/**
+ * How to select a quoted column. JSONB as text: a driver's parsed value cannot
+ * tell JSON `null` from an empty column, or a JSON string from JSON text.
+ */
+export const columnSelection = (
+  quotedName: string,
+  schema: ValueSchema,
+  implementation: ColumnImplementation,
+): string =>
+  columnType(schema, implementation) === 'JSONB'
+    ? `${quotedName}::text AS ${quotedName}`
+    : quotedName
+
+/** Moves surrogates past the code units above them, into code point order. */
+const codePointRank = (unit: number): number => {
+  if (unit >= 0xe000) return unit - 0x800
+  return unit >= 0xd800 ? unit + 0x2000 : unit
+}
+
+/**
+ * Code point order, which is the byte order of UTF-8: what SQLite and
+ * `COLLATE "C"` sort by. JavaScript's `<` compares UTF-16 code units.
+ */
+export const compareBytes = (left: string, right: string): number => {
+  const shared = Math.min(left.length, right.length)
+  for (let index = 0; index < shared; index++) {
+    const a = left.charCodeAt(index)
+    const b = right.charCodeAt(index)
+    if (a !== b) return codePointRank(a) - codePointRank(b)
+  }
+  return left.length - right.length
+}
+
 /** The description the Schema carries, for people and agents (D209). */
 export const descriptionOf = (schema: ValueSchema): string | undefined => {
   const { description } = Schema.toJsonSchemaDocument(schema).schema
@@ -211,19 +255,18 @@ const textOfColumn = (
       return raw === 1 || raw === true ? 'true' : 'false'
     case 'instant':
       return isoOf(implementation, raw)
-    case 'json':
-      return typeof raw === 'string' ? raw : JSON.stringify(raw)
     case 'integer':
     case 'real':
     case 'text':
+    case 'json':
       return String(raw)
   }
 }
 
 /**
  * The typed value a column holds. The text was checked when it was projected,
- * and a JSONB column does not keep key order, so this does not ask for the
- * canonical text again.
+ * and JSONB read as text does not keep key order or spacing, so this does not
+ * ask for the canonical text again.
  */
 export const fromColumn = (
   schema: ValueSchema,

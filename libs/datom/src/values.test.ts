@@ -3,7 +3,10 @@ import * as DateTime from 'effect/DateTime'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import {
+  columnDeclaration,
+  columnSelection,
   columnType,
+  compareBytes,
   decodeText,
   encodeText,
   fromColumn,
@@ -131,13 +134,48 @@ describe('a value in a column', () => {
     ).toEqual(Option.some(noon))
   })
 
-  it('reads a structure from JSON text or from a parsed JSONB value', () => {
+  it('reads a structure from JSON text, in the form JSONB gives it', () => {
     const lease = { device: 'd1', epoch: 2 }
     expect(fromColumn(Lease, 'sqlite', JSON.stringify(lease))).toEqual(
       Option.some(lease),
     )
-    expect(fromColumn(Lease, 'postgres', { epoch: 2, device: 'd1' })).toEqual(
-      Option.some(lease),
-    )
+    expect(
+      fromColumn(Lease, 'postgres', '{"epoch": 2, "device": "d1"}'),
+    ).toEqual(Option.some(lease))
+  })
+
+  it('keeps a JSON string and JSON null apart from an empty column', () => {
+    const Note = Schema.NullOr(Schema.String)
+    expect(fromColumn(Note, 'postgres', '"hello"')).toEqual(Option.some('hello'))
+    expect(fromColumn(Note, 'postgres', 'null')).toEqual(Option.some(null))
+  })
+})
+
+describe('declaring and selecting a column', () => {
+  it('sorts text by bytes on both stores', () => {
+    expect(columnDeclaration(Schema.String, 'postgres')).toBe('TEXT COLLATE "C"')
+    expect(columnDeclaration(Schema.String, 'sqlite')).toBe('TEXT')
+    expect(columnDeclaration(Lease, 'postgres')).toBe('JSONB')
+    expect(columnDeclaration(Quantity, 'postgres')).toBe('BIGINT')
+  })
+
+  it('selects JSONB as text and everything else as it is', () => {
+    expect(columnSelection('"a"', Lease, 'postgres')).toBe('"a"::text AS "a"')
+    expect(columnSelection('"a"', Lease, 'sqlite')).toBe('"a"')
+    expect(columnSelection('"a"', Quantity, 'postgres')).toBe('"a"')
+  })
+})
+
+describe('text in byte order', () => {
+  it('orders by code point, not by UTF-16 code unit', () => {
+    expect(compareBytes('\uE000', '\u{1F600}')).toBeLessThan(0)
+    expect(compareBytes('Banana', 'apple')).toBeLessThan(0)
+  })
+
+  it('walks past a shared start, surrogate pairs included', () => {
+    expect(compareBytes('\u{1F600}a', '\u{1F600}b')).toBeLessThan(0)
+    expect(compareBytes('ab', 'ab')).toBe(0)
+    expect(compareBytes('ab', 'abc')).toBeLessThan(0)
+    expect(compareBytes('abc', 'ab')).toBeGreaterThan(0)
   })
 })

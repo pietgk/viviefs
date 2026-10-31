@@ -12,7 +12,9 @@ import type { SqlError } from 'effect/sql/SqlError'
 import type { Catalog, EntityTypeSpec } from './catalog.ts'
 import { rowsOf } from './rows.ts'
 import {
-  columnType,
+  columnDeclaration,
+  columnSelection,
+  compareBytes,
   decodeText,
   fromColumn,
   toColumn,
@@ -64,16 +66,12 @@ const createStatement = (
   type: EntityTypeSpec,
   implementation: ColumnImplementation,
 ): string => {
-  // Byte order on Postgres too, so text sorts as it does on SQLite (D110).
-  const collated = (column: string) =>
-    implementation === 'postgres' && column === 'TEXT'
-      ? 'TEXT COLLATE "C"'
-      : column
   const columns = type.attributes.map(
     (spec) =>
-      `${quoted(spec.name)} ${collated(columnType(spec.value, implementation))}`,
+      `${quoted(spec.name)} ${columnDeclaration(spec.value, implementation)}`,
   )
-  return `CREATE TABLE ${quoted(tableOf(type))} (e ${collated('TEXT')} PRIMARY KEY, conflicts TEXT NOT NULL, ${columns.join(', ')})`
+  const key = columnDeclaration(Schema.String, implementation)
+  return `CREATE TABLE ${quoted(tableOf(type))} (e ${key} PRIMARY KEY, conflicts TEXT NOT NULL, ${columns.join(', ')})`
 }
 
 const rangeOf = (prefix: string) => {
@@ -98,31 +96,29 @@ export const makeTypedTables = (catalog: Catalog) =>
     const shape = JSON.stringify({ tables, statements })
 
     /** Creates the tables. True when they are new, so the log must be replayed. */
-    const ensure: Effect.Effect<boolean, SqlError> = sql.withTransaction(
-      Effect.gen(function* () {
-        const stored = yield* sql`
-          SELECT statements FROM read_model_shape WHERE id = 1
-        `.pipe(rowsOf(ShapeRow))
-        const current = stored[0]?.statements
-        if (current === shape) return false
-        const previous = current
-          ? (yield* Schema.decodeUnknownEffect(StoredShape)(current).pipe(
-              Effect.orDie,
-            )).tables
-          : []
-        for (const table of new Set([...previous, ...tables])) {
-          yield* sql.unsafe(`DROP TABLE IF EXISTS ${quoted(table)}`)
-        }
-        for (const statement of statements) {
-          yield* sql.unsafe(statement)
-        }
-        yield* sql`
-          INSERT INTO read_model_shape (id, statements) VALUES (1, ${shape})
-          ON CONFLICT (id) DO UPDATE SET statements = ${shape}
-        `
-        return true
-      }),
-    )
+    const ensure: Effect.Effect<boolean, SqlError> = Effect.gen(function* () {
+      const stored = yield* sql`
+        SELECT statements FROM read_model_shape WHERE id = 1
+      `.pipe(rowsOf(ShapeRow))
+      const current = stored[0]?.statements
+      if (current === shape) return false
+      const previous = current
+        ? (yield* Schema.decodeUnknownEffect(StoredShape)(current).pipe(
+            Effect.orDie,
+          )).tables
+        : []
+      for (const table of new Set([...previous, ...tables])) {
+        yield* sql.unsafe(`DROP TABLE IF EXISTS ${quoted(table)}`)
+      }
+      for (const statement of statements) {
+        yield* sql.unsafe(statement)
+      }
+      yield* sql`
+        INSERT INTO read_model_shape (id, statements) VALUES (1, ${shape})
+        ON CONFLICT (id) DO UPDATE SET statements = ${shape}
+      `
+      return true
+    })
 
     const clear = Effect.gen(function* () {
       for (const table of tables) {
@@ -163,8 +159,15 @@ export const makeTypedTables = (catalog: Catalog) =>
         const order = query.orderBy
           ? sql`ORDER BY ${sql(query.orderBy)} IS NULL, ${sql(query.orderBy)}, e`
           : sql`ORDER BY e`
+        const columns = [
+          'e',
+          'conflicts',
+          ...type.attributes.map((spec) =>
+            columnSelection(quoted(spec.name), spec.value, implementation),
+          ),
+        ].join(', ')
         const rows = yield* sql`
-          SELECT * FROM ${sql(tableOf(type))} ${where} ${order}
+          SELECT ${sql.literal(columns)} FROM ${sql(tableOf(type))} ${where} ${order}
         `.pipe(rowsOf(StoredRow))
         return rows.map((stored): EntityRow => {
           const values: Record<string, unknown> = {}
@@ -205,9 +208,12 @@ export const makeTypedTables = (catalog: Catalog) =>
           if (a !== b) {
             if (a === null) return 1
             if (b === null) return -1
+            if (typeof a === 'string' && typeof b === 'string') {
+              return compareBytes(a, b)
+            }
             return a < b ? -1 : 1
           }
-          return left.e < right.e ? -1 : left.e > right.e ? 1 : 0
+          return compareBytes(left.e, right.e)
         })
         .map((row): EntityRow => {
           const values: Record<string, unknown> = {}

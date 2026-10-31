@@ -46,6 +46,8 @@ One table per entity type, [D37 Log store tables][D37] as written ([D210 The row
 
 2026-10-30: Resolved. [P05 Changesets and projections][P05] passes its 21 checks on `sqlite-node`, Postgres (PGlite), iOS, Android and web, and [P08 UI three-way prototype][P08] passes, both in the ledger on `f2c0f0586`. That commit's message says 20 checks; it is 21. [P01 Platform on SDK 58][P01]-[P11 Identity][P11] then pass in one sequential run on `241635670`, clean tree. The Hermes run of `Schema.toRepresentation` and the typed tables is [P05][P05]'s iOS and Android runs.
 
+2026-10-31: Review of the PR found three defects, each reproduced by a failing check first and fixed. A replay that stopped left the new shape saved and rows missing, so the shape change, the clear and the replay are now one transaction (the check `stopped replay`; [P05 Changesets and projections][P05] has 22 checks). Postgres lost JSON strings and JSON `null` read from JSONB, so JSON columns are read as text. The draft view sorted by UTF-16 code units, so it now sorts by bytes as SQL does. Still unaligned: `orderBy` on a JSON attribute, where SQLite sorts its text and Postgres its JSONB.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0010]: ../adr/0010-entity-ids-and-defining-attributes.md
