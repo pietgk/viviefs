@@ -40,6 +40,9 @@ Every other open issue has a `Decide when:` line and nothing to do until it fire
 or Reference > Issues on the docs site. The vivief review is closed ([I34 vivief as the source of ViViEfs's concepts][I34], [D213 The vivief review closes without maps 4-6][D213]); the inputs for its maps 5 and 6
 stay with [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24], [I25 Ideas batch: understanding and maintaining code bases][I25], [I29 Ideas batch: agents that record a replayable run][I29], [I32 Ideas batch: explain any word on demand][I32] and [I33 Ideas batch: abstractions that constrain agents][I33].
 
+The XDevl research area is not on `main`: its pull request (pietgk/viviefs#2) was closed without merging on
+2026-11-10, its branch `cursor/xdevl-living-research-2a01` is kept, and the closing comment says what a restart needs.
+
 ## Where things stand (2026-11-10)
 
 - **Code**: `main` is clean. [P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `8caa2e6c2` (2026-10-31, run
