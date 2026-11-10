@@ -1,6 +1,6 @@
 # I34: vivief as the source of ViViEfs's concepts
 
-Status: needs-triage
+Status: resolved
 
 Category: enhancement
 
@@ -142,6 +142,18 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 
 2026-10-29: map 3 is done. [I96 Accept the vocabulary][I96] checked map 3's destination: every map-3 row of the inventory and every waiting word has a disposition, every term passed the single-word rule, and the docs site links each term only in our sense; the human accepted the glossary as it stands ([D205 Trust level and encryption level keep their words][D205]-[D208 The lease is marked, and goes with the journal fence][D208]). Map 4 judges it with a reader ([I21 Test the glossary with a reader outside software][I21]). The Schedule resumes with phase 3; maps 4-6 are not charted.
 
+2026-11-10: Resolved by [D213 The vivief review closes without maps 4-6][D213], with the human: the review closes with maps 1-3 done and maps 4-6 not charted. It paused the Schedule for 36 days and gave ViViEfs what it is about ([ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032]), its twelve foundation concepts and a glossary the human accepted; it delivered no pattern, and charting three more maps would not deliver one either.
+
+What was done: map 1, [the vivief inventory](../research/2026-10-06-vivief-inventory.md) (I35-[I46 Review the vivief inventory][I46]); map 2, [the foundation concepts](../plan/foundation-concepts/map.md) (I47-[I59 Bring ADR-0002 and the vision page in line with I47][I59]); map 3, [the vocabulary](../plan/vocabulary/map.md) (I88-[I96 Accept the vocabulary][I96]).
+
+Where the inputs for the maps not charted live, so nothing is lost:
+
+- **Map 4, from a concept to the first exemplar**, is not charted but done, as the work on [I2 Accept the log-store guide][I2]: the log-store guide is made acceptable one lesson at a time, starting from the gap in the human's words recorded there (this issue's question "why is the log-store guide not yet acceptable"). [I22 Claims and evidence show each gate three times][I22], [I32 Ideas batch: explain any word on demand][I32] and [I33 Ideas batch: abstractions that constrain agents][I33] keep their triggers, and a trigger that names map 4 fires with the work on [I2][I2]; [I21 Test the glossary with a reader outside software][I21], the reader test, stays open.
+- **Map 5, showing and understanding**: [I25 Ideas batch: understanding and maintaining code bases][I25] is its starting point, with [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24] and [I32 Ideas batch: explain any word on demand][I32], and the inventory's 54 map-5 rows, the 23 `DevAC tooling` rows among them. The comments of 2026-10-07 and 2026-10-08 above hold its other inputs.
+- **Map 6, agents and trust**: [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24], [I29 Ideas batch: agents that record a replayable run][I29] and [I33 Ideas batch: abstractions that constrain agents][I33], the inventory's 82 map-6 rows, [the record of I78](../research/2026-10-27-effect-vocabulary-against-ours.md) (its ideas for map 6) and [D203 The lab qualifier, the four states and the kinds of intent wait][D203] (the kinds of intent).
+
+A trigger that names map 5 or 6 fires when the human asks for that map. This issue's own open questions that no map answered (the decision framework's shape for deriving a pattern, and what counts as evidence that learning verifies) are map 4's, so they go with [I2 Accept the log-store guide][I2]: they are answered by what making lesson 1 shows, and written down in "How a lesson is made" after the guide is accepted.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0019]: ../adr/0019-ui-state-ownership-and-query-atoms.md
@@ -157,8 +169,10 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 [D117]: ../plan/bootstrap/02-decision-log.md#d117
 [D160]: ../plan/bootstrap/02-decision-log.md#d160
 [D162]: ../plan/bootstrap/02-decision-log.md#d162
+[D203]: ../plan/bootstrap/02-decision-log.md#d203
 [D205]: ../plan/bootstrap/02-decision-log.md#d205
 [D208]: ../plan/bootstrap/02-decision-log.md#d208
+[D213]: ../plan/bootstrap/02-decision-log.md#d213
 [D29]: ../plan/bootstrap/02-decision-log.md#d29
 [D31]: ../plan/bootstrap/02-decision-log.md#d31
 [D32]: ../plan/bootstrap/02-decision-log.md#d32
@@ -171,6 +185,7 @@ Each could be its own wayfinder map with its own destination; the order is a sug
 [D99]: ../plan/bootstrap/02-decision-log.md#d99
 [I2]: 0002-accept-the-log-store-guide.md
 [I21]: 0021-test-the-glossary-with-a-reader.md
+[I22]: 0022-claims-and-evidence-overlap.md
 [I24]: 0024-ideas-batch-andrej-karpathy-understanding.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md

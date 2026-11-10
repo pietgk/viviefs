@@ -514,6 +514,17 @@ Decided with the human in [I66](../../issues/0066-attribute-value-types.md), on 
 | <a id="d211"></a>D211 | A typed row while an attribute is in conflict | One column holds one value, and an attribute in human conflict holds several ([D34' Per-attribute conflict policies, decided at accept][D34']). The column holds the value committed last, and the row has a `conflicts` column naming the attributes in conflict. A screen shows a value and can show that it is in conflict without a second read; the other values come from the conflict. Not chosen: an empty column while in conflict, which makes a required attribute look missing; a side table of values, the second table [D144 A set is entities][D144] avoided. | Several values are the exception and a screen still needs something to show. |
 | <a id="d212"></a>D212 | Required comes with its check | An attribute's "required" is declared with [I69 Accept checks every change][I69], on the same `AttributeSpec`, not before it. The range needs no such wait: it is in the value Schema, so the projector checks it from the start. | Required is an acceptance rule, and a rule without a positive control fails `verify` ([D125 Acceptance rules][D125]). Nothing can be that control before [I69 Accept checks every change][I69]'s rule runner exists. |
 
+<a id="d213-d215"></a>
+## A clean slate, then one lesson made great (2026-11-10)
+
+Decided with the human on 2026-11-10, from a check of where the work stands: the code is healthy ([P01 Platform on SDK 58][P01]-[P11 Identity][P11] passed in one sequential run on `8caa2e6c2`, 2026-10-31) and the process around it is stuck. [D198 Map 3 finishes lean][D198] made the same check once, on 2026-10-28.
+
+| # | Name | Decision | Why |
+|---|---|---|---|
+| <a id="d213"></a>D213 | The vivief review closes without maps 4-6 | [I34 vivief as the source of ViViEfs's concepts][I34] is resolved with maps 1-3 done (the inventory, the foundation concepts, the vocabulary); maps 4-6 are not charted. Map 4's subject, the path from a concept to a pattern a human accepts, is not charted but done: it is the work on [I2 Accept the log-store guide][I2], one lesson at a time ([D215 The term format is settled on lesson 1's terms][D215]). Maps 5 and 6 have no session planned. Their inputs stay where they are: [I24 Ideas batch: understanding LLM output (Andrej Karpathy)][I24], [I25 Ideas batch: understanding and maintaining code bases][I25], [I29 Ideas batch: agents that record a replayable run][I29], [I32 Ideas batch: explain any word on demand][I32] and [I33 Ideas batch: abstractions that constrain agents][I33] keep their `Decide when:` triggers, and the inventory keeps its rows per map. A trigger that names map 4 fires with the work on [I2][I2]; one that names map 5 or 6 fires when the human asks for that map. Not chosen: charting maps 4-6 before building or teaching anything more. | 36 days after [I34 vivief as the source of ViViEfs's concepts][I34] paused the Schedule, there are 225 decisions, 38 ADRs and 101 issues, and no delivered pattern. A map is charted to reach a destination; map 4's destination is an accepted guide, and that is reached by making one. |
+| <a id="d214"></a>D214 | The build queue waits for the log-store guide | Phase 3's build issues ([I71 An append can land after a revocation][I71], [I69 Accept checks every change][I69], [I84 Build the access pattern][I84], [I80 Build the journal fence][I80], [I81 Build conflicts decided at accept][I81], [I85 Build the hash chain][I85], [I67 Minting entity id segments][I67]) and the app shell ([P12 UI on every platform][P12], [P13 Links and routing][P13]) are frozen until the human accepts the log-store guide ([I2 Accept the log-store guide][I2], [D63 Acceptance on the guide][D63]). The code stays as qualified. When building resumes, the journal's activity-name collision comes first ([I102 Distinct activity names can skip work][I102], from the repo-wide review). A session has one item in Now, ends with something to look at or run and not only decisions, and prototypes before deciding; a question the current lesson does not need gets a `Decide when:`. Not chosen: building beside the guide work. | A pattern is delivered only with an accepted guide ([ADR-0026 Verify - Qualify - Teach][ADR-0026]), and none has been delivered. Each pattern built without one widens what acceptance has to close, and two queues are two items in Now. |
+| <a id="d215"></a>D215 | The term format is settled on lesson 1's terms | Why the log-store guide is not acceptable, in the human's words, is recorded on [I2 Accept the log-store guide][I2]: no visuals; words before the idea; no real use; not made together; and under all of it, the glossary's term format is unsettled (the hover line, the paragraph with links, the `_Like_`, `_Not_` and `_Avoid_` lines, and the wish to see a term as an effect formula, [I30 Ideas batch: glossary entries written as effects][I30]). The dependency is inverted. The glossary does not have to be right before a lesson can be good: lesson 1, "A datom is one fact", is the test of the term format, on the handful of terms it teaches, and no other entry is touched until a lesson reaches it; [D94' The hover line][D94'] and [D174 Like, Not and Avoid lines][D174] hold for those entries meanwhile. The visual is a widget in the lesson that the learner operates; video stays outside this repository. Candidate formats are shown side by side in a throwaway prototype, and the format is chosen from the human's annotations on it, before anything is built. Not chosen: settling the format for all 131 terms first; a video in the lesson. | [ADR-0032 What ViViEfs is about and its foundation concepts][ADR-0032] says the language is checked by learning; this applies it for the first time. A format can only be judged where a learner meets it, and a doubt about all 131 entries blocked trust in every lesson built on them. |
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [ADR-0002]: ../../adr/0002-purpose-scope-and-exemplar.md
@@ -617,6 +628,7 @@ Decided with the human in [I66](../../issues/0066-attribute-value-types.md), on 
 [D199]: #d199
 [D2]: #d2
 [D204]: #d204
+[D215]: #d215
 [D22]: #d22
 [D24]: #d24
 [D25]: #d25
@@ -685,6 +697,7 @@ Decided with the human in [I66](../../issues/0066-attribute-value-types.md), on 
 [D98]: #d98
 [D98']: #d98p
 [D99]: #d99
+[I102]: ../../issues/0102-distinct-activity-names-can-skip-work.md
 [I11]: ../../issues/0011-quarantine-after-a-lost-lease.md
 [I12]: ../../issues/0012-partial-sync-and-history.md
 [I15]: ../../issues/0015-identity-keys-and-trust.md
@@ -692,10 +705,13 @@ Decided with the human in [I66](../../issues/0066-attribute-value-types.md), on 
 [I17]: ../../issues/0017-local-deletion-after-revoked-membership.md
 [I2]: ../../issues/0002-accept-the-log-store-guide.md
 [I21]: ../../issues/0021-test-the-glossary-with-a-reader.md
+[I24]: ../../issues/0024-ideas-batch-andrej-karpathy-understanding.md
 [I25]: ../../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I26]: ../../issues/0026-glossary-links-on-words-that-are-not-our-terms.md
+[I29]: ../../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md
 [I3]: ../../issues/0003-api-reference-for-effect-services.md
 [I30]: ../../issues/0030-ideas-batch-glossary-entries-written-as-effects.md
+[I32]: ../../issues/0032-ideas-batch-explain-any-word-on-demand.md
 [I33]: ../../issues/0033-ideas-batch-abstractions-that-constrain-agents.md
 [I34]: ../../issues/0034-vivief-as-the-source-of-viviefs-concepts.md
 [I46]: ../../issues/0046-review-the-vivief-inventory.md
