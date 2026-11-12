@@ -15,7 +15,7 @@
 
 ## Now
 
-**[I2 Accept the log-store guide][I2]: make the log-store guide acceptable, one lesson at a time.** All four lessons are in the docs with diagrams and widgets checked against the real code, after round 5 ([D216 Every lesson shows its idea][D216]-[D223 Each reader keeps its own place][D223]; [the lesson plan](log-store-guide/lesson-first.md), Where it stands). Round 5 took compaction out of the log store; [P04 Log store conformance][P04] and [P10 Trace projection][P10] lost a check each, so they run again at acceptance. The human reads them, the concepts page and Before you start on the site (`mise exec -- pnpm docs:prod`) and says what still trips them; that reply becomes at most seven changes. Then [I100 Address the repo-wide review findings][I100]'s open findings for the lesson (R02, R03, R08, R09), then lessons 2-4, then acceptance ([D63 Acceptance on the guide][D63]).
+**[I2 Accept the log-store guide][I2]: make the log-store guide acceptable, one lesson at a time.** All four lessons are in the docs with diagrams and widgets checked against the real code, after round 5 ([D216 Every lesson shows its idea][D216]-[D223 Each reader keeps its own place][D223]; [the lesson plan](log-store-guide/lesson-first.md), Where it stands). Round 5 took compaction out of the log store. [P04 Log store conformance][P04], [P05 Changesets and projections][P05], [P09 Sync][P09], [P10 Trace projection][P10] and [P11 Identity][P11] then passed on `752513846` (2026-11-12, `pnpm ledger`). The human reads them, the concepts page and Before you start on the site (`mise exec -- pnpm docs:prod`) and says what still trips them; that reply becomes at most seven changes. Then [I100 Address the repo-wide review findings][I100]'s open findings for the lesson (R02, R03, R08, R09), then lessons 2-4, then acceptance ([D63 Acceptance on the guide][D63]).
 
 ## Next
 
@@ -87,6 +87,7 @@ The XDevl research area is not on `main`: its pull request (pietgk/viviefs#2) wa
 [P01]: bootstrap/06-qualification-gates.md#p01
 [P04]: bootstrap/06-qualification-gates.md#p04
 [P05]: bootstrap/06-qualification-gates.md#p05
+[P09]: bootstrap/06-qualification-gates.md#p09
 [P10]: bootstrap/06-qualification-gates.md#p10
 [P11]: bootstrap/06-qualification-gates.md#p11
 [P12]: bootstrap/06-qualification-gates.md#p12
