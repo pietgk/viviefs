@@ -1,8 +1,10 @@
 # I75: Expo 58's production bundle carries its development tooling
 
-Status: needs-triage
+Status: ready-for-agent
 
 Category: bug
+
+Decide when: the first production build of the evidence client
 
 Found: 2026-10-22
 
@@ -17,3 +19,5 @@ Ruled out on the Linux arm64 sandbox, each with a clean `expo export --platform 
 To do: find which module's require survives (Metro 0.87's dependency collection or Expo's transform), reproduce it in a new `create-expo-app` project on SDK 58, and draft an upstream issue for a human to post ([upstream-issues.md](../plan/upstream-issues.md)).
 
 ## Comments
+
+2026-11-10: Triaged with the human and parked. Nothing ships a production bundle yet, and the bundle-size gate passes with room (5.52 MB iOS and 7.63 MB Android of 10 MB), so about 30 KB of development code costs nothing today. The work is an agent's when the trigger fires: find the require that survives, reproduce it in a new `create-expo-app` project on SDK 58, and draft the upstream issue for a human to post.

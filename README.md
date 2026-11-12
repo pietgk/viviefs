@@ -20,9 +20,29 @@ patterns, and documented so that humans and LLMs learn it the same way.
 
 ## Status
 
-Design phase. The complete design context lives in [docs/plan/bootstrap](docs/plan/bootstrap/README.md). No
-production code exists yet; the first work is a set of qualification gates that prove the platform and the core
-patterns.
+The foundation is built and qualified; no pattern is delivered yet.
+
+- **Built**: the libraries in `libs/`, the evidence app and its server in `apps/` and `features/`, and the checks
+  in `tools/`. Gates P01-P11 passed in one sequential run on `8caa2e6c2` (2026-10-31); what each gate proves is on
+  the docs site under Reference > Claims.
+- **Not delivered yet**: a pattern is delivered only with qualification evidence, an exemplar that passes `verify`,
+  and a guide a person accepted. The first guide, [the log store](apps/docs/src/content/docs/guides/log-store/index.mdx),
+  is a draft.
+- **What is being worked on**: [docs/plan/next-session.md](docs/plan/next-session.md), one screen.
+- **Why it is built this way**: the design context in [docs/plan/bootstrap](docs/plan/bootstrap/README.md) and the
+  decisions in [docs/adr](docs/adr/README.md).
+
+## Try it
+
+The toolchain is pinned in `mise.toml` (Node, pnpm, bun, and Java for the Android emulator).
+
+```sh
+mise install
+mise exec -- pnpm install
+mise exec -- pnpm docs:prod                  # the docs site, with the guides
+mise exec -- pnpm exercise log-store 01.01   # the first exercise: it fails until you solve it
+mise exec -- pnpm verify                     # every check a change must pass
+```
 
 ## Licence
 

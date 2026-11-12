@@ -4,7 +4,7 @@ Status: ready-for-human
 
 Category: enhancement
 
-Decide when: [I21 Test the glossary with a reader outside software][I21]'s reader test shows a newcomer needs what a term takes in and gives out, or a guide needs a term's deterministic and reasoning parts
+Decide when: fired on 2026-11-10 (the last comment). What is left is narrow: the effect form, tried on lesson 1's terms in a prototype ([D215 The term format is settled on lesson 1's terms][D215])
 
 Found: 2026-10-04
 
@@ -114,6 +114,8 @@ What this could give:
 
 2026-10-28: from [I89 How a word is chosen and written][I89]. Its "Avoid with a reason" is answered: a word we used and retired names, on its Avoid line, the decision that retired it, and that row holds the reason ([D175 A retired word names its decision][D175]). The glossary's groups now follow the one turn ([D177 Groups follow the one turn][D177]). An entry now ends with labelled `_Like_`, `_Not_` and `_Avoid_` lines ([D174 Like, Not and Avoid lines][D174]); a fourth form, if a reader needs it, would be one more label. What is left is unchanged: the fourth form waits for evidence from [I21 Test the glossary with a reader outside software][I21].
 
+2026-11-10: the `Decide when:` fired, by its second half: a guide needs it. The human named the unsettled term format as the reason under all the others why the log-store guide is not acceptable ([I2 Accept the log-store guide][I2]), and part of that is the wish to see a term as an effect formula. This issue is narrowed to that: the effect form, tried on the terms lesson 1 of the log-store guide teaches (Datom, Entity, Attribute, Log store, `tx` and the log position), shown beside today's entry in a throwaway prototype, and chosen or dropped from the human's annotations ([D215 The term format is settled on lesson 1's terms][D215]). The hypothesis the prototype tests, not a decision: a formula fits an operation, not a noun. `append: (log, datom) => (log', inserted or duplicate)` is at once the step the lesson's widget shows, the function of the widget's model and the signature of `LogStore.append`; a noun such as Datom is what appears inside formulas. That agrees with what [I56 One shape at every level?][I56] left here (an effect form fits steps over kept state, not things) and with [D166 No formula with names of its own][D166] (each handler keeps its signature in its own terms). The other questions in this issue's body (levels, a notation `verify` can parse, test specs written in glossary terms) are not opened: each waits until a lesson needs it.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D130]: ../plan/bootstrap/02-decision-log.md#d130
@@ -125,9 +127,11 @@ What this could give:
 [D174]: ../plan/bootstrap/02-decision-log.md#d174
 [D175]: ../plan/bootstrap/02-decision-log.md#d175
 [D177]: ../plan/bootstrap/02-decision-log.md#d177
+[D215]: ../plan/bootstrap/02-decision-log.md#d215
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
+[I2]: 0002-accept-the-log-store-guide.md
 [I21]: 0021-test-the-glossary-with-a-reader.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I26]: 0026-glossary-links-on-words-that-are-not-our-terms.md
