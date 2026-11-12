@@ -20,6 +20,15 @@
         "cwd": "apps/docs"
       }
     },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "pnpm exec vitest run --config vitest.integration.config.ts",
+        "cwd": "apps/docs"
+      }
+    },
     "build": {
       "executor": "nx:run-commands",
       "cache": true,

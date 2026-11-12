@@ -83,7 +83,7 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          items: [{ label: 'Guide index', slug: 'guides' }, ...guideGroups(repositoryRoot)],
+          items: [{ label: 'Guide index', slug: 'guides' }, { label: 'Before you start', slug: 'guides/before-you-start' }, ...guideGroups(repositoryRoot)],
         },
         {
           label: 'Reference',

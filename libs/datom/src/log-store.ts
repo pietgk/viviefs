@@ -22,7 +22,6 @@ import {
   FutureSkew,
   InvalidTx,
   type AppendResult,
-  type CompactResult,
   type Cursor,
   type Datom,
   type Envelope,
@@ -56,9 +55,10 @@ export class LogStore extends Context.Service<
       prefix: string,
     ) => Effect.Effect<ReadonlyArray<StoredDatom>, SqlError>
     /**
-     * Record that a consumer has seen the log up to `cursor`. A consumer is
-     * a device, or a trace sink (`trace/<sink>`); compaction never removes
-     * a fact some registered consumer has not acknowledged.
+     * Record that a consumer has delivered the log up to `cursor`, so it
+     * reads on from there after a restart. A consumer is a reader that keeps
+     * its place in this store, today a trace sink (`trace/<sink>`). Deliver
+     * first, then acknowledge: a crash in between only delivers again.
      */
     readonly acknowledge: (
       consumer: string,
@@ -68,8 +68,6 @@ export class LogStore extends Context.Service<
     readonly acknowledged: (
       consumer: string,
     ) => Effect.Effect<Cursor | null, SqlError>
-    readonly horizon: () => Effect.Effect<Cursor, SqlError>
-    readonly compact: () => Effect.Effect<CompactResult, SqlError>
   }
 >()('viviefs/datom/LogStore') {}
 // #endregion service
@@ -101,12 +99,6 @@ const ChangesetRow = Schema.Struct({
   command: Schema.String,
   accepted_at: Schema.NullOr(SqlNumber),
 })
-
-const DeviceRow = Schema.Struct({ device: Schema.String })
-
-const HorizonRow = Schema.Struct({ horizon: Schema.NullOr(SqlNumber) })
-
-const ChangesRow = Schema.Struct({ n: SqlNumber })
 
 const escapeLike = (value: string): string =>
   value.replace(/!/g, '!!').replace(/%/g, '!%').replace(/_/g, '!_')
@@ -345,51 +337,6 @@ export const layer = Layer.effect(
       return value == null ? null : asSeq(value)
     })
 
-    // #region compact
-    const holder = Effect.gen(function* () {
-      const rows = yield* sql`
-        SELECT device FROM device_cursors ORDER BY seq ASC, device ASC LIMIT 1
-      `.pipe(rowsOf(DeviceRow))
-      return rows[0]?.device ?? null
-    })
-
-    const horizon = Effect.fn('LogStore.horizon')(function* () {
-      const rows = yield* sql`
-        SELECT MIN(seq) AS horizon FROM device_cursors
-      `.pipe(rowsOf(HorizonRow))
-      const value = rows[0]?.horizon
-      return value == null ? 0 : asSeq(value)
-    })
-
-    const compact = Effect.fn('LogStore.compact')(function* () {
-      const at = yield* horizon()
-      const heldBy = yield* holder
-      if (at === 0) return { removed: 0, horizon: at, heldBy } satisfies CompactResult
-      const removed = yield* sql.onDialectOrElse({
-        sqlite: () =>
-          Effect.gen(function* () {
-            yield* sql`DELETE FROM datoms WHERE seq <= ${at}`
-            const rows = yield* sql`SELECT changes() AS n`.pipe(rowsOf(ChangesRow))
-            return asSeq(rows[0]?.n ?? 0)
-          }),
-        pg: () =>
-          Effect.gen(function* () {
-            const rows = yield* sql`
-              DELETE FROM datoms WHERE seq <= ${at} RETURNING seq
-            `.pipe(rowsOf(SeqRow))
-            return rows.length
-          }),
-        orElse: () =>
-          Effect.gen(function* () {
-            yield* sql`DELETE FROM datoms WHERE seq <= ${at}`
-            const rows = yield* sql`SELECT changes() AS n`.pipe(rowsOf(ChangesRow))
-            return asSeq(rows[0]?.n ?? 0)
-          }),
-      })
-      return { removed, horizon: at, heldBy } satisfies CompactResult
-    })
-    // #endregion compact
-
     return LogStore.of({
       mint,
       receive,
@@ -399,8 +346,6 @@ export const layer = Layer.effect(
       scanPrefix,
       acknowledge,
       acknowledged,
-      horizon,
-      compact,
     })
   }),
 )

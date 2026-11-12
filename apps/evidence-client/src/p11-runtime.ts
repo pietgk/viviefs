@@ -30,7 +30,7 @@ import {
   rowsOf,
   SqlNumber,
 } from '@viviefs/datom'
-import { renameList } from '@viviefs/evidence-model'
+import { createList } from '@viviefs/evidence-model'
 import {
   oidcSignInSession,
   SignInSession,
@@ -345,8 +345,8 @@ export const startP11Device = (publish: (report: P11Report) => void): P11Device 
           const client = Context.get(open.context, SyncClient)
           const store = Context.get(open.context, LogStore)
           written += 1
-          const changeset = yield* renameList(
-            { title: null },
+          const changeset = yield* createList(
+            { exists: false },
             {
               org: action.org,
               list: `${RUN}-${deviceId}-${written}`,

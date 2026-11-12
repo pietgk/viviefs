@@ -4,21 +4,41 @@
  * and the problem must fail with the assertion the exercise expects: a
  * problem that already passes teaches nothing, so that is the positive
  * control. A learner runs `pnpm exercise <pattern> <NN.MM>`, which sets
- * `VIVIEFS_EXERCISE=problem`: then only `problem/` runs, and it must pass.
+ * `VIVIEFS_EXERCISE=problem`: then only `problem/` runs, and it must pass;
+ * `VIVIEFS_EXERCISE=solution` runs only `solution/` the same way, which is
+ * how a lesson records both runs (D222). A check says what it saw with
+ * `note`, and the verdict prints those lines.
  */
 import { expect, it } from '@effect/vitest'
 import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
-import { LEARNER_VARIABLE } from './exercise-reporter.ts'
+import { LEARNER_VARIABLE, NOTE_PREFIX } from './exercise-reporter.ts'
 
 export { LEARNER_VARIABLE }
 
 export type ExerciseMode = 'verify' | 'learner'
 
+/** Which folder a learner run checks. */
+export type ExerciseSide = 'problem' | 'solution'
+
+export const exerciseSide = (
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): ExerciseSide | undefined => {
+  const side = env[LEARNER_VARIABLE]
+  return side === 'problem' || side === 'solution' ? side : undefined
+}
+
 export const exerciseMode = (
   env: Readonly<Record<string, string | undefined>> = process.env,
-): ExerciseMode => (env[LEARNER_VARIABLE] === 'problem' ? 'learner' : 'verify')
+): ExerciseMode => (exerciseSide(env) === undefined ? 'verify' : 'learner')
+
+/**
+ * One line of what the check saw, such as the counts an append answered. It
+ * goes to the test's log, which the learner's verdict prints under "What the
+ * test saw"; write it before the assertion, so a failing run shows it too.
+ */
+export const note = (line: string): Effect.Effect<void> => Effect.sync(() => console.log(`${NOTE_PREFIX}${line}`))
 
 export type Exercise<M> = {
   /** `NN.MM`, as in the folder name. */
@@ -48,10 +68,10 @@ export const judgeProblem = (
 }
 
 /** Registers the exercise's tests for the current mode. */
-export const exercise = <M>(spec: Exercise<M>, mode: ExerciseMode = exerciseMode()): void => {
+export const exercise = <M>(spec: Exercise<M>, mode: ExerciseMode = exerciseMode(), side: ExerciseSide = exerciseSide() ?? 'problem'): void => {
   const timeout = spec.timeout ?? 30_000
   if (mode === 'learner') {
-    it.live(`${spec.id}: problem/ passes`, () => spec.check(spec.problem), timeout)
+    it.live(`${spec.id}: ${side}/ passes`, () => spec.check(side === 'solution' ? spec.solution : spec.problem), timeout)
     return
   }
   it.live(`${spec.id}: solution/ passes`, () => spec.check(spec.solution), timeout)

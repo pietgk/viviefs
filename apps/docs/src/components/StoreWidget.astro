@@ -1,0 +1,103 @@
+---
+/**
+ * Lesson 4's widget (D216): compose a log store from Layers and run
+ * `log-store/conformance` on it. The state and the suite's answers come from
+ * `src/lib/store-layers.ts`, which a test checks by running the real suite;
+ * this file only draws it.
+ */
+import '../styles/widget.css'
+import { DATABASES, PIECES } from '../lib/store-layers.ts'
+---
+
+<div class="vv-w not-content" data-stores>
+  <p class="vv-w-ask">
+    <code>logStoreLayer</code> is written once. Give it a database and the pieces it needs, then run the suite. Start with
+    SQLite in memory.
+  </p>
+  <div class="vv-w-form">
+    <label class="vv-w-field">
+      <span class="vv-w-group-name">The database (<code>SqlClient</code>)</span>
+      <select class="vv-w-select" data-database>
+        {DATABASES.map(({ id, label }) => <option value={id}>{label}</option>)}
+      </select>
+    </label>
+    <div class="vv-w-field" role="group" aria-labelledby="vv-pieces">
+      <span class="vv-w-group-name" id="vv-pieces">The other pieces</span>
+      {
+        PIECES.map(({ id, service }) => (
+          <label class="vv-w-check">
+            <input type="checkbox" data-piece={id} />
+            <span class="vv-w-mono">{service}</span>
+          </label>
+        ))
+      }
+    </div>
+  </div>
+  <div class="vv-w-controls">
+    <button type="button" class="vv-w-btn vv-w-primary" data-run>Run log-store/conformance</button>
+    <button type="button" class="vv-w-btn vv-w-reset" data-reset>Start over</button>
+  </div>
+  <section class="vv-w-panel">
+    <h4>The store, as code</h4>
+    <pre class="vv-w-code" data-code></pre>
+  </section>
+  <section class="vv-w-panel">
+    <h4>What the suite says</h4>
+    <div class="vv-w-rows vv-w-rows-2" data-results></div>
+  </section>
+  <div class="vv-w-readout" aria-live="polite">
+    <p class="vv-w-readout-head">What just happened</p>
+    <p class="vv-w-readout-text" data-text></p>
+  </div>
+</div>
+
+<script>
+  import { canRun, code, databaseOf, DATABASES, initial, needs, PIECES, step, type Action, type State } from '../lib/store-layers.ts'
+
+  const mount = (root: HTMLElement) => {
+    let state: State = initial
+    let said = 'Nothing run yet. SQLite in memory is chosen; give it the pieces it needs.'
+    const draw = () => {
+      root.querySelector<HTMLSelectElement>('[data-database]')!.value = state.database
+      for (const box of root.querySelectorAll<HTMLInputElement>('[data-piece]')) box.checked = state.pieces.some((id) => id === box.dataset['piece'])
+      root.querySelector<HTMLButtonElement>('[data-run]')!.disabled = !canRun(state)
+      root.querySelector('[data-code]')!.textContent = code(state)
+      const database = databaseOf(state.database)
+      root.querySelector('[data-results]')!.innerHTML =
+        state.run === null
+          ? `<p class="vv-w-meta">${database.here ? 'Not run yet.' : 'Node cannot host this database. The gate P04 runs the same suite on it, on a device or in a browser, and every check passed.'}</p>`
+          : state.run.results.map(({ name, status }) => `<div class="vv-w-row ${status === 'FAIL' ? 'vv-w-bad' : ''}" data-check="${name}"><span>${status}</span><span>${name}</span></div>`).join('')
+      root.querySelector('[data-text]')!.textContent = said
+    }
+    const act = (action: Action) => {
+      state = step(state, action)
+      if (action.kind === 'run' && state.run) {
+        const failed = state.run.results.filter(({ status }) => status === 'FAIL').map(({ name }) => name)
+        said =
+          failed.length === 0
+            ? `Every check passed: ${databaseOf(state.database).label} keeps what it stores across a restart, and the contract holds on it.`
+            : `It type-checks, and still fails ${failed.join(', ')}: in memory, a restart forgets the saved clock, so the next tag could sort before the last one. A store is done when the suite says so.`
+      } else if (action.kind === 'piece') {
+        said = needs(state).length === 1 ? 'Everything but the clock is given: the suite gives its own clock, so it can run.' : `Without ${needs(state).filter((s) => s !== 'HlcClock').join(' and ')} the code does not compile: the R slot says what is missing.`
+      } else if (action.kind === 'database') {
+        said = databaseOf(state.database).here ? `${databaseOf(state.database).label}: one Layer line changed, nothing else.` : `${databaseOf(state.database).label}: the same one-line change; the suite runs on it in the gate, not here.`
+      } else if (action.kind === 'reset') said = 'Nothing run yet. SQLite in memory is chosen; give it the pieces it needs.'
+      draw()
+    }
+    root.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement | HTMLSelectElement
+      const found = DATABASES.find(({ id }) => id === target.value && target.matches('[data-database]'))
+      if (found) return act({ kind: 'database', id: found.id })
+      const piece = PIECES.find(({ id }) => id === target.dataset['piece'])
+      if (piece) return act({ kind: 'piece', id: piece.id })
+    })
+    root.addEventListener('click', (event) => {
+      const target = event.target as Element
+      if (target.closest('[data-run]')) return act({ kind: 'run' })
+      if (target.closest('[data-reset]')) return act({ kind: 'reset' })
+    })
+    draw()
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-stores]')) mount(root)
+</script>

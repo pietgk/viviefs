@@ -1,0 +1,120 @@
+---
+/**
+ * Lesson 2's widget (D216): two devices minting tags with a hybrid logical
+ * clock. The state and every step come from `src/lib/hlc-clock.ts`, which a
+ * test checks against two real log stores with clocks it controls; this file
+ * only draws it.
+ */
+import '../styles/widget.css'
+---
+
+<div class="vv-w not-content" data-clock>
+  <p class="vv-w-ask">
+    Device A and device B each mint tags for the facts they write. Mint a few on A, set A's wall clock back, reboot A.
+    Then let B run 3 s ahead, mint there, and let A receive B's tag.
+  </p>
+  <div class="vv-w-controls">
+    <div class="vv-w-group">
+      <span class="vv-w-group-name">Device A</span>
+      <button type="button" class="vv-w-btn vv-w-primary" data-act="mint A">Mint a tag</button>
+      <button type="button" class="vv-w-btn vv-w-mistake" data-act="jumpBack">Wall clock goes back 2 min</button>
+      <button type="button" class="vv-w-btn" data-act="reboot">Reboot</button>
+      <button type="button" class="vv-w-btn" data-act="receive">Receive B's last tag</button>
+    </div>
+    <div class="vv-w-group">
+      <span class="vv-w-group-name">Device B</span>
+      <button type="button" class="vv-w-btn vv-w-primary" data-act="mint B">Mint a tag</button>
+      <button type="button" class="vv-w-btn" data-act="ahead">Run 3 s further ahead</button>
+    </div>
+    <button type="button" class="vv-w-btn" data-act="wait">Wait 1 ms</button>
+    <button type="button" class="vv-w-btn vv-w-reset" data-act="reset">Start over</button>
+  </div>
+  <div class="vv-w-panels" data-panels></div>
+  <div class="vv-w-panel">
+    <h4>The order the tags give</h4>
+    <p class="vv-w-meta">Every tag either device minted, sorted by (pt, c): the order a log keeps them in.</p>
+    <div class="vv-w-chips" data-order></div>
+  </div>
+  <div class="vv-w-readout" aria-live="polite">
+    <p class="vv-w-readout-head">What just happened</p>
+    <p class="vv-w-readout-text" data-text></p>
+    <p class="vv-w-readout-next" data-next></p>
+  </div>
+</div>
+
+<script>
+  import { ACTIONS, aheadOfB, can, fromStart, initial, JUMP_BACK_MS, step, tagOrder, type Action, type Device, type Entry, type Hlc, type State } from '../lib/hlc-clock.ts'
+
+  const isAction = (value: string | undefined): value is Action => ACTIONS.some((action) => action === value)
+  const hlc = ({ pt, c }: Hlc) => `(${fromStart(pt)}, ${c})`
+  const KIND: Record<Entry['kind'], string> = { minted: 'minted', received: 'received from B', refused: 'refused: too far ahead' }
+
+  const mount = (root: HTMLElement) => {
+    let state: State = initial
+    const panel = (who: 'A' | 'B', d: Device) => {
+      const last = state.last?.entry
+      const rows = d.entries
+        .map((entry, i) => {
+          const fresh = i === d.entries.length - 1 && last === entry
+          const kind = entry.kind === 'refused' ? 'vv-w-bad' : entry.kind === 'received' ? 'vv-w-in' : fresh ? 'vv-w-new' : ''
+          return `<div class="vv-w-row ${kind}"><span>${entry.label}</span><span>${hlc(entry.hlc)}</span><span>${KIND[entry.kind]}</span></div>`
+        })
+        .join('')
+      return `<section class="vv-w-panel" data-device="${who}">
+        <h4>Device ${who}</h4>
+        <p class="vv-w-meta">Wall clock ${fromStart(d.wall)} ms${who === 'B' && aheadOfB(state) > 0 ? ` (${aheadOfB(state) / 1000} s ahead)` : ''}. ${d.boot ? 'Running: time comes from the monotonic clock.' : 'Not started yet: the next mint reads the wall clock.'}</p>
+        <p class="vv-w-meta">Saved last value: <span class="vv-w-mono">${d.last ? hlc(d.last) : 'none'}</span></p>
+        <div class="vv-w-rows">${rows || '<p class="vv-w-meta">No tags yet.</p>'}</div>
+      </section>`
+    }
+    const say = (): [string, string] => {
+      const last = state.last
+      if (last === null) return ['Both wall clocks read +0 ms (times are shown from where they started). Nobody has minted.', 'Press "Mint a tag" on A, twice.']
+      const e = last.entry
+      switch (last.action) {
+        case 'wait':
+          return ['One millisecond passed on both devices.', 'Mint again: time moved, so the counter starts at 0.']
+        case 'jumpBack':
+          return [`A's wall clock went back ${JUMP_BACK_MS / 60_000} minutes. ${state.A.boot ? 'A is running, so its clock reads the monotonic clock, which does not go back.' : 'A has not started, so its next mint reads the wall clock.'}`, state.A.boot ? 'Mint on A: nothing went back. Then reboot A.' : 'Mint on A.']
+        case 'reboot':
+          return ['A restarted: the monotonic clock starts over and the running session is gone. The saved last value survived.', 'Mint on A: the wall clock is 2 minutes behind, so the clock starts from the saved value.']
+        case 'ahead':
+          return [`B's wall clock now runs ${aheadOfB(state) / 1000} s ahead.`, 'Mint on B, then receive B\'s tag on A.']
+        case 'receive':
+          return e?.kind === 'refused'
+            ? [`A refused ${e.label}: its pt is more than 5000 ms ahead of A's time. Taking it would drag every later tag of A into that future.`, 'Mint on A: its clock stayed where it was.']
+            : [`A received ${e?.label}${e ? ` ${hlc(e.hlc)}` : ''} and moved its clock up to it, if it was ahead.`, 'Mint on A: the new tag sorts after B\'s.']
+        default:
+          if (e === undefined) return ['', '']
+          return [
+            e.hlc.c === 0
+              ? `${e.label} is ${hlc(e.hlc)}: time had moved past the last pt, so the counter starts at 0.`
+              : `${e.label} is ${hlc(e.hlc)}: time had not moved past the last pt, so the clock kept it and counted up.`,
+            'Mint again, wait 1 ms, or move a clock.',
+          ]
+      }
+    }
+    const draw = () => {
+      root.querySelector('[data-panels]')!.innerHTML = panel('A', state.A) + panel('B', state.B)
+      root.querySelector('[data-order]')!.innerHTML = tagOrder(state).map((e) => `<span class="vv-w-chip">${e.label} ${hlc(e.hlc)}</span>`).join('') || '<span class="vv-w-meta">No tags yet.</span>'
+      const [text, next] = say()
+      root.querySelector('[data-text]')!.textContent = text
+      root.querySelector('[data-next]')!.textContent = next
+      for (const button of root.querySelectorAll<HTMLButtonElement>('[data-act]')) {
+        const action = button.dataset['act']
+        button.disabled = !isAction(action) || !can(state, action)
+      }
+    }
+    root.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('[data-act]')
+      const action = button?.dataset['act']
+      if (button && !button.disabled && isAction(action)) {
+        state = step(state, action)
+        draw()
+      }
+    })
+    draw()
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-clock]')) mount(root)
+</script>

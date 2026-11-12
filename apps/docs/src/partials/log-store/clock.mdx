@@ -1,0 +1,27 @@
+{/* One home (D221): the concepts page and the lessons embed this section; edit it here only. */}
+
+import Sample from '../../components/Sample.astro'
+
+`tx` comes from a hybrid logical clock: physical time in milliseconds `pt`,
+corrected by the server's offset, and a counter `c` used only when `pt` would
+not advance. It is encoded as a 26-character, lexicographically sortable id
+that also holds the device's fingerprint and random bits, so two devices never
+mint the same `tx`. The why is [ADR-0007 Hybrid logical clock for tx][ADR-0007].
+
+<Sample path="libs/datom/src/hlc.ts" region="mint" />
+
+Minting never goes below the last value this replica minted or received,
+even when the wall clock jumps back or the device reboots: the last value is
+persisted in `hlc_state`. While the app runs, time comes from the monotonic
+clock, which never goes back; the wall clock is read once after a start, at
+the first mint or receive, and never below the saved `pt`. Physical time is in
+whole milliseconds: a fractional `pt` would beat the last one, reset the
+counter and be cut off when encoded, so two values could share `(pt, c)`. Receiving a `tx` from elsewhere moves the clock up
+to it, but a `tx` more than 5000 ms ahead of corrected time is refused, so one
+wrong clock cannot drag every later mint into the future.
+
+<Sample path="libs/datom/src/hlc.ts" region="receive" />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[ADR-0007]: ../../../../../docs/adr/0007-hybrid-logical-clock.md

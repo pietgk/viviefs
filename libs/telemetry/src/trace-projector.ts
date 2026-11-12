@@ -5,11 +5,9 @@
  * acknowledged cursor).
  *
  * The trace cursor is the log store's acknowledged cursor for the consumer
- * `trace/<sink>`, registered when the projector starts. Compaction never
- * removes a fact a registered trace cursor has not exported: a sink that
- * stays down holds compaction back and is named by `compact().heldBy`,
- * instead of losing spans. A disabled projector is still registered, so
- * enabling it later exports the whole backlog.
+ * `trace/<sink>`, registered when the projector starts. A disabled
+ * projector is still registered, so enabling it later exports the whole
+ * backlog.
  *
  * Delivery is at least once: a kill between `send` and the trace cursor write
  * sends the same spans again with the same entity-keyed ids.
@@ -102,6 +100,7 @@ export const traceProjectorLayer = (options: {
           return spans
         })
 
+      // #region export-once
       const exportOnce = Effect.gen(function* () {
         const from = yield* cursor
         if (!options.enabled) {
@@ -115,6 +114,7 @@ export const traceProjectorLayer = (options: {
         yield* advance(last.seq)
         return { enabled: true, spans, cursor: last.seq } satisfies ExportResult
       }).pipe(Effect.withSpan('TraceProjector.exportOnce'))
+      // #endregion export-once
 
       return TraceProjector.of({ exportOnce, cursor })
     }),

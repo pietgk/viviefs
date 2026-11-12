@@ -116,6 +116,8 @@ What this could give:
 
 2026-11-10: the `Decide when:` fired, by its second half: a guide needs it. The human named the unsettled term format as the reason under all the others why the log-store guide is not acceptable ([I2 Accept the log-store guide][I2]), and part of that is the wish to see a term as an effect formula. This issue is narrowed to that: the effect form, tried on the terms lesson 1 of the log-store guide teaches (Datom, Entity, Attribute, Log store, `tx` and the log position), shown beside today's entry in a throwaway prototype, and chosen or dropped from the human's annotations ([D215 The term format is settled on lesson 1's terms][D215]). The hypothesis the prototype tests, not a decision: a formula fits an operation, not a noun. `append: (log, datom) => (log', inserted or duplicate)` is at once the step the lesson's widget shows, the function of the widget's model and the signature of `LogStore.append`; a noun such as Datom is what appears inside formulas. That agrees with what [I56 One shape at every level?][I56] left here (an effect form fits steps over kept state, not things) and with [D166 No formula with names of its own][D166] (each handler keeps its signature in its own terms). The other questions in this issue's body (levels, a notation `verify` can parse, test specs written in glossary terms) are not opened: each waits until a lesson needs it.
 
+2026-11-10, later: round 2 of the prototype, read by the human. Format B (today's entry plus one line) holds for lesson 1's seven words, and the line takes three shapes: "Appears in" for a noun (Datom, Entity, Attribute, `op`), "Its operations" for the one word that acts (Log store), and "Made by, and checked by" or "Given by, and used by" for `tx` and Log position. The prototype's appendix wrote the line for 15 terms of every kind: 7 fit, 5 appear inside another term's line, 3 were forced (Device, Workflow runner, Pattern). The human's reading: a line that will not come out says the entry's text needs work, so writing it is a test of the entry; and the forced three are a deeper problem, recorded as [I106 Entries that do not say what a thing is][I106]. Lesson 1 on the site now shows each word as a card that reads the glossary entry whole from `GLOSSARY.md` and adds the lesson's line (`apps/docs/src/components/Term.astro`); the glossary itself has no new label. Whether the line moves into the glossary, as a `_Like_`-style label, waits until the human has read lesson 1 on the site.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D130]: ../plan/bootstrap/02-decision-log.md#d130
@@ -131,6 +133,7 @@ What this could give:
 [D36]: ../plan/bootstrap/02-decision-log.md#d36
 [D87]: ../plan/bootstrap/02-decision-log.md#d87
 [D94]: ../plan/bootstrap/02-decision-log.md#d94
+[I106]: 0106-entries-that-do-not-say-what-a-thing-is.md
 [I2]: 0002-accept-the-log-store-guide.md
 [I21]: 0021-test-the-glossary-with-a-reader.md
 [I25]: 0025-ideas-batch-understanding-and-maintaining-code-bases.md

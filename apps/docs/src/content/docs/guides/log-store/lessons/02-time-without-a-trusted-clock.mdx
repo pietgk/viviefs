@@ -7,10 +7,16 @@ evidence:
 source:
   title: Kulkarni, Demirbas et al., Logical Physical Clocks and Consistent Snapshots in Globally Distributed Databases (2014)
   href: https://cse.buffalo.edu/tech-reports/2014-04.pdf
+widget: apps/docs/src/lib/hlc-clock.ts
 ---
 
+import ClockWidget from '../../../../../components/ClockWidget.astro'
+import Exercise from '../../../../../components/Exercise.astro'
 import ReadNext from '../../../../../components/ReadNext.astro'
 import Sample from '../../../../../components/Sample.astro'
+import Term from '../../../../../components/Term.astro'
+import Terms from '../../../../../components/Terms.astro'
+import Clock from '../../../../../partials/log-store/clock.mdx'
 
 ## Recall first
 
@@ -21,40 +27,83 @@ It carries the same `tx`, and the store keeps each `tx` once.
 </details>
 
 <details>
-<summary>What does `seq` tell you, and what does it not?</summary>
+<summary>What does a log position tell you, and what does it not?</summary>
 
-A position in this replica's log; not the fact's identity or its order
-elsewhere.
+The fact's place in this copy only; not what the fact is, nor where another
+copy has it.
 </details>
 
 ## The idea
 
-**Wall clocks lie.** A device's clock is corrected by the network, set by
-hand, or wrong after days offline. If `tx` were wall time, a clock that jumps
-back would mint facts that sort before facts already written.
+**Every tag says when, in an order no device can break: not the wall clock's
+time, which lies, but a clock that only moves forward and takes in what other
+devices have seen.**
 
-**A hybrid logical clock keeps physical meaning and never goes back.** A value
-is `(pt, c)`: physical time in milliseconds, corrected by the server's
-offset, and a counter. To mint: if time moved past the last `pt`, use
-`(now, 0)`; otherwise keep the last `pt` and count up. When the 16-bit
-counter is full, `pt` moves one millisecond ahead.
+A wall clock is set by hand, corrected by the network, or wrong after days
+offline. If a tag were the wall clock's time, a clock set back would give new
+facts tags that sort before older ones. Here is what the clock does instead,
+when device B's clock runs ahead of A's:
 
-<Sample path="libs/datom/src/hlc.ts" region="mint" />
+```mermaid
+sequenceDiagram
+  participant A as Device A
+  participant B as Device B
+  Note over A,B: B's wall clock runs 3 s ahead
+  A->>A: mint A1 at (+0, 0)
+  B->>B: mint B1 at (+3000, 0)
+  B-->>A: B1 arrives with a pulled fact
+  A->>A: receive B1: move the clock up to it
+  A->>A: mint A2 at (+3000, 1), after B1
+```
 
-**Other devices' clocks count too.** When a `tx` minted elsewhere arrives,
-the clock moves up to it, so this replica never mints below a fact it holds.
-But a `tx` more than 5000 ms ahead of corrected time is refused: accepting it
-would drag every later mint into that wrong future.
+And each mint decides in one step:
 
-<Sample path="libs/datom/src/hlc.ts" region="receive" />
+```mermaid
+flowchart LR
+  N["the time now"] --> Q{"past the last pt?"}
+  Q -- "yes" --> F["(now, 0)"]
+  Q -- "no" --> K["(last pt, last c + 1)"]
+```
 
-**A reboot loses the monotonic clock, not the history.** The last value is
-saved in `hlc_state` with every mint, and after a reboot minting starts from
-`max(wall clock + offset, last pt)`.
+### Try it
 
-**Whole milliseconds only.** A fractional `pt` beats the last `pt`, resets
-the counter, and is truncated when encoded, so two values could share
-`(pt, c)`. The live server hit exactly this; see [ADR-0007 Hybrid logical clock for tx][ADR-0007].
+<ClockWidget />
+
+What is simplified: both clocks start at the same moment, shown as `+0`; the
+offset the server corrects the clock by is 0; the counter never fills up,
+which would move `pt` one millisecond ahead. A test plays the same actions on
+two real log stores on SQLite with clocks it controls, including a real reboot
+on the same file (`apps/docs/src/lib/hlc-clock.integration.test.ts`).
+
+### What you saw
+
+1. **Inside one millisecond, the counter orders the tags.** Two mints without
+   a wait share `pt` and count `c` up.
+2. **Setting the wall clock back changed nothing while the device ran.** A
+   running store reads the monotonic clock, which cannot go back.
+3. **After a reboot, the clock started from the value it had saved,** not from
+   the wall clock two minutes behind.
+4. **A tag from a clock ahead pulled A's clock up,** so A's next tag sorted
+   after B's: cause before effect, on any device.
+5. **A tag more than 5000 ms ahead was refused.** One wrong clock cannot drag
+   every later tag into its future.
+
+### The words
+
+<Terms>
+  <Term term="HLC" label="Its two steps" formula={"mint:    (now, last) => (now, 0) | (last pt, last c + 1)\nreceive: (now, last, remote) => the later of the two | refused, more than 5000 ms ahead"} />
+  <Term term="tx" label="Made by" formula="mint: () => «tx», which encodes (pt, c), the device and random bits" />
+</Terms>
+
+### The rule
+
+<Clock />
+
+The widget's model writes the two steps as plain functions:
+
+<Sample path="apps/docs/src/lib/hlc-clock.ts" region="mint" />
+
+<Sample path="apps/docs/src/lib/hlc-clock.ts" region="receive" />
 
 ## What the gate showed
 
@@ -65,31 +114,20 @@ refused.
 
 ## Your turn
 
-Two exercises, both pure functions. In 02.01, `mint` handles time that moved
-forward; make it right when time did not. In 02.02, `receive` takes the later
-clock value; make it refuse a clock from too far ahead.
+Two exercises, both pure functions. In 02.01, `mint` is right when time moved
+forward and wrong when it did not. In 02.02, `receive` takes any later clock,
+even one from too far ahead.
 
-1. Run it. The first run is red on purpose: `problem/` runs, but does not
-   yet do what this lesson teaches, and the verdict says what is missing.
+<Exercise pattern="log-store" id="02.01" />
 
-   ```sh
-   pnpm exercise log-store 02.01
-   pnpm exercise log-store 02.02
-   ```
-
-2. Edit `exercises/log-store/02.01-mint/problem/mint.ts` and `exercises/log-store/02.02-receive/problem/receive.ts`, and run it again until the verdict says done.
-3. Compare your code with `exercises/log-store/02.01-mint/solution/mint.ts` and `exercises/log-store/02.02-receive/solution/receive.ts`, then answer the questions below.
-
-They pass when every case, including a two-minute jump back and a full
-counter, gives the same `(pt, c)` as the exemplar's `mintHlc`, and a `tx`
-5001 ms ahead is refused.
+<Exercise pattern="log-store" id="02.02" />
 
 ## Check yourself
 
 <details>
-<summary>The wall clock jumps back two minutes. What does the next mint keep?</summary>
+<summary>The wall clock jumps back two minutes while the app runs. What does the next mint use?</summary>
 
-It keeps the last `pt` and adds one to the counter `c`.
+The monotonic clock, so time goes on as if nothing happened.
 </details>
 
 <details>
@@ -110,5 +148,4 @@ The last minted value and the offset, saved in `hlc_state`.
 
 {/* References: written by pnpm refs fix; do not edit by hand. */}
 
-[ADR-0007]: ../../../../../../../../docs/adr/0007-hybrid-logical-clock.md
 [P04]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04

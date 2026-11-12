@@ -1,0 +1,26 @@
+---
+/** A link-styled button that points the lesson's widget at one of its parts (`DatomLog.astro`). */
+interface Props {
+  part: string
+}
+
+const { part } = Astro.props
+---
+
+<button type="button" class="vv-point" data-point-at={part}><slot /></button>
+
+<style>
+  .vv-point {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: var(--sl-color-text-accent);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .vv-point:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+</style>

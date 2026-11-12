@@ -43,7 +43,7 @@ The log of the sync node holding authority, today the server, is never compacted
 audit trail, and a future hash chain over accepted changesets must be able to
 cover all of it. This holds until tamper-evidence is decided, before the first
 consumer app that makes audit claims ([ADR-0022](0022-identity-and-organization-isolation.md)).
-Device compaction is unaffected.
+Device compaction is unaffected (and, since 2026-11-11, decided with sync, see below).
 
 Analytics is a projection to Parquet or DuckLake queried by DuckDB. DuckDB is
 never the durable log. Effect v4 has no DuckDB `SqlClient`.
@@ -71,6 +71,16 @@ types was measured and costs a row store a header byte per column, empty or
 not; the wide table per organization belongs to the columnar copy ([I63 The columnar copy as a Presenter implementation][I63]).
 The value Schema is a plain Effect Schema ([D209 The value is an Effect Schema][D209]), and a typed row
 names the attributes in conflict ([D211 A typed row while an attribute is in conflict][D211]).
+
+**No compaction in the log store** (amendment 2026-11-11, [D223 Each reader keeps its own place][D223], [I107 Device compaction][I107]).
+"Snapshots and compaction only past a horizon every device has acknowledged"
+assumed a log that many devices read from; the only such log, the server's,
+is never compacted. The log store now keeps each reader's place
+(`acknowledge`, `acknowledged`) and removes no fact: `compact()`, `horizon()`
+and `heldBy` left the contract. A device may remove a fact only when every
+reader on it has processed it, the server holds it and a rebuild can get it
+back; the last two are sync's to know, so device compaction is decided with
+sync. The table `device_cursors` keeps its name.
 
 ## Trade-offs
 
@@ -127,11 +137,13 @@ closure.
 [D209]: ../plan/bootstrap/02-decision-log.md#d209
 [D210]: ../plan/bootstrap/02-decision-log.md#d210
 [D211]: ../plan/bootstrap/02-decision-log.md#d211
+[D223]: ../plan/bootstrap/02-decision-log.md#d223
 [D37]: ../plan/bootstrap/02-decision-log.md#d37
 [D44]: ../plan/bootstrap/02-decision-log.md#d44
 [D58]: ../plan/bootstrap/02-decision-log.md#d58
 [D58']: ../plan/bootstrap/02-decision-log.md#d58p
 [D8]: ../plan/bootstrap/02-decision-log.md#d8
+[I107]: ../issues/0107-device-compaction.md
 [I52]: ../issues/0052-the-datom-and-its-store.md
 [I63]: ../issues/0063-the-columnar-copy.md
 [I66]: ../issues/0066-attribute-value-types.md

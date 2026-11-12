@@ -1,0 +1,73 @@
+---
+/**
+ * A lesson's one line for its step (I30): the formula, and under it the
+ * widget's last step written as uses of it (`data-datom-log-step`, filled by
+ * `DatomLog.astro`).
+ */
+interface Props {
+  name: string
+  formula: string
+}
+
+const { name, formula } = Astro.props
+---
+
+<div class="vv-step not-content">
+  <div class="vv-formula"><span>{name}</span>{formula}</div>
+  <div class="vv-step-live">
+    <p>Your last step in the widget</p>
+    <div data-datom-log-step></div>
+  </div>
+</div>
+
+<style>
+  .vv-step {
+    display: grid;
+    gap: 0.625rem;
+    margin-block: 1rem 1.5rem;
+  }
+  .vv-formula {
+    font-family: var(--__sl-font-mono);
+    font-size: clamp(0.95rem, 2.4vw, 1.15rem);
+    color: var(--sl-color-white);
+    background: var(--sl-color-accent-low);
+    border: 1px solid var(--sl-color-accent);
+    border-radius: 0.625rem;
+    padding: 0.875rem 1rem;
+    overflow-wrap: anywhere;
+  }
+  .vv-formula span {
+    display: block;
+    font-family: var(--sl-font-system);
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sl-color-accent-high);
+    margin-bottom: 0.25rem;
+  }
+  .vv-step-live {
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.625rem;
+    padding: 0.75rem 1rem;
+    display: grid;
+    gap: 0.375rem;
+  }
+  .vv-step-live p {
+    margin: 0;
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+  }
+  .vv-step-live div {
+    font-family: var(--__sl-font-mono);
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-white);
+    overflow-wrap: anywhere;
+  }
+  .vv-step-live :global(.vv-muted) {
+    color: var(--sl-color-gray-3);
+  }
+</style>

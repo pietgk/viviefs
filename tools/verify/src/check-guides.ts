@@ -1,7 +1,7 @@
 /**
  * verify quality / guides: reads the guide template, the guides, the ADRs,
  * the projects and the exercise tracks, and applies the rules in `guides.ts`
- * (D62, D63, D66, D67, D81-D86).
+ * (D62, D63, D66, D67, D81-D86, D216).
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
@@ -35,4 +35,4 @@ if (problems.length > 0) {
 const guides = new Set(
   paths.flatMap((path) => /^apps\/docs\/src\/content\/docs\/guides\/([^/]+)\//.exec(path)?.[1] ?? []),
 )
-console.log(`Guides: ${guides.size} in the template's shape; statuses, exemplar links and exercise tracks agree.`)
+console.log(`Guides: ${guides.size} in the template's shape; statuses, exemplar links and exercise tracks agree; every lesson shows its idea (D216).`)

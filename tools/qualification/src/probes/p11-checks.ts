@@ -21,7 +21,7 @@ import {
   membershipId,
   type DatomType,
 } from '@viviefs/datom'
-import { renameList } from '@viviefs/evidence-model'
+import { createList } from '@viviefs/evidence-model'
 import { SignInNeeded } from '@viviefs/identity'
 import type { Outgoing } from '@viviefs/sync-client'
 import { makeMutableClock, type MutableClock } from '@viviefs/datom/suites'
@@ -87,8 +87,8 @@ const members: ReadonlyArray<DeviceSpec> = [
 
 const titled = (device: Device, org: string, list: string, title: string) =>
   Effect.gen(function* () {
-    return yield* renameList(
-      { title: null },
+    return yield* createList(
+      { exists: false },
       { org, list, title },
       yield* mint(device, 0),
     )

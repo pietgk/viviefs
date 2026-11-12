@@ -1,6 +1,6 @@
 ---
 title: How-to
-description: Add a store implementation, append facts a retry cannot duplicate, read from a log position, and hold compaction for a consumer.
+description: Add a store implementation, append facts a retry cannot duplicate, read from a log position, and keep a consumer's place in the store.
 ---
 
 import Sample from '../../../../components/Sample.astro'
@@ -48,15 +48,14 @@ returns nothing, and store the new position only after the work is done. A
 crash in between re-reads facts you already handled, so make the work
 idempotent by `tx`.
 
-## Register a consumer that holds compaction
+## Keep a consumer's place in the store
 
-A consumer that must see every fact (a device, a trace sink as
-`trace/<sink>`) calls `acknowledge(consumer, cursor)` once before it starts,
-and again after each batch it has really delivered. From then on `compact()`
-keeps every fact it has not acknowledged. The contract has no way yet to
-unregister a consumer, so one that stops for good holds the log; `heldBy`
-names it, so the hold is visible instead of silent. Exercise 03.01 walks through it. The trace projector does
-this for each sink ([ADR-0018 Tracing derived from the log; telemetry sink pattern][ADR-0018]).
+Pick a name for the consumer, `trace/<sink>` for a trace sink. On start, read
+its place with `acknowledged(consumer)`; null means it has never acknowledged,
+so start at 0. Each round, read with `streamFrom(place, limit)`, deliver the
+batch, and only then call `acknowledge(consumer, last seq)`. Exercise 03.01
+walks through it. The trace projector does this for each sink
+([ADR-0018 Tracing derived from the log; telemetry sink pattern][ADR-0018]).
 
 {/* References: written by pnpm refs fix; do not edit by hand. */}
 

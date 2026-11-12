@@ -35,7 +35,7 @@ and the `metadata.guides` value.
 | Datom (the six fields; append-only; dedup by `tx`) | Changeset, commit datom, changeset manifest, abort, expiry, basis |
 | HLC and `tx` (mint, receive, future skew, reboot) | Conflict policy, conflict datom |
 | Envelope and acceptance time (`LogStore.append` stores them; [P04 Log store conformance][P04] checks them) | Entity ids, defining attribute, prefix composition |
-| Log position, acknowledged cursor, compaction horizon, `heldBy`, prefix scans | Read model, projector, Reactivity keys, draft view |
+| Log position, acknowledged cursor, prefix scans | Read model, projector, Reactivity keys, draft view |
 | The three kinds of tables ([ADR-0006 One datom log as the substrate][ADR-0006]), naming read models with a link | |
 | Log store implementation and `log-store/conformance` | `changesets/conformance` |
 
@@ -54,7 +54,7 @@ them from it, so changing the template changes the rule.
 | --- | --- |
 | `index.mdx` | What it is; When to use it; When not to; Status (the generated block); Reading paths (discuss, design, implement, review) |
 | `concepts.mdx` | one per concept, free; each names the ADR that is its why |
-| `how-to.mdx` | one per task, free ("Add a store implementation", "Read the log from a position", "Register a consumer that holds compaction") |
+| `how-to.mdx` | one per task, free ("Add a store implementation", "Read the log from a position", "Keep a consumer's place in the store") |
 | `testing.mdx` | Claims and their gates; Behaviours and their verify steps; When you extend it |
 | `review.mdx` | Enforced by a tool; Needs judgment; Common mistakes |
 | `lessons/NN-name.mdx` | the lesson shape (section 4) |
@@ -96,7 +96,7 @@ Proposed lessons and track (`exercises/log-store/`):
 | --- | --- | --- | --- |
 | 01 A datom is one fact | Append-only; `tx` is identity, so a duplicate append is a no-op; the three kinds of tables | 01.01 append and stream: write datoms through a real `LogStore` on sqlite-node, read them back from a cursor, append the same batch again and get zero inserts | [P04 Log store conformance][P04] (append, duplicate append, cursor streaming) |
 | 02 Time without a trusted clock | HLC mint and receive; backwards wall clock, reboot, remote ahead, future skew | 02.01 `mintHlc` (counter tie-break, backwards clock, counter overflow); 02.02 `receiveHlc` (max, the 5000 ms bound) | [P04 Log store conformance][P04] (HLC checks), [ADR-0007 Hybrid logical clock for tx][ADR-0007]'s fractional-ms observation |
-| 03 Who holds the log | Acknowledged cursors set the compaction horizon; `heldBy` names the consumer that is behind | 03.01 compaction: acknowledge two consumers, compact, show the slow one holds it, then release it | [P04 Log store conformance][P04] (compaction horizon), [P10 Trace projection][P10] note on `trace/<sink>` |
+| 03 Each reader keeps its own place | A reader reads from its own place and acknowledges only after it delivered; nothing is removed ([D223 Each reader keeps its own place][D223]) | 03.01 deliver, then acknowledge: an export that acknowledges first loses the facts a crash kept from the sink | [P04 Log store conformance][P04] (acknowledged cursor), [P10 Trace projection][P10] (failed send keeps the cursor) |
 | 04 One contract, many stores | A store is a `SqlClient` Layer plus the shared log store, qualified by one suite | 04.01 wire an in-memory sqlite-node log store Layer and pass `log-store/conformance` | [P04 Log store conformance][P04] on five stores |
 
 ## 5. Exercises (D66)
@@ -240,6 +240,7 @@ the same day, in the agreed order:
 [ADR-0026]: ../../adr/0026-verify-qualify-teach.md
 [ADR-0028]: ../../adr/0028-typescript-7-cli-with-typescript-6-api.md
 [D181]: ../bootstrap/02-decision-log.md#d181
+[D223]: ../bootstrap/02-decision-log.md#d223
 [D33']: ../bootstrap/02-decision-log.md#d33p
 [D60]: ../bootstrap/02-decision-log.md#d60
 [D62]: ../bootstrap/02-decision-log.md#d62

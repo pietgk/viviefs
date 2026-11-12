@@ -22,6 +22,7 @@ export {
 } from './device-resume.ts'
 export {
   DomainError,
+  createList,
   renameList,
   sealItem,
 } from './command.ts'

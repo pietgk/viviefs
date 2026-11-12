@@ -1,0 +1,36 @@
+{/* One home (D221): the concepts page and the lessons embed this section; edit it here only. */}
+
+import Sample from '../../components/Sample.astro'
+
+Every fact gets `seq`, its position in this store's log, and a reader of the
+log keeps its own place as a position. `streamFrom(place, limit)` returns the
+facts after a place, in log order, at most `limit` of them. The read models,
+trace export and sync all read a log this way, each from its own place and at
+its own pace.
+
+<Sample path="libs/datom/src/log-store.ts" region="stream-from" />
+
+A reader that keeps its place in the log store is a consumer. It delivers
+what it read, then records the last position with `acknowledge(consumer, seq)`,
+and after a restart `acknowledged(consumer)` says where to read on. Trace
+export does this for each sink as `trace/<sink>`; the read models keep their
+place the same way in their own table, and a device keeps its place in the
+server's log as its sync cursor.
+
+Deliver, then acknowledge. A crash in between only delivers the same facts
+again, and the receiver can tell, because a fact sent again has the same
+`tx`. Acknowledge first, and a crash moves the place past facts that were
+never delivered, with nothing to tell. Trace export, as the code runs it:
+
+<Sample path="libs/telemetry/src/trace-projector.ts" region="export-once" />
+
+A place is a position in this store's log: the same fact has another `seq`
+in another replica's log, so a place means nothing elsewhere. Acknowledging
+never removes a fact, and the log store has no call that does
+([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]). What a device may one day remove is decided with sync
+([I107 Device compaction][I107]).
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[ADR-0011]: ../../../../../docs/adr/0011-log-store-pattern.md
+[I107]: ../../../../../docs/issues/0107-device-compaction.md

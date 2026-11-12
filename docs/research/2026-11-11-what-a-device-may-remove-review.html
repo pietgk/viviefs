@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en" data-theme="luxury">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 3: what a device may remove (design review)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :where(.grid, .flex) > * { min-width: 0; }
+  :where(p, h1, h2, h3, h4, li, dd, .badge) { overflow-wrap: anywhere; }
+  :where(td, th) { overflow-wrap: break-word; }
+  body { font-size: 16px; line-height: 1.6; }
+  code.cr-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: var(--color-base-300); padding: 0.05rem 0.35rem; border-radius: 0.3rem; }
+  pre.cr-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; background: var(--color-base-300); padding: 0.8rem 1rem; border-radius: 0.5rem; overflow-x: auto; line-height: 1.45; white-space: pre; }
+  .cr-table-wrap { overflow-x: auto; }
+  .cr-table-wrap td, .cr-table-wrap th { vertical-align: top; }
+  .card-body > p { flex-grow: 0; }
+  .cr-rec { border-left: 4px solid var(--color-success); }
+  .cr-gap { border-left: 4px solid var(--color-warning); }
+  .cr-bad { border-left: 4px solid var(--color-error); }
+  .cr-src { font-size: 0.8rem; opacity: 0.75; }
+  a.cr-link { text-decoration: underline; text-underline-offset: 3px; }
+  .cr-pass { color: var(--color-success); font-weight: 600; }
+  .cr-warn { color: var(--color-warning); font-weight: 600; }
+  .cr-fail { color: var(--color-error); font-weight: 600; }
+  .cr-mermaid { background: var(--color-base-300); border-radius: 0.75rem; padding: 0.75rem; overflow-x: auto; text-align: center; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; }
+</style>
+<script>
+  function crQueue(event, q, label) {
+    event.preventDefault();
+    const d = new FormData(event.currentTarget);
+    const c = d.get(q); const n = (d.get('notes') || '').toString().trim();
+    if (!c) return;
+    window.lavish.queuePrompt(label + ': ' + c + (n ? '. Notes: ' + n : ''), { tag: 'choice', text: label + ': ' + c, element: event.currentTarget, queueKey: q, data: { question: q, answer: c, notes: n } });
+  }
+</script>
+</head>
+<body class="bg-base-100 text-base-content">
+<div class="max-w-4xl mx-auto px-4 py-8 space-y-10">
+
+<header class="space-y-3">
+  <p class="text-sm opacity-70">Round 5 of the log-store guide, 2026-11-11</p>
+  <h1 class="text-3xl font-bold">Lesson 3: what a device may remove</h1>
+  <p>You found lesson 3 confusing: <code class="cr-inline">device-a</code> reading "this device's" log, <code class="cr-inline">trace/motel</code> appearing from nowhere, and arrows that point the wrong way. You asked whether we had gone down a rabbit hole or made a design error.</p>
+  <div class="alert alert-warning"><span><b>It is a design error.</b> The lesson describes compaction as it was designed on 2026-09-20. Later decisions changed who reads a device's log, and compaction was never updated to match. Half of this was already reported as finding <a class="cr-link" href="2026-10-29-repo-wide-review.md#a01-compaction-and-rebuild-do-not-compose-safely">A01 Compaction and rebuild do not compose safely</a>; the lesson exposed the other half.</span></div>
+</header>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-semibold">1. Who reads a device's log, in the code</h2>
+  <p>Arrows point the way the facts flow: from the log to each reader. Green readers are counted by <code class="cr-inline">compact()</code>; red ones are not.</p>
+  <svg viewBox="0 0 760 330" class="w-full" role="img" aria-label="A device's log and the readers that read it">
+    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <rect x="20" y="115" width="200" height="100" rx="12" fill="none" stroke="currentColor" stroke-opacity=".5"/>
+    <text x="120" y="152" text-anchor="middle" font-weight="700" fill="currentColor">The device's log</text>
+    <text x="120" y="176" text-anchor="middle" font-size="13" fill="currentColor" opacity=".75">datoms, by seq</text>
+    <text x="120" y="196" text-anchor="middle" font-size="13" fill="currentColor" opacity=".75">compact() deletes seq ≤ horizon</text>
+
+    <g color="#22c55e">
+      <line x1="220" y1="140" x2="440" y2="60" stroke="currentColor" stroke-width="2" marker-end="url(#arr)"/>
+      <rect x="445" y="30" width="295" height="62" rx="10" fill="none" stroke="currentColor"/>
+      <text x="460" y="55" font-weight="700" fill="currentColor">Trace export, one per sink</text>
+      <text x="460" y="77" font-size="13" fill="currentColor">place: device_cursors as trace/&lt;sink&gt;</text>
+    </g>
+    <g color="#ef4444">
+      <line x1="220" y1="165" x2="440" y2="150" stroke="currentColor" stroke-width="2" marker-end="url(#arr)"/>
+      <rect x="445" y="120" width="295" height="62" rx="10" fill="none" stroke="currentColor"/>
+      <text x="460" y="145" font-weight="700" fill="currentColor">Projector: the read models</text>
+      <text x="460" y="167" font-size="13" fill="currentColor">place: projection_cursor (not counted)</text>
+    </g>
+    <g color="#a3a3a3">
+      <line x1="445" y1="240" x2="225" y2="190" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+      <rect x="445" y="210" width="295" height="62" rx="10" fill="none" stroke="currentColor"/>
+      <text x="460" y="235" font-weight="700" fill="currentColor">Sync pull: writes into this log</text>
+      <text x="460" y="257" font-size="13" fill="currentColor">place: sync_cursor, in the server's log</text>
+    </g>
+    <g color="#f59e0b">
+      <rect x="20" y="255" width="380" height="58" rx="10" fill="none" stroke="currentColor" stroke-dasharray="5 4"/>
+      <text x="35" y="280" font-weight="700" fill="currentColor">device-a: counted, but no code reads as it</text>
+      <text x="35" y="301" font-size="13" fill="currentColor">only the conformance suite and exercise 03.01</text>
+    </g>
+  </svg>
+  <div class="cr-table-wrap">
+  <table class="table table-sm">
+    <thead><tr><th>Reader</th><th>What it does</th><th>Where it keeps its place</th><th>Counted by <code class="cr-inline">compact()</code></th></tr></thead>
+    <tbody>
+      <tr><td>Trace export</td><td>sends spans to a sink, for example motel</td><td><code class="cr-inline">device_cursors</code>, as <code class="cr-inline">trace/&lt;sink&gt;</code></td><td class="cr-pass">yes</td></tr>
+      <tr><td>Projector</td><td>turns facts into read-model rows</td><td><code class="cr-inline">projection_cursor</code></td><td class="cr-fail">no</td></tr>
+      <tr><td>Sync push</td><td>sends the outbox</td><td>the <code class="cr-inline">outbox</code> table, not the log</td><td>not needed</td></tr>
+      <tr><td>Sync pull</td><td>appends the server's facts to this log</td><td><code class="cr-inline">sync_cursor</code>, a place in the server's log</td><td>not a reader here</td></tr>
+      <tr><td><code class="cr-inline">device-a</code></td><td>nothing: no code acknowledges as a device</td><td><code class="cr-inline">device_cursors</code></td><td class="cr-warn">yes</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><code class="cr-inline">compact()</code> has no caller outside tests.</p>
+  <div class="card bg-base-200 cr-gap"><div class="card-body p-5">
+    <h3 class="font-semibold">Where <code class="cr-inline">device-a</code> came from</h3>
+    <p class="text-sm"><a class="cr-link" href="../adr/0011-log-store-pattern.md">ADR-0011 Log store pattern, read models, compaction and analytics</a> (2026-09-20) says "compaction only past a horizon every device has acknowledged". That assumes a log many devices read from, compacted once every device has pulled it. Since then <a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d119">D119 Time corrected by authority</a> and <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p11">P11 Identity</a> decided that the server's log, the only log devices read from, is never compacted. And no device ever reads another device's log. The table name <code class="cr-inline">device_cursors</code> and the suite's <code class="cr-inline">device-a</code> are left over from the old design. <a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p10">P10 Trace projection</a> then added trace sinks to the same table, which is why the lesson had both.</p>
+  </div></div>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-semibold">2. Reproduced on the real code today</h2>
+  <p>One SQLite device and one trace sink, with the real <code class="cr-inline">createList</code>, <code class="cr-inline">LogStore</code> and <code class="cr-inline">Projector</code>. This was a throwaway test, now deleted, so it is not qualification evidence.</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">1. The read models miss facts</h3>
+      <p class="text-sm">Create a list. The trace sink acknowledges all 3 facts. Compact, then let the projector run.</p>
+      <pre class="cr-code">removed 3, horizon 3,
+heldBy trace/motel
+list titles: []</pre>
+      <p class="text-sm">The projector never saw the list. Its place is not counted.</p>
+    </div></div>
+    <div class="card bg-base-200 cr-bad"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">2. A rebuild empties them (A01)</h3>
+      <p class="text-sm">Project first, then compact, then <code class="cr-inline">rebuild()</code>. The sync client calls <code class="cr-inline">rebuild()</code> when the server rejects a changeset.</p>
+      <pre class="cr-code">before: ['Visit']
+removed 3
+after rebuild: []</pre>
+      <p class="text-sm">The read models are "disposable", but nothing is left to rebuild them from.</p>
+    </div></div>
+    <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+      <h3 class="font-semibold">3. With no reader, nothing goes</h3>
+      <p class="text-sm">No consumer registered.</p>
+      <pre class="cr-code">removed 0, horizon 0,
+heldBy null</pre>
+      <p class="text-sm">This part holds: no registered reader ever misses a fact.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-semibold">3. What a correct rule needs</h2>
+  <p>A device may remove a fact only when all three of these hold:</p>
+  <ol class="list-decimal pl-6 space-y-1">
+    <li><b>Every reader on the device has processed it</b>, the projector included. The log store can check this.</li>
+    <li><b>The server holds it</b>: the device pulled it, or the server accepted it. Only sync knows this.</li>
+    <li><b>A rebuild can get it back</b>, from the server or from a snapshot. Only sync, or a snapshot design, can do this.</li>
+  </ol>
+  <p>Conditions 2 and 3 depend on the server, and the server belongs to sync, a later pattern. The log store comes first, so it cannot check them (<a class="cr-link" href="../plan/bootstrap/02-decision-log.md#d82">D82 Patterns build on each other</a>). That is the real design error: compaction was placed in the log-store pattern, but whether it is safe can only be known one pattern later.</p>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-semibold">4. Options</h2>
+  <div class="card bg-base-200 cr-rec"><div class="card-body p-5 space-y-3">
+    <h3 class="font-semibold">A. The log store teaches what it delivers now; device compaction moves to sync (recommended)</h3>
+    <p class="text-sm">Lesson 3 becomes <b>"Each reader keeps its own place"</b>. It covers <code class="cr-inline">streamFrom(cursor)</code> and the acknowledged cursor, with the two real readers on a device: the read models and trace export. The mistake to try is to save the place before delivering. After a crash in between, the reader skips facts for good. Delivering first means a crash only causes a resend, and the store ignores a resent fact by its <code class="cr-inline">tx</code>. Lesson 1 already taught that.</p>
+<div class="cr-mermaid"><pre class="mermaid">sequenceDiagram
+  participant L as Device log
+  participant T as Trace export
+  participant M as motel (the sink)
+  T->>L: streamFrom(its place)
+  L-->>T: the facts after it
+  T->>M: send the spans
+  M-->>T: received
+  T->>L: acknowledge(trace/motel, last seq)</pre></div>
+    <ul class="list-disc pl-6 text-sm space-y-1">
+      <li>A new issue, "Device compaction", records the three conditions and the reproductions. It is decided with the sync pattern, which can check conditions 2 and 3.</li>
+      <li>ADR-0011 is amended: the log-store pattern does not deliver device compaction. The server's log is still never compacted.</li>
+      <li>The conformance suite and exercise 03.01 stop using <code class="cr-inline">device-a</code>. The exercise becomes "deliver, then acknowledge" for a trace sink. The glossary's Consumer entry loses <code class="cr-inline">device-a</code>.</li>
+    </ul>
+  </div></div>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">B. Make compaction correct now</h3>
+    <p class="text-sm">Register the projector as a consumer, compact only what the server holds, and have a rebuild on a compacted device pull again from the server. This builds sync knowledge into the log store, or a sync check into it. P04, P05 and P09 would all re-run, and snapshot versus re-pull would have to be decided now, before any app needs compaction.</p>
+  </div></div>
+  <div class="card bg-base-200"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">C. Fix only the words</h3>
+    <p class="text-sm">Replace <code class="cr-inline">device-a</code> with the projector and a sink, and have the lesson name the two open gaps. The lesson would still teach an incomplete rule as the rule.</p>
+  </div></div>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-semibold">Your answers</h2>
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q1', 'Q1 Lesson 3 and compaction')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q1. Which way?</h3>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="A: lesson 3 becomes 'Each reader keeps its own place'; device compaction moves to a new issue decided with sync; ADR-0011 amended; device-a removed from the suite, exercise and glossary"> <span><b>A. Teach what is delivered; compaction moves to sync</b> (recommended)</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="B: make compaction correct now (projector counted, server-held only, rebuild re-pulls)"> <span><b>B. Make compaction correct now</b></span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q1" value="C: fix only the words, name the gaps in the lesson"> <span><b>C. Fix only the words</b></span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+  <form class="card bg-base-200" onsubmit="crQueue(event, 'q2', 'Q2 compact() until then')"><div class="card-body p-5 space-y-2">
+    <h3 class="font-semibold">Q2. With A: what happens to <code class="cr-inline">compact()</code> until sync decides?</h3>
+    <p class="text-sm"><a class="cr-link" href="../plan/bootstrap/06-qualification-gates.md#p10">P10 Trace projection</a> qualified <code class="cr-inline">heldBy</code> for trace sinks, and the P04 check "compaction horizon" checks the mechanism.</p>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="keep: compact() stays in the contract, its doc comment says no app calls it until the device compaction issue is decided; P04 and P10 claims stand as mechanism"> <span><b>Keep it, marked "no app calls this yet"</b> (recommended). The mechanism stays checked, and nothing teaches it as safe.</span></label>
+    <label class="flex gap-2"><input type="radio" class="radio radio-sm" name="q2" value="remove: take compact(), horizon and heldBy out of the LogStore contract now; the P04 check and P10 heldBy claim go with them"> <span><b>Remove it now</b>. The P04 check and the P10 <code class="cr-inline">heldBy</code> claim go too, and come back with sync.</span></label>
+    <input class="input input-sm w-full" name="notes" placeholder="Notes">
+    <button class="btn btn-sm btn-primary w-fit">Queue answer</button>
+  </div></form>
+</section>
+
+<footer class="cr-src">Sources: <code class="cr-inline">libs/datom/src/log-store.ts</code> (acknowledge, compact), <code class="cr-inline">projector.ts</code> (projection_cursor, rebuild), <code class="cr-inline">libs/telemetry/src/trace-projector.ts</code> (trace/&lt;sink&gt;), <code class="cr-inline">libs/sync/client/src/client.ts</code> (outbox, sync_cursor, rebuild on rejection), <code class="cr-inline">libs/datom/src/suites/log-store.ts</code> and exercise 03.01 (device-a), on branch lesson-1-in-docs. Also in the round: lesson 4's widget now uses a dropdown and checkboxes, and every widget follows one button convention.</footer>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "loose" });
+  // Mermaid measures labels while it lays a diagram out, so a diagram must stay
+  // visible until it is done. Lavish hides a .mermaid container as soon as an SVG
+  // appears in it (to put a whiteboard there), and preloads the page in a hidden
+  // frame. So each diagram is drawn apart, once the page has a size, and only the
+  // finished SVG goes into its container.
+  const diagrams = [...document.querySelectorAll(".mermaid")];
+  function source(el) {
+    const raw = document.createElement("textarea");
+    raw.innerHTML = el.innerHTML;
+    return raw.value.trim();
+  }
+  async function draw() {
+    for (const [i, el] of diagrams.entries()) {
+      try {
+        const { svg } = await mermaid.render(`diagram-${i}`, source(el));
+        el.innerHTML = svg;
+      } catch (error) {
+        console.error(`Mermaid diagram ${i} in #${el.closest("section")?.id} failed:`, error?.message ?? error);
+      }
+    }
+  }
+  const sized = new ResizeObserver(([entry]) => {
+    if (entry.contentRect.width === 0) return;
+    sized.disconnect();
+    void draw();
+  });
+  window.addEventListener("load", () => sized.observe(document.body), { once: true });
+</script>
+</body>
+</html>

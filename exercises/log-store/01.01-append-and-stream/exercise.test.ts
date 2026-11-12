@@ -1,5 +1,5 @@
 import { describe, expect } from '@effect/vitest'
-import { exercise } from '@viviefs/testing/exercise'
+import { exercise, note } from '@viviefs/testing/exercise'
 import * as Effect from 'effect/Effect'
 import { onLogStore } from '../track.ts'
 import * as problem from './problem/send.ts'
@@ -17,9 +17,13 @@ describe('01.01 append and stream', () => {
     problem,
     solution,
     check: (impl: typeof solution) =>
+      // #region check
       onLogStore(
         Effect.gen(function* () {
           const { first, second, log } = yield* impl.sendTwice(facts)
+          yield* note(`first send:  inserted ${first.inserted}, duplicates ${first.duplicates}`)
+          yield* note(`second send: inserted ${second.inserted}, duplicates ${second.duplicates}`)
+          yield* note(`the log:     ${log.length} facts, ${log.map(({ v }) => v).join(', ')}`)
           expect(first, 'the first send appends every fact').toEqual({ inserted: 3, duplicates: 0 })
           expect(second, 'a retry must not add facts: the second send is all duplicates').toEqual({
             inserted: 0,
@@ -28,6 +32,7 @@ describe('01.01 append and stream', () => {
           expect(log.map(({ e, a, v }) => ({ e, a, v })), 'the log holds each fact once, in order').toEqual(facts)
         }),
       ),
+      // #endregion check
     failsWith: /a retry must not add facts/,
   })
 })

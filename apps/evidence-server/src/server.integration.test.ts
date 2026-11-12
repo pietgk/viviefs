@@ -8,7 +8,7 @@ import * as HttpServer from 'effect/http/HttpServer'
 import * as RpcClient from 'effect/rpc/RpcClient'
 import * as RpcSerialization from 'effect/rpc/RpcSerialization'
 import { Attr, LogStore, liveClock } from '@viviefs/datom'
-import { renameList } from '@viviefs/evidence-model'
+import { createList } from '@viviefs/evidence-model'
 import type { SignInSession } from '@viviefs/identity'
 import { pgliteLogStore } from '@viviefs/store-postgres'
 import { bearerAuthenticationClient } from '@viviefs/sync-client'
@@ -77,8 +77,8 @@ describe('evidence server over HTTP', () => {
           ),
         )
         const store = Context.get(device, LogStore)
-        const changeset = yield* renameList(
-          { title: null },
+        const changeset = yield* createList(
+          { exists: false },
           { org: 'acme', list: 'one', title: 'over http' },
           {
             cs: yield* store.mint(),

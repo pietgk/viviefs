@@ -1,0 +1,941 @@
+---
+/**
+ * Lesson 1's widget (I2, D215, D217, D219): one organization's log in three
+ * copies, on device A, on the server and on device B. Create the list, rename
+ * it on a device, sync, send
+ * the same changeset again. The state and every step come from
+ * `src/lib/datom-log.ts`, which a test checks against the real evidence server
+ * and two real devices; this file only draws it.
+ *
+ * Other parts of the page talk to it through attributes: a button with
+ * `data-point-at="entity"` (a word card) lights that part up, and an element
+ * with `data-datom-log-step` shows the last step as uses of `append`.
+ */
+---
+
+<div class="vv-datom-log not-content" data-datom-log>
+  <p class="vv-ask">
+    Two people work on list <code>O1/L1</code>, each on their own device, and the server keeps the organization's log.
+    Create the list on A and sync; let B sync and rename; then A again. Then send a changeset again, as a device does
+    when it never heard back.
+  </p>
+  <div class="vv-controls">
+    <div class="vv-group">
+      <span class="vv-group-name">Device A</span>
+      <button type="button" class="vv-btn vv-primary" data-act="create A">Create the list</button>
+      <button type="button" class="vv-btn vv-primary" data-act="rename A">Rename it</button>
+      <button type="button" class="vv-btn" data-act="sync A">Sync</button>
+    </div>
+    <div class="vv-group">
+      <span class="vv-group-name">Device B</span>
+      <button type="button" class="vv-btn vv-primary" data-act="create B">Create the list</button>
+      <button type="button" class="vv-btn vv-primary" data-act="rename B">Rename it</button>
+      <button type="button" class="vv-btn" data-act="sync B">Sync</button>
+    </div>
+    <div class="vv-group">
+      <span class="vv-group-name" data-retry-name>Send the last changeset again</span>
+      <button type="button" class="vv-btn" data-act="sendAgain">Same tags</button>
+      <button type="button" class="vv-btn vv-mistake" data-act="newTags">New tags</button>
+    </div>
+    <button type="button" class="vv-btn vv-reset" data-act="reset">Start over</button>
+  </div>
+
+  <div class="vv-fact" data-fact aria-live="polite"></div>
+
+  <div
+    class="vv-figure"
+    data-figure
+    role="img"
+    aria-label="Three copies of one organization's log: on device A, on the server, on device B. Each row is one fact."
+  >
+  </div>
+
+  <div class="vv-legend">
+    <span><i class="vv-l-new"></i>added by the last step</span>
+    <span><i class="vv-l-dup"></i>already there, not added again</span>
+    <span><i class="vv-l-twice"></i>the same rename, stored a second time</span>
+    <span>Click a row to see its six parts above.</span>
+  </div>
+
+  <div class="vv-readout" aria-live="polite">
+    <div>
+      <p class="vv-readout-head">What just happened</p>
+      <p class="vv-readout-text" data-readout-text></p>
+      <p class="vv-readout-next" data-readout-next></p>
+    </div>
+    <div class="vv-counts">
+      <p class="vv-count-where" data-count-where></p>
+      <div class="vv-count vv-ins" data-count-inserted><b>-</b><span>added</span></div>
+      <div class="vv-count vv-dup" data-count-duplicates><b>-</b><span>already there</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import {
+    ACTIONS,
+    can,
+    counts,
+    initial,
+    knowsList,
+    step,
+    SYNC_NODES,
+    TITLE_ATTRIBUTE,
+    type Action,
+    type Call,
+    type Fact,
+    type State,
+    type Stored,
+    type SyncNode,
+  } from '../lib/datom-log.ts'
+
+  const isAction = (value: string | undefined): value is Action => ACTIONS.some((action) => action === value)
+
+  const escape = (text: string) => text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
+  const short = (tx: string) => tx.slice(-6, -4) + tx.slice(-2)
+  const isId = (text: string) => /^[0-9A-Z]{26}$/.test(text)
+  const HUES = [212, 28, 152, 286, 338, 96, 190, 48, 262, 12, 126, 316]
+  const NAME: Readonly<Record<SyncNode, string>> = { A: 'device A', B: 'device B', server: 'the server' }
+  const TITLE: Readonly<Record<SyncNode, string>> = { A: 'Device A', B: 'Device B', server: 'Server' }
+  const ROLE: Readonly<Record<SyncNode, string>> = { A: 'writes and reads', B: 'writes and reads', server: 'holds authority' }
+  const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+
+  /**
+   * One panel's columns, in SVG units from its left edge. A row shows an
+   * attribute by its last part (`title` for `evidence/list/title`); side by
+   * side, the three logs fit the page's text column only without `e`. The
+   * panel above the logs shows the whole fact.
+   */
+  type Columns = Readonly<Record<'seq' | 'e' | 'a' | 'v' | 'tx', number>>
+  type Layout = {
+    readonly wide: boolean
+    readonly W: number
+    readonly PW: number
+    readonly ROW: number
+    readonly HEAD: number
+    readonly BAND: number
+    readonly GAP: number
+    readonly col: Columns
+  }
+  const WIDE: Layout = { wide: true, W: 632, PW: 200, ROW: 24, HEAD: 58, BAND: 64, GAP: 16, col: { seq: 8, e: -1, a: 26, v: 72, tx: 148 } }
+  const NARROW: Layout = { wide: false, W: 330, PW: 330, ROW: 26, HEAD: 58, BAND: 0, GAP: 64, col: { seq: 10, e: 34, a: 98, v: 160, tx: 266 } }
+  const WIDE_FROM = 560
+
+  const PARTS: ReadonlyArray<readonly [keyof Fact, string, string]> = [
+    ['e', 'entity', 'which thing the fact is about'],
+    ['a', 'attribute', 'what kind of fact it is'],
+    ['v', 'value', 'what it says'],
+    ['tx', 'transaction id', 'its tag, minted once, when it was built'],
+    ['op', 'assert or retract', 'assert: this holds. retract: it no longer does'],
+    ['cs', 'changeset', 'the batch it belongs to'],
+  ]
+
+  const mount = (root: HTMLElement) => {
+    const $ = <T extends Element>(selector: string): T => {
+      const found = root.querySelector<T>(selector)
+      if (found === null) throw new Error(`DatomLog: no ${selector}`)
+      return found
+    }
+    const figure = $<HTMLElement>('[data-figure]')
+    let state: State = initial
+    let selected: string | null = null
+    let layout = WIDE
+    const hues = new Map<string, number>()
+    const hue = (id: string) => {
+      const known = hues.get(id)
+      if (known !== undefined) return known
+      const next = HUES[hues.size % HUES.length] ?? 212
+      hues.set(id, next)
+      return next
+    }
+
+    const chip = (id: string, x: number, y: number, kind: 'tx' | 'cs') => `<g class="vv-t-${kind}" style="--h:${hue(id)}" data-tx="${id}">
+        <rect class="vv-chip ${kind === 'cs' ? 'vv-chip-cs' : ''}" x="${x}" y="${y}" width="${kind === 'cs' ? 44 : 48}" height="17" rx="8.5"/>
+        ${kind === 'tx' ? `<rect class="vv-pointer vv-p-tx" x="${x - 3}" y="${y - 3}" width="54" height="23" rx="11.5"/>` : ''}
+        <text class="vv-chiptext" x="${x + (kind === 'cs' ? 22 : 24)}" y="${y + 12.5}" text-anchor="middle">${short(id)}</text>
+      </g>`
+
+    /** What the last step did to each row of one log: added, met again, or a second copy. */
+    const marksOf = (node: SyncNode): ReadonlyMap<string, string> => {
+      const marks = new Map<string, string>()
+      for (const fact of state.logs[node]) if (fact.again) marks.set(fact.tx, 'twice')
+      const calls: ReadonlyArray<Call> = state.last?.calls.filter(({ at }) => at === node) ?? []
+      // A fact this step added keeps that mark when a later call of the same step meets it again (a device pulling back its own).
+      const added = new Set<string>()
+      for (const call of calls) {
+        call.facts.forEach((fact, i) => {
+          if (call.outcomes[i] === 'inserted') {
+            added.add(fact.tx)
+            marks.set(fact.tx, state.logs[node].find(({ tx }) => tx === fact.tx)?.again ? 'twice' : 'new')
+          } else if (!added.has(fact.tx)) marks.set(fact.tx, 'dup')
+        })
+      }
+      return marks
+    }
+
+    const row = (fact: Stored, y: number, mark: string | undefined) => {
+      const { PW, ROW, col } = layout
+      const classes = ['vv-row', mark ? `vv-is-${mark}` : '', fact.tx === selected ? 'vv-sel' : ''].join(' ')
+      const base = y + ROW / 2 + 4
+      const top = y + (ROW - 17) / 2
+      const box = (part: string, x: number, w: number) => `<rect class="vv-pointer vv-p-${part}" x="${x - 4}" y="${base - 13}" width="${w}" height="18" rx="4"/>`
+      return `<g class="${classes}" data-select="${fact.tx}" tabindex="0" role="button" aria-label="${escape(`${fact.e} ${fact.a} ${fact.v}, tag ${short(fact.tx)}, position ${fact.seq}`)}">
+        <rect class="vv-rowbg" x="4" y="${y + 1}" width="${PW - 8}" height="${ROW - 2}" rx="5"/>
+        <rect class="vv-pointer vv-p-datom" x="4" y="${y + 1}" width="${PW - 8}" height="${ROW - 2}" rx="5"/>
+        ${box('position', col.seq, 20)}
+        <text class="vv-cell vv-seq" x="${col.seq}" y="${base}">${fact.seq}</text>
+        ${
+          layout.wide
+            ? ''
+            : `${isId(fact.e) ? chip(fact.e, col.e, top, 'cs') : `<text class="vv-cell" x="${col.e}" y="${base}">${escape(fact.e)}</text>`}${box('entity', col.e, 50)}`
+        }
+        <text class="vv-cell" x="${col.a}" y="${base}">${escape(fact.a.split('/').at(-1) ?? fact.a)}</text>
+        ${box('attribute', col.a, 46)}
+        <text class="vv-cell vv-v" x="${col.v}" y="${base}">${escape(fact.v)}</text>
+        ${chip(fact.tx, col.tx, top, 'tx')}
+      </g>`
+    }
+
+    const panel = (node: SyncNode, x: number, y: number, height: number) => {
+      const { PW, ROW, HEAD, col } = layout
+      const log = state.logs[node]
+      const marks = marksOf(node)
+      const waiting = node === 'server' ? 0 : state.outbox[node].length
+      const sub =
+        node === 'server'
+          ? `${plural(log.length, 'fact')}, kept for good`
+          : `${plural(log.length, 'fact')}${waiting > 0 ? `, outbox: ${waiting} waiting` : ''}`
+      const head = (label: string, at: number) => `<text class="vv-head" x="${at}" y="${HEAD - 7}">${label}</text>`
+      const body =
+        log.length > 0
+          ? log.map((fact, i) => row(fact, HEAD + i * ROW, marks.get(fact.tx))).join('')
+          : `<text class="vv-hint" x="12" y="${HEAD + 17}">${node === 'server' ? 'Empty. Nothing accepted yet.' : 'Empty.'}</text>`
+      const kind = node === 'server' ? 'server' : 'device'
+      return `<g transform="translate(${x} ${y})" class="vv-log" data-node="${node}">
+        <rect class="vv-panel vv-panel-${kind}" x="0.5" y="0.5" width="${PW - 1}" height="${height - 1}" rx="10"/>
+        <rect class="vv-pointer vv-p-logstore vv-p-${kind} vv-p-syncnode" x="1.5" y="1.5" width="${PW - 3}" height="${height - 3}" rx="10"/>
+        <text class="vv-ptitle" x="12" y="21">${node === 'server' ? "The server's log" : `The log on ${NAME[node]}`}</text>
+        <text class="vv-psub ${waiting > 0 ? 'vv-waiting' : ''}" x="12" y="37">${escape(sub)}</text>
+        ${head('#', col.seq)}${layout.wide ? '' : head('e', col.e)}${head('a', col.a)}${head('v', col.v)}${head('tx', col.tx)}
+        <line class="vv-rule" x1="6" x2="${PW - 6}" y1="${HEAD}" y2="${HEAD}"/>
+        ${body}
+      </g>`
+    }
+
+    /** The push and pull counts of the last step, for the arrows between a device and the server. */
+    const traffic = (device: 'A' | 'B') => {
+      const last = state.last
+      if (last === null || last.by !== device || last.action.startsWith('rename')) return { push: 0, pull: 0, live: false }
+      const push = last.calls.filter(({ at }) => at === 'server').reduce((sum, call) => sum + call.facts.length, 0)
+      // In a sync every call on the device is the pull; in a retry with new tags the first one is the write.
+      const pull = last.calls.filter(({ at }, i) => at === device && (last.action.startsWith('sync') || i > 0)).reduce((sum, call) => sum + call.facts.length, 0)
+      return { push, pull, live: true }
+    }
+
+    const pill = (node: SyncNode, cx: number, y: number, w: number) => `<g class="vv-node vv-node-${node === 'server' ? 'server' : 'device'}">
+        <rect class="vv-pill" x="${cx - w / 2}" y="${y}" width="${w}" height="42" rx="10"/>
+        <rect class="vv-pointer vv-p-${node === 'server' ? 'server vv-p-authority' : 'device'} vv-p-syncnode" x="${cx - w / 2 - 3}" y="${y - 3}" width="${w + 6}" height="48" rx="12"/>
+        <text class="vv-pilltitle" x="${cx}" y="${y + 18}" text-anchor="middle">${TITLE[node]}</text>
+        <text class="vv-pillrole" x="${cx}" y="${y + 33}" text-anchor="middle">${escape(ROLE[node])}</text>
+      </g>`
+
+    /** A horizontal pair of arrows, push above and pull below, between x1 and x2 (x1 is the device side). */
+    const wires = (x1: number, x2: number, y: number, device: 'A' | 'B') => {
+      const { push, pull, live } = traffic(device)
+      const arrow = (from: number, to: number, at: number, label: string, on: boolean) => {
+        const d = to > from ? 1 : -1
+        return `<g class="${on ? 'vv-live' : ''}"><line class="vv-wire" x1="${from}" x2="${to - d * 8}" y1="${at}" y2="${at}"/>
+          <path class="vv-wirehead" d="M${to} ${at} l${-d * 10} -5 v10 z"/>
+          <text class="vv-wirelabel" x="${(from + to) / 2}" y="${at - 5}" text-anchor="middle">${label}</text></g>`
+      }
+      return `<g class="vv-p-consumer-host">
+        ${arrow(x1, x2, y + 14, live && push > 0 ? `push ${push}` : 'push', live && push > 0)}
+        ${arrow(x2, x1, y + 38, live ? `pull ${pull}` : 'pull', live && pull > 0)}
+        <rect class="vv-pointer vv-p-consumer" x="${Math.min(x1, x2)}" y="${y + 24}" width="${Math.abs(x2 - x1)}" height="20" rx="6"/>
+      </g>`
+    }
+
+    const drawFigure = () => {
+      layout = figure.clientWidth >= WIDE_FROM ? WIDE : NARROW
+      figure.dataset['layout'] = layout.wide ? 'wide' : 'narrow'
+      const { W, PW, ROW, HEAD, BAND, GAP } = layout
+      const heightOf = (node: SyncNode) => HEAD + Math.max(state.logs[node].length, 1) * ROW + 10
+      if (layout.wide) {
+        const height = Math.max(...SYNC_NODES.map(heightOf))
+        const xs = SYNC_NODES.map((_, i) => i * (PW + GAP))
+        const cx = xs.map((x) => x + PW / 2)
+        const pills = SYNC_NODES.map((node, i) => pill(node, cx[i] ?? 0, 4, node === 'server' ? 140 : 116)).join('')
+        const band = `${pills}${wires((cx[0] ?? 0) + 58, (cx[1] ?? 0) - 70, 3, 'A')}${wires((cx[2] ?? 0) - 58, (cx[1] ?? 0) + 70, 3, 'B')}`
+        const panels = SYNC_NODES.map((node, i) => panel(node, xs[i] ?? 0, BAND, height)).join('')
+        figure.innerHTML = `<svg viewBox="0 0 ${W} ${BAND + height}" xmlns="http://www.w3.org/2000/svg">${band}${panels}</svg>`
+        return
+      }
+      // Narrow: the three logs stacked, A on top, the server between, B below, the arrows between them.
+      let y = 0
+      let out = ''
+      SYNC_NODES.forEach((node, i) => {
+        const h = heightOf(node)
+        out += panel(node, 0, y, h)
+        y += h
+        if (i < SYNC_NODES.length - 1) {
+          const device = i === 0 ? 'A' : 'B'
+          const { push, pull, live } = traffic(device)
+          const up = i === 0 ? -1 : 1
+          const arrow = (x: number, down: boolean, label: string, on: boolean) => {
+            const y1 = y + 8
+            const y2 = y + GAP - 8
+            const [from, to] = down ? [y1, y2] : [y2, y1]
+            const d = down ? 1 : -1
+            return `<g class="${on ? 'vv-live' : ''}"><line class="vv-wire" x1="${x}" x2="${x}" y1="${from}" y2="${to - d * 8}"/>
+              <path class="vv-wirehead" d="M${x} ${to} l-5 ${-d * 10} h10 z"/>
+              <text class="vv-wirelabel" x="${x + 10}" y="${y + GAP / 2 + 4}">${label}</text></g>`
+          }
+          // Push goes towards the server, pull away from it.
+          out += arrow(PW / 2 - 70, up < 0, live && push > 0 ? `push ${push}` : 'push', live && push > 0)
+          out += arrow(PW / 2 + 40, up > 0, live ? `pull ${pull}` : 'pull', live && pull > 0)
+          out += `<rect class="vv-pointer vv-p-consumer" x="${PW / 2 + 28}" y="${y + 6}" width="80" height="${GAP - 12}" rx="6"/>`
+          y += GAP
+        }
+      })
+      figure.innerHTML = `<svg viewBox="0 0 ${W} ${y}" xmlns="http://www.w3.org/2000/svg">${out}</svg>`
+    }
+
+    const drawFact = () => {
+      const all = SYNC_NODES.flatMap((node) => state.logs[node])
+      const fact = all.find(({ tx }) => tx === selected)
+      const value = (key: keyof Fact) => {
+        if (fact === undefined) return '<span class="vv-none">-</span>'
+        const text = fact[key]
+        if (key === 'tx' || key === 'cs' || isId(text)) return `<span class="vv-id" style="--h:${hue(text)}">${short(text)}</span>`
+        return escape(text).replace(/\//g, '/<wbr>')
+      }
+      const places = SYNC_NODES.map((node) => {
+        const at = state.logs[node].find(({ tx }) => tx === selected)
+        return at ? `<b>${at.seq}</b> on ${NAME[node]}` : `not on ${NAME[node]} yet`
+      })
+      const where =
+        fact === undefined
+          ? 'Create the list to see a fact here.'
+          : `Its position: ${places.join(', ')}. Each log numbers its own facts, so the position is not part of the fact; the tag is the same everywhere.`
+      $<HTMLElement>('[data-fact]').innerHTML = `<p class="vv-fact-head">One fact, six parts</p>
+        <div class="vv-six">${PARTS.map(([key, name, say]) => `<div class="vv-part" data-part="${key}"><span class="vv-k">${key}</span><span class="vv-nm">${name}</span><span class="vv-val">${value(key)}</span><span class="vv-say">${say}</span></div>`).join('')}</div>
+        <p class="vv-pos">${where}</p>`
+    }
+
+    const titlesIn = (node: SyncNode) => state.logs[node].filter(({ a }) => a === TITLE_ATTRIBUTE).map(({ v }) => v)
+
+    const say = () => {
+      const last = state.last
+      let text: string
+      let next: string
+      let where = ''
+      let shown: ReadonlyArray<Call> = []
+      if (last === null) {
+        text = "Nothing yet. Three copies of one organization's log, all empty: one on each device and one on the server."
+        next = 'Press "Create the list" under device A.'
+      } else {
+        const by = NAME[last.by]
+        const server = last.calls.filter(({ at }) => at === 'server')
+        const pulled = last.calls.filter(({ at }, i) => at === last.by && (i > 0 || last.action.startsWith('sync')))
+        const pulledCounts = counts(pulled.flatMap(({ outcomes }) => outcomes))
+        const serverCounts = counts(server.flatMap(({ outcomes }) => outcomes))
+        const other = last.by === 'A' ? 'B' : 'A'
+        if (last.action.startsWith('create')) {
+          const title = last.calls[0]?.facts.find(({ a }) => a === TITLE_ATTRIBUTE)?.v ?? ''
+          text = `On ${by}, createList built three facts: the list exists, its title is "${title}", and a commit that closes the changeset. Each got its own tag. The device appended the first two to its own log and queued the changeset in its outbox; the commit comes back from the server once it has accepted the changeset. Nobody else has the list yet.`
+          next = `Press "Sync" on ${by}.`
+          shown = last.calls
+          where = `on ${by}`
+        } else if (last.action.startsWith('rename')) {
+          const title = last.calls[0]?.facts.find(({ a }) => a === TITLE_ATTRIBUTE)?.v ?? ''
+          text = `On ${by}, renameList built two facts: the title is "${title}", and a commit. It does not say again that the list exists: that would bring back a list someone else deleted. ${TITLE[last.by]} appended the title to its own log; the earlier title is still there.`
+          next = `Press "Sync" on ${by}.`
+          shown = last.calls
+          where = `on ${by}`
+        } else if (last.action.startsWith('sync')) {
+          const sent = server.length
+          const pushedText =
+            sent > 0
+              ? `Sync sent ${by}'s outbox: the server accepted ${plural(sent, 'changeset')} and appended ${plural(serverCounts.inserted, 'fact')} at the end of its log. The server decides the order. `
+              : `${TITLE[last.by]} had nothing to send. `
+          const pullText =
+            pulledCounts.inserted + pulledCounts.duplicates === 0
+              ? 'Then it pulled, and there was nothing new.'
+              : `Then ${last.by} pulled what the server had after its sync cursor: ${pulledCounts.inserted} new, ${pulledCounts.duplicates} it had already.`
+          text = pushedText + pullText
+          const behind = state.cursor[other] < state.logs.server.length
+          const everywhere = titlesIn('A').length > 1 && titlesIn('A').join() === titlesIn('B').join() && titlesIn('B').join() === titlesIn('server').join()
+          next = everywhere
+            ? 'Every title is in every log; a rename changed none. Which one counts is lesson 2. Now send a changeset again.'
+            : behind
+              ? knowsList(state, other)
+                ? `Now sync ${NAME[other]}, or rename on ${NAME[other]} first, before it pulls.`
+                : `Now sync ${NAME[other]}: a device can only rename a list it has pulled.`
+              : `Take another turn, or send the last changeset again.`
+          shown = sent > 0 ? server : pulled
+          where = sent > 0 ? 'on the server' : `on ${by}`
+        } else if (last.action === 'sendAgain') {
+          text = `${TITLE[last.by]} sent its last changeset again, as it would after never hearing back. The server holds every tag already and stored nothing. Sending again is harmless, if it is the same changeset.`
+          next = 'Now the red button: the same rename again, but with new tags.'
+          shown = server
+          where = 'on the server'
+        } else {
+          text = `${TITLE[last.by]} built the same changeset again, and minting gave every fact a new tag. To the server those are facts it has never seen: it stored the change a second time, and ${last.by} has it twice too.`
+          next = 'This is the bug exercise 01.01 asks you to fix. Start over, or take more turns.'
+          shown = server
+          where = 'on the server'
+        }
+      }
+      $<HTMLElement>('[data-readout-text]').textContent = text
+      $<HTMLElement>('[data-readout-next]').textContent = next
+      const c = counts(shown.flatMap(({ outcomes }) => outcomes))
+      const on = shown.length > 0
+      $<HTMLElement>('[data-count-where]').textContent = on ? where : ''
+      const inserted = $<HTMLElement>('[data-count-inserted]')
+      const duplicates = $<HTMLElement>('[data-count-duplicates]')
+      inserted.querySelector('b')!.textContent = on ? String(c.inserted) : '-'
+      duplicates.querySelector('b')!.textContent = on ? String(c.duplicates) : '-'
+      inserted.classList.toggle('vv-on', on && c.inserted > 0)
+      duplicates.classList.toggle('vv-on', on && c.duplicates > 0)
+      const sent = state.sent
+      $<HTMLElement>('[data-retry-name]').textContent = sent === null ? 'Send the last changeset again' : `Send ${NAME[sent.by]}'s last changeset again`
+    }
+
+    const drawSteps = () => {
+      const last = state.last
+      for (const host of document.querySelectorAll<HTMLElement>('[data-datom-log-step]')) {
+        if (last === null) {
+          host.innerHTML = '<span class="vv-muted">Use the widget above; each fact appended is one line here.</span>'
+          continue
+        }
+        // Replay the sizes: each call starts from the size its log had before it.
+        const sizes = new Map<SyncNode, number>(SYNC_NODES.map((node) => [node, state.logs[node].length]))
+        for (const call of last.calls) sizes.set(call.at, (sizes.get(call.at) ?? 0) - counts(call.outcomes).inserted)
+        host.innerHTML = last.calls
+          .filter(({ facts }) => facts.length > 0)
+          .map((call) => {
+            const name = call.at === 'server' ? 'server log' : `log on ${call.at}`
+            return call.facts
+              .map((fact, i) => {
+                const outcome = call.outcomes[i] ?? 'duplicate'
+                const from = sizes.get(call.at) ?? 0
+                if (outcome === 'inserted') sizes.set(call.at, from + 1)
+                return `<div>append(<span class="vv-muted">${name} of ${from}</span>, datom ${short(fact.tx)}) =&gt; (<span class="vv-muted">${name} of ${sizes.get(call.at) ?? 0}</span>, <b>${outcome}</b>)</div>`
+              })
+              .join('')
+          })
+          .join('')
+      }
+    }
+
+    const draw = () => {
+      drawFigure()
+      drawFact()
+      say()
+      drawSteps()
+      for (const button of root.querySelectorAll<HTMLButtonElement>('[data-act]')) {
+        const action = button.dataset['act']
+        button.disabled = !isAction(action) || !can(state, action)
+      }
+    }
+
+    const act = (action: Action) => {
+      if (action === 'reset') hues.clear()
+      state = step(state, action)
+      if (action === 'reset') selected = null
+      else if (action.startsWith('create') || action.startsWith('rename') || action === 'newTags') selected = state.last?.calls[0]?.facts.find(({ a }) => a === TITLE_ATTRIBUTE)?.tx ?? selected
+      draw()
+    }
+
+    let pointTimer: ReturnType<typeof setTimeout> | undefined
+    const pointAt = (part: string) => {
+      if (state.logs.server.length === 0) {
+        // A start that shows every part: A creates and syncs, B pulls and renames, A renames before it pulls B's, both sync.
+        for (const action of ['create A', 'sync A', 'sync B', 'rename B', 'rename A', 'sync A', 'sync B'] as const) act(action)
+      }
+      root.dataset['point'] = part
+      $<HTMLElement>('[data-fact]').scrollIntoView({ block: 'start', behavior: 'smooth' })
+      clearTimeout(pointTimer)
+      pointTimer = setTimeout(() => delete root.dataset['point'], 4500)
+    }
+
+    root.addEventListener('click', (event) => {
+      const target = event.target as Element
+      const button = target.closest<HTMLButtonElement>('[data-act]')
+      const action = button?.dataset['act']
+      if (button && !button.disabled && isAction(action)) {
+        act(action)
+        return
+      }
+      const chosen = target.closest<SVGElement>('[data-select]')
+      if (chosen) {
+        selected = chosen.dataset['select'] ?? null
+        drawFigure()
+        drawFact()
+      }
+    })
+    root.addEventListener('keydown', (event) => {
+      const chosen = (event.target as Element).closest<SVGElement>('[data-select]')
+      if (chosen && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault()
+        selected = chosen.dataset['select'] ?? null
+        drawFigure()
+        drawFact()
+      }
+    })
+    document.addEventListener('click', (event) => {
+      const pointer = (event.target as Element).closest<HTMLElement>('[data-point-at]')
+      if (pointer?.dataset['pointAt']) pointAt(pointer.dataset['pointAt'])
+    })
+    const hot = (tx: string | null) => {
+      for (const chip of figure.querySelectorAll<SVGElement>('.vv-t-tx')) chip.classList.toggle('vv-hot', tx !== null && chip.dataset['tx'] === tx)
+    }
+    figure.addEventListener('mouseover', (event) => hot((event.target as Element).closest<SVGElement>('.vv-t-tx')?.dataset['tx'] ?? null))
+    figure.addEventListener('mouseout', () => hot(null))
+    new ResizeObserver(() => {
+      if ((figure.clientWidth >= WIDE_FROM ? 'wide' : 'narrow') !== figure.dataset['layout']) drawFigure()
+    }).observe(figure)
+
+    draw()
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-datom-log]')) mount(root)
+</script>
+
+<style>
+  .vv-datom-log {
+    --vv-good: var(--sl-color-green);
+    --vv-good-low: var(--sl-color-green-low);
+    --vv-warn: var(--sl-color-orange);
+    --vv-warn-low: var(--sl-color-orange-low);
+    --vv-bad: var(--sl-color-red);
+    --vv-bad-low: var(--sl-color-red-low);
+    --vv-chip-l: 40%;
+    --vv-chip-bg-l: 95%;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.875rem;
+    padding: clamp(0.875rem, 3vw, 1.375rem);
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+    margin-block: 1.5rem;
+  }
+  :global([data-theme='dark']) .vv-datom-log {
+    --vv-chip-l: 72%;
+    --vv-chip-bg-l: 16%;
+  }
+  .vv-datom-log p {
+    margin: 0;
+  }
+  .vv-ask {
+    color: var(--sl-color-white);
+  }
+  .vv-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .vv-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    align-items: center;
+    border: 1px solid var(--sl-color-gray-6);
+    border-radius: 0.625rem;
+    padding: 0.375rem 0.5rem;
+  }
+  .vv-group-name {
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    color: var(--sl-color-gray-2);
+    margin-right: 0.25rem;
+  }
+  .vv-btn {
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.875rem;
+    min-height: 2.5rem;
+    font: inherit;
+    font-weight: 600;
+    font-size: var(--sl-text-sm);
+    cursor: pointer;
+  }
+  .vv-btn:hover:not(:disabled) {
+    border-color: var(--sl-color-accent);
+  }
+  .vv-btn:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+  .vv-primary {
+    background: var(--sl-color-accent);
+    border-color: var(--sl-color-accent);
+    color: var(--sl-color-black);
+  }
+  .vv-mistake:not(:disabled) {
+    border-color: var(--vv-bad);
+    background: var(--vv-bad-low);
+    color: var(--sl-color-red-high);
+  }
+  .vv-reset {
+    margin-left: auto;
+  }
+  .vv-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .vv-fact {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .vv-fact :global(.vv-fact-head) {
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+  }
+  .vv-fact :global(.vv-six) {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.375rem;
+  }
+  .vv-fact :global(.vv-part) {
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    display: grid;
+    gap: 0.125rem;
+    align-content: start;
+    min-width: 0;
+    transition: box-shadow 0.15s;
+  }
+  .vv-fact :global(.vv-k) {
+    font-family: var(--__sl-font-mono);
+    font-weight: 800;
+    color: var(--sl-color-text-accent);
+  }
+  .vv-fact :global(.vv-nm) {
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    color: var(--sl-color-white);
+  }
+  .vv-fact :global(.vv-val) {
+    font-family: var(--__sl-font-mono);
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-white);
+    overflow-wrap: anywhere;
+  }
+  .vv-fact :global(.vv-say) {
+    font-size: var(--sl-text-xs);
+    line-height: 1.4;
+    color: var(--sl-color-gray-3);
+  }
+  .vv-fact :global(.vv-none) {
+    color: var(--sl-color-gray-4);
+  }
+  .vv-fact :global(.vv-id) {
+    font-weight: 700;
+    color: hsl(var(--h) 75% var(--vv-chip-l));
+  }
+  .vv-fact :global(.vv-pos) {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+
+  .vv-figure {
+    min-width: 0;
+  }
+  .vv-figure :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .vv-figure :global(text) {
+    font-family: var(--sl-font-system);
+    fill: var(--sl-color-gray-2);
+  }
+  .vv-figure :global(.vv-cell) {
+    font-family: var(--__sl-font-mono);
+    font-size: 10.5px;
+  }
+  .vv-figure :global(.vv-head) {
+    font-family: var(--__sl-font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--sl-color-gray-3);
+  }
+  .vv-figure :global(.vv-ptitle) {
+    font-size: 13.5px;
+    font-weight: 700;
+    fill: var(--sl-color-white);
+  }
+  .vv-figure :global(.vv-psub),
+  .vv-figure :global(.vv-hint) {
+    font-size: 11.5px;
+    fill: var(--sl-color-gray-3);
+  }
+  .vv-figure :global(.vv-panel) {
+    fill: var(--sl-color-bg);
+    stroke: var(--sl-color-gray-5);
+  }
+  .vv-figure :global(.vv-panel-server) {
+    stroke: var(--sl-color-accent);
+    stroke-width: 1.5;
+  }
+  .vv-figure :global(.vv-waiting) {
+    fill: var(--sl-color-orange-high);
+  }
+  .vv-figure :global(.vv-seq) {
+    fill: var(--sl-color-gray-3);
+  }
+  .vv-figure :global(.vv-pill) {
+    fill: var(--sl-color-gray-6);
+    stroke: var(--sl-color-gray-5);
+  }
+  .vv-figure :global(.vv-node-server .vv-pill) {
+    fill: var(--sl-color-accent-low);
+    stroke: var(--sl-color-accent);
+  }
+  .vv-figure :global(.vv-pilltitle) {
+    font-size: 13px;
+    font-weight: 700;
+    fill: var(--sl-color-white);
+  }
+  .vv-figure :global(.vv-pillrole) {
+    font-size: 10.5px;
+    fill: var(--sl-color-gray-2);
+  }
+  .vv-figure :global(.vv-rule) {
+    stroke: var(--sl-color-gray-6);
+  }
+  .vv-figure :global(.vv-row) {
+    cursor: pointer;
+    outline: none;
+  }
+  .vv-figure :global(.vv-rowbg) {
+    fill: transparent;
+    stroke: transparent;
+  }
+  .vv-figure :global(.vv-row:hover .vv-rowbg),
+  .vv-figure :global(.vv-row:focus-visible .vv-rowbg) {
+    fill: var(--sl-color-gray-6);
+  }
+  .vv-figure :global(.vv-sel .vv-rowbg) {
+    stroke: var(--sl-color-accent);
+    stroke-width: 1.5;
+  }
+  .vv-figure :global(.vv-is-new .vv-rowbg) {
+    fill: var(--vv-good-low);
+    stroke: var(--vv-good);
+  }
+  .vv-figure :global(.vv-is-dup .vv-rowbg) {
+    fill: transparent;
+    stroke: var(--vv-warn);
+    stroke-dasharray: 4 3;
+  }
+  .vv-figure :global(.vv-is-twice .vv-rowbg) {
+    fill: var(--vv-bad-low);
+    stroke: var(--vv-bad);
+  }
+  .vv-figure :global(.vv-sel.vv-is-new .vv-rowbg),
+  .vv-figure :global(.vv-sel.vv-is-twice .vv-rowbg) {
+    stroke-width: 2.5;
+  }
+  .vv-figure :global(.vv-chip) {
+    fill: hsl(var(--h) 70% var(--vv-chip-bg-l));
+    stroke: hsl(var(--h) 70% var(--vv-chip-l));
+    stroke-width: 1.5;
+  }
+  .vv-figure :global(.vv-chip-cs) {
+    fill: transparent;
+    stroke-dasharray: 3 2;
+  }
+  .vv-figure :global(.vv-chiptext) {
+    font-family: var(--__sl-font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    fill: hsl(var(--h) 75% var(--vv-chip-l));
+  }
+  .vv-figure :global(.vv-hot .vv-chip) {
+    stroke-width: 3;
+  }
+  .vv-figure :global(.vv-wire) {
+    stroke: var(--sl-color-gray-4);
+    stroke-width: 1.5;
+  }
+  .vv-figure :global(.vv-live .vv-wire) {
+    stroke: var(--sl-color-accent);
+    stroke-width: 2;
+  }
+  .vv-figure :global(.vv-wirehead) {
+    fill: var(--sl-color-gray-4);
+  }
+  .vv-figure :global(.vv-live .vv-wirehead) {
+    fill: var(--sl-color-accent);
+  }
+  .vv-figure :global(.vv-wirelabel) {
+    font-family: var(--__sl-font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    fill: var(--sl-color-gray-3);
+  }
+  .vv-figure :global(.vv-live .vv-wirelabel) {
+    font-weight: 700;
+    fill: var(--sl-color-text-accent);
+  }
+  .vv-figure :global(.vv-pointer) {
+    fill: none;
+    stroke: var(--sl-color-accent);
+    stroke-width: 2.5;
+    opacity: 0;
+    pointer-events: none;
+  }
+  [data-point='datom'] .vv-figure :global(.vv-sel .vv-p-datom),
+  [data-point='entity'] .vv-figure :global(.vv-p-entity),
+  [data-point='attribute'] .vv-figure :global(.vv-p-attribute),
+  [data-point='op'] .vv-figure :global(.vv-p-op),
+  [data-point='logstore'] .vv-figure :global(.vv-p-logstore),
+  [data-point='tx'] .vv-figure :global(.vv-p-tx),
+  [data-point='position'] .vv-figure :global(.vv-p-position),
+  [data-point='device'] .vv-figure :global(.vv-p-device),
+  [data-point='server'] .vv-figure :global(.vv-p-server),
+  [data-point='authority'] .vv-figure :global(.vv-p-authority),
+  [data-point='syncnode'] .vv-figure :global(.vv-p-syncnode),
+  [data-point='consumer'] .vv-figure :global(.vv-p-consumer) {
+    opacity: 1;
+  }
+  [data-point='datom'] .vv-fact :global(.vv-six),
+  [data-point='entity'] .vv-fact :global([data-part='e']),
+  [data-point='attribute'] .vv-fact :global([data-part='a']),
+  [data-point='op'] .vv-fact :global([data-part='op']),
+  [data-point='tx'] .vv-fact :global([data-part='tx']) {
+    box-shadow: 0 0 0 2.5px var(--sl-color-accent);
+    border-radius: 0.5rem;
+  }
+  [data-point='position'] .vv-fact :global(.vv-pos) {
+    color: var(--sl-color-text-accent);
+    font-weight: 700;
+  }
+
+  .vv-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem 1.125rem;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  .vv-legend i {
+    display: inline-block;
+    width: 14px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 0.375rem;
+    vertical-align: -1px;
+  }
+  .vv-l-new {
+    background: var(--vv-good-low);
+    border: 1px solid var(--vv-good);
+  }
+  .vv-l-dup {
+    border: 1px dashed var(--vv-warn);
+  }
+  .vv-l-twice {
+    background: var(--vv-bad-low);
+    border: 1px solid var(--vv-bad);
+  }
+
+  .vv-readout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    border-radius: 0.625rem;
+    background: var(--sl-color-gray-6);
+    padding: 0.875rem 1rem;
+  }
+  .vv-readout-head {
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+  }
+  .vv-readout-text {
+    color: var(--sl-color-white);
+  }
+  .vv-readout-next {
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    margin-top: 0.375rem !important;
+  }
+  .vv-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem 0.625rem;
+    justify-content: center;
+    max-width: 15rem;
+  }
+  .vv-count-where {
+    flex: 1 1 100%;
+    text-align: center;
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    color: var(--sl-color-gray-3);
+    min-height: 1em;
+  }
+  .vv-count {
+    text-align: center;
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    min-width: 5.25rem;
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-bg);
+  }
+  .vv-count b {
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    color: var(--sl-color-white);
+    font-variant-numeric: tabular-nums;
+  }
+  .vv-count span {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  .vv-ins.vv-on {
+    border-color: var(--vv-good);
+    background: var(--vv-good-low);
+  }
+  .vv-dup.vv-on {
+    border-color: var(--vv-warn);
+    background: var(--vv-warn-low);
+  }
+
+  @media (max-width: 50rem) {
+    .vv-fact :global(.vv-six) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .vv-readout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 32rem) {
+    .vv-group {
+      flex: 1 1 100%;
+    }
+    .vv-group .vv-btn {
+      flex: 1 1 0;
+    }
+    .vv-group-name {
+      flex: 1 1 100%;
+    }
+    .vv-fact :global(.vv-six) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

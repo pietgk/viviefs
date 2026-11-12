@@ -8,6 +8,7 @@ evidence: []
 source:
   title: The decision that defines a lesson (D81)
   href: https://github.com/pietgk/viviefs/blob/main/docs/plan/bootstrap/02-decision-log.md
+widget: apps/docs/src/lib/the-model.ts
 ---
 
 import ReadNext from '../../components/ReadNext.astro'
@@ -16,7 +17,8 @@ A lesson is one page in `lessons/NN-name.mdx` that teaches one idea and ends
 in exercise section `NN` ([D81 What a lesson is][D81]). Keep it short enough to hold in working
 memory. Frontmatter: `lesson` is `NN` as a number, `evidence` lists the
 evidence notes it cites (at least one, under `docs/evidence/`), `source` is
-its one primary source.
+its one primary source, and `widget` names its widget's model
+([D216 Every lesson shows its idea][D216]).
 
 ## Recall first
 
@@ -25,7 +27,23 @@ needs. Fold each answer in a `<details>` block, so the reader tries first.
 
 ## The idea
 
-The one idea, step by step, with the exemplar's own code embedded by region.
+The one idea in one or two sentences, then shown before it is named
+([D216 Every lesson shows its idea][D216]):
+
+- At least one diagram: a Mermaid sequence diagram for who calls whom, a state
+  diagram for what something goes through, a flowchart for how a choice is
+  made. Its labels follow the rules prose follows.
+- A `### Try it` section with a widget the learner operates. Its model is a
+  pure module in `apps/docs/src/lib`, named in `widget:`, and
+  `<model>.integration.test.ts` beside it plays the widget's scenarios on the
+  real code, so the widget cannot teach what the exemplar does not do. Its
+  controls follow the convention at the top of `apps/docs/src/styles/widget.css`:
+  a choice is a form control, a button is an action.
+
+Then what the learner saw, the words for it as cards read from the glossary,
+and the concept's rule, embedded from its one home in `apps/docs/src/partials/`
+and never written again here ([D221 One home for every piece of knowledge][D221]). Code samples name the
+Effect ideas they use ([Before you start](/guides/before-you-start/)).
 
 ## What the gate showed
 
@@ -34,15 +52,13 @@ explains; the gate proves.
 
 ## Your turn
 
-What exercise `NN.MM` asks, in one or two sentences, and what passing means.
-Then the same three steps in every lesson ([D91 The exercise loop][D91]):
-
-1. Run it: `pnpm exercise <pattern> NN.MM`. The first run is red on purpose:
-   `problem/` runs, but does not yet do what this lesson teaches, and the
-   verdict says what is missing.
-2. Edit the `problem/` file, named as a path, and run it again until the
-   verdict says done.
-3. Compare with the `solution/` file, then answer the questions below.
+What exercise `NN.MM` asks, in one or two sentences, then
+`<Exercise pattern="<pattern>" id="NN.MM" />`. It shows the problem, what its
+run prints, the change to the solution as a diff, and what the solution's run
+prints, so the exercise is reviewed, as code is ([D222 Your turn is a review][D222]). The runs come
+from `exercises/<pattern>/runs.json`, which `pnpm exercise:record` writes and
+`verify` keeps equal to a fresh run. The learner can still run
+`pnpm exercise <pattern> NN.MM` ([D91 The exercise loop][D91]).
 
 ## Check yourself
 
@@ -55,5 +71,8 @@ others so their shape gives nothing away.
 
 {/* References: written by pnpm refs fix; do not edit by hand. */}
 
+[D216]: ../../../../../docs/plan/bootstrap/02-decision-log.md#d216
+[D221]: ../../../../../docs/plan/bootstrap/02-decision-log.md#d221
+[D222]: ../../../../../docs/plan/bootstrap/02-decision-log.md#d222
 [D81]: ../../../../../docs/plan/bootstrap/02-decision-log.md#d81
 [D91]: ../../../../../docs/plan/bootstrap/02-decision-log.md#d91

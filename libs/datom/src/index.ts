@@ -31,7 +31,6 @@ export {
 } from './schema.ts'
 export type {
   AppendResult,
-  CompactResult,
   Cursor,
   Datom as DatomType,
   Envelope as EnvelopeType,

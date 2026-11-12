@@ -10,16 +10,12 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Schema from 'effect/Schema'
 import * as FetchHttpClient from 'effect/http/FetchHttpClient'
-import * as HttpRouter from 'effect/http/HttpRouter'
-import * as RpcSerialization from 'effect/rpc/RpcSerialization'
-import * as RpcServer from 'effect/rpc/RpcServer'
 import { layerMemory } from '@viviefs/blobs'
 import { evidenceCatalog, liveClock } from '@viviefs/datom'
 import { ProviderAccount } from '@viviefs/identity'
 import { oidcTokenVerifier } from '@viviefs/identity/oidc'
 import { pgliteLogStore } from '@viviefs/store-postgres'
-import { SyncRpcs } from '@viviefs/sync-protocol'
-import { Memberships, syncServerLayer } from '@viviefs/sync-server'
+import { Memberships, syncHttpLayer } from '@viviefs/sync-server'
 
 export const RPC_PATH = '/rpc'
 
@@ -66,35 +62,16 @@ export const evidenceServerLayer = (options: EvidenceServerOptions) => {
     issuer: options.issuer,
     audience: options.audience,
   }).pipe(Layer.provide(FetchHttpClient.layer))
-  const sync = syncServerLayer(evidenceCatalog).pipe(
+  const server = syncHttpLayer(evidenceCatalog, {
+    path: RPC_PATH,
+    corsOrigins: options.corsOrigins ?? [],
+  })
+  // The app chooses the platform: PGlite, an in-memory blob store, this
+  // issuer's verifier and Node's HTTP server (D220).
+  return seedLayer(options.seed).pipe(
+    Layer.provideMerge(server),
     Layer.provide(layerMemory),
     Layer.provide(verifier),
-  )
-  const rpc = RpcServer.layerHttp({
-    group: SyncRpcs,
-    path: RPC_PATH,
-    protocol: 'http',
-  }).pipe(
-    Layer.provide(
-      options.corsOrigins === undefined || options.corsOrigins.length === 0
-        ? Layer.empty
-        : HttpRouter.cors({
-            allowedOrigins: options.corsOrigins,
-            allowedMethods: ['POST'],
-            // Trace context headers: device spans continue on the server (P10).
-            allowedHeaders: [
-              'authorization',
-              'content-type',
-              'traceparent',
-              'b3',
-            ],
-          }),
-    ),
-  )
-  return HttpRouter.serve(rpc, { disableListenLog: true }).pipe(
-    Layer.provideMerge(seedLayer(options.seed)),
-    Layer.provideMerge(sync),
-    Layer.provide(RpcSerialization.layerNdjson),
     Layer.provideMerge(store),
     Layer.provideMerge(
       NodeHttpServer.layer(createServer, {

@@ -16,5 +16,9 @@
   "dependencies": {
     "@viviefs/datom": "workspace:*",
     "effect": "4.0.5"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.5",
+    "@viviefs/testing": "workspace:*"
   }
 }

@@ -95,9 +95,6 @@ describe('trace projector', () => {
         expect(failed({ ...p, disabled: { ...p.disabled, sent: [first] } })).toEqual([
           'disabled trace cursor keeps the backlog',
         ])
-        expect(
-          failed({ ...p, compactWhileDisabled: { ...p.compactWhileDisabled, removed: 3, heldBy: null } }),
-        ).toEqual(['disabled trace cursor holds compaction'])
         expect(failed({ ...p, batched: p.batched.slice(0, 1) })).toEqual([
           'small batches export the same spans',
         ])

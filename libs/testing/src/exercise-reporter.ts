@@ -5,12 +5,18 @@
  * reference solution to compare and what comes next. The first run is red by
  * design: `problem/` runs but is not right yet.
  */
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative } from 'node:path'
 import type { Reporter, TestModule } from 'vitest/node'
 
-/** The variable `pnpm exercise` sets to run only `problem/`. */
+/** The variable `pnpm exercise` sets to run only `problem/` (or, to record a lesson's runs, only `solution/`). */
 export const LEARNER_VARIABLE = 'VIVIEFS_EXERCISE'
+
+/** What starts a line `note` writes, so the verdict keeps the check's notes and not other test output. */
+export const NOTE_PREFIX = 'exercise note: '
+
+/** Set to a file path, the reporter writes each verdict there, as JSON keyed by exercise id, instead of printing it (D222). */
+export const RECORD_VARIABLE = 'VIVIEFS_EXERCISE_RECORD'
 
 /** Where a track's guide keeps its lessons (D81). */
 export const LESSONS_DIRECTORY = (pattern: string) => `apps/docs/src/content/docs/guides/${pattern}/lessons`
@@ -28,6 +34,8 @@ export type Verdict = {
   readonly problemFiles: ReadonlyArray<string>
   readonly solutionFiles: ReadonlyArray<string>
   readonly failure: Failure | null
+  /** What the check wrote with `note`, in order. */
+  readonly notes: ReadonlyArray<string>
   readonly lesson: Lesson | undefined
   /** The next exercise of the same section, if any. */
   readonly nextExercise: string | undefined
@@ -56,13 +64,16 @@ export const ansiColors: Colors = {
 
 const lessonLine = (lesson: Lesson) => `lesson ${String(lesson.number).padStart(2, '0')}, ${lesson.title}`
 
+const notesOf = (verdict: Verdict, colors: Colors): ReadonlyArray<string> =>
+  verdict.notes.length === 0 ? [] : [colors.dim('  What the test saw'), ...verdict.notes.map((line) => `    ${line}`), '']
+
 /** The learner's verdict as printed lines. */
 export const formatVerdict = (verdict: Verdict, colors: Colors = plainColors): string => {
   const command = `pnpm exercise ${verdict.pattern} ${verdict.id}`
   const heading = `${verdict.id} ${verdict.title}`
   if (verdict.failure !== null) {
     const { message, expected, actual } = verdict.failure
-    const lines = [colors.red(`${heading}: not yet`), '', `  ${hintOf(message)}`]
+    const lines = [colors.red(`${heading}: not yet`), '', ...notesOf(verdict, colors), `  ${hintOf(message)}`]
     if (expected !== undefined && actual !== undefined) {
       lines.push(colors.dim(`    expected ${oneLine(expected)}`), colors.dim(`    received ${oneLine(actual)}`))
     }
@@ -72,7 +83,7 @@ export const formatVerdict = (verdict: Verdict, colors: Colors = plainColors): s
     if (verdict.lesson) lines.push(`  Reread ${lessonLine(verdict.lesson)}: ${verdict.lesson.path}`)
     return `${lines.join('\n')}\n`
   }
-  const lines = [colors.green(`${heading}: done`), '', '  Compare with the reference solution:']
+  const lines = [colors.green(`${heading}: done`), '', ...notesOf(verdict, colors), '  Compare with the reference solution:']
   for (const file of verdict.solutionFiles) lines.push(`    ${file}`)
   lines.push('')
   if (verdict.nextExercise !== undefined) {
@@ -107,7 +118,7 @@ export const lessonsOf = (root: string, pattern: string): ReadonlyArray<Lesson> 
 }
 
 /** Everything the verdict needs about one exercise folder, from the repository. */
-export const verdictFor = (root: string, folder: string, failure: Failure | null): Verdict => {
+export const verdictFor = (root: string, folder: string, failure: Failure | null, notes: ReadonlyArray<string> = []): Verdict => {
   const track = dirname(folder)
   const pattern = basename(track)
   const name = basename(folder)
@@ -122,6 +133,7 @@ export const verdictFor = (root: string, folder: string, failure: Failure | null
     problemFiles: filesIn(root, `${folder}/problem`),
     solutionFiles: filesIn(root, `${folder}/solution`),
     failure,
+    notes,
     lesson: lessons.find(({ number }) => number === Number(section)),
     nextExercise: later?.slice(0, 5),
     nextLesson: lessons.find(({ number }) => number === Number(section) + 1),
@@ -129,23 +141,38 @@ export const verdictFor = (root: string, folder: string, failure: Failure | null
 }
 
 /** The Vitest reporter `pnpm exercise` runs with (`exerciseTrackConfig`). */
-export const learnerReporter = (root: string): Reporter => ({
-  onUserConsoleLog: () => {
-    // Test output is not the learner's concern; the verdict says what matters.
-  },
-  onTestRunEnd: (testModules: ReadonlyArray<TestModule>) => {
-    const colors = process.stdout.isTTY ? ansiColors : plainColors
-    if (testModules.length === 0) {
-      process.stdout.write('No exercise matched. Run it as: pnpm exercise <pattern> <NN.MM>, for example pnpm exercise log-store 01.01\n')
-      return
-    }
-    for (const module of testModules) {
-      const folder = relative(root, dirname(module.moduleId)).split('\\').join('/')
-      const errors = [...module.children.allTests()].flatMap((test) => test.result().errors ?? [])
-      const first = errors[0] ?? module.errors()[0]
-      const failure: Failure | null =
-        first === undefined ? null : { message: first.message, expected: first.expected, actual: first.actual }
-      process.stdout.write(`\n${formatVerdict(verdictFor(root, folder, failure), colors)}\n`)
-    }
-  },
-})
+export const learnerReporter = (root: string, record: string | undefined = process.env[RECORD_VARIABLE]): Reporter => {
+  // The test's log, by the test that wrote it: what each check said it saw.
+  const logs: Array<{ readonly taskId: string | undefined; readonly content: string }> = []
+  return {
+    onUserConsoleLog: (log) => {
+      logs.push({ taskId: log.taskId, content: log.content })
+    },
+    onTestRunEnd: (testModules: ReadonlyArray<TestModule>) => {
+      const colors = process.stdout.isTTY && record === undefined ? ansiColors : plainColors
+      if (testModules.length === 0) {
+        process.stdout.write('No exercise matched. Run it as: pnpm exercise <pattern> <NN.MM>, for example pnpm exercise log-store 01.01\n')
+        return
+      }
+      const recorded: Record<string, string> = {}
+      for (const module of testModules) {
+        const folder = relative(root, dirname(module.moduleId)).split('\\').join('/')
+        const tests = [...module.children.allTests()]
+        const ids = new Set(tests.map((test) => test.id))
+        const notes = logs
+          .filter(({ taskId }) => taskId !== undefined && ids.has(taskId))
+          .flatMap(({ content }) => content.split('\n'))
+          .filter((line) => line.startsWith(NOTE_PREFIX))
+          .map((line) => line.slice(NOTE_PREFIX.length))
+        const errors = tests.flatMap((test) => test.result().errors ?? [])
+        const first = errors[0] ?? module.errors()[0]
+        const failure: Failure | null =
+          first === undefined ? null : { message: first.message, expected: first.expected, actual: first.actual }
+        const verdict = verdictFor(root, folder, failure, notes)
+        if (record === undefined) process.stdout.write(`\n${formatVerdict(verdict, colors)}\n`)
+        else if (verdict.id !== '') recorded[verdict.id] = formatVerdict(verdict, plainColors)
+      }
+      if (record !== undefined) writeFileSync(record, `${JSON.stringify(recorded, null, 2)}\n`)
+    },
+  }
+}

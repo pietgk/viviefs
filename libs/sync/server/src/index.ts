@@ -3,4 +3,5 @@
  * organization sync cursor stream. P11: every RPC is authenticated, and
  * memberships decide what a caller may touch.
  */
+export { syncHttpLayer, type SyncHttpOptions } from './http.ts'
 export { Memberships, SyncAuthority, syncServerLayer } from './server.ts'

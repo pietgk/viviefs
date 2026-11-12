@@ -16,6 +16,9 @@
   "references": [
     {
       "path": "../../../libs/datom/tsconfig.lib.json"
+    },
+    {
+      "path": "../../../libs/testing/tsconfig.lib.json"
     }
   ]
 }

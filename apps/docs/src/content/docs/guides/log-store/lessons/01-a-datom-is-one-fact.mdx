@@ -1,58 +1,194 @@
 ---
-title: A datom is one fact
-description: The log only grows, and tx is a datom's identity, so sending a fact twice stores it once.
+title: One fact, stored once
+description: An organization's facts are a log in copies, one per device and one on the server, which holds authority; a fact's tx makes storing it twice impossible.
 lesson: 1
 evidence:
   - docs/evidence/2026-09-20-p04.md
+  - docs/evidence/2026-09-22-p09.md
 source:
   title: Datomic, the data model (where datoms come from)
   href: https://docs.datomic.com/whatis/data-model.html
+widget: apps/docs/src/lib/datom-log.ts
 ---
 
+import DatomLog from '../../../../../components/DatomLog.astro'
+import Exercise from '../../../../../components/Exercise.astro'
+import PointAt from '../../../../../components/PointAt.astro'
 import ReadNext from '../../../../../components/ReadNext.astro'
 import Sample from '../../../../../components/Sample.astro'
+import StepLine from '../../../../../components/StepLine.astro'
+import Term from '../../../../../components/Term.astro'
+import Terms from '../../../../../components/Terms.astro'
+import WhoHoldsTheLog from '../../../../../partials/log-store/who-holds-the-log.mdx'
 
 ## Recall first
 
-This is the first lesson; the questions are on the
-[concepts](/guides/log-store/concepts/) it builds on. Answer before you open
-them.
+This is the first lesson, so the questions are on
+[Before you start](/guides/before-you-start/). Answer before you open them.
 
 <details>
-<summary>What are the six fields of a datom?</summary>
+<summary>In `Effect.Effect<A, E, R>`, what do the three letters stand for?</summary>
 
-`e`, `a`, `v`, `tx`, `op` and `cs`: entity, attribute, value, transaction id,
-assert or retract, and changeset.
+What it succeeds with (`A`), what it can fail with (`E`), and what it needs to
+run (`R`).
 </details>
 
 <details>
-<summary>Where does a fact go that is neither a read model nor one replica's own state?</summary>
+<summary>Inside `Effect.gen`, what does `yield* store.mint()` do?</summary>
 
-Into the log, as datoms. Domain truth lives only there.
+It runs `store.mint()` and gives you its result, a `tx`, the way `await` does;
+if minting fails, the rest is skipped.
 </details>
 
 ## The idea
 
-**A fact is never changed, only added.** A title that changes is a second
-datom asserting the new value; the old one stays, which is what gives every
-replica the same history and the server an audit trail.
+**Everything an organization knows is small facts in a log that is only ever
+added to. Every device holds a copy, and so does the server, which has the
+last word. Each fact carries a tag it got once, so no copy stores the same
+fact twice.**
 
-<Sample path="libs/datom/src/schema.ts" region="datom" />
+Here is a new list on its way, as a person using the evidence app creates it
+on device A. The widget below lets you do it yourself.
 
-**`tx` is the fact's identity.** The store mints it once, when the fact is
-created. The `datoms` table holds each `tx` once, and an append that meets a
-`tx` it already has counts it as a duplicate instead of storing it again.
+```mermaid
+sequenceDiagram
+  participant A as Device A
+  participant S as Server
+  participant B as Device B
+  Note over A: createList builds three facts,<br/>each with its own tag
+  A->>A: append two to its own log
+  A->>S: push the changeset
+  S->>S: accept, append all three
+  S-->>A: pull: only the commit is new
+  B->>S: pull from its sync cursor
+  S-->>B: all three, at the end of its log
+```
 
-<Sample path="libs/datom/src/log-store.ts" region="append" />
+Nobody changes or removes a fact that is in a log; a device adds what it pulls
+at the end of its own.
 
-**So a resend is harmless, if it is the same fact.** Networks fail after the
-server stored a write and before the client heard so; the client sends again.
-That is safe only because the second send carries the same `tx`. A client
-that mints again on retry does not resend a fact: it creates a new one.
+### Try it
 
-**`seq` is only a position.** Each replica numbers its own log; two replicas
-give the same fact different `seq`, never a different `tx`. Readers remember
-positions (`streamFrom(seq)`), facts are compared by `tx`.
+<DatomLog />
+
+What is simplified: tags are shown by their last four characters, where a real
+`tx` has 26; a row shows an attribute by its last part (`title` for
+`evidence/list/title`), leaves out `e` when the logs are side by side, and the
+panel above the logs shows the whole fact; the commit's value is cut short; the positions count without
+gaps, where a real store may skip numbers; there is one list; nobody signs in, and the server
+takes every change, where the real one first checks it (the changesets guide).
+A test plays the widget's scenarios on the real sync server, composed as the
+evidence server runs it, and two real devices, and checks that every log holds
+the same facts in the same order (`apps/docs/src/lib/datom-log.integration.test.ts`).
+
+### What you saw
+
+1. **Creating a list says it exists, once; a rename adds only a title.** Every
+   title stays in every log; which one counts is lesson 2. A rename never says
+   again that the list exists: that would bring back a list another device had
+   deleted. <PointAt part="datom">Show a fact</PointAt>
+2. **Each copy is a log of its own,** and a device can rename only a list it
+   has pulled. <PointAt part="server">Show the server</PointAt>
+   <PointAt part="device">Show the devices</PointAt>
+3. **Taking turns needs no lock.** A, then B, then A again are plain appends.
+4. **Each fact has a tag, made once, when the fact is built,** and every log
+   keeps each tag once. So sending a changeset again is harmless, if it is the
+   same one. Give it new tags and no log can tell: it is stored a second time.
+   <PointAt part="tx">Show the tags</PointAt>
+5. **Where a fact sits is each log's own.** The same fact has one tag
+   everywhere and another position in each log. <PointAt part="position">Show the positions</PointAt>
+
+### Who holds the log
+
+<WhoHoldsTheLog />
+
+### The words
+
+Now the names for what you saw. Each card is the word's glossary entry, with
+one line for what it does or where it appears. "Show it in the widget" points
+at it.
+
+**What is stored**
+
+<Terms>
+  <Term term="Datom" label="Appears in" formula={"append: (log, «datom») => (log', inserted | duplicate)\n«datom» = [e, a, v, tx, op, cs]"} point="datom" later={['HLC (lesson 2)']} />
+  <Term term="Entity" label="Appears in" formula="datom = [«e», a, v, tx, op, cs]" point="entity" later={['workflow run (another guide)']} />
+  <Term term="Attribute" label="Appears in" formula="datom = [e, «a», v, tx, op, cs]" point="attribute" later={['catalog', 'conflict policy (lesson 2)']} />
+  <Term term="tx" label="Made by, and checked by" formula={"mint:   () => «tx»\nappend: a datom whose «tx» the log has => duplicate"} point="tx" later={['HLC (lesson 2)']} />
+  <Term term="op" label="Appears in" formula={"datom = [e, a, v, tx, «op», cs]\n«op» = 'assert' | 'retract'"} point="op" later={['defining attribute']} />
+  <Term term="Log store" label="Its operations" formula={"mint:       () => tx\n«append»:     (log, datom) => (log', inserted | duplicate)\nstreamFrom: (log, position) => the datoms after it"} point="logstore" later={['journal', 'read model']} />
+  <Term term="Log position" label="Given by, and used by" formula={"append:     gives the datom the next «position»\nstreamFrom: (log, «position») => the datoms after it"} point="position" />
+</Terms>
+
+**Who holds it**
+
+<Terms>
+  <Term term="Sync node" label="Is one of" formula={"«sync node» = device | server\neach keeps its own copy of the log"} point="syncnode" later={['changeset (changesets guide)', 'replica']} />
+  <Term term="Device" label="Its operations" formula={"write: append(its own log, the facts but the commit), queue the changeset\nsync:  push(its outbox) to the server, then pull(the facts after its sync cursor)"} point="device" later={['local replica', 'provider account']} />
+  <Term term="Server" label="Its operations" formula={"accept: (changeset) => append(its log, every fact) | stores nothing if it has every tx\npull:   (sync cursor) => the facts after it"} point="server" />
+  <Term term="Authority" label="Held by" formula={"«authority» = accept or reject each change, order the accepted ones, ...\nheld today by: the server"} point="authority" later={['membership', 'conflict policy (lesson 2)', 'workflow run (another guide)']} />
+  <Term term="Consumer" label="Appears in" formula={"pull:        (server log, the «consumer»'s cursor) => the facts after it\nacknowledge: («consumer», cursor) => how far it has delivered"} point="consumer" later={['acknowledged cursor (lesson 3)', 'trace sink']} />
+</Terms>
+
+### One line for the step
+
+Appending is the one thing that happened in the widget, on every log, over
+and over. This line says all of it: take a log and a datom, give back the log,
+and whether the datom was inserted or was a duplicate.
+
+<StepLine name="append" formula="append: (log, datom) => (log', inserted | duplicate)" />
+
+```mermaid
+flowchart LR
+  D["a datom to append"] --> Q{"is its tx in this log?"}
+  Q -- "yes" --> DUP["duplicate: nothing stored"]
+  Q -- "no" --> INS["inserted at the next position"]
+```
+
+The widget's model is that line as a function:
+
+<Sample path="apps/docs/src/lib/datom-log.ts" region="append" />
+
+The log store's contract has it as `append`, beside `mint` and `streamFrom`
+([idea 1](/guides/before-you-start/#1-the-effect-type), [idea 6](/guides/before-you-start/#6-services)).
+What the line leaves out: the real `append` takes several datoms at once and
+answers with two counts; it takes an envelope, who wrote on which device; and
+it can fail, in the `E` slot. It is the same contract on a device and on the
+server.
+
+<Sample path="libs/datom/src/log-store.ts" region="service" />
+
+### In the code
+
+**What builds the facts.** A command works out the change and gives back its
+facts, storing nothing: `createList` the three you saw first,
+`renameList` a title and its commit. `finish` adds the commit that closes the
+changeset. The tags in `mint` were minted before the command ran. Effect here:
+`Effect.Effect` ([idea 1](/guides/before-you-start/#1-the-effect-type)),
+`Effect.fail` ([idea 5](/guides/before-you-start/#5-errors-with-a-name)).
+
+<Sample path="features/evidence/model/src/command.ts" region="createList" />
+
+<Sample path="features/evidence/model/src/command.ts" region="renameList" />
+
+**What a device does when it writes.** Every fact but the commit goes into its
+own log, and the changeset into its outbox; the commit comes back once the
+server has accepted it. Effect here: `yield*`
+([idea 2](/guides/before-you-start/#2-steps-in-order)).
+
+<Sample path="libs/sync/client/src/client.ts" region="write" />
+
+**What the server does with a changeset it has seen.** If it holds every tag
+already, it stores nothing and answers as if it had; that is why sending again
+is harmless. Half seen is refused: a changeset is stored whole or not at all.
+Effect here: `yield*` ([idea 2](/guides/before-you-start/#2-steps-in-order)),
+an error with a name ([idea 5](/guides/before-you-start/#5-errors-with-a-name)).
+
+<Sample path="libs/sync/server/src/server.ts" region="resend" />
+
+No screen in the evidence app creates or renames a list yet; the commands are
+called by the evidence server's tests and by the runtime the identity gate
+drives.
 
 ## What the gate showed
 
@@ -60,44 +196,38 @@ positions (`streamFrom(seq)`), facts are compared by `tx`.
 iOS simulator, the Android emulator and web: appending a datom whose `tx` was
 already stored was a no-op, while a new `tx` was appended. That pair is the
 gate's positive control, so the check can tell a store that dedups from one
-that does not.
+that does not. [P09 Sync][P09] ran two devices against the server on sqlite-node: a
+rename written offline stayed on device A until A pushed, then device B's
+pull showed it; a second append of the same `tx` was acknowledged and stored
+nothing.
 
 ## Your turn
 
 Exercise 01.01: `sendTwice` sends three facts, then sends them again as a
-retry would. Make the second send add nothing, without touching the store.
+retry would. It has the bug of the red button: the second send stores three
+new facts. Effect here: a service ([idea 6](/guides/before-you-start/#6-services))
+and steps in order ([idea 2](/guides/before-you-start/#2-steps-in-order)).
 
-1. Run it. The first run is red on purpose: `problem/` runs, but does not
-   yet do what this lesson teaches, and the verdict says what is missing.
-
-   ```sh
-   pnpm exercise log-store 01.01
-   ```
-
-2. Edit `exercises/log-store/01.01-append-and-stream/problem/send.ts`, and run it again until the verdict says done.
-3. Compare your code with `exercises/log-store/01.01-append-and-stream/solution/send.ts`, then answer the questions below.
-
-It passes when the first send inserts three, the second reports three
-duplicates, and the log holds each fact once, in order.
+<Exercise pattern="log-store" id="01.01" />
 
 ## Check yourself
 
 <details>
 <summary>Why does minting a tx inside the retry loop duplicate facts?</summary>
 
-Each attempt gets a new `tx`, so each is a new fact to the store.
+Each attempt gets a new `tx`, so each is a new fact to every log.
 </details>
 
 <details>
-<summary>Two replicas hold one fact. Which field is equal on both?</summary>
+<summary>Device B has a fact that the server also has. Which part is equal in both?</summary>
 
-Its `tx` is equal; its `seq` is a local position and differs.
+Its `tx` is equal; its position is each log's own and may differ.
 </details>
 
 <details>
-<summary>A title changes twice. How many datoms describe the title now?</summary>
+<summary>Which copy of the log is kept for good, and why that one?</summary>
 
-Three datoms: the first assert and one more for each change.
+The server's: it holds authority, so its log is the accepted order.
 </details>
 
 ## Read next
@@ -107,3 +237,4 @@ Three datoms: the first assert and one more for each change.
 {/* References: written by pnpm refs fix; do not edit by hand. */}
 
 [P04]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04
+[P09]: ../../../../../../../../docs/plan/bootstrap/06-qualification-gates.md#p09

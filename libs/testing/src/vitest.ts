@@ -64,7 +64,7 @@ export const exerciseTrackConfig = (
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): ViteUserConfig => {
   const track = dirname(fileURLToPath(configUrl))
-  const learner = env[LEARNER_VARIABLE] === 'problem'
+  const learner = env[LEARNER_VARIABLE] === 'problem' || env[LEARNER_VARIABLE] === 'solution'
   return defineConfig({
     root: track,
     test: {

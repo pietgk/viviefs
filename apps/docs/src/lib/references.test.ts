@@ -16,6 +16,7 @@ import {
   firstSentence,
   gateReference,
   glossaryAnchor,
+  glossaryEntry,
   newestEvidence,
   onlyReference,
   parseDecisions,
@@ -347,6 +348,35 @@ describe('glossary terms in prose (D94)', () => {
     expect(entry('_Avoid_: row', '_Not_: a row.')).toThrow(/"Term": _Like_, _Not_ and _Avoid_ come once each, in that order/)
     expect(entry('_Not_: a row.', '_Not_: a record.')).toThrow(/once each, in that order/)
     expect(entry('_See_: Datom')).toThrow(/"Term": _See_ is not a label; an entry has _Like_, _Not_ and _Avoid_/)
+  })
+
+  it('gives one entry whole, a paragraph per part, with the definitions its links need', () => {
+    const source = [
+      '**Datom**:',
+      'One fact the system knows.',
+      'Written `[e, a, v, tx, op, cs]`; see',
+      '[D162 Portability][D162].',
+      '_Like_: a row of an EAV table, except that',
+      'it is never updated in place.',
+      '_Avoid_: event, row',
+      '',
+      '**Entity**:',
+      'The thing a fact is about.',
+      '',
+      '[D162]: docs/plan/bootstrap/02-decision-log.md#d162',
+      '',
+    ].join('\n')
+    const entry = glossaryEntry(source, 'Datom')
+    expect(entry.summary).toBe('One fact the system knows.')
+    expect(entry.anchor).toBe('datom')
+    expect(entry.paragraphs).toEqual([
+      'Written `[e, a, v, tx, op, cs]`; see\n[D162 Portability][D162].',
+      '_Like_: a row of an EAV table, except that\nit is never updated in place.',
+      '_Avoid_: event, row',
+    ])
+    expect(entry.definitions).toBe('[D162]: docs/plan/bootstrap/02-decision-log.md#d162')
+    expect(glossaryEntry(source, 'Entity').paragraphs).toEqual([])
+    expect(() => glossaryEntry(source, 'Attribute')).toThrow(/no entry "Attribute"/)
   })
 
   it('gives a name its capitals in its anchor, so a word and a name never share one', () => {

@@ -15,12 +15,7 @@
 
 ## Now
 
-**[I2 Accept the log-store guide][I2]: make the log-store guide acceptable, one lesson at a time.** The next session is step 1 of
-[the lesson plan](log-store-guide/lesson-first.md): a throwaway prototype of lesson 1, "A datom is one fact",
-that the human annotates in Lavish. It shows a widget before any term, the lesson's terms in candidate formats
-side by side ([I30 Ideas batch: glossary entries written as effects][I30]'s effect form among them), and the evidence app action that causes these datoms. The
-annotations become a list of at most seven changes; that list is what "great" means for the lesson. Then lesson
-1 is built for real, with [I100 Address the repo-wide review findings][I100]'s open findings (R02, R03, R08, R09, A01), then lessons 2-4, then acceptance ([D63 Acceptance on the guide][D63]).
+**[I2 Accept the log-store guide][I2]: make the log-store guide acceptable, one lesson at a time.** All four lessons are in the docs with diagrams and widgets checked against the real code, after round 5 ([D216 Every lesson shows its idea][D216]-[D223 Each reader keeps its own place][D223]; [the lesson plan](log-store-guide/lesson-first.md), Where it stands). Round 5 took compaction out of the log store. [P04 Log store conformance][P04], [P05 Changesets and projections][P05], [P09 Sync][P09], [P10 Trace projection][P10] and [P11 Identity][P11] then passed on `752513846` (2026-11-12, `pnpm ledger`). The human reads them, the concepts page and Before you start on the site (`mise exec -- pnpm docs:prod`) and says what still trips them; that reply becomes at most seven changes. Then [I100 Address the repo-wide review findings][I100]'s open findings for the lesson (R02, R03, R08, R09), then lessons 2-4, then acceptance ([D63 Acceptance on the guide][D63]).
 
 ## Next
 
@@ -64,6 +59,8 @@ The XDevl research area is not on `main`: its pull request (pietgk/viviefs#2) wa
 
 [D213]: bootstrap/02-decision-log.md#d213
 [D214]: bootstrap/02-decision-log.md#d214
+[D216]: bootstrap/02-decision-log.md#d216
+[D223]: bootstrap/02-decision-log.md#d223
 [D63]: bootstrap/02-decision-log.md#d63
 [I100]: ../issues/0100-address-the-repo-wide-review-findings.md
 [I101]: ../issues/0101-a-reusable-review-path.md
@@ -75,7 +72,6 @@ The XDevl research area is not on `main`: its pull request (pietgk/viviefs#2) wa
 [I24]: ../issues/0024-ideas-batch-andrej-karpathy-understanding.md
 [I25]: ../issues/0025-ideas-batch-understanding-and-maintaining-code-bases.md
 [I29]: ../issues/0029-ideas-batch-agents-that-record-a-replayable-run.md
-[I30]: ../issues/0030-ideas-batch-glossary-entries-written-as-effects.md
 [I32]: ../issues/0032-ideas-batch-explain-any-word-on-demand.md
 [I33]: ../issues/0033-ideas-batch-abstractions-that-constrain-agents.md
 [I34]: ../issues/0034-vivief-as-the-source-of-viviefs-concepts.md
@@ -91,6 +87,8 @@ The XDevl research area is not on `main`: its pull request (pietgk/viviefs#2) wa
 [P01]: bootstrap/06-qualification-gates.md#p01
 [P04]: bootstrap/06-qualification-gates.md#p04
 [P05]: bootstrap/06-qualification-gates.md#p05
+[P09]: bootstrap/06-qualification-gates.md#p09
+[P10]: bootstrap/06-qualification-gates.md#p10
 [P11]: bootstrap/06-qualification-gates.md#p11
 [P12]: bootstrap/06-qualification-gates.md#p12
 [P13]: bootstrap/06-qualification-gates.md#p13

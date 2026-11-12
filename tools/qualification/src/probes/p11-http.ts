@@ -15,7 +15,7 @@ import * as FetchHttpClient from 'effect/http/FetchHttpClient'
 import * as RpcClient from 'effect/rpc/RpcClient'
 import * as RpcSerialization from 'effect/rpc/RpcSerialization'
 import { LogStore, liveClock } from '@viviefs/datom'
-import { renameList } from '@viviefs/evidence-model'
+import { createList } from '@viviefs/evidence-model'
 import { sqliteNodeLogStore } from '@viviefs/store-sqlite-node'
 import { SyncRpc, syncRpcClientLayer } from '@viviefs/sync-client'
 import { tokenSignInSession } from '@viviefs/identity/suites'
@@ -66,8 +66,8 @@ const clientWith = (
 
 const titled = (store: LogStore['Service'], org: string, actor: string, title: string) =>
   Effect.gen(function* () {
-    const changeset = yield* renameList(
-      { title: null },
+    const changeset = yield* createList(
+      { exists: false },
       { org, list: `${DEVICE}-${org}`, title },
       {
         cs: yield* store.mint(),

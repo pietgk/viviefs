@@ -73,7 +73,7 @@ export const gateProbes: GateProbe[] = [
     timeoutMs: 3_600_000,
     stage: 'foundation',
     summary:
-      'Log store contract on SQLite (native including Android, wasm, Node) and Postgres: append, HLC, cursor, prefix, compaction.',
+      'Log store contract on SQLite (native including Android, wasm, Node) and Postgres: append, HLC, cursor streaming, prefix scans, acknowledged cursor.',
   },
   {
     gate: 'P05',

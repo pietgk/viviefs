@@ -8,7 +8,7 @@ import {
   isSystemAttr,
   type DatomType,
 } from '@viviefs/datom'
-import { renameList, sealItem, type CommandMint } from '@viviefs/evidence-model'
+import { createList, sealItem, type CommandMint } from '@viviefs/evidence-model'
 
 const mint: CommandMint = {
   cs: 'cs-1',
@@ -33,8 +33,8 @@ const refused = (datoms: ReadonlyArray<DatomType>) => {
 describe('the values the evidence commands write', () => {
   it.effect('are all accepted by their attribute Schemas', () =>
     Effect.gen(function* () {
-      const renamed = yield* renameList(
-        { title: null },
+      const renamed = yield* createList(
+        { exists: false },
         { org: 'acme', list: '1', title: 'Inbox' },
         mint,
       )
