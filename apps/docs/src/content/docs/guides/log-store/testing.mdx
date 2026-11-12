@@ -8,20 +8,21 @@ description: Which gate established each claim, which verify step keeps each beh
 
 | Claim | Gate | Where it ran |
 | --- | --- | --- |
-| One `LogStore` over `SqlClient` appends, dedups by `tx`, mints and receives HLC values, streams from a log position, scans prefixes and holds the compaction horizon, on every store | [P04 Log store conformance][P04] | sqlite-node, PGlite, the iOS simulator and the Android emulator (op-sqlite), web (wasm with OPFS) |
+| One `LogStore` over `SqlClient` appends, dedups by `tx`, mints and receives HLC values, streams from a log position, scans prefixes and keeps a consumer's acknowledged cursor, on every store | [P04 Log store conformance][P04] | sqlite-node, PGlite, the iOS simulator and the Android emulator (op-sqlite), web (wasm with OPFS) |
 | The HLC never mints below history across a backwards wall clock, a reboot and a remote-ahead receive; a `tx` 5001 ms in the future is refused | [P04 Log store conformance][P04] | the same five stores |
 | Read models rebuilt from the log equal the incrementally projected ones, so they can be dropped | [P05 Changesets and projections][P05] | the same five stores |
 
 The positive control of [P04 Log store conformance][P04]: a duplicate append is a no-op while
-a new `tx` is appended. Since 2026-09-26 the compaction horizon covers trace
-sinks as consumers, and since 2026-09-27 minted time is whole milliseconds
-(both in [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011] and [ADR-0007 Hybrid logical clock for tx][ADR-0007]).
+a new `tx` is appended. Since 2026-09-27 minted time is whole milliseconds
+([ADR-0007 Hybrid logical clock for tx][ADR-0007]). On 2026-11-11 the "compaction horizon" check became "acknowledged
+cursor": the log store no longer removes facts ([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011], [D223 Each reader keeps its own place][D223]), so [P04][P04] runs
+again when the guide is accepted.
 
 ## Behaviours and their verify steps
 
 | Behaviour | Checked by | Verify step |
 | --- | --- | --- |
-| The twelve checks of `log-store/conformance`: append, duplicate append, acceptance time, HLC mint, backwards clock, reboot, remote-ahead, future skew, cursor streaming, prefix scans, compaction horizon, volume | `runLogStoreChecks` in `libs/datom/src/suites/log-store.ts`, run by `libs/store-sqlite-node` and `libs/store-postgres` | `integration` |
+| The twelve checks of `log-store/conformance`: append, duplicate append, acceptance time, HLC mint, backwards clock, reboot, remote-ahead, future skew, cursor streaming, prefix scans, acknowledged cursor, volume | `runLogStoreChecks` in `libs/datom/src/suites/log-store.ts`, run by `libs/store-sqlite-node` and `libs/store-postgres` | `integration` |
 | HLC encoding, ordering, mint and receive edge cases, whole-millisecond time | `libs/datom/src/hlc.test.ts` | `unit` |
 | SQL rows decode through a Schema, never a `sql<T>` assertion | the [D79 Schema at every boundary, linted][D79] lint rule, and `rowsOf` in `libs/datom/src/rows.ts` | `lint` |
 | `libs/datom` reads no clock and no randomness except through `HlcClock` and `HlcEntropy` | the [D26 AI-robust guardrails][D26] lint rules | `lint` |
@@ -46,6 +47,7 @@ typechecks and lints them; [P04 Log store conformance][P04] runs the suite there
 
 [ADR-0007]: ../../../../../../../docs/adr/0007-hybrid-logical-clock.md
 [ADR-0011]: ../../../../../../../docs/adr/0011-log-store-pattern.md
+[D223]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d223
 [D26]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d26
 [D44]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d44
 [D79]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d79

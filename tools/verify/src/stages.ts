@@ -149,8 +149,8 @@ export const STAGES: Stage[] = [
       },
       {
         name: 'exercises',
-        blurb: 'each exercise solution passes and each problem fails as expected; teaching, so no coverage',
-        invocations: [nxTarget('exercise')],
+        blurb: 'each exercise solution passes and each problem fails as expected, and the runs its lesson shows are current; teaching, so no coverage',
+        invocations: [nxTarget('exercise'), { command: 'node', args: ['--experimental-strip-types', 'tools/verify/src/check-exercise-runs.ts'] }],
       },
     ],
   },
@@ -207,7 +207,7 @@ export const STAGES: Stage[] = [
       },
       {
         name: 'docs-e2e',
-        blurb: 'the built docs site in a browser: every link in a page\'s text shows its preview card',
+        blurb: 'the built docs site in a browser: every link in a page\'s text shows its preview card, and lesson 1\'s widget works',
         invocations: [
           {
             command: 'pnpm',
@@ -228,6 +228,11 @@ export const STAGES: Stage[] = [
             ],
           },
         ],
+      },
+      {
+        name: 'overlap',
+        blurb: 'no passage of prose is written twice across the glossary, the guides and their partials (D221)',
+        invocations: [{ command: 'node', args: ['--experimental-strip-types', 'tools/verify/src/check-overlap.ts'] }],
       },
       {
         name: 'guides',

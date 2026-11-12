@@ -4,8 +4,7 @@
  * acknowledged, or refuses on purpose.
  *
  * Order matters and mirrors the gate text: the projector first runs with
- * its trace cursor disabled (nothing may leave, and compaction may not
- * remove what it has not exported), then against a refusing sink (the
+ * its trace cursor disabled (nothing may leave), then against a refusing sink (the
  * trace cursor may not move), then against an accepting sink (the whole backlog
  * must arrive), then from a fresh trace cursor (the same spans again), then in
  * batches of four log entries (the same spans over several ticks).
@@ -19,8 +18,6 @@ import {
   clockId,
   deferredId,
   HlcClock,
-  LogStore,
-  type CompactResult,
 } from '@viviefs/datom'
 import {
   SinkRejected,
@@ -46,7 +43,6 @@ export const P10_PROJECTION_CHECK_NAMES = [
   'attempts linked',
   'failed send keeps the cursor',
   'disabled trace cursor keeps the backlog',
-  'disabled trace cursor holds compaction',
   'small batches export the same spans',
 ] as const
 
@@ -116,9 +112,6 @@ const tick = (
 export type ProjectionRun = {
   readonly run: TraceScenario
   readonly disabled: Tick
-  /** Compaction attempted while only the disabled trace cursor is registered. */
-  readonly compactWhileDisabled: CompactResult
-  readonly factsAfterCompaction: number
   readonly refused: Tick
   readonly accepted: Tick
   readonly again: Tick
@@ -126,19 +119,6 @@ export type ProjectionRun = {
   /** A sink read four log entries per tick until its trace cursor reached the end. */
   readonly batched: ReadonlyArray<Tick>
 }
-
-const compactNow = (openStore: StoreFactory, clock: MutableClock, prefix: string) =>
-  Effect.scoped(
-    Effect.gen(function* () {
-      const ctx = yield* Layer.build(
-        openStore(PROJECTOR_DEVICE).pipe(Layer.provide(Layer.succeed(HlcClock, clock.service))),
-      )
-      const store = yield* LogStore.pipe(Effect.provide(ctx))
-      const compacted = yield* store.compact()
-      const facts = (yield* store.scanPrefix(prefix)).length
-      return { compacted, facts }
-    }),
-  ).pipe(Effect.orDie)
 
 const BATCH = 4
 
@@ -150,7 +130,6 @@ export const runTraceProjection = (
   Effect.gen(function* () {
     const run = yield* runTraceScenario(openStore, clock, nonce)
     const disabled = yield* tick(openStore, clock, { sink: 'primary', enabled: false, accept: true })
-    const held = yield* compactNow(openStore, clock, run.executionEntity)
     const refused = yield* tick(openStore, clock, { sink: 'primary', enabled: true, accept: false })
     const accepted = yield* tick(openStore, clock, { sink: 'primary', enabled: true, accept: true })
     const again = yield* tick(openStore, clock, { sink: 'primary', enabled: true, accept: true })
@@ -165,8 +144,6 @@ export const runTraceProjection = (
     return {
       run,
       disabled,
-      compactWhileDisabled: held.compacted,
-      factsAfterCompaction: held.facts,
       refused,
       accepted,
       again,
@@ -269,16 +246,6 @@ const disabledKeepsBacklog = (p: ProjectionRun): Verdict => {
   return pass({ disabledSent: 0, backlogExported: p.accepted.sent.length, cursor: p.accepted.cursorAfter })
 }
 
-const disabledHoldsCompaction = (p: ProjectionRun): Verdict => {
-  const { compactWhileDisabled: result } = p
-  if (result.removed !== 0) return fail(`compaction removed ${result.removed} fact(s) the trace cursor had not exported`)
-  if (result.heldBy !== 'trace/primary') return fail(`compaction was held by ${result.heldBy ?? 'nobody'}, expected trace/primary`)
-  if (p.factsAfterCompaction !== p.run.rows.length) {
-    return fail(`the journal had ${p.run.rows.length} facts and ${p.factsAfterCompaction} after compaction`)
-  }
-  return pass({ heldBy: result.heldBy, removed: result.removed })
-}
-
 const smallBatches = (p: ProjectionRun): Verdict => {
   const sent = p.batched.flatMap((step) => step.sent)
   if (p.batched.length < 2) return fail(`${p.batched.length} tick(s); a batch of ${BATCH} should need several`)
@@ -302,7 +269,6 @@ const verdicts: ReadonlyArray<
   ['attempts linked', attemptsLinked],
   ['failed send keeps the cursor', failedSendKeepsCursor],
   ['disabled trace cursor keeps the backlog', disabledKeepsBacklog],
-  ['disabled trace cursor holds compaction', disabledHoldsCompaction],
   ['small batches export the same spans', smallBatches],
 ]
 

@@ -1,0 +1,285 @@
+/*
+ * Shared look of the lesson widgets (D216): the same frame, buttons and readout as lesson 1's.
+ * One convention for every widget:
+ * - a choice is a form control: a select for one of several, a checkbox for on or off;
+ * - a button is an action: blue (.vv-w-primary) for the main one, red (.vv-w-mistake) for the
+ *   mistake to try, plain for the rest; "Start over" (.vv-w-reset) is plain and comes last.
+ */
+.vv-w {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.875rem;
+  padding: clamp(0.875rem, 3vw, 1.375rem);
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  margin-block: 1.5rem;
+}
+.vv-w p {
+  margin: 0;
+}
+.vv-w-ask {
+  color: var(--sl-color-white);
+}
+.vv-w-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.vv-w-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  align-items: center;
+  border: 1px solid var(--sl-color-gray-6);
+  border-radius: 0.625rem;
+  padding: 0.375rem 0.5rem;
+}
+.vv-w-group-name {
+  font-size: var(--sl-text-xs);
+  font-weight: 700;
+  color: var(--sl-color-gray-2);
+  margin-right: 0.25rem;
+}
+.vv-w-btn {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  min-height: 2.5rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: var(--sl-text-sm);
+  cursor: pointer;
+}
+.vv-w-btn:hover:not(:disabled) {
+  border-color: var(--sl-color-accent);
+}
+.vv-w-btn:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+.vv-w-primary {
+  background: var(--sl-color-accent);
+  border-color: var(--sl-color-accent);
+  color: var(--sl-color-black);
+}
+.vv-w-mistake:not(:disabled) {
+  border-color: var(--sl-color-red);
+  background: var(--sl-color-red-low);
+  color: var(--sl-color-red-high);
+}
+.vv-w-reset {
+  margin-left: auto;
+}
+.vv-w-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem;
+}
+.vv-w-field {
+  display: grid;
+  gap: 0.375rem;
+  align-content: start;
+  margin: 0;
+  border: 1px solid var(--sl-color-gray-6);
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.625rem 0.625rem;
+  min-width: 0;
+}
+.vv-w-select {
+  font: inherit;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-white);
+  background: var(--sl-color-gray-6);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.625rem;
+  cursor: pointer;
+}
+.vv-w-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.75rem;
+  cursor: pointer;
+  color: var(--sl-color-white);
+}
+.vv-w-check input {
+  accent-color: var(--sl-color-accent);
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}
+.vv-w-check .vv-w-mono {
+  font-size: var(--sl-text-sm);
+}
+.vv-w-select:focus-visible,
+.vv-w-check input:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+.vv-w-code {
+  margin: 0;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--sl-color-gray-6);
+  font-family: var(--__sl-font-mono);
+  font-size: var(--sl-text-xs);
+  line-height: 1.6;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--sl-color-white);
+}
+.vv-w-rows-2 {
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+.vv-w-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.vv-w-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+}
+.vv-w-panel {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.625rem;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.375rem;
+  align-content: start;
+  min-width: 0;
+}
+.vv-w-panel h4 {
+  margin: 0;
+  font-size: var(--sl-text-base);
+}
+.vv-w-meta {
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+}
+.vv-w-mono {
+  font-family: var(--__sl-font-mono);
+  font-size: var(--sl-text-xs);
+}
+.vv-w-rows {
+  display: grid;
+  gap: 0.25rem;
+}
+.vv-w-row {
+  display: flex;
+  gap: 0.625rem;
+  align-items: baseline;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.375rem;
+  font-family: var(--__sl-font-mono);
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-white);
+}
+.vv-w-row span:last-child {
+  margin-left: auto;
+  color: var(--sl-color-gray-3);
+}
+.vv-w-new {
+  border-color: var(--sl-color-green);
+  background: var(--sl-color-green-low);
+}
+.vv-w-in {
+  border-color: var(--sl-color-blue);
+  background: var(--sl-color-blue-low);
+}
+.vv-w-bad {
+  border-color: var(--sl-color-red);
+  background: var(--sl-color-red-low);
+}
+.vv-w-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.vv-w-chip {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 99px;
+  padding: 0 0.5rem;
+  font-family: var(--__sl-font-mono);
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-white);
+}
+.vv-w-readout {
+  border-radius: 0.625rem;
+  background: var(--sl-color-gray-6);
+  padding: 0.875rem 1rem;
+  display: grid;
+  gap: 0.375rem;
+}
+.vv-w-readout-head {
+  font-size: var(--sl-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+.vv-w-readout-text {
+  color: var(--sl-color-white);
+}
+.vv-w-readout-next {
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-sm);
+}
+@media (max-width: 32rem) {
+  .vv-w-group {
+    flex: 1 1 100%;
+  }
+  .vv-w-group-name {
+    flex: 1 1 100%;
+  }
+}
+.vv-w-panel pre:not(.vv-w-code) {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--sl-color-white);
+}
+.vv-w-chip {
+  overflow-wrap: anywhere;
+}
+.vv-w-rows-2 .vv-w-row span:first-child {
+  min-width: 2.5rem;
+}
+.vv-w-rows-2 .vv-w-row span:last-child {
+  margin-left: 0;
+}
+.vv-w-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-white);
+}
+.vv-w-table th,
+.vv-w-table td {
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--sl-color-gray-6);
+  vertical-align: baseline;
+}
+.vv-w-table th {
+  color: var(--sl-color-gray-3);
+  font-weight: 600;
+}
+.vv-w-table td:first-child,
+.vv-w-table th:first-child {
+  font-family: var(--__sl-font-mono);
+  width: 2.5rem;
+}
+.vv-w-table .vv-w-fresh td {
+  background: var(--sl-color-blue-low);
+}
+.vv-w-lost {
+  color: var(--sl-color-red-high);
+  font-weight: 700;
+}

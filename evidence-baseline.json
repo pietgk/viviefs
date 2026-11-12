@@ -2,8 +2,8 @@
   "bundle": {
     "apps/evidence-client": {
       "android": {
-        "hbcBytes": 7760953,
-        "jsBytes": 4696591,
+        "hbcBytes": 7753067,
+        "jsBytes": 4696063,
         "packages": {
           "(unmapped)": 205886,
           "@babel/runtime": 2100,
@@ -61,10 +61,10 @@
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-client": 48330,
-          "workspace:features/evidence/model": 3878,
+          "workspace:apps/evidence-client": 48329,
+          "workspace:features/evidence/model": 4398,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 82922,
+          "workspace:libs/datom": 81875,
           "workspace:libs/identity": 10550,
           "workspace:libs/platform-native": 7288,
           "workspace:libs/store-sqlite-native": 1253,
@@ -73,11 +73,11 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41934
         },
-        "recordedAt": "2026-10-31"
+        "recordedAt": "2026-11-12"
       },
       "ios": {
-        "hbcBytes": 5654243,
-        "jsBytes": 2602657,
+        "hbcBytes": 5647169,
+        "jsBytes": 2602129,
         "packages": {
           "(unmapped)": 204201,
           "@babel/runtime": 2100,
@@ -128,10 +128,10 @@
           "stacktrace-parser": 1822,
           "whatwg-fetch": 10027,
           "whatwg-url-minimum": 30230,
-          "workspace:apps/evidence-client": 48316,
-          "workspace:features/evidence/model": 3878,
+          "workspace:apps/evidence-client": 48315,
+          "workspace:features/evidence/model": 4398,
           "workspace:libs/blobs": 816,
-          "workspace:libs/datom": 82922,
+          "workspace:libs/datom": 81875,
           "workspace:libs/identity": 10550,
           "workspace:libs/platform-native": 7246,
           "workspace:libs/store-sqlite-native": 1253,
@@ -140,17 +140,17 @@
           "workspace:libs/telemetry": 8968,
           "workspace:libs/workflow-engine": 41934
         },
-        "recordedAt": "2026-10-31"
+        "recordedAt": "2026-11-12"
       }
     }
   },
   "coverage": {
     "integration": {
       "apps/evidence-server/src/server.ts": {
-        "branches": "5/6",
+        "branches": "3/4",
         "functions": "4/4",
-        "lines": "13/13",
-        "statements": "13/13"
+        "lines": "12/12",
+        "statements": "12/12"
       },
       "libs/store-postgres/src/layer.ts": {
         "branches": "2/2",
@@ -161,6 +161,12 @@
       "libs/store-sqlite-node/src/layer.ts": {
         "branches": "0/0",
         "functions": "2/2",
+        "lines": "4/4",
+        "statements": "4/4"
+      },
+      "libs/sync/server/src/http.ts": {
+        "branches": "4/4",
+        "functions": "1/1",
         "lines": "4/4",
         "statements": "4/4"
       },
@@ -208,11 +214,35 @@
         "lines": "39/39",
         "statements": "44/44"
       },
+      "apps/docs/src/lib/datom-log.ts": {
+        "branches": "54/57",
+        "functions": "30/30",
+        "lines": "86/86",
+        "statements": "111/112"
+      },
       "apps/docs/src/lib/guides.ts": {
         "branches": "14/20",
         "functions": "10/10",
         "lines": "33/33",
         "statements": "34/38"
+      },
+      "apps/docs/src/lib/hlc-clock.ts": {
+        "branches": "48/50",
+        "functions": "15/15",
+        "lines": "53/53",
+        "statements": "65/66"
+      },
+      "apps/docs/src/lib/line-diff.ts": {
+        "branches": "27/36",
+        "functions": "4/4",
+        "lines": "24/24",
+        "statements": "28/28"
+      },
+      "apps/docs/src/lib/readers.ts": {
+        "branches": "22/25",
+        "functions": "15/15",
+        "lines": "30/31",
+        "statements": "43/44"
       },
       "apps/docs/src/lib/reference-links.ts": {
         "branches": "176/188",
@@ -221,10 +251,10 @@
         "statements": "237/242"
       },
       "apps/docs/src/lib/references.ts": {
-        "branches": "112/116",
-        "functions": "41/41",
-        "lines": "159/159",
-        "statements": "203/203"
+        "branches": "120/124",
+        "functions": "45/45",
+        "lines": "172/172",
+        "statements": "220/220"
       },
       "apps/docs/src/lib/regions.ts": {
         "branches": "20/23",
@@ -255,6 +285,12 @@
         "functions": "24/24",
         "lines": "69/69",
         "statements": "81/84"
+      },
+      "apps/docs/src/lib/store-layers.ts": {
+        "branches": "17/18",
+        "functions": "13/13",
+        "lines": "18/18",
+        "statements": "27/27"
       },
       "features/evidence/client/src/index.ts": {
         "branches": "0/0",
@@ -311,10 +347,10 @@
         "statements": "27/28"
       },
       "features/evidence/model/src/command.ts": {
-        "branches": "3/6",
-        "functions": "5/5",
-        "lines": "17/20",
-        "statements": "18/21"
+        "branches": "11/12",
+        "functions": "6/6",
+        "lines": "28/29",
+        "statements": "29/30"
       },
       "features/evidence/model/src/device-resume.ts": {
         "branches": "0/0",
@@ -371,10 +407,10 @@
         "statements": "11/11"
       },
       "libs/datom/src/log-store.ts": {
-        "branches": "24/41",
-        "functions": "20/27",
-        "lines": "90/109",
-        "statements": "96/116"
+        "branches": "21/31",
+        "functions": "17/18",
+        "lines": "76/82",
+        "statements": "81/88"
       },
       "libs/datom/src/manifest.ts": {
         "branches": "4/14",
@@ -485,10 +521,10 @@
         "statements": "126/126"
       },
       "libs/references/src/rewrite.ts": {
-        "branches": "230/302",
+        "branches": "232/304",
         "functions": "40/41",
-        "lines": "298/321",
-        "statements": "351/388"
+        "lines": "299/322",
+        "statements": "353/390"
       },
       "libs/references/src/their-words.ts": {
         "branches": "46/48",
@@ -682,6 +718,12 @@
         "lines": "76/77",
         "statements": "86/89"
       },
+      "tools/verify/src/exercise-runs.ts": {
+        "branches": "6/8",
+        "functions": "6/6",
+        "lines": "11/11",
+        "statements": "15/15"
+      },
       "tools/verify/src/file-treatments.ts": {
         "branches": "27/30",
         "functions": "8/8",
@@ -695,10 +737,10 @@
         "statements": "27/27"
       },
       "tools/verify/src/guides.ts": {
-        "branches": "164/203",
-        "functions": "63/66",
-        "lines": "238/247",
-        "statements": "282/303"
+        "branches": "203/242",
+        "functions": "72/75",
+        "lines": "292/301",
+        "statements": "349/370"
       },
       "tools/verify/src/hermesc.ts": {
         "branches": "9/9",
@@ -723,6 +765,12 @@
         "functions": "21/21",
         "lines": "57/57",
         "statements": "70/71"
+      },
+      "tools/verify/src/overlap.ts": {
+        "branches": "6/7",
+        "functions": "9/9",
+        "lines": "26/26",
+        "statements": "33/33"
       },
       "tools/verify/src/ownership.ts": {
         "branches": "54/72",
@@ -780,5 +828,5 @@
       "version": "5.0.1"
     }
   },
-  "registryDigest": "01c0d10f259bbab040833ccdd5a055566719bcef28bc341b181d3fb5aab8f26b"
+  "registryDigest": "df9f82909ed7996cc0807724441a1cfac026266794e25efd68d537cd23b76065"
 }

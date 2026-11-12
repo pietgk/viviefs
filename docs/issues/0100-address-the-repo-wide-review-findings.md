@@ -40,7 +40,7 @@ The stable IDs below belong to the report, not to the decision log. Reproduction
 
 | State (2026-11-10) | Report concern | Required disposition |
 | --- | --- | --- |
-| Open here. Now, with the log-store guide: lesson 3 teaches the compaction horizon, so the guide must say what compaction does to a rebuild. | [A01 Compaction and rebuild do not compose safely](../research/2026-10-29-repo-wide-review.md#a01-compaction-and-rebuild-do-not-compose-safely) | Decide and enforce the safe preconditions, snapshot/rehydration approach, or explicit unavailability before app use. No active production compaction caller was found; retain that limit. |
+| Done on 2026-11-11 ([D223 Each reader keeps its own place][D223]): lesson 3 showed compaction was unsafe in two ways, so `compact()` left the `LogStore` contract and device compaction moved to [I107 Device compaction][I107], with the preconditions this finding asks for. Lesson 3 now teaches each reader's place. | [A01 Compaction and rebuild do not compose safely](../research/2026-10-29-repo-wide-review.md#a01-compaction-and-rebuild-do-not-compose-safely) | Decide and enforce the safe preconditions, snapshot/rehydration approach, or explicit unavailability before app use. No active production compaction caller was found; retain that limit. |
 | Moved to [I13 UI renders only in the DOM, never on a device][I13] and the app shell ([P12 UI on every platform][P12], [P13 Links and routing][P13]); A02's requirement is a comment there. | [A02 Interaction sessions have no owned shutdown](../research/2026-10-29-repo-wide-review.md#a02-interaction-sessions-have-no-owned-shutdown) | Establish an owned interaction lifetime and teardown evidence before copying the retained driver into the app shell. Keep accepted durable work's lifetime separate from the screen's. Coordinate with [I13 UI renders only in the DOM, never on a device][I13] and the app-shell work. |
 | Parked as [I105 Suite evidence is not tied to each implementation][I105], with a `Decide when:`. | [A03 Suite evidence is not tied to each implementation](../research/2026-10-29-repo-wide-review.md#a03-suite-evidence-is-not-tied-to-each-implementation) | Decide whether to require explicit suite/implementation attribution, with a hostile missing-implementation check. Current suites genuinely run both host stores; this is a guardrail limitation, not an observed conformance failure. |
 
@@ -69,15 +69,19 @@ The stable IDs below belong to the report, not to the decision log. Reproduction
 - **Into existing owners**: R04 to [I14 Physical devices, and a notification tap that completes a durable deferred][I14], A02 to [I13 UI renders only in the DOM, never on a device][I13], each with a comment there that states the requirement.
 - **Parked, each with a `Decide when:` and the reason it can wait**: R05 is [I103 Collector rejection disappears from export results][I103], R06 is [I104 Fresh qualification emits stale dependency versions][I104], A03 is [I105 Suite evidence is not tied to each implementation][I105].
 
+2026-11-11: A01 done. Reading lesson 3 on the site, the human found its `device-a` consumer and its arrows did not make sense. A throwaway test on the real code showed `compact()` removing facts the projector had not read, and a rebuild after compaction emptying the read models, as this finding said. Decided from the [review page](../research/2026-11-11-what-a-device-may-remove-review.html): `compact()`, `horizon()` and `heldBy` left the `LogStore` contract, and device compaction is decided with sync in [I107 Device compaction][I107] ([D223 Each reader keeps its own place][D223]). R02, R03, R08 and R09 stay open here.
+
 <!-- References: written by pnpm refs fix; do not edit by hand. -->
 
 [D214]: ../plan/bootstrap/02-decision-log.md#d214
 [D215]: ../plan/bootstrap/02-decision-log.md#d215
+[D223]: ../plan/bootstrap/02-decision-log.md#d223
 [I101]: 0101-a-reusable-review-path.md
 [I102]: 0102-distinct-activity-names-can-skip-work.md
 [I103]: 0103-collector-rejection-disappears-from-export-results.md
 [I104]: 0104-fresh-qualification-emits-stale-dependency-versions.md
 [I105]: 0105-suite-evidence-is-not-tied-to-each-implementation.md
+[I107]: 0107-device-compaction.md
 [I13]: 0013-ui-on-every-platform.md
 [I14]: 0014-physical-devices-and-notification-tap.md
 [I23]: 0023-effect-machine-on-stable-effect.md

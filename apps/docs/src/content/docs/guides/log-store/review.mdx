@@ -25,7 +25,7 @@ description: What to check in a change that touches the log store; what an agent
   every attempt creates new facts.
 - Does a new consumer of the log acknowledge what it has seen, and only after
   it has really delivered it?
-- Does anything compact the server's log? It must not ([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]).
+- Does anything delete from `datoms`? Nothing may: the server keeps every fact ([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011]), and what a device may remove waits for sync ([I107 Device compaction][I107]).
 - Does a new store keep its data across a restart? `:memory:` passes most
   checks and fails `hlc reboot`.
 
@@ -36,7 +36,7 @@ description: What to check in a change that touches the log store; what an agent
 | Minting a new `tx` on retry | Duplicate facts after a network error; the second append reports inserts, not duplicates | Mint once, resend the same datoms (exercise 01.01) |
 | Comparing `tx` by wall time, or reading the wall clock for ordering | Order flips after a clock jump | Compare `(pt, c)` with `compareHlc`; take time from `HlcClock` |
 | Fractional milliseconds as physical time | Two `tx` share `(pt, c)` and order by random bits (found 2026-09-27, [ADR-0007 Hybrid logical clock for tx][ADR-0007]) | `correctedNow` floors; keep it |
-| Acknowledging before delivering | A crash loses facts a sink never got, and compaction removes them | Acknowledge after the batch is delivered (exercise 03.01) |
+| Acknowledging before delivering | A crash moves the place past facts a sink never got | Acknowledge after the batch is delivered (exercise 03.01) |
 | A new store on an in-memory database | `hlc reboot` fails in the suite | Give it a file (exercise 04.01) |
 | A domain table outside the log | A fact with no history, outside sync and the audit trail | Make it datoms; derive a read model if a query needs it |
 
@@ -48,3 +48,4 @@ description: What to check in a change that touches the log store; what an agent
 [D26]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d26
 [D79]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d79
 [D80]: ../../../../../../../docs/plan/bootstrap/02-decision-log.md#d80
+[I107]: ../../../../../../../docs/issues/0107-device-compaction.md

@@ -78,8 +78,10 @@ const finish = (
     }
   })
 
-export const renameList = (
-  read: { readonly title: string | null },
+// #region createList
+/** A new list: it exists, and it has a title. Fails on a list that exists already. */
+export const createList = (
+  read: { readonly exists: boolean },
   intent: {
     readonly org: string
     readonly list: string
@@ -90,8 +92,8 @@ export const renameList = (
   if (intent.title.trim().length === 0) {
     return Effect.fail(new DomainError({ message: 'blank title' }))
   }
-  if (read.title === intent.title) {
-    return Effect.fail(new DomainError({ message: 'unchanged title' }))
+  if (read.exists) {
+    return Effect.fail(new DomainError({ message: 'list exists' }))
   }
   const entity = listId(intent.org, intent.list)
   const members: ReadonlyArray<DatomType> = [
@@ -112,8 +114,47 @@ export const renameList = (
       cs: mint.cs,
     },
   ]
+  return finish(intent.org, mint, 'evidence.createList', members)
+}
+// #endregion createList
+
+// #region renameList
+/**
+ * A new title for a list that exists: one fact. It never asserts the list
+ * again, because asserting a defining attribute again restores a deleted
+ * entity (ADR-0010, D219).
+ */
+export const renameList = (
+  read: { readonly exists: boolean; readonly title: string | null },
+  intent: {
+    readonly org: string
+    readonly list: string
+    readonly title: string
+  },
+  mint: CommandMint,
+): Effect.Effect<CommandChangeset, DomainError> => {
+  if (intent.title.trim().length === 0) {
+    return Effect.fail(new DomainError({ message: 'blank title' }))
+  }
+  if (!read.exists) {
+    return Effect.fail(new DomainError({ message: 'no such list' }))
+  }
+  if (read.title === intent.title) {
+    return Effect.fail(new DomainError({ message: 'unchanged title' }))
+  }
+  const members: ReadonlyArray<DatomType> = [
+    {
+      e: listId(intent.org, intent.list),
+      a: Attr.listTitle,
+      v: intent.title,
+      tx: mint.memberTx,
+      op: 'assert',
+      cs: mint.cs,
+    },
+  ]
   return finish(intent.org, mint, 'evidence.renameList', members)
 }
+// #endregion renameList
 
 export const sealItem = (
   intent: {

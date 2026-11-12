@@ -1,0 +1,123 @@
+---
+title: Before you start
+description: What every guide assumes you know, and the Effect its code uses, taught just enough.
+---
+
+import Sample from '../../../components/Sample.astro'
+
+This page says what the lessons of every guide may assume
+([D218 Before you start is one page for all guides][D218]). If a lesson uses something that is neither here nor
+taught before it in its guide, the lesson has a fault: point at it. Each
+guide's overview lists the words that guide teaches.
+
+## You already know
+
+These are not taught here.
+
+- **TypeScript**: object types, `readonly`,
+  [generics](https://www.typescriptlang.org/docs/handbook/2/generics.html)
+  such as `ReadonlyArray<Datom>`, and
+  [union types](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+  such as `'assert' | 'retract'`.
+- **A terminal**, to run one command per exercise.
+
+## Just enough Effect
+
+The code is written with the [Effect](https://effect.website/docs/v4/getting-started/the-effect-type)
+library, version 4. Every pattern builds on it the same way, and the code uses
+seven of its ideas, counted in `libs/datom/src` and
+`features/evidence/model/src`. Each is here in a few lines, with code from the
+exemplar and a link to the Effect documentation. A lesson's idea and widget
+need none of them; its code samples and its exercise name the ideas they use
+and link here.
+
+### 1. The Effect type
+
+`Effect.Effect<A, E, R>` is work that, when it runs, succeeds with an `A`,
+fails with an `E`, and needs an `R` to run. Nothing happens when you create
+one; it runs when something runs it, such as a test. A slot that is left out
+is `never`: no failure, or nothing needed.
+
+The three slots are why a signature tells you so much. In the log store's
+contract below, `append` succeeds with an `AppendResult` (two counts,
+`inserted` and `duplicates`) and can fail in three named ways.
+[Effect docs: The Effect type](https://effect.website/docs/v4/getting-started/the-effect-type).
+
+<Sample path="libs/datom/src/log-store.ts" region="service" />
+
+### 2. Steps in order
+
+Inside `Effect.gen(function* () { ... })`, `yield*` runs one effect and gives
+you its result, the way `await` does in an `async` function. If a step fails,
+the rest is skipped and the whole effect fails with that error. So
+`const tx = yield* store.mint()` reads as "mint a tx, then go on with it".
+[Effect docs: Using generators](https://effect.website/docs/v4/getting-started/using-generators).
+
+<Sample path="exercises/log-store/01.01-append-and-stream/problem/send.ts" />
+
+### 3. Named functions
+
+`Effect.fn('LogStore.append')(function* (datoms, envelope) { ... })` is a
+function whose body is an `Effect.gen`, with a name that shows up in traces.
+Read it as `Effect.gen` with a label. The Effect documentation has no page on
+it yet; the log store's own code is written this way.
+
+### 4. Schema
+
+A schema describes a shape once, and gives you both a TypeScript type and a
+check that a value really has that shape when the program runs.
+`Schema.Struct` is an object with these fields; `typeof Datom.Type` is the
+plain type you use in code.
+[Effect docs: Schema](https://effect.website/docs/v4/schema/introduction).
+
+<Sample path="libs/datom/src/schema.ts" region="datom" />
+
+### 5. Errors with a name
+
+An expected failure is a class with a tag, such as `InvalidTx`, and it goes in
+the `E` slot, so the type says which failures can happen.
+`Effect.fail(new DomainError({ message: 'blank title' }))` is an effect that
+fails with that value. A caller can handle one error by its tag and let the
+others through.
+[Effect docs: Two types of errors](https://effect.website/docs/v4/error-management/two-error-types),
+[Yieldable errors](https://effect.website/docs/v4/error-management/yieldable-errors).
+
+<Sample path="libs/datom/src/schema.ts" region="errors" />
+
+### 6. Services
+
+`LogStore` is a service: an interface with a name. `const store = yield* LogStore`
+asks for it, and the `R` slot records that the effect needs one. The code that
+uses a log store never says which one, SQLite on a phone or Postgres on a
+server; that is decided where the program runs (idea 7). It is how one
+lesson's code runs on every store. The `LogStore` contract is the sample under
+idea 1. [Effect docs: Managing services](https://effect.website/docs/v4/requirements-management/services).
+
+### 7. Layers
+
+A `Layer` knows how to build a service, and `Effect.provide(layer)` gives an
+effect what its `R` slot asks for, so it can run. Every exercise runs through
+a helper such as the log store track's `onLogStore`, which builds a fresh SQLite
+log store in a temporary folder and provides it. A guide shows you its layers
+when you need to write one.
+[Effect docs: Managing layers](https://effect.website/docs/v4/requirements-management/layers).
+
+<Sample path="exercises/log-store/track.ts" region="store" />
+
+### You will also see
+
+- `it.effect(...)` from `@effect/vitest`: a test whose body is an effect
+  ([Testing with Effect](https://www.effect.solutions/testing)).
+- `Option`: a value that may be missing, instead of `null`
+  ([Effect docs: Option](https://effect.website/docs/v4/data-types/option)).
+- `SqlClient`: how a store talks to its database. Only inside the stores.
+
+## Not needed
+
+Effect Cluster, React Native and SQL. A guide that needs one of them teaches
+it, or names the guide that does. Another pattern's words are linked to their
+glossary entry where they appear.
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[D218]: ../../../../../../docs/plan/bootstrap/02-decision-log.md#d218

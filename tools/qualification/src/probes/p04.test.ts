@@ -12,7 +12,7 @@ describe('P04 log store picks', () => {
     expect(P04_CHECK_COUNT).toBe(12)
     expect(P04_CHECK_NAMES).toContain('duplicate append')
     expect(P04_CHECK_NAMES).toContain('hlc future skew')
-    expect(P04_CHECK_NAMES).toContain('compaction horizon')
+    expect(P04_CHECK_NAMES).toContain('acknowledged cursor')
     expect(P04_CHECK_NAMES).toContain('acceptance time')
   })
 })

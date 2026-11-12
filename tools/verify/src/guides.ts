@@ -1,5 +1,5 @@
 /**
- * verify quality / guides (D62, D63, D66, D67, D81-D87). Every guide has the
+ * verify quality / guides (D62, D63, D66, D67, D81-D87, D216). Every guide has the
  * pages, `##` headings and frontmatter keys of the guide template, which is
  * read from its files, so changing the template changes the rule. A guide's
  * ADRs, gates, exemplar projects and exercise track exist and point back; ADR
@@ -30,6 +30,9 @@ type Page = { readonly data: Record<string, unknown>; readonly body: string }
 const TEMPLATE_ONLY_KEYS = ['slug']
 /** Frontmatter keys a guide has only in one state (D63). */
 const CONDITIONAL_KEYS = ['accepted']
+/** A lesson's widget model (D216): the template shows the key with a placeholder, so it is checked here, not as a template key. */
+const VISUAL_KEYS = ['widget']
+const WIDGET_MODEL = /^apps\/docs\/src\/lib\/[a-z0-9-]+\.ts$/
 
 /** The gate table in code, the one home of gate names (D86), and its table in the plan. */
 export { GATE_TABLE, GATE_TABLE_DOC }
@@ -116,7 +119,7 @@ const templatePages = (repository: GuidesRepository): ReadonlyArray<TemplatePage
       return {
         page: LESSON_FILE.test(relative) ? 'lessons/NN' : relative,
         headings: headingsOf(page.body),
-        keys: Object.keys(page.data).filter((key) => !TEMPLATE_ONLY_KEYS.includes(key) && !CONDITIONAL_KEYS.includes(key)),
+        keys: Object.keys(page.data).filter((key) => !TEMPLATE_ONLY_KEYS.includes(key) && !CONDITIONAL_KEYS.includes(key) && !VISUAL_KEYS.includes(key)),
       }
     })
     .filter((page, index, all) => all.findIndex(({ page: name }) => name === page.page) === index)
@@ -320,6 +323,88 @@ const lessonProblems = (guide: Guide, repository: GuidesRepository): string[] =>
   return problems
 }
 
+/** Where a concept section has its one home, embedded by guide pages and lessons (D221). */
+export const PARTIALS_DIRECTORY = 'apps/docs/src/partials'
+
+/**
+ * A page with each embedded partial written in place of its tag, so a rule
+ * that reads the page (a diagram in The idea) sees what the reader sees.
+ */
+export const withPartials = (body: string, read: (path: string) => string | undefined): string => {
+  let text = body
+  for (const match of body.matchAll(/^import (\w+) from '(?:\.\.\/)+partials\/([^']+\.mdx)'$/gm)) {
+    // Both groups always match: the pattern has no optional group.
+    const [name, rest] = match.slice(1, 3) as [string, string]
+    const partial = read(`${PARTIALS_DIRECTORY}/${rest}`) ?? ''
+    text = text.split(`<${name} />`).join(partial)
+  }
+  return text
+}
+
+/** The text under a `## ` heading, up to the next one; a heading inside a code fence does not count. */
+export const sectionOf = (body: string, heading: string): string => {
+  const lines = body.split('\n')
+  let fenced = false
+  let start = -1
+  for (const [index, line] of lines.entries()) {
+    if (line.startsWith('```')) fenced = !fenced
+    if (fenced || !line.startsWith('## ')) continue
+    if (start !== -1) return lines.slice(start, index).join('\n')
+    if (line.slice(3).trim() === heading) start = index + 1
+  }
+  return start === -1 ? '' : lines.slice(start).join('\n')
+}
+
+/** The kind of each Mermaid diagram in a text: `sequenceDiagram`, `flowchart`, `stateDiagram-v2`. */
+export const diagramKinds = (text: string): ReadonlyArray<string> => [...text.matchAll(/^```mermaid\n\s*(\S+)/gm)].flatMap((match) => match.slice(1, 2))
+
+/** The `### Try it` part of a lesson's idea, up to the next `###` or `##` heading. */
+const tryItOf = (idea: string): string | undefined => {
+  const start = idea.search(/^### Try it$/m)
+  if (start === -1) return undefined
+  const rest = idea.slice(start).split('\n').slice(1).join('\n')
+  const next = rest.search(/^#{2,3} /m)
+  return next === -1 ? rest : rest.slice(0, next)
+}
+
+/**
+ * D216: a lesson's idea has a diagram and a widget. The widget sits under
+ * `### Try it`, and its model, named in `widget:`, has an integration test
+ * beside it that plays it on the real code. There is no way to owe them.
+ */
+const visualProblems = (guide: Guide, repository: GuidesRepository): string[] =>
+  [...guide.pages]
+    .filter(([name]) => LESSON_FILE.test(name))
+    .flatMap(([name, page]) => {
+      const path = `${guide.directory}/${name}`
+      const problems: string[] = []
+      const idea = sectionOf(withPartials(page.body, repository.read), 'The idea')
+      if (diagramKinds(idea).length === 0) problems.push(`${path}: no diagram in The idea; add a mermaid block there (D216)`)
+      const widget = page.data['widget']
+      if (widget === undefined) {
+        problems.push(`${path}: no widget; add a ### Try it section with one under The idea and name its model in widget: (D216)`)
+        return problems
+      }
+      if (typeof widget !== 'string' || !WIDGET_MODEL.test(widget)) {
+        problems.push(`${path}: widget is ${String(widget)}, not a model module under apps/docs/src/lib (D216)`)
+        return problems
+      }
+      if (!repository.paths.includes(widget)) problems.push(`${path}: widget ${widget} does not exist`)
+      const test = widget.replace(/\.ts$/, '.integration.test.ts')
+      if (!repository.paths.includes(test)) problems.push(`${path}: widget ${widget} has no ${test} that plays it on the real code (D216)`)
+      const tryIt = tryItOf(idea)
+      if (tryIt === undefined) problems.push(`${path}: names a widget, but The idea has no ### Try it section`)
+      else if (!/<[A-Z][A-Za-z]*[\s/>]/.test(tryIt)) problems.push(`${path}: its ### Try it section has no widget component`)
+      return problems
+    })
+
+/** D216: a guide's concepts page shows at least one sequence diagram. */
+const conceptsProblems = (guide: Guide, repository: GuidesRepository): string[] => {
+  const concepts = guide.pages.get('concepts.mdx')
+  if (concepts === undefined || diagramKinds(withPartials(concepts.body, repository.read)).includes('sequenceDiagram')) return []
+  return [`${guide.directory}/concepts.mdx: no sequence diagram; show where the pattern's sync nodes and calls meet (D216)`]
+}
+
 /** D66: `NN.MM-name/{problem,solution}/` and one `exercise.test.ts`, numbered without gaps, one section per lesson. */
 const exerciseProblems = (guide: Guide, repository: GuidesRepository): string[] => {
   const track = guide.index?.data['exercises']
@@ -390,6 +475,8 @@ export const guideProblems = (repository: GuidesRepository): ReadonlyArray<strin
     problems.push(...templateProblems(guide, template))
     problems.push(...indexProblems(guide, repository, adrs))
     problems.push(...lessonProblems(guide, repository))
+    problems.push(...visualProblems(guide, repository))
+    problems.push(...conceptsProblems(guide, repository))
     problems.push(...exerciseProblems(guide, repository))
     for (const id of strings(guide.index?.data['adrs']) ?? []) namedBy.set(id, [...(namedBy.get(id) ?? []), guide.pattern])
   }

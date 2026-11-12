@@ -70,6 +70,14 @@ describe("a learner's verdict", () => {
     )
   })
 
+  it('prints what the test saw, before the verdict says what is missing or done (D222)', () => {
+    const notes = ['first send:  inserted 3, duplicates 0', 'second send: inserted 3, duplicates 0']
+    const failing = formatVerdict(verdictFor(root, 'exercises/x/01.01-append-and-stream', { message: 'a retry must not add facts' }, notes))
+    expect(failing).toContain(['', '  What the test saw', `    ${notes[0]}`, `    ${notes[1]}`, '', '  a retry must not add facts'].join('\n'))
+    const done = formatVerdict(verdictFor(root, 'exercises/x/01.01-append-and-stream', null, notes))
+    expect(done).toContain(['  What the test saw', `    ${notes[0]}`, `    ${notes[1]}`, '', '  Compare with the reference solution:'].join('\n'))
+  })
+
   it('sends a learner to the next exercise of the same section first, and says when the track ends', () => {
     expect(formatVerdict(verdictFor(root, 'exercises/x/02.01-mint', null))).toContain('  Next   pnpm exercise x 02.02')
     expect(formatVerdict(verdictFor(root, 'exercises/x/02.02-receive', null))).toContain('That was the last exercise of this track.')

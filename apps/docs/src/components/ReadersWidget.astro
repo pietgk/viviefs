@@ -1,0 +1,122 @@
+---
+/**
+ * Lesson 3's widget (D216, D223): a device's log and two readers that each
+ * keep their own place. The state and every step come from
+ * `src/lib/readers.ts`, which a test plays on a real log store and the real
+ * projector; this file only draws it.
+ */
+import '../styles/widget.css'
+---
+
+<div class="vv-w not-content" data-readers>
+  <p class="vv-w-ask">
+    Two readers on this device read its log: the read models, which the screens show, and trace export, which sends what
+    happened to motel, a trace viewer. Write to the log and let each reader catch up. Then stop the device between
+    sending and acknowledging, in both orders.
+  </p>
+  <div class="vv-w-controls">
+    <div class="vv-w-group" role="group" aria-label="The device">
+      <span class="vv-w-group-name">The device</span>
+      <button type="button" class="vv-w-btn vv-w-primary" data-act="write">Create the list</button>
+    </div>
+    <div class="vv-w-group" role="group" aria-label="Read models">
+      <span class="vv-w-group-name">Read models</span>
+      <button type="button" class="vv-w-btn" data-act="project">Catch up</button>
+    </div>
+    <div class="vv-w-group" role="group" aria-label="Trace export to motel">
+      <span class="vv-w-group-name">Trace export to motel</span>
+      <button type="button" class="vv-w-btn" data-act="export">Send, then acknowledge</button>
+      <button type="button" class="vv-w-btn" data-act="crashAfterSend">Send, then stop</button>
+      <button type="button" class="vv-w-btn vv-w-mistake" data-act="ackThenCrash">Acknowledge, then stop</button>
+    </div>
+    <button type="button" class="vv-w-btn vv-w-reset" data-act="reset">Start over</button>
+  </div>
+  <section class="vv-w-panel">
+    <h4>The device's log</h4>
+    <table class="vv-w-table">
+      <thead><tr><th>seq</th><th>fact</th><th>read models</th><th>motel</th></tr></thead>
+      <tbody data-log></tbody>
+    </table>
+    <p class="vv-w-meta" data-empty>Empty. Create the list.</p>
+  </section>
+  <div class="vv-w-panels">
+    <section class="vv-w-panel">
+      <h4>Read models</h4>
+      <p class="vv-w-meta">Place, in <code>projection_cursor</code>: <b data-models-place></b></p>
+      <p class="vv-w-meta">The title they show: <b data-models-title></b></p>
+    </section>
+    <section class="vv-w-panel">
+      <h4>Trace export</h4>
+      <p class="vv-w-meta">Place, acknowledged as <code>trace/motel</code>: <b data-export-place></b></p>
+      <p class="vv-w-meta">Motel has: <b data-export-received></b></p>
+    </section>
+  </div>
+  <div class="vv-w-readout" aria-live="polite">
+    <p class="vv-w-readout-head">What just happened</p>
+    <p class="vv-w-readout-text" data-text></p>
+  </div>
+</div>
+
+<script>
+  import { ACTIONS, can, initial, step, type Action, type State } from '../lib/readers.ts'
+
+  const isAction = (value: string | undefined): value is Action => ACTIONS.some((action) => action === value)
+  const span = (seqs: ReadonlyArray<number>) => (seqs.length === 1 ? `position ${seqs[0]}` : `positions ${seqs[0]}-${seqs.at(-1)}`)
+
+  const say = (state: State): string => {
+    const last = state.last
+    if (last === null) return 'Nothing yet. Create the list: three facts go into the log, and neither reader has read them.'
+    const read = span(last.read)
+    switch (last.action) {
+      case 'write':
+        return state.commands === 1
+          ? `Created the list: three facts at ${read}. Neither reader has read them yet.`
+          : `Renamed it to "${state.log.at(-2)?.v}": two facts at ${read}. Each reader reads them when it next catches up.`
+      case 'project':
+        return `The read models read ${read}, applied them, then saved their place, ${state.models.place}. They show "${state.models.title}". Trace export's place did not move: each reader has its own.`
+      case 'export': {
+        const again = state.exporter.received.slice(-last.read.length).filter(({ again }) => again).length
+        return `Trace export read ${read} from its place, sent them to motel, then acknowledged ${state.exporter.place}. After a restart it reads on from there.${again > 0 ? ` ${again} of them motel already had: a fact sent again has the same tx, so it can tell.` : ''}`
+      }
+      case 'crashAfterSend':
+        return `Motel got ${read}, then the device stopped before acknowledging. The place is still ${state.exporter.place}, so the next export sends them again. Nothing is lost.`
+      case 'ackThenCrash':
+        return `The mistake: trace export acknowledged ${state.exporter.place}, then the device stopped before sending. Its place is past ${read}, so motel never gets them, and nothing tells. The log still has them.`
+    }
+  }
+
+  const mount = (root: HTMLElement) => {
+    let state: State = initial
+    const draw = () => {
+      for (const button of root.querySelectorAll<HTMLButtonElement>('[data-act]')) {
+        const action = button.dataset['act']
+        if (isAction(action)) button.disabled = !can(state, action)
+      }
+      root.querySelector('[data-act="write"]')!.textContent = state.commands === 0 ? 'Create the list' : 'Rename it'
+      root.querySelector('[data-log]')!.innerHTML = state.log
+        .map(({ seq, kind, v }) => {
+          const deliveries = state.exporter.received.filter((delivery) => delivery.seq === seq).length
+          const motel = state.lost.includes(seq) ? '<span class="vv-w-lost">never</span>' : deliveries === 0 ? '' : deliveries === 1 ? 'has it' : `has it, sent ${deliveries}x`
+          const fresh = state.last?.read.includes(seq) ? ' class="vv-w-fresh"' : ''
+          return `<tr${fresh} data-seq="${seq}"><td>${seq}</td><td><code>${kind}</code> ${v}</td><td>${seq <= state.models.place ? 'read' : ''}</td><td>${motel}</td></tr>`
+        })
+        .join('')
+      root.querySelector<HTMLElement>('[data-empty]')!.hidden = state.log.length > 0
+      root.querySelector('[data-models-place]')!.textContent = String(state.models.place)
+      root.querySelector('[data-models-title]')!.textContent = state.models.title ?? 'none yet'
+      root.querySelector('[data-export-place]')!.textContent = String(state.exporter.place)
+      const has = new Set(state.exporter.received.map(({ seq }) => seq)).size
+      root.querySelector('[data-export-received]')!.textContent = `${has} of ${state.log.length} facts${state.lost.length > 0 ? `, ${state.lost.length} never` : ''}`
+      root.querySelector('[data-text]')!.textContent = say(state)
+    }
+    root.addEventListener('click', (event) => {
+      const action = (event.target as Element).closest<HTMLButtonElement>('[data-act]')?.dataset['act']
+      if (!isAction(action)) return
+      state = step(state, action)
+      draw()
+    })
+    draw()
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-readers]')) mount(root)
+</script>

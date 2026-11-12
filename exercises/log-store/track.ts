@@ -10,6 +10,7 @@ import { withTempDirectory } from '@viviefs/testing/node'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
+// #region store
 /** Runs `body` against a fresh log store, removed afterwards. */
 export const onLogStore = <A, E>(body: Effect.Effect<A, E, LogStore>): Effect.Effect<A, unknown> =>
   Effect.scoped(
@@ -19,6 +20,7 @@ export const onLogStore = <A, E>(body: Effect.Effect<A, E, LogStore>): Effect.Ef
       return yield* body.pipe(Effect.provide(store.pipe(Layer.provide(liveClock))))
     }),
   )
+// #endregion store
 
 /** The envelope of a self-committed datom (`cs == tx`): a changeset of one. */
 export const envelopeOf = (cs: string): EnvelopeType => ({

@@ -1,0 +1,21 @@
+{/* One home (D221): the concepts page and the lessons embed this section; edit it here only. */}
+
+import Sample from '../../components/Sample.astro'
+
+A log store implementation is a `SqlClient` Layer plus the shared `LogStore`
+Layer, its device id and its source of randomness. The SQL is the same on
+every store; only the migration has a SQLite and a Postgres dialect. An
+implementation is qualified by running `log-store/conformance` against it,
+which is what [P04 Log store conformance][P04] did on five stores. A store that
+type-checks can still be wrong: a database that forgets on a restart, such as
+SQLite or PGlite in memory, passes every check but `hlc reboot`.
+
+<Sample path="libs/store-sqlite-node/src/layer.ts" region="log-store" />
+
+The whole contract is one Effect service:
+
+<Sample path="libs/datom/src/log-store.ts" region="service" />
+
+{/* References: written by pnpm refs fix; do not edit by hand. */}
+
+[P04]: ../../../../../docs/plan/bootstrap/06-qualification-gates.md#p04

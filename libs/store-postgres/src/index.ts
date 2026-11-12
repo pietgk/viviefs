@@ -3,4 +3,4 @@
  *
  * Guide: apps/docs/src/content/docs/guides/log-store/index.mdx
  */
-export { pgliteLayer, pgliteLogStore } from './layer.ts'
+export { pgliteClientLayer, pgliteLayer, pgliteLogStore } from './layer.ts'

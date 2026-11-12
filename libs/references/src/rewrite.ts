@@ -34,6 +34,8 @@ export const inReferenceScope = (path: string): boolean => {
   if (/^docs\/plan\/.+\.md$/.test(path)) return true
   if (/^apps\/docs\/src\/content\/docs\/guides\/.+\.mdx$/.test(path)) return true
   if (/^apps\/docs\/src\/guide-template\/.+\.mdx$/.test(path)) return true
+  // A concept section's one home, embedded by guide pages and lessons (D221).
+  if (/^apps\/docs\/src\/partials\/.+\.mdx$/.test(path)) return true
   if (/^\.agents\/skills\/scaffold-exercises\/.+\.md$/.test(path)) return true
   return false
 }

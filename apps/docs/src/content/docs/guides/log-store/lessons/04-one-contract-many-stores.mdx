@@ -7,17 +7,23 @@ evidence:
 source:
   title: Effect, Managing Layers
   href: https://effect.website/docs/requirements-management/layers/
+widget: apps/docs/src/lib/store-layers.ts
 ---
 
+import Exercise from '../../../../../components/Exercise.astro'
 import ReadNext from '../../../../../components/ReadNext.astro'
 import Sample from '../../../../../components/Sample.astro'
+import StoreWidget from '../../../../../components/StoreWidget.astro'
+import Term from '../../../../../components/Term.astro'
+import Terms from '../../../../../components/Terms.astro'
+import StoreImplementation from '../../../../../partials/log-store/store.mdx'
 
 ## Recall first
 
 <details>
-<summary>What does compact() remove, and what does it leave?</summary>
+<summary>A reader acknowledged position 12. What does it read after a restart?</summary>
 
-Datoms at or below the lowest acknowledged cursor; everything above stays.
+The facts after 12, in log order: `acknowledged` gives 12 back, and `streamFrom(12)` reads on.
 </details>
 
 <details>
@@ -28,25 +34,51 @@ It is the fact's identity, so a resend must carry the same `tx`.
 
 ## The idea
 
-**The contract is one Effect service.** Everything the earlier lessons used,
-mint, receive, append, stream, acknowledge, compact, is `LogStore`:
+**One log store, written once, runs on every database the stack uses; a store
+is a database put under it, and it is done when the suite says so.**
 
-<Sample path="libs/datom/src/log-store.ts" region="service" />
+The earlier lessons used one contract: mint, receive, append, stream,
+acknowledge. It is written once, against Effect's `SqlClient`; a store
+gives it a database and two small pieces, and whoever runs it gives the clock:
 
-**One implementation of it, many databases.** `logStoreLayer` is written once
-against Effect's `SqlClient`. A store is that Layer with a `SqlClient` Layer
-for its database, the replica's device id and its source of randomness:
+```mermaid
+flowchart LR
+  SQL["a database: SqlClient"] --> LS["logStoreLayer"]
+  ENT["randomness: HlcEntropy"] --> LS
+  DEV["the device id: HlcDevice"] --> LS
+  CLK["a clock: HlcClock, from the app or the suite"] --> LS
+  LS --> STORE["LogStore"]
+  STORE --> SUITE["log-store/conformance: twelve checks"]
+```
 
-<Sample path="libs/store-sqlite-node/src/layer.ts" region="log-store" />
+### Try it
 
-On iOS and Android the `SqlClient` is op-sqlite, on the web sqlite-wasm with
-OPFS, on the server Postgres. Swapping a store is one Layer line in an app.
+<StoreWidget />
 
-**A store is done when the suite says so.** `log-store/conformance` is the
-contract in executable form: twelve checks, written once, run against every
-store. A store that type-checks can still be wrong; the suite is what catches
-it. An in-memory database, for example, passes most checks and fails
-`hlc reboot`, because nothing survives the restart the check simulates.
+What is simplified: Node can host four of the six databases, so the widget
+runs those here and shows the gate's result for op-sqlite and sqlite-wasm. A
+test runs the real suite on each of the four and checks it fails exactly what
+the widget says (`apps/docs/src/lib/store-layers.integration.test.ts`).
+
+### What you saw
+
+1. **A missing piece is a compile error.** The `R` slot names what is still
+   needed ([idea 7](/guides/before-you-start/#7-layers)).
+2. **Changing the database is one line;** the rest of the store is the same.
+3. **Passing the compiler is not passing the suite.** In memory, every check
+   passed but `hlc reboot`: a restart forgot the saved clock.
+
+### The words
+
+<Terms>
+  <Term term="Contract" label="Here" formula="«contract» = the LogStore service and its types" />
+  <Term term="Layer" label="Here" formula={"logStoreLayer: needs SqlClient, HlcEntropy, HlcDevice, HlcClock\na store = logStoreLayer with a database and two pieces"} />
+  <Term term="Suite" label="Here" formula="log-store/conformance: (a store) => twelve checks, each PASS or FAIL" later={['positive control', 'gate']} />
+</Terms>
+
+### The rule
+
+<StoreImplementation />
 
 ## What the gate showed
 
@@ -57,21 +89,10 @@ rest of the stack treat them as one.
 
 ## Your turn
 
-Exercise 04.01: `logStoreIn` builds a log store from its parts, and the
-suite runs against it. Read which checks fail, and make the store pass all
-twelve.
+Exercise 04.01: `logStoreIn` builds a log store from its parts, and the suite
+runs against it. One check fails.
 
-1. Run it. The first run is red on purpose: `problem/` runs, but does not
-   yet do what this lesson teaches, and the verdict says what is missing.
-
-   ```sh
-   pnpm exercise log-store 04.01
-   ```
-
-2. Edit `exercises/log-store/04.01-a-store-layer/problem/store.ts`, and run it again until the verdict says done.
-3. Compare your code with `exercises/log-store/04.01-a-store-layer/solution/store.ts`, then answer the questions below.
-
-It passes when `log-store/conformance` reports every check as passed.
+<Exercise pattern="log-store" id="04.01" />
 
 ## Check yourself
 

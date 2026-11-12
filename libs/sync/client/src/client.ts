@@ -406,6 +406,7 @@ const makeClient = Effect.gen(function* () {
     if (yield* isRevoked(changeset.org)) {
       return yield* new MembershipMissing({ org: changeset.org })
     }
+    // #region write
     const self =
       changeset.datoms.length === 1 &&
       changeset.datoms[0]?.cs === changeset.datoms[0]?.tx
@@ -420,6 +421,7 @@ const makeClient = Effect.gen(function* () {
         yield* projector.project()
       }
     }
+    // #endregion write
     const payload = Schema.encodeSync(PayloadJson)({
       basis: changeset.basis,
       envelope: changeset.envelope,
@@ -443,6 +445,7 @@ const makeClient = Effect.gen(function* () {
     )
   })
 
+  // #region pull
   const pull = Effect.fn('SyncClient.pull')(function* (org: string) {
     yield* noteDevice
     const cursor = yield* readSyncCursor(org)
@@ -479,6 +482,7 @@ const makeClient = Effect.gen(function* () {
     yield* projector.project()
     return page.cursor
   })
+  // #endregion pull
 
   const push = Effect.fn('SyncClient.push')(function* (org: string) {
     yield* noteDevice

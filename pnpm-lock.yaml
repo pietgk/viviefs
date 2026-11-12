@@ -272,12 +272,39 @@ importers:
         specifier: 0.12.0
         version: 0.12.0(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@astrojs/markdown-satteri@0.4.2)(@astrojs/starlight@0.42.4(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(astro@7.3.5(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))(supports-color@10.2.2))(astro@7.3.5(@astrojs/markdown-remark@7.3.1(supports-color@10.2.2))(@types/node@22.20.4)(terser@5.51.2)(yaml@2.9.0))(supports-color@10.2.2)
     devDependencies:
+      '@effect/platform-node':
+        specifier: 4.0.5
+        version: 4.0.5(effect@4.0.5)(redis@6.2.1)
       '@effect/vitest':
         specifier: 4.0.5
         version: 4.0.5(effect@4.0.5)(vitest@5.0.1)
       '@types/mdast':
         specifier: 4.0.4
         version: 4.0.4
+      '@viviefs/blobs':
+        specifier: workspace:*
+        version: link:../../libs/blobs
+      '@viviefs/datom':
+        specifier: workspace:*
+        version: link:../../libs/datom
+      '@viviefs/evidence-model':
+        specifier: workspace:*
+        version: link:../../features/evidence/model
+      '@viviefs/identity':
+        specifier: workspace:*
+        version: link:../../libs/identity
+      '@viviefs/store-postgres':
+        specifier: workspace:*
+        version: link:../../libs/store-postgres
+      '@viviefs/store-sqlite-node':
+        specifier: workspace:*
+        version: link:../../libs/store-sqlite-node
+      '@viviefs/sync-client':
+        specifier: workspace:*
+        version: link:../../libs/sync/client
+      '@viviefs/sync-server':
+        specifier: workspace:*
+        version: link:../../libs/sync/server
       '@viviefs/testing':
         specifier: workspace:*
         version: link:../../libs/testing
@@ -531,6 +558,13 @@ importers:
       effect:
         specifier: 4.0.5
         version: 4.0.5
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.5
+        version: 4.0.5(effect@4.0.5)(vitest@5.0.1)
+      '@viviefs/testing':
+        specifier: workspace:*
+        version: link:../../../libs/testing
 
   features/evidence/server: {}
 

@@ -19,12 +19,16 @@ import GuideStatus from '../../../../components/GuideStatus.astro'
 ## What it is
 
 Every fact in ViViEfs, from a list title to a workflow's journal entry, is a
-datom in one append-only log. The log store is the pattern that keeps that
-log: it appends datoms, mints the transaction id that orders them, streams
-them from a position, and compacts only what every consumer has seen. One
+datom in one append-only log. This pattern keeps that log: it appends datoms, mints the transaction id that orders them, streams
+them from a position, and keeps each reader's place in it. One
 `LogStore` service runs over Effect's `SqlClient`, so the same code and the
 same suite cover SQLite on iOS, Android, the web and Node, and Postgres on the
-server. Why one log: [ADR-0006 One datom log as the substrate][ADR-0006]. Why this clock: [ADR-0007 Hybrid logical clock for tx][ADR-0007]. Why
+server.
+
+Who holds the log, and why the server's copy differs from a device's, is on
+[Concepts](/guides/log-store/concepts/#who-holds-the-log) and in the first lesson.
+
+Why one log: [ADR-0006 One datom log as the substrate][ADR-0006]. Why this clock: [ADR-0007 Hybrid logical clock for tx][ADR-0007]. Why
 one contract with several stores: [ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011].
 
 ## When to use it
@@ -49,6 +53,20 @@ one contract with several stores: [ADR-0011 Log store pattern, read models, comp
 - Telemetry storage: traces are derived from the log; a tracing backend is a
   viewer, never a journal ([ADR-0006 One datom log as the substrate][ADR-0006]).
 
+## What it teaches
+
+Never assumed; each word is shown with its glossary entry where it is first
+used. What every guide assumes is on [Before you start](/guides/before-you-start/).
+
+- **Lesson 1**: a Datom and its six parts, Entity (`e`), Attribute (`a`), the
+  value `v`, `tx`, `op` and the changeset `cs`; the Log store, appending, a
+  duplicate, a Log position; who holds the log: a Device, the Server and its
+  Authority, Sync node, Consumer.
+- **Lesson 2**: the clock that orders facts (HLC), and which of two values counts.
+- **Lesson 3**: each reader keeps its own place in the log, and moves it only
+  after it has delivered (Consumer, Acknowledged cursor).
+- **Lesson 4**: one contract kept by several stores, SQLite and Postgres.
+
 ## Status
 
 <GuideStatus data={frontmatter} />
@@ -59,9 +77,11 @@ one contract with several stores: [ADR-0011 Log store pattern, read models, comp
   The three kinds of tables).
 - **Design**: [Concepts](/guides/log-store/concepts/), then
   [Testing](/guides/log-store/testing/) for what each gate established.
+- **Learn**: [Before you start](/guides/before-you-start/), then the
+  lessons with their exercises, starting at
+  [One fact, stored once](/guides/log-store/lessons/01-a-datom-is-one-fact/).
 - **Implement**: [Concepts](/guides/log-store/concepts/),
-  [How-to](/guides/log-store/how-to/), and the lessons with their exercises,
-  starting at [A datom is one fact](/guides/log-store/lessons/01-a-datom-is-one-fact/).
+  [How-to](/guides/log-store/how-to/), and the lessons.
 - **Review**: [Concepts](/guides/log-store/concepts/), then
   [Review](/guides/log-store/review/).
 

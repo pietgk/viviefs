@@ -470,6 +470,7 @@ const accept = (
         reason: 'empty',
       })
     }
+    // #region resend
     let seen = 0
     for (const datom of datoms) {
       if ((yield* txExists(sql, datom.tx)) === true) seen += 1
@@ -483,6 +484,7 @@ const accept = (
         reason: 'partial',
       })
     }
+    // #endregion resend
 
     for (const datom of datoms) {
       if (datom.cs !== envelope.cs) {

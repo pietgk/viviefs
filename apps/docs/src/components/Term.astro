@@ -1,0 +1,173 @@
+---
+/**
+ * A word card in a lesson (I2, D215): the glossary entry, read whole from
+ * GLOSSARY.md at build time so the lesson never keeps a second copy (D30),
+ * plus the one line the lesson writes for it: the formula it appears in, or
+ * its operations (I30). A term the glossary lacks fails the build.
+ *
+ * `point` names the part of the lesson's widget the word is; the button sends
+ * the widget there (`DatomLog.astro`). `later` lists words the entry uses that
+ * the guide has not taught yet, so the gap stays visible.
+ */
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { markdownToHtml } from 'satteri'
+import { decisionAnchors, glossaryAnchors, GLOSSARY_PAGE, referenceLinks } from '../lib/reference-links.ts'
+import { GLOSSARY, glossaryEntry } from '../lib/references.ts'
+import { findRepositoryRoot, withBase } from '../lib/repo.ts'
+
+interface Props {
+  term: string
+  /** What the line says: "Appears in", "Its operations". */
+  label: string
+  /** The line; «word» marks where the term is. */
+  formula: string
+  point?: string
+  later?: ReadonlyArray<string>
+}
+
+const { term, label, formula, point, later = [] } = Astro.props
+const root = findRepositoryRoot()
+const entry = glossaryEntry(readFileSync(join(root, GLOSSARY), 'utf8'), term)
+
+const render = (markdown: string): string => {
+  const result = markdownToHtml(`${markdown}\n\n${entry.definitions}\n`, {
+    mdastPlugins: [referenceLinks(root)],
+    hastPlugins: [decisionAnchors(), glossaryAnchors()],
+    fileURL: pathToFileURL(join(root, GLOSSARY)),
+  })
+  if (result instanceof Promise) throw new Error('The glossary entry rendered asynchronously.')
+  return result.html
+}
+
+const escape = (text: string) => text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
+const line = escape(formula).replace(/«(.*?)»/g, '<mark>$1</mark>')
+const isCode = /^[a-z]+$/.test(term)
+---
+
+<article class="vv-term not-content" id={`term-${entry.anchor}`}>
+  <h4>
+    <a href={withBase(`${GLOSSARY_PAGE}#${entry.anchor}`)}>{isCode ? <code>{term}</code> : term}</a>
+  </h4>
+  <p class="vv-term-hover">{entry.summary}</p>
+  <div class="vv-term-precise" set:html={entry.paragraphs.map(render).join('')} />
+  <div class="vv-term-line">
+    <span>{label}</span>
+    <pre set:html={line} />
+  </div>
+  {
+    later.length > 0 && (
+      <p class="vv-term-later">
+        Uses words this guide has not taught yet:
+        {later.map((word) => (
+          <span>{word}</span>
+        ))}
+      </p>
+    )
+  }
+  {
+    point && (
+      <p>
+        <button type="button" class="vv-link-button" data-point-at={point}>
+          Show it in the widget
+        </button>
+      </p>
+    )
+  }
+</article>
+
+<style>
+  .vv-term {
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    min-width: 0;
+    font-size: var(--sl-text-sm);
+    scroll-margin-top: calc(var(--sl-nav-height) + 1rem);
+  }
+  .vv-term h4 {
+    margin: 0;
+    font-size: var(--sl-text-lg);
+  }
+  .vv-term h4 a {
+    color: var(--sl-color-white);
+    text-decoration: none;
+  }
+  .vv-term h4 a:hover {
+    text-decoration: underline;
+  }
+  .vv-term-hover {
+    margin: 0;
+    color: var(--sl-color-white);
+  }
+  .vv-term-precise {
+    color: var(--sl-color-gray-2);
+    display: grid;
+    gap: 0.35rem;
+  }
+  .vv-term-precise :global(p) {
+    margin: 0;
+  }
+  .vv-term-line {
+    border: 1px solid var(--sl-color-accent);
+    background: var(--sl-color-accent-low);
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    display: grid;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+  .vv-term-line span {
+    font-size: var(--sl-text-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sl-color-accent-high);
+  }
+  .vv-term-line pre {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    font-family: var(--__sl-font-mono);
+    font-size: var(--sl-text-xs);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--sl-color-white);
+  }
+  .vv-term-line :global(mark) {
+    background: none;
+    color: var(--sl-color-accent-high);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .vv-term-later {
+    margin: 0;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-orange-high);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    align-items: baseline;
+  }
+  .vv-term-later span {
+    border: 1px solid var(--sl-color-orange);
+    background: var(--sl-color-orange-low);
+    border-radius: 99px;
+    padding: 0 0.5rem;
+  }
+  .vv-link-button {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: var(--sl-color-text-accent);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+</style>

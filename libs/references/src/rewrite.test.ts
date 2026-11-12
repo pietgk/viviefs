@@ -251,5 +251,6 @@ describe('pnpm refs fix', () => {
     expect(inReferenceScope('.agents/skills/scaffold-exercises/SKILL.md')).toBe(true)
     expect(inReferenceScope('.agents/skills/tdd/SKILL.md')).toBe(false)
     expect(inReferenceScope('apps/docs/src/guide-template/index.mdx')).toBe(true)
+    expect(inReferenceScope('apps/docs/src/partials/log-store/clock.mdx')).toBe(true)
   })
 })

@@ -43,7 +43,8 @@ const ownedPglite = (dataDir: string | undefined) =>
       }),
   )
 
-const pgliteClientLayer = (dataDir: string | undefined) =>
+/** PGlite's `SqlClient`: on `dataDir` when given, in memory when not, as `sqliteNodeLayer` takes a file. */
+export const pgliteClientLayer = (dataDir?: string) =>
   PgliteClient.layerFrom(
     ownedPglite(dataDir).pipe(
       Effect.flatMap((liveClient) => PgliteClient.make({ liveClient })),

@@ -10,5 +10,19 @@
   ],
   "metadata": {
     "rationale": "Evidence Schema, ids, commands and workflow definitions"
+  },
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production"
+      ],
+      "options": {
+        "command": "pnpm exec vitest run",
+        "cwd": "features/evidence/model"
+      }
+    }
   }
 }

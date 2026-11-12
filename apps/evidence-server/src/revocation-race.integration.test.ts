@@ -26,7 +26,7 @@ import * as RpcServer from 'effect/rpc/RpcServer'
 import * as SqlClient from 'effect/sql/SqlClient'
 import { layerMemory } from '@viviefs/blobs'
 import { Attr, LogStore, evidenceCatalog, liveClock } from '@viviefs/datom'
-import { renameList } from '@viviefs/evidence-model'
+import { createList } from '@viviefs/evidence-model'
 import type { SignInSession } from '@viviefs/identity'
 import { oidcTokenVerifier } from '@viviefs/identity/oidc'
 import { fakeSignInSession } from '@viviefs/identity/suites'
@@ -171,8 +171,8 @@ const appendRacingRevoke: Effect.Effect<Observed, unknown> = Effect.gen(
     )
     const changeset = (title: string) =>
       Effect.gen(function* () {
-        const made = yield* renameList(
-          { title: null },
+        const made = yield* createList(
+          { exists: false },
           { org: ORG, list: 'one', title },
           {
             cs: yield* device.mint(),

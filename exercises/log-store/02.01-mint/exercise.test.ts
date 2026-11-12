@@ -1,6 +1,6 @@
 import { describe, expect } from '@effect/vitest'
 import { compareHlc, encodeHlc, mintHlc } from '@viviefs/datom'
-import { exercise } from '@viviefs/testing/exercise'
+import { exercise, note } from '@viviefs/testing/exercise'
 import * as Effect from 'effect/Effect'
 import * as problem from './problem/mint.ts'
 import * as solution from './solution/mint.ts'
@@ -26,10 +26,15 @@ describe('02.01 mint', () => {
     problem,
     solution,
     check: (impl: typeof solution) =>
-      Effect.sync(() => {
-        expect(impl.mint(NOW, null), 'first mint: (now, 0)').toEqual({ pt: NOW, c: 0 })
+      Effect.gen(function* () {
+        // Times are shown in ms from NOW, so the log reads the same on every run.
+        const at = ({ pt, c }: { pt: number; c: number }) => `(${pt - NOW >= 0 ? '+' : ''}${pt - NOW}, ${c})`
+        const first = impl.mint(NOW, null)
+        yield* note(`first mint at now +0: ${at(first)}`)
+        expect(first, 'first mint: (now, 0)').toEqual({ pt: NOW, c: 0 })
         for (const { name, now, last } of cases) {
           const minted = impl.mint(now, last)
+          yield* note(`${name}: last ${at(last)}, now ${now - NOW >= 0 ? '+' : ''}${now - NOW}, minted ${at(minted)}`)
           expect(compareHlc(minted, last), `${name}: (pt, c) not above the last`).toBe(1)
           expect(minted, `${name}: not the smallest (pt, c) above the last`).toEqual(reference(now, last))
         }

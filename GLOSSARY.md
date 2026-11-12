@@ -238,10 +238,24 @@ An entity type and an entity id, in the sense of Effect Cluster's `EntityType`
 and `EntityId` ([D196 Entity type and entity id][D196]); the subject `e` of datoms; its id may encode its parent for
 strict composition. Most entities only have facts said about them; a workflow
 run also acts.
-_Like_: Effect Cluster's `Entity`, except that ours is anything facts are about,
-and Cluster's is an entity type that acts, with a runtime of its own
-([D137 One meaning of entity][D137]).
+_Not_: Effect Cluster's `Entity`, an entity type that acts, with a runtime of
+its own; ours is anything facts are about ([D137 One meaning of entity][D137]).
 _Avoid_: object, document
+
+**tx**:
+The tag a fact gets once, when it is built, and keeps on every copy of the log.
+A datom's transaction id: its HLC time, 26 Crockford base32 characters, minted
+by the log store before the fact is appended. A log holds each `tx` once, so
+appending a datom whose `tx` it already has adds nothing and counts as a
+duplicate ([ADR-0007 Hybrid logical clock for tx][ADR-0007]).
+_Not_: `Effect.tx`, nor a database transaction.
+
+**op**:
+Whether a fact says that something holds, or that it no longer holds.
+`assert` or `retract`. Both are appended: a retract does not remove the
+earlier datom, it is a later fact about it. Retracting a defining attribute
+deletes its entity.
+_Avoid_: delete (for a retract), tombstone
 
 **Derived id**:
 An id worked out from what identifies a thing, so every copy gets the same id without asking anyone.
@@ -287,6 +301,14 @@ _Like_: an event store in event sourcing, except that each entry is one fact, no
 an event.
 _Not_: the decision log, nor the logs code writes while it runs (`Effect.log`,
 OpenTelemetry's logs).
+
+**Log position**:
+Where a fact sits in one copy of the log; each copy numbers its own.
+The `seq` a log store gives a datom when it appends it. Positions only grow
+and may skip numbers; they are not part of the fact, so two copies hold the
+same fact at different positions. Readers remember a position and stream what
+comes after it; facts are compared by `tx`.
+_Avoid_: index, offset
 
 **Organization**:
 A company or team whose data is kept separate from every other one.
@@ -660,8 +682,19 @@ _Avoid_: cursor (alone, our word until [D193][D193])
 
 **Acknowledged cursor**:
 A bookmark that moves only after the other side confirmed it received everything before it.
-Redelivery is safe because ids are stable; used by sync pull, trace export and
-the compaction horizon.
+Redelivery is safe because ids are stable; used by sync pull and trace export.
+Moving it never removes a fact ([D223 Each reader keeps its own place][D223]).
+
+**Consumer**:
+A reader that keeps its place in a log store, so it reads on from there after a restart.
+It is named, today a trace sink as `trace/<sink>`, reads with
+`streamFrom(place)`, delivers what it read, then records how far it got with
+`acknowledge(consumer, seq)`, an acknowledged cursor ([D223 Each reader keeps its own place][D223]). A device reads
+the server's log the same way, with its sync cursor, and writes to it too; the
+server accepts and keeps, and its log is never compacted
+([ADR-0011 Log store pattern, read models, compaction and analytics][ADR-0011], [D217 Who holds the log comes first][D217]).
+_Like_: a consumer group's offset in a message queue, except that the log
+keeps every fact whatever the offsets say.
 
 **Quarantine**:
 A person's work in a change the server refused, kept on their device until they keep it as new or throw it away.
@@ -849,7 +882,7 @@ telemetry sink.
 A bookmark of how far traces have been sent to one monitoring tool.
 The log position a trace projector has exported and a sink has acknowledged, one
 per sink. It is the log store's acknowledged cursor for the consumer
-`trace/<sink>`, so compaction never removes facts it has not exported.
+`trace/<sink>`.
 
 ## Decisions and evidence
 
@@ -1007,6 +1040,8 @@ A stub, a failing test and a reference solution that passes in verify.
 
 [ADR-0002]: docs/adr/0002-purpose-scope-and-exemplar.md
 [ADR-0003]: docs/adr/0003-effect-v4-as-backbone.md
+[ADR-0007]: docs/adr/0007-hybrid-logical-clock.md
+[ADR-0011]: docs/adr/0011-log-store-pattern.md
 [ADR-0012]: docs/adr/0012-datom-backed-workflow-engine.md
 [ADR-0017]: docs/adr/0017-sync-outbox-and-cursor-stream.md
 [ADR-0032]: docs/adr/0032-what-viviefs-is-about.md
@@ -1078,6 +1113,8 @@ A stub, a failing test and a reference solution that passes in verify.
 [D206]: docs/plan/bootstrap/02-decision-log.md#d206
 [D207]: docs/plan/bootstrap/02-decision-log.md#d207
 [D208]: docs/plan/bootstrap/02-decision-log.md#d208
+[D217]: docs/plan/bootstrap/02-decision-log.md#d217
+[D223]: docs/plan/bootstrap/02-decision-log.md#d223
 [D34']: docs/plan/bootstrap/02-decision-log.md#d34p
 [D52]: docs/plan/bootstrap/02-decision-log.md#d52
 [D55']: docs/plan/bootstrap/02-decision-log.md#d55p

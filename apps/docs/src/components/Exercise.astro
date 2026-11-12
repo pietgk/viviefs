@@ -1,0 +1,57 @@
+---
+/**
+ * A lesson's exercise, to review rather than retype (D222): the problem as
+ * the learner gets it, the change that solves it (problem/ to solution/, a
+ * diff computed at build time), and what `pnpm exercise` prints on each side,
+ * read from `exercises/<pattern>/runs.json`, which verify keeps equal to a
+ * fresh run. A missing exercise, file or run fails the build.
+ */
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { Code } from '@astrojs/starlight/components'
+import { diffText, lineDiff } from '../lib/line-diff.ts'
+import { findRepositoryRoot } from '../lib/repo.ts'
+
+interface Props {
+  /** The track, such as `log-store`. */
+  pattern: string
+  /** `NN.MM`. */
+  id: string
+}
+
+const { pattern, id } = Astro.props
+const root = findRepositoryRoot()
+const track = `exercises/${pattern}`
+const folder = readdirSync(join(root, track)).find((entry) => entry.startsWith(`${id}-`))
+if (folder === undefined) throw new Error(`${track} has no exercise ${id}.`)
+const files = readdirSync(join(root, track, folder, 'problem')).filter((name) => /\.tsx?$/.test(name)).sort()
+const changes = files.map((name) => {
+  const problem = `${track}/${folder}/problem/${name}`
+  const solution = `${track}/${folder}/solution/${name}`
+  if (!existsSync(join(root, solution))) throw new Error(`${solution} is missing.`)
+  const before = readFileSync(join(root, problem), 'utf8')
+  return { name, problem, solution, before, diff: diffText(lineDiff(before, readFileSync(join(root, solution), 'utf8'))) }
+})
+const runs = JSON.parse(readFileSync(join(root, track, 'runs.json'), 'utf8')) as {
+  readonly exercises: Readonly<Record<string, { readonly command: string; readonly problem: string; readonly solution: string }>>
+}
+const run = runs.exercises[id]
+if (run === undefined) throw new Error(`${track}/runs.json has no run of ${id}; run pnpm exercise:record.`)
+---
+
+<div class="vv-exercise">
+  <p class="vv-exercise-step"><b>1. The problem.</b> What <code>problem/</code> holds; its test fails until it does what this lesson teaches.</p>
+  {changes.map(({ problem, before }) => <Code code={before} lang="ts" title={problem} />)}
+  <p class="vv-exercise-step"><b>2. The problem run.</b> What the test saw, and what is still missing.</p>
+  <Code code={run.problem.trimEnd()} lang="txt" frame="terminal" wrap title={run.command} />
+  <p class="vv-exercise-step"><b>3. The change.</b> From <code>problem/</code> to <code>solution/</code>: review it as you would a pull request.</p>
+  {changes.map(({ name, diff }) => <Code code={diff} lang="diff" wrap meta='lang="ts"' title={`${name}: problem/ to solution/`} />)}
+  <p class="vv-exercise-step"><b>4. The solution run.</b> The same test on <code>solution/</code>.</p>
+  <Code code={run.solution.trimEnd()} lang="txt" frame="terminal" wrap title={`VIVIEFS_EXERCISE=solution ${run.command}`} />
+</div>
+
+<style>
+  .vv-exercise-step {
+    margin-top: 1.25rem;
+  }
+</style>

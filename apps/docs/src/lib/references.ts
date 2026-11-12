@@ -335,6 +335,37 @@ export const parseGlossary = (source: string): ReadonlyArray<GlossaryTerm> => {
   return terms
 }
 
+/** One glossary entry as Markdown, for a page that shows it whole, such as a lesson's word card. */
+export type GlossaryEntry = {
+  readonly term: string
+  readonly anchor: string
+  /** The hover line, plain text. */
+  readonly summary: string
+  /** The precise part, then each `_Like_`, `_Not_` and `_Avoid_` line, one paragraph each. */
+  readonly paragraphs: ReadonlyArray<string>
+  /** The glossary's reference definitions, so the paragraphs' reference links resolve. */
+  readonly definitions: string
+}
+
+/** The entry for `term` in the glossary `source`; a term the glossary lacks fails the build. */
+export const glossaryEntry = (source: string, term: string): GlossaryEntry => {
+  const found = parseGlossary(source).find((entry) => entry.term === term)
+  const body = new RegExp(`^\\*\\*${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\*\\*:\\n((?:.+\\n?)*)`, 'm').exec(source)?.[1]
+  if (found === undefined || body === undefined) throw new Error(`${GLOSSARY}: no entry "${term}".`)
+  const [, ...lines] = body.split('\n').filter((line) => line.trim() !== '')
+  const paragraphs: string[] = []
+  for (const line of lines) {
+    const starts = /^_[A-Za-z]+_:/.test(line) || paragraphs.length === 0
+    if (starts) paragraphs.push(line)
+    else paragraphs[paragraphs.length - 1] += `\n${line}`
+  }
+  const definitions = source
+    .split('\n')
+    .filter((line) => /^\[[^\]]+\]: \S/.test(line))
+    .join('\n')
+  return { ...found, paragraphs, definitions }
+}
+
 /** An entry's hover line as plain text, or the rule of D94' it breaks. */
 const hoverLine = (line: string, fail: (problem: string) => never): string => {
   if (line.includes('`')) fail("the hover line has code font; write it in plain words (D94').")

@@ -24,7 +24,7 @@ import {
   orgId,
   type DatomType,
 } from '@viviefs/datom'
-import { renameList, sealItem } from '@viviefs/evidence-model'
+import { createList, renameList, sealItem } from '@viviefs/evidence-model'
 import type { Outgoing } from '@viviefs/sync-client'
 import { makeMutableClock, type MutableClock } from '@viviefs/datom/suites'
 import type { CheckResult } from '@viviefs/testing'
@@ -102,7 +102,7 @@ const session = <A>(
 
 /**
  * p09-check outboxOffline
- * `renameList` sets a list title and returns one changeset. Here the title is `local`. `submit` stores that changeset on A, so A's draft shows it and B's `pull` does not. After A pushes, the server has acked it, and B's next `pull` shows `local`.
+ * `createList` makes a list with a title and returns one changeset. Here the title is `local`. `submit` stores that changeset on A, so A's draft shows it and B's `pull` does not. After A pushes, the server has acked it, and B's next `pull` shows `local`.
  */
 const outboxOffline = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'offline', [
@@ -115,8 +115,8 @@ const outboxOffline = (directory: string, clock: MutableClock) =>
       const b = world.device('b')
       const list = listId(org, 'one')
       const minted = yield* mint(a, 0)
-      const changeset = yield* renameList(
-        { title: null },
+      const changeset = yield* createList(
+        { exists: false },
         { org, list: 'one', title: 'local' },
         minted,
       )
@@ -150,7 +150,7 @@ const outboxOffline = (directory: string, clock: MutableClock) =>
 
 /**
  * p09-check cursorStream
- * `renameList` creates two lists, `one` and `two`. One `pull` returns both. The next `pull` returns nothing new and keeps the same sync cursor.
+ * `createList` creates two lists, `one` and `two`. One `pull` returns both. The next `pull` returns nothing new and keeps the same sync cursor.
  */
 const cursorStream = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'stream', [
@@ -165,16 +165,16 @@ const cursorStream = (directory: string, clock: MutableClock) =>
       const second = listId(org, 'two')
       const mint1 = yield* mint(a, 0)
       yield* a.client.submit(
-        yield* renameList(
-          { title: null },
+        yield* createList(
+          { exists: false },
           { org, list: 'one', title: 'one' },
           mint1,
         ),
       )
       const mint2 = yield* mint(a, 0)
       yield* a.client.submit(
-        yield* renameList(
-          { title: null },
+        yield* createList(
+          { exists: false },
           { org, list: 'two', title: 'two' },
           mint2,
         ),
@@ -195,7 +195,7 @@ const cursorStream = (directory: string, clock: MutableClock) =>
 
 /**
  * p09-check fullOrganization
- * A `renameList`s a list in organization `acme`. B `renameList`s a list in organization `other`. A's `pull` of `acme` shows `acme` and does not show `other`.
+ * A creates a list in organization `acme`. B creates a list in organization `other`. A's `pull` of `acme` shows `acme` and does not show `other`.
  */
 const fullOrganization = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'orgs', [
@@ -210,15 +210,15 @@ const fullOrganization = (directory: string, clock: MutableClock) =>
       const acmeList = listId(acme, 'one')
       const otherList = listId(other, 'one')
       yield* a.client.submit(
-        yield* renameList(
-          { title: null },
+        yield* createList(
+          { exists: false },
           { org: acme, list: 'one', title: 'acme' },
           yield* mint(a, 0),
         ),
       )
       yield* b.client.submit(
-        yield* renameList(
-          { title: null },
+        yield* createList(
+          { exists: false },
           { org: other, list: 'one', title: 'other' },
           yield* mint(b, 0),
         ),
@@ -249,7 +249,7 @@ const fullOrganization = (directory: string, clock: MutableClock) =>
 
 /**
  * p09-check duplicateAppend
- * `renameList` sets the list title to `once` and returns one changeset. `submit` stores it on A. `push` sends it to the server, which acks it. `append` sends that same changeset again, with the same `tx`. The server acks and does not write a second title. B's `pull` shows the title once.
+ * `createList` makes a list titled `once` and returns one changeset. `submit` stores it on A. `push` sends it to the server, which acks it. `append` sends that same changeset again, with the same `tx`. The server acks and does not write a second title. B's `pull` shows the title once.
  */
 const duplicateAppend = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'dedup', [
@@ -261,8 +261,8 @@ const duplicateAppend = (directory: string, clock: MutableClock) =>
       const a = world.device('a')
       const b = world.device('b')
       const list = listId(org, 'one')
-      const changeset = yield* renameList(
-        { title: null },
+      const changeset = yield* createList(
+        { exists: false },
         { org, list: 'one', title: 'once' },
         yield* mint(a, 0),
       )
@@ -287,7 +287,7 @@ const duplicateAppend = (directory: string, clock: MutableClock) =>
 
 /**
  * p09-check typedRejection
- * B `renameList`s the list to `box` and `sealItem` sets the item seal to `gold`. Both pushes ack. A then submits a `sealItem` of `silver` and a `renameList` to `kept`. One `push` rejects `silver` because the seal is write-once, rebuilds, and acks `kept`. The committed seal stays `gold`.
+ * B creates the list as `box` and `sealItem` sets the item seal to `gold`. Both pushes ack. A then submits a `sealItem` of `silver` and a `renameList` to `kept`. One `push` rejects `silver` because the seal is write-once, rebuilds, and acks `kept`. The committed seal stays `gold`.
  */
 const typedRejection = (directory: string, clock: MutableClock) =>
   session(directory, clock, 'reject', [
@@ -301,8 +301,8 @@ const typedRejection = (directory: string, clock: MutableClock) =>
       const item = itemId(org, 'list', 'item')
       const list = listId(org, 'list')
       yield* b.client.submit(
-        yield* renameList(
-          { title: null },
+        yield* createList(
+          { exists: false },
           { org, list: 'list', title: 'box' },
           yield* mint(b, 0),
         ),
@@ -321,7 +321,7 @@ const typedRejection = (directory: string, clock: MutableClock) =>
         yield* mint(a, 0),
       )
       const kept = yield* renameList(
-        { title: null },
+        { exists: true, title: 'box' },
         { org, list: 'list', title: 'kept' },
         yield* mint(a, 0),
       )

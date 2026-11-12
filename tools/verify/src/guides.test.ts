@@ -2,7 +2,7 @@
 // a template and one guide that follows it; every rule has a case that breaks
 // it and must be reported, next to the guide that passes.
 import { describe, expect, it } from '@effect/vitest'
-import { GATE_TABLE, GATE_TABLE_DOC, guideProblems, headingsMatch, observedOf, type GuidesRepository } from './guides.ts'
+import { diagramKinds, GATE_TABLE, GATE_TABLE_DOC, guideProblems, headingsMatch, observedOf, sectionOf, withPartials, type GuidesRepository } from './guides.ts'
 
 const T = 'apps/docs/src/guide-template'
 const G = 'apps/docs/src/content/docs/guides/log-store'
@@ -12,12 +12,15 @@ const fixture: Record<string, string> = {
     '---\nslug: reference/guide-template\ntitle: Guide template\npattern: x\nadrs: []\ngates: []\nexemplar: []\nexercises: exercises/x\nstatus: draft\n---\n\n## What it is\n\n## Status\n',
   [`${T}/concepts.mdx`]: '---\nslug: s\ntitle: Concepts\n---\n\n## [One heading per concept]\n',
   [`${T}/lessons/01-lesson.mdx`]:
-    '---\nslug: s\ntitle: A lesson\nlesson: 1\nevidence: []\nsource:\n  title: t\n  href: https://example.com\n---\n\n## Recall first\n\n## Your turn\n',
+    '---\nslug: s\ntitle: A lesson\nlesson: 1\nevidence: []\nsource:\n  title: t\n  href: https://example.com\nwidget: apps/docs/src/lib/the-model.ts\n---\n\n## Recall first\n\n## The idea\n\n## Your turn\n',
   [`${G}/index.mdx`]:
     "---\ntitle: Log store\npattern: log-store\nadrs: ['0011']\ngates: [P04, P05]\nexemplar: [libs/datom]\nexercises: exercises/log-store\nstatus: draft\n---\n\n## What it is\n\nProven by P04.\n\n## Status\n",
-  [`${G}/concepts.mdx`]: '---\ntitle: Concepts\n---\n\n## Datom\n\n## HLC\n\n```ts\n## not a heading\n```\n',
+  [`${G}/concepts.mdx`]:
+    '---\ntitle: Concepts\n---\n\n## Datom\n\n## HLC\n\n```ts\n## not a heading\n```\n\n```mermaid\nsequenceDiagram\n  A->>S: push\n```\n',
   [`${G}/lessons/01-fact.mdx`]:
-    '---\ntitle: A fact\nlesson: 1\nevidence: [docs/evidence/2026-09-20-p04.md]\nsource:\n  title: t\n  href: https://example.com\n---\n\n## Recall first\n\n## Your turn\n',
+    '---\ntitle: A fact\nlesson: 1\nevidence: [docs/evidence/2026-09-20-p04.md]\nsource:\n  title: t\n  href: https://example.com\nwidget: apps/docs/src/lib/log.ts\n---\n\n## Recall first\n\n## The idea\n\n```mermaid\nflowchart LR\n  a --> b\n```\n\n### Try it\n\n<Log />\n\n### The words\n\n## Your turn\n',
+  'apps/docs/src/lib/log.ts': '',
+  'apps/docs/src/lib/log.integration.test.ts': '',
   'docs/adr/0011-store.md':
     '# ADR-0011: Log store pattern\n\nStatus: Qualified\n\nQualifying gate: P04, P05\n\n## Outcome\n\n### Observed\n\nP04 passed.\n',
   'docs/adr/0001-record.md': '# ADR-0001: Record\n\nStatus: Proposed, unverified\n\nQualifying gate: none (process)\n',
@@ -149,6 +152,42 @@ describe('the guides check', () => {
       problemsWith(edit(`${G}/lessons/01-fact.mdx`, 'evidence: [docs/evidence/2026-09-20-p04.md]', 'evidence: [docs/evidence/none.md]')),
     ).toMatch(/evidence docs\/evidence\/none\.md is not a note/)
     expect(problemsWith(edit(`${G}/lessons/01-fact.mdx`, 'lesson: 1', 'lesson: 2'))).toMatch(/lesson is 2, its file says 1/)
+  })
+
+  it('reads a section and the diagrams in it', () => {
+    const body = '## A\n\n```mermaid\nsequenceDiagram\n## not a heading\n```\n\n## B\n\n```mermaid\n  flowchart LR\n```\n'
+    expect(diagramKinds(sectionOf(body, 'A'))).toEqual(['sequenceDiagram'])
+    expect(diagramKinds(sectionOf(body, 'B'))).toEqual(['flowchart'])
+    expect(sectionOf(body, 'C')).toBe('')
+  })
+
+  it('makes every lesson show its idea, with no way to owe it (D216)', () => {
+    const lesson = `${G}/lessons/01-fact.mdx`
+    expect(problemsWith(edit(lesson, '```mermaid\nflowchart LR\n  a --> b\n```\n', ''))).toMatch(/no diagram in The idea/)
+    expect(problemsWith(edit(lesson, 'widget: apps/docs/src/lib/log.ts\n', ''))).toMatch(/no widget; add a ### Try it section/)
+    expect(problemsWith(edit(lesson, 'widget: apps/docs/src/lib/log.ts\n', 'owes: [diagram, widget]\n'))).toMatch(/no widget/)
+    expect(problemsWith({ 'apps/docs/src/lib/log.integration.test.ts': undefined })).toMatch(/has no apps\/docs\/src\/lib\/log\.integration\.test\.ts/)
+    expect(problemsWith({ 'apps/docs/src/lib/log.ts': undefined })).toMatch(/widget apps\/docs\/src\/lib\/log\.ts does not exist/)
+    expect(problemsWith(edit(lesson, 'widget: apps/docs/src/lib/log.ts', 'widget: src/log.ts'))).toMatch(/not a model module/)
+    expect(problemsWith(edit(lesson, '<Log />', 'Some text.'))).toMatch(/Try it section has no widget component/)
+    expect(problemsWith(edit(lesson, '### Try it', '### Play'))).toMatch(/no ### Try it section/)
+    expect(problemsWith(edit(lesson, '### The words\n\n', ''))).toBe('')
+  })
+
+  it('sees a diagram in an embedded partial, where the reader sees it (D216, D221)', () => {
+    const lesson = `${G}/lessons/01-fact.mdx`
+    const moved = {
+      ...edit(lesson, '## The idea\n\n```mermaid\nflowchart LR\n  a --> b\n```\n', "import Rule from '../../../../../partials/log-store/rule.mdx'\n\n## The idea\n\n<Rule />\n"),
+      'apps/docs/src/partials/log-store/rule.mdx': '```mermaid\nflowchart LR\n  a --> b\n```\n',
+    }
+    expect(problemsWith(moved)).toBe('')
+    expect(problemsWith({ ...moved, 'apps/docs/src/partials/log-store/rule.mdx': 'No diagram.\n' })).toMatch(/no diagram in The idea/)
+    expect(withPartials('<Missing />', () => undefined)).toBe('<Missing />')
+    expect(withPartials("import Gone from '../../partials/x/gone.mdx'\n<Gone />", () => undefined)).toBe("import Gone from '../../partials/x/gone.mdx'\n")
+  })
+
+  it('makes the concepts page show a sequence diagram (D216)', () => {
+    expect(problemsWith(edit(`${G}/concepts.mdx`, 'sequenceDiagram', 'flowchart LR'))).toMatch(/concepts\.mdx: no sequence diagram/)
   })
 
   it('checks the exercise layout and its pairing with lessons (D66, D81)', () => {

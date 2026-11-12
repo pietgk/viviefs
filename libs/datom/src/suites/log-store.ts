@@ -10,6 +10,7 @@ import {
   encodeHlc,
   fingerprintDevice,
   type EnvelopeType,
+  type StoredDatom,
 } from '../index.ts'
 import type { CheckResult } from '@viviefs/testing'
 import type * as SqlClient from 'effect/sql/SqlClient'
@@ -25,7 +26,7 @@ export const P04_CHECK_NAMES = [
   'hlc future skew',
   'cursor streaming',
   'prefix scans',
-  'compaction horizon',
+  'acknowledged cursor',
   'volume',
 ] as const
 
@@ -413,53 +414,35 @@ export const runLogStoreChecks = (
 
     checks.push(
       yield* runCheck(
-        'compaction horizon',
+        'acknowledged cursor',
         use(
           Effect.gen(function* () {
             const store = yield* LogStore
-            const txs = [
-              yield* store.mint(),
-              yield* store.mint(),
-              yield* store.mint(),
-              yield* store.mint(),
-              yield* store.mint(),
-            ]
+            const reader = 'trace/probe'
+            const txs = [yield* store.mint(), yield* store.mint(), yield* store.mint(), yield* store.mint()]
             for (const [index, tx] of txs.entries()) {
-              yield* store.append(
-                [selfCommitted(`Oprobe/Lcmp/${index}`, `h${index}`, tx)],
-                envelopeFor(tx),
-              )
+              yield* store.append([selfCommitted(`Oprobe/Lack/${index}`, `a${index}`, tx)], envelopeFor(tx))
             }
-            const all = (yield* store.streamFrom(0)).filter((row) =>
-              row.e.startsWith('Oprobe/Lcmp/'),
-            )
-            const third = all[2]
-            if (!third) throw new Error('missing compaction rows')
-            if ((yield* store.acknowledged('device-a')) !== null) {
-              throw new Error('device-a acknowledged before it acknowledged')
+            const ours = (rows: ReadonlyArray<StoredDatom>) => rows.filter((row) => row.e.startsWith('Oprobe/Lack/'))
+            const all = ours(yield* store.streamFrom(0))
+            const second = all[1]
+            if (!second) throw new Error('missing acknowledged cursor rows')
+            if ((yield* store.acknowledged(reader)) !== null) {
+              throw new Error(`${reader} has a place before it acknowledged`)
             }
-            yield* store.acknowledge('device-a', third.seq)
-            if ((yield* store.acknowledged('device-a')) !== third.seq) {
-              throw new Error('acknowledged cursor did not round-trip')
+            yield* store.acknowledge(reader, second.seq)
+            const place = yield* store.acknowledged(reader)
+            if (place !== second.seq) throw new Error(`acknowledged ${place}, expected ${second.seq}`)
+            const after = ours(yield* store.streamFrom(place))
+            if (after.map((row) => row.tx).join() !== all.slice(2).map((row) => row.tx).join()) {
+              throw new Error(`read on from its place: ${JSON.stringify(after)}`)
             }
-            const compacted = yield* store.compact()
-            if (
-              compacted.horizon !== third.seq ||
-              compacted.removed < 1 ||
-              compacted.heldBy !== 'device-a'
-            ) {
-              throw new Error(`compact ${JSON.stringify(compacted)}`)
-            }
-            const remaining = (yield* store.streamFrom(0)).filter((row) =>
-              row.e.startsWith('Oprobe/Lcmp/'),
-            )
-            if (remaining.some((row) => row.seq <= third.seq)) {
-              throw new Error(`horizon leaked ${JSON.stringify(remaining)}`)
-            }
-            if (remaining.length !== all.length - all.filter((row) => row.seq <= third.seq).length) {
-              throw new Error(`remaining ${remaining.length}`)
-            }
-            return compacted
+            const last = all.at(-1)?.seq ?? 0
+            yield* store.acknowledge(reader, last)
+            if ((yield* store.acknowledged(reader)) !== last) throw new Error('acknowledged cursor did not move')
+            const kept = ours(yield* store.streamFrom(0))
+            if (kept.length !== all.length) throw new Error(`acknowledging removed facts: ${kept.length} of ${all.length}`)
+            return { place: second.seq, last, kept: kept.length }
           }),
         ),
       ),
